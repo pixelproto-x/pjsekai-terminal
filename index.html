@@ -265,6 +265,49 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   .sheet-content{grid-template-columns:1fr}.sheet{border-radius:28px 28px 20px 20px}
   .footer{padding-left:15px;padding-right:15px}
 }
+
+/* PERFORMANCE GLASS: preserve the translucent look without expensive per-element blur */
+.app-shell:before{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  background:rgba(245,247,252,calc(var(--shell-opacity) * .78));
+}
+.app-card,.catalog-card,.quick,.stat,.settings-card,.official-gallery div,.sekai-chip{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  box-shadow:0 7px 24px rgba(25,27,40,.055),inset 0 1px 0 rgba(255,255,255,.68);
+}
+.topbar{
+  backdrop-filter:blur(7px) saturate(125%)!important;-webkit-backdrop-filter:blur(7px) saturate(125%)!important;
+}
+.bottom-bar{
+  backdrop-filter:blur(8px) saturate(125%)!important;-webkit-backdrop-filter:blur(8px) saturate(125%)!important;
+}
+.home-accordion-panel,.accordion-panel{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  background:rgba(228,231,239,.36);
+}
+.home-accordion-item,.accordion-item{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  background:rgba(255,255,255,.50);
+}
+.hero-official-art img{
+  mask-image:none!important;-webkit-mask-image:none!important;
+}
+.hero-official-art{
+  opacity:.68;
+}
+.page:before{
+  display:none;
+}
+@media(max-width:640px){
+  .topbar{backdrop-filter:blur(5px) saturate(120%)!important;-webkit-backdrop-filter:blur(5px) saturate(120%)!important}
+  .bottom-bar{backdrop-filter:blur(6px) saturate(120%)!important;-webkit-backdrop-filter:blur(6px) saturate(120%)!important}
+  .official-gallery div{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+
+@media(max-width:640px){
+  .page{animation:none}
+  .app-card,.catalog-card,.quick,.top-icon,.primary-btn,.secondary-btn{transition:none}
+}
 </style>
 </head>
 <body>
