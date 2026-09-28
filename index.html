@@ -1560,6 +1560,20 @@ document.addEventListener("pointerdown",()=>{
   if(currentLanguage!=="zh-TW")requestAITranslation(currentLanguage);
 },{passive:true});
 
+function showToast(message){
+  if(!toast)return;
+  toast.textContent=message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove("show"),1800);
+}
+$("#languageSelect")?.addEventListener("change",e=>{
+  const selected=e.target.value||"auto";
+  localStorage.setItem("sekaiLanguage",selected);
+  applyLanguage(selected,false);
+  showToast(LANGUAGE_LABELS[selected==="auto"?currentLanguage:selected]+" · "+t("設定"));
+  requestAITranslation(currentLanguage);
+});
 const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
