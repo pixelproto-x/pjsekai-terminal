@@ -83,7 +83,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .hero:before{content:"";position:absolute;width:520px;height:520px;right:-120px;top:-110px;border-radius:40%;transform:rotate(14deg);background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.22)}
 .hero:after{content:"";position:absolute;width:240px;height:240px;right:80px;bottom:-120px;border:62px solid rgba(255,255,255,.12);border-radius:50%}
 .hero-worlds{position:absolute;right:7%;top:15%;display:grid;grid-template-columns:repeat(3,58px);gap:8px;transform:rotate(-8deg);opacity:.8}
-.hero-worlds span{height:58px;display:grid;place-items:center;border-radius:17px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);font-size:9px;font-weight:900;backdrop-filter:blur(8px)}
+.hero-worlds span{height:58px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);font-size:9px;font-weight:900;backdrop-filter:blur(8px)}
 .hero-worlds span:nth-child(1){background:rgba(82,207,232,.2)}
 .hero-worlds span:nth-child(2){background:rgba(255,91,157,.18)}
 .hero-worlds span:nth-child(3){background:rgba(255,148,80,.2)}
@@ -231,7 +231,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   touch-action:none;user-select:none;overflow:visible;isolation:isolate;
 }
 .tab-indicator{
-  position:absolute;z-index:2;left:0;top:50%;width:var(--tab-w);height:var(--tab-h);
+  position:absolute;z-index:2;left:0;top:50%;width:var(--tab-w);height:var(--tab-h);min-width:72px;
   margin-top:-26px;border-radius:17px;
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
   border:1px solid rgba(255,255,255,.68);
@@ -905,7 +905,7 @@ function setIndicator(index,animate=true){
   bottomBar.style.setProperty("--tab-w","72px");bottomBar.style.setProperty("--tab-h","48px");
   bottomBar.style.setProperty("--tab-scale-x","1");bottomBar.style.setProperty("--tab-scale-y","1");bottomBar.style.setProperty("--tab-rotate","0deg");
   bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
-  tabIndicator.style.borderRadius="17px";
+  tabIndicator.style.borderRadius="14px";
   updateLens(cx,false);
 }
 function beginTabDrag(e){
@@ -944,7 +944,7 @@ function moveTabDrag(e){
   const cx=m.r.width/2+x;
   const infEdge=Math.max(0,1-Math.min(Math.abs(cx-m.cx(0)),Math.abs(cx-m.cx(4)))/(m.slot*.9));
   const ry=50-Math.min(10,edge*7),rx=50+Math.min(8,stretch*32);
-  tabIndicator.style.borderRadius=(18+Math.min(8,stretch*32)).toFixed(1)+"px";
+  tabIndicator.style.borderRadius=(14+Math.min(6,stretch*24)).toFixed(1)+"px";
   tabs.forEach((t,i)=>t.classList.toggle("active",i===Math.max(0,Math.min(4,Math.round(cx/m.slot-.5)))));
   updateLens(cx,true);if(e.cancelable)e.preventDefault();
 }
