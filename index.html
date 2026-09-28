@@ -512,7 +512,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
         </div>
         <strong id="opacityValue">22%</strong>
       </div>
-      <input id="opacityRange" class="opacity-range" type="range" min="8" max="58" step="1" value="22">
+      <input id="opacityRange" class="opacity-range" type="range" min="0" max="100" step="1" value="22">
       <div class="settings-scale"><span>較透明</span><span>平衡</span><span>較明確</span></div>
     </div>
 
@@ -734,7 +734,7 @@ const opacityValue=$("#opacityValue");
 const presets=[...document.querySelectorAll(".preset")];
 
 function applyOpacity(value,save=true){
-  const v=Math.max(8,Math.min(58,Number(value)||22));
+  const v=Math.max(0,Math.min(100,Number(value)||22));
   const n=v/100;
   root.style.setProperty("--glass-opacity",n.toFixed(3));
   root.style.setProperty("--shell-opacity",Math.max(.06,n*.55).toFixed(3));
