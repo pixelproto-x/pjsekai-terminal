@@ -26,12 +26,12 @@ button,input,select{outline:none}
 .top-accent{position:fixed;z-index:100;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--violet),var(--orange),var(--green))}
 .sekai-ambience{position:fixed;inset:0;z-index:-3;pointer-events:none;overflow:hidden;background:#171927}
 .sekai-ambience:before{content:"";position:absolute;inset:0;background:
-url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png") center/cover no-repeat;
+url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png") center/cover no-repeat;
 filter:saturate(1.08) contrast(1.02)}
 .sekai-ambience:after{content:"";position:absolute;inset:0;background:
 linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba(17,19,29,.08) 100%);
 backdrop-filter:saturate(115%)}
-.official-art{position:absolute;overflow:hidden;border-radius:32px;opacity:.1;filter:saturate(.75);box-shadow:0 30px 70px rgba(0,0,0,.18)}
+.official-art{position:absolute;overflow:hidden;border-radius:32px;opacity:.1;filter:saturate(.9);image-rendering:auto;box-shadow:0 30px 70px rgba(0,0,0,.18)}
 .official-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(23,25,39,.75),rgba(23,25,39,.1),rgba(23,25,39,.75))}
 .official-art img{display:block;width:100%;height:100%;object-fit:cover}
 .art-left{width:440px;height:155px;left:-225px;top:160px;transform:rotate(-4deg)}
@@ -53,14 +53,14 @@ backdrop-filter:saturate(115%)}
 .page{display:none;animation:pageIn .32s ease both;position:relative;isolation:isolate;min-height:70vh}
 .page:before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;border-radius:36px;opacity:.035;background-repeat:no-repeat;background-position:center top;background-size:cover;mix-blend-mode:multiply}
 .page>*{position:relative;z-index:1}.page{padding:0 6px}
-.page[data-page="home"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png")}
-.page[data-page="sekai"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png")}
-.page[data-page="songs"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png")}
-.page[data-page="characters"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png")}
-.page[data-page="cards"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png")}
-.page[data-page="events"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png")}
-.page[data-page="tools"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png")}
-.page[data-page="profile"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png")}
+.page[data-page="home"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png")}
+.page[data-page="sekai"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png")}
+.page[data-page="songs"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png")}
+.page[data-page="characters"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png")}
+.page[data-page="cards"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png")}
+.page[data-page="events"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png")}
+.page[data-page="tools"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png")}
+.page[data-page="profile"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png")}
 .page.active{display:block}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -78,8 +78,8 @@ backdrop-filter:saturate(115%)}
   background:radial-gradient(circle at 88% 14%,rgba(82,207,232,.8),transparent 22%),radial-gradient(circle at 70% 86%,rgba(255,91,157,.72),transparent 30%),linear-gradient(135deg,#191b28 0%,#292b3a 100%);
   color:#fff;box-shadow:0 25px 65px rgba(23,25,37,.18);
 }
-.hero-official-art{position:absolute;z-index:1;right:-30px;top:0;width:60%;height:100%;overflow:hidden;opacity:.7;mix-blend-mode:screen}
-.hero-official-art img{width:100%;height:100%;object-fit:cover;object-position:center;mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%)}
+.hero-official-art{position:absolute;z-index:1;right:-30px;top:0;width:60%;height:100%;overflow:hidden;opacity:.78;mix-blend-mode:screen}
+.hero-official-art img{width:100%;height:100%;object-fit:cover;object-position:center 24%;mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%)}
 .hero:before{content:"";position:absolute;width:520px;height:520px;right:-120px;top:-110px;border-radius:40%;transform:rotate(14deg);background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.22)}
 .hero:after{content:"";position:absolute;width:240px;height:240px;right:80px;bottom:-120px;border:62px solid rgba(255,255,255,.12);border-radius:50%}
 .hero-worlds{position:absolute;right:7%;top:15%;display:grid;grid-template-columns:repeat(3,58px);gap:8px;transform:rotate(-8deg);opacity:.8}
@@ -155,7 +155,7 @@ backdrop-filter:saturate(115%)}
 .quick strong{font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
 
 .official-strip{height:150px;margin:0 0 14px;border-radius:24px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid rgba(255,255,255,.8);background:#fff}
-.official-strip img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+.official-strip img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 24%}
 .catalog-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .accordion-wrap{display:contents}
 .catalog-card{
@@ -270,9 +270,9 @@ backdrop-filter:saturate(115%)}
 <body>
 <div class="top-accent"></div>
 <div class="sekai-ambience" aria-hidden="true">
-  <div class="official-art art-left"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt=""></div>
-  <div class="official-art art-right"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png" alt=""></div>
-  <div class="official-art art-bottom"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png" alt=""></div>
+  <div class="official-art art-left"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt=""></div>
+  <div class="official-art art-right"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png" alt=""></div>
+  <div class="official-art art-bottom"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt=""></div>
 </div>
 
 <div class="app-shell">
@@ -290,7 +290,7 @@ backdrop-filter:saturate(115%)}
 <main>
   <section class="page active" data-page="home">
     <div class="hero">
-      <div class="hero-official-art" aria-hidden="true"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png" alt=""></div>
+      <div class="hero-official-art" aria-hidden="true"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt=""></div>
       <div class="hero-worlds" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div>
       <div class="hero-content">
         <div class="kicker">SEKAI TERMINAL · 2.0</div>
@@ -304,9 +304,9 @@ backdrop-filter:saturate(115%)}
     </div>
 
     <div class="official-gallery" aria-label="Project SEKAI 官方視覺">
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png" alt="Virtual Singer 官方視覺"></div>
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt="Leo/need 官方視覺"></div>
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png" alt="25時、ナイトコードで。官方視覺"></div>
+      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt="Virtual Singer 官方視覺"></div>
+      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt="Leo/need 官方視覺"></div>
+      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png" alt="25時、ナイトコードで。官方視覺"></div>
     </div>
 
     <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
@@ -355,7 +355,7 @@ backdrop-filter:saturate(115%)}
       <div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">WORLD DIRECTORY</div><h1 class="page-title">SEKAI</h1><p class="page-subtitle">先選一個世界，再進入該世界的歌曲、角色與相關內容。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
-    <div class="official-strip"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt="Project SEKAI 官方角色視覺"></div>
+    <div class="official-strip"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt="Project SEKAI 官方角色視覺"></div>
     <div class="catalog-grid">
       <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">⌃</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
       <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">⌃</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
