@@ -30,16 +30,16 @@ url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphon
 filter:saturate(1.08) contrast(1.02)}
 .sekai-ambience:after{content:"";position:absolute;inset:0;background:
 linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba(17,19,29,.08) 100%);
-backdrop-filter:saturate(115%)}
-.official-art{position:absolute;overflow:hidden;border-radius:32px;opacity:.1;filter:saturate(.9);image-rendering:auto;box-shadow:0 30px 70px rgba(0,0,0,.18)}
+}
+.official-art{position:absolute;overflow:hidden;border-radius:32px;opacity:.1;filter:none;image-rendering:auto;box-shadow:0 30px 70px rgba(0,0,0,.18)}
 .official-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(23,25,39,.75),rgba(23,25,39,.1),rgba(23,25,39,.75))}
 .official-art img{display:block;width:100%;height:100%;object-fit:cover}
 .art-left{width:440px;height:155px;left:-225px;top:160px;transform:rotate(-4deg)}
 .art-right{width:440px;height:155px;right:-230px;top:390px;transform:rotate(5deg)}
 .art-bottom{width:520px;height:155px;left:50%;bottom:35px;transform:translateX(-50%) rotate(-2deg);opacity:.07}
 .app-shell{max-width:1480px;margin:auto;padding:30px 28px 120px;position:relative}
-.app-shell:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:rgba(245,247,252,var(--shell-opacity));border:1px solid rgba(255,255,255,.42);border-radius:36px;box-shadow:0 35px 90px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.48);backdrop-filter:blur(10px) saturate(135%);-webkit-backdrop-filter:blur(10px) saturate(135%)}
-.topbar{position:sticky;top:18px;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 12px 10px 17px;background:rgba(250,250,253,var(--glass-opacity));backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 10px 30px rgba(30,32,45,.08),inset 0 1px 0 rgba(255,255,255,.9)}
+.app-shell:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:rgba(245,247,252,var(--shell-opacity));border:1px solid rgba(255,255,255,.42);border-radius:36px;box-shadow:0 35px 90px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.48);backdrop-filter:blur(6px) saturate(125%);-webkit-backdrop-filter:blur(6px) saturate(125%)}
+.topbar{position:sticky;top:18px;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 12px 10px 17px;background:rgba(250,250,253,var(--glass-opacity));backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 10px 30px rgba(30,32,45,.08),inset 0 1px 0 rgba(255,255,255,.9)}
 .topbar:after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.28),transparent 38%);pointer-events:none}
 .brand{display:flex;align-items:center;gap:11px;min-width:210px}
 .brand-mark{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 220deg,var(--cyan),var(--violet),var(--pink),var(--yellow),var(--cyan));position:relative;box-shadow:0 7px 18px rgba(145,121,245,.24)}
@@ -51,7 +51,7 @@ backdrop-filter:saturate(115%)}
 .top-icon:hover{transform:translateY(-1px);background:#fff}
 
 .page{display:none;animation:pageIn .32s ease both;position:relative;isolation:isolate;min-height:70vh}
-.page:before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;border-radius:36px;opacity:.035;background-repeat:no-repeat;background-position:center top;background-size:cover;mix-blend-mode:multiply}
+.page:before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;border-radius:36px;opacity:.035;background-repeat:no-repeat;background-position:center top;background-size:cover;opacity:.02}
 .page>*{position:relative;z-index:1}.page{padding:0 6px}
 .page[data-page="home"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png")}
 .page[data-page="sekai"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png")}
@@ -67,7 +67,7 @@ backdrop-filter:saturate(115%)}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:66px 6px 30px}
 .kicker{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
 .page-title{font-size:clamp(48px,7vw,88px);line-height:.9;letter-spacing:-.06em;margin:10px 0 0;font-weight:850}
-.sekai-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,calc(var(--glass-opacity) + .26));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(12px);border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.12em;box-shadow:0 5px 18px rgba(25,27,40,.06)}
+.sekai-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,calc(var(--glass-opacity) + .26));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.12em;box-shadow:0 5px 18px rgba(25,27,40,.06)}
 .chip-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--pink),var(--yellow));box-shadow:0 0 0 3px rgba(255,255,255,.65)}
 .page-subtitle{max-width:600px;font-size:13px;line-height:1.9;color:var(--muted);margin-top:13px}
 .back-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.75);border-radius:999px;padding:10px 14px;font-size:11px;font-weight:800;transition:.2s}
@@ -78,7 +78,7 @@ backdrop-filter:saturate(115%)}
   background:radial-gradient(circle at 88% 14%,rgba(82,207,232,.8),transparent 22%),radial-gradient(circle at 70% 86%,rgba(255,91,157,.72),transparent 30%),linear-gradient(135deg,#191b28 0%,#292b3a 100%);
   color:#fff;box-shadow:0 25px 65px rgba(23,25,37,.18);
 }
-.hero-official-art{position:absolute;z-index:1;right:-30px;top:0;width:60%;height:100%;overflow:hidden;opacity:.78;mix-blend-mode:screen}
+.hero-official-art{position:absolute;z-index:1;right:-30px;top:0;width:60%;height:100%;overflow:hidden;opacity:.78;}
 .hero-official-art img{width:100%;height:100%;object-fit:cover;object-position:center 24%;mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%)}
 .hero:before{content:"";position:absolute;width:520px;height:520px;right:-120px;top:-110px;border-radius:40%;transform:rotate(14deg);background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.22)}
 .hero:after{content:"";position:absolute;width:240px;height:240px;right:80px;bottom:-120px;border:62px solid rgba(255,255,255,.12);border-radius:50%}
@@ -112,7 +112,7 @@ backdrop-filter:saturate(115%)}
 .home-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .app-card{
   min-height:82px;padding:14px 48px 14px 14px;border:1px solid rgba(255,255,255,.78);border-radius:20px;
-  background:rgba(255,255,255,var(--glass-opacity));backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(22px) saturate(145%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);
+  background:rgba(255,255,255,var(--glass-opacity));backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);
   position:relative;overflow:hidden;text-align:left;display:flex;align-items:center;gap:13px;transition:.2s;
 }
 .app-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
@@ -150,7 +150,7 @@ backdrop-filter:saturate(115%)}
 .card-dark p{color:#b9bbc5}.card-dark .badge{background:rgba(255,255,255,.09);color:#c9cad1}.card-dark .chev{color:#aaaebd}
 
 .quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.quick{border:1px solid var(--line);background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(20px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-radius:20px;padding:17px;text-align:left;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.quick{border:1px solid var(--line);background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(9px) saturate(135%);-webkit-backdrop-filter:blur(9px) saturate(135%);border-radius:20px;padding:17px;text-align:left;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
 .quick .qicon{width:38px;height:38px;border-radius:13px;background:#eceef4;display:grid;place-items:center}
 .quick strong{font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
 
@@ -194,7 +194,7 @@ backdrop-filter:saturate(115%)}
 .search-input{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.85);border-radius:17px;padding:13px 15px;font-size:12px;box-shadow:var(--shadow-sm)}
 .filter-btn{border:1px solid var(--line);background:#fff;border-radius:17px;padding:0 16px;font-size:11px;font-weight:800}
 
-.settings-card{margin-top:10px;padding:20px;border:1px solid rgba(255,255,255,.55);border-radius:24px;background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);position:relative;overflow:hidden}
+.settings-card{margin-top:10px;padding:20px;border:1px solid rgba(255,255,255,.55);border-radius:24px;background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px) saturate(140%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);position:relative;overflow:hidden}
 .settings-card:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 45%);pointer-events:none}
 .settings-row-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .settings-row-head strong{font-size:14px}.settings-row-head span{display:block;color:var(--muted);font-size:10px;line-height:1.7;margin-top:5px;max-width:620px}
@@ -202,14 +202,14 @@ backdrop-filter:saturate(115%)}
 .opacity-range{position:relative;z-index:1;width:100%;margin:28px 0 10px;accent-color:var(--violet);height:5px}
 .settings-scale{position:relative;z-index:1;display:flex;justify-content:space-between;color:var(--muted);font-size:9px}
 .preset-row{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:15px}
-.preset{border:1px solid var(--line);background:rgba(255,255,255,.26);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-radius:16px;padding:12px 8px;font-size:13px;font-weight:850}
+.preset{border:1px solid var(--line);background:rgba(255,255,255,.26);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:16px;padding:12px 8px;font-size:13px;font-weight:850}
 .preset small{display:block;color:var(--muted);font-size:8px;font-weight:700;margin-top:3px}
 .preset.active{background:rgba(24,26,34,.88);color:#fff;border-color:rgba(24,26,34,.88)}
 .preview-card{padding-bottom:24px}
 .preview-card h2{position:relative;z-index:1;font-size:27px;margin:6px 0}.preview-card p{position:relative;z-index:1;color:var(--muted);font-size:10px}
-.preview-glass{position:relative;z-index:1;margin-top:15px;min-height:110px;border-radius:21px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,var(--glass-opacity));border:1px solid rgba(255,255,255,.58);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);box-shadow:0 15px 35px rgba(25,27,40,.08),inset 0 1px 0 rgba(255,255,255,.75)}
+.preview-glass{position:relative;z-index:1;margin-top:15px;min-height:110px;border-radius:21px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,var(--glass-opacity));border:1px solid rgba(255,255,255,.58);backdrop-filter:blur(14px) saturate(145%);-webkit-backdrop-filter:blur(14px) saturate(145%);box-shadow:0 15px 35px rgba(25,27,40,.08),inset 0 1px 0 rgba(255,255,255,.75)}
 .preview-glass span{font-size:9px;color:var(--muted);letter-spacing:.12em}.preview-glass strong{font-size:20px;letter-spacing:-.04em}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat{background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(20px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--line);border-radius:21px;padding:19px;box-shadow:var(--shadow-sm)}
+.stat{background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(9px) saturate(135%);-webkit-backdrop-filter:blur(9px) saturate(135%);border:1px solid var(--line);border-radius:21px;padding:19px;box-shadow:var(--shadow-sm)}
 .stat small{display:block;font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.08em}
 .stat strong{display:block;font-size:27px;margin-top:9px;letter-spacing:-.04em}
 
