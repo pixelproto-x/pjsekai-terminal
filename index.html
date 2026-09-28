@@ -1487,7 +1487,7 @@ async function runAITranslation(language=currentLanguage){
 
   const sources=collectTranslationSources(document.body);
   const bucket=aiTranslationCache[language]||(aiTranslationCache[language]={});
-  const missing=sources.filter(source=>!bucket[source]&&!isPlainNonText(source));
+  const missing=sources.filter(source=>!bucket[source]&&!isNonTranslatableToken(source));
   if(!missing.length){
     rememberAndTranslate(document.body);
     return;
@@ -1573,6 +1573,12 @@ $("#languageSelect")?.addEventListener("change",e=>{
   showToast(LANGUAGE_LABELS[selected==="auto"?currentLanguage:selected]+" · "+t("設定"));
   requestAITranslation(currentLanguage);
 });
+let draggingTab=false;
+let draggingTabMoved=false;
+let draggingPointerId=null;
+let draggingStartX=0;
+let draggingStartY=0;
+let draggingStartLeft=0;
 let draggingLastX=0;
 let draggingLastY=0;
 let draggingLastTime=0;
