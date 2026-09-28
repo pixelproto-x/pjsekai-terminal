@@ -945,7 +945,7 @@ function moveTabDrag(e){
   const frameRadius=Math.max(16,24-Math.min(8,Math.abs(dx)/(m.slot*4)*8));
   bottomBar.style.setProperty("--tab-stretch-x",frameStretch.toFixed(3));
   bottomBar.style.setProperty("--frame-radius",frameRadius.toFixed(1)+"px");
-  const edge=Math.max(0,1-Math.min(Math.min((x-minX),(maxX-x))/24,1));
+  const edge=Math.max(0,1-Math.min(Math.min(center-minCenter,maxCenter-center)/24,1));
   bottomBar.style.setProperty("--tab-x",x+"px");bottomBar.style.setProperty("--tab-y",y+"px");
   bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.06).toFixed(3));
   bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.35+edge*.08).toFixed(3));
