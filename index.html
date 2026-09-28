@@ -316,6 +316,257 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   .page{animation:none}
   .app-card,.catalog-card,.quick,.top-icon,.primary-btn,.secondary-btn{transition:none}
 }
+
+/* iOS MOTION POLISH */
+:root{
+  --ios-ease:cubic-bezier(.22,.61,.36,1);
+  --ios-spring:cubic-bezier(.34,1.56,.64,1);
+}
+html{
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+body{
+  -webkit-touch-callout:none;
+  user-select:none;
+}
+input,textarea{
+  user-select:text;
+}
+button{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* page switching: short horizontal slide + fade, like a native iOS push */
+.page.route-from-right{
+  animation:routeFromRight .38s var(--ios-ease) both;
+}
+.page.route-from-left{
+  animation:routeFromLeft .38s var(--ios-ease) both;
+}
+@keyframes routeFromRight{
+  from{opacity:0;transform:translate3d(18px,4px,0) scale(.992)}
+  65%{opacity:1}
+  to{opacity:1;transform:none}
+}
+@keyframes routeFromLeft{
+  from{opacity:0;transform:translate3d(-18px,4px,0) scale(.992)}
+  65%{opacity:1}
+  to{opacity:1;transform:none}
+}
+
+/* press feedback */
+.app-card,.catalog-card,.quick,.stat,.settings-card,.top-icon,.back-btn,
+.primary-btn,.secondary-btn,.preset,.accordion-item,.home-accordion-item,.filter-btn,.list-row{
+  -webkit-user-select:none;
+}
+.app-card,.catalog-card,.quick,.top-icon,.back-btn,.primary-btn,.secondary-btn,.preset,
+.accordion-item,.home-accordion-item,.filter-btn,.list-row{
+  transform:translate3d(0,0,0);
+  will-change:transform;
+}
+.app-card,.catalog-card,.quick,.top-icon,.back-btn,.primary-btn,.secondary-btn,.preset,
+.accordion-item,.home-accordion-item,.filter-btn{
+  transition:
+    transform .24s var(--ios-ease),
+    box-shadow .24s var(--ios-ease),
+    background-color .24s var(--ios-ease),
+    border-color .24s var(--ios-ease),
+    color .24s var(--ios-ease),
+    opacity .24s ease;
+}
+.app-card:active,.catalog-card:active,.quick:active,.top-icon:active,.back-btn:active,
+.primary-btn:active,.secondary-btn:active,.preset:active,.accordion-item:active,
+.home-accordion-item:active,.filter-btn:active{
+  transform:scale(.975);
+}
+.list-row{
+  transition:background-color .22s var(--ios-ease),transform .22s var(--ios-ease);
+}
+.list-row:active{
+  transform:translateX(2px) scale(.995);
+  background:rgba(243,244,248,.9);
+}
+
+/* card lift is gentler, closer to iOS */
+.app-card:hover{
+  transform:translateY(-2px) scale(1.003);
+}
+.catalog-card:hover{
+  transform:translateY(-1px);
+}
+.quick:hover,.settings-card:hover{
+  transform:translateY(-1px);
+}
+.top-icon:hover,.back-btn:hover{
+  transform:translateY(-1px);
+}
+
+/* expanding panels */
+.accordion-panel,.home-accordion-panel{
+  overflow:hidden;
+  transform-origin:top center;
+}
+.accordion-panel.closing,.home-accordion-panel.closing{
+  animation:accordionOut .18s var(--ios-ease) both;
+  pointer-events:none;
+}
+@keyframes accordionOut{
+  from{opacity:1;transform:translateY(0);max-height:500px}
+  to{opacity:0;transform:translateY(-4px);max-height:0}
+}
+.accordion-item,.home-accordion-item{
+  animation:panelItemIn .28s var(--ios-ease) both;
+}
+.accordion-item:nth-child(2),.home-accordion-item:nth-child(2){animation-delay:.025s}
+.accordion-item:nth-child(3),.home-accordion-item:nth-child(3){animation-delay:.05s}
+.accordion-item:nth-child(4),.home-accordion-item:nth-child(4){animation-delay:.075s}
+.accordion-item:nth-child(5),.home-accordion-item:nth-child(5){animation-delay:.10s}
+.accordion-item:nth-child(6),.home-accordion-item:nth-child(6){animation-delay:.125s}
+.accordion-item:nth-child(7),.home-accordion-item:nth-child(7){animation-delay:.15s}
+@keyframes panelItemIn{
+  from{opacity:0;transform:translateY(-5px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+/* arrows have a little physical movement */
+.catalog-card .arrow,.app-card .chev{
+  transition:transform .3s var(--ios-spring),color .2s ease;
+}
+.catalog-card.expanded .arrow{
+  transform:translateY(-50%) rotate(0deg) scale(1.08);
+}
+.app-card.home-card-expanded .chev{
+  transform:translateY(-50%) scale(1.08);
+}
+
+/* native-looking bottom tab selection */
+.bottom-bar{
+  isolation:isolate;
+}
+.bottom-bar:after{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border-radius:21px;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),transparent 45%);
+  opacity:.7;
+}
+.tab{
+  position:relative;
+  z-index:1;
+  transition:
+    transform .32s var(--ios-spring),
+    color .2s ease,
+    background-color .28s var(--ios-ease);
+}
+.tab .tab-icon{
+  transition:transform .32s var(--ios-spring),filter .25s ease;
+}
+.tab.active{
+  box-shadow:0 7px 18px rgba(27,29,40,.14);
+  transform:translateY(-1px);
+}
+.tab.active .tab-icon{
+  transform:translateY(-1px) scale(1.08);
+}
+.tab:active{
+  transform:scale(.94);
+}
+.tab.active:active{
+  transform:scale(.94) translateY(-1px);
+}
+
+/* top bar feels attached to the screen */
+.topbar{
+  transition:box-shadow .3s var(--ios-ease),background-color .3s var(--ios-ease),transform .25s var(--ios-ease);
+}
+.topbar:active{
+  transform:scale(.995);
+}
+
+/* slider microinteraction */
+.opacity-range{
+  cursor:pointer;
+  accent-color:var(--violet);
+  transition:filter .2s ease;
+}
+.opacity-range:hover{
+  filter:saturate(1.15);
+}
+.opacity-range:active{
+  filter:saturate(1.35) brightness(1.03);
+}
+.opacity-range::-webkit-slider-runnable-track{
+  height:5px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--violet),var(--pink),var(--cyan));
+}
+.opacity-range::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:22px;
+  height:22px;
+  margin-top:-8.5px;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,.95);
+  background:#fff;
+  box-shadow:0 4px 14px rgba(69,63,130,.22);
+  transition:transform .18s var(--ios-spring),box-shadow .18s ease;
+}
+.opacity-range:active::-webkit-slider-thumb{
+  transform:scale(1.14);
+  box-shadow:0 5px 18px rgba(69,63,130,.28);
+}
+.opacity-range::-moz-range-track{
+  height:5px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--violet),var(--pink),var(--cyan));
+}
+.opacity-range::-moz-range-thumb{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,.95);
+  background:#fff;
+  box-shadow:0 4px 14px rgba(69,63,130,.22);
+}
+
+/* gentle entrance for major blocks */
+.page.active .page-head,
+.page.active .hero,
+.page.active .official-gallery,
+.page.active .section-head,
+.page.active .home-grid,
+.page.active .quick-row,
+.page.active .stat-grid,
+.page.active .catalog-grid,
+.page.active .list-panel,
+.page.active .settings-card{
+  animation:contentRise .42s var(--ios-ease) both;
+}
+.page.active .page-head{animation-delay:.02s}
+.page.active .hero{animation-delay:.05s}
+.page.active .official-gallery{animation-delay:.08s}
+.page.active .section-head{animation-delay:.10s}
+.page.active .home-grid,.page.active .catalog-grid{animation-delay:.12s}
+.page.active .quick-row,.page.active .list-panel,.page.active .settings-card{animation-delay:.14s}
+@keyframes contentRise{
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:none}
+}
+
+/* respect system motion setting */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
 </style>
 </head>
 <body>
@@ -512,7 +763,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
         </div>
         <strong id="opacityValue">22%</strong>
       </div>
-      <input id="opacityRange" class="opacity-range" type="range" min="0" max="100" step="1" value="22">
+      <input id="opacityRange" class="opacity-range" aria-label="介面透明度" type="range" min="0" max="100" step="1" value="22">
       <div class="settings-scale"><span>較透明</span><span>平衡</span><span>較明確</span></div>
     </div>
 
@@ -578,12 +829,38 @@ const pages=[...document.querySelectorAll(".page")];
 const tabs=[...document.querySelectorAll(".tab")];
 const $=(s,root=document)=>root.querySelector(s);
 
+const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
+let currentRoute=location.hash.replace("#","")||"home";
+let routeInitialized=false;
+
+function updateTabMotion(page){
+  tabs.forEach(t=>{
+    t.classList.toggle("active",t.dataset.go===page);
+  });
+}
+
 function go(page){
   const target=pages.find(p=>p.dataset.page===page) || pages[0];
-  pages.forEach(p=>p.classList.toggle("active",p===target));
-  tabs.forEach(t=>t.classList.toggle("active",t.dataset.go===page));
-  window.scrollTo({top:0,behavior:"smooth"});
-  history.replaceState({}, "", "#"+page);
+  const nextRoute=target.dataset.page;
+  const fromIndex=routeOrder.indexOf(currentRoute);
+  const toIndex=routeOrder.indexOf(nextRoute);
+  const direction=(!routeInitialized || fromIndex===-1 || toIndex>=fromIndex)?"right":"left";
+
+  pages.forEach(p=>{
+    p.classList.remove("route-from-right","route-from-left");
+    p.classList.toggle("active",p===target);
+  });
+
+  target.classList.add(direction==="right"?"route-from-right":"route-from-left");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    target.classList.remove("route-from-right","route-from-left");
+  }));
+
+  updateTabMotion(nextRoute);
+  window.scrollTo({top:0,behavior:routeInitialized?"smooth":"auto"});
+  history.replaceState({}, "", "#"+nextRoute);
+  currentRoute=nextRoute;
+  routeInitialized=true;
 }
 function initRoute(){
   const route=location.hash.replace("#","")||"home";
@@ -651,17 +928,31 @@ const sheetData={
   recent:["最近使用","我的專區",["最近歌曲","最近角色","最近卡片","最近工具"]]
 };
 
+function animatePanelClose(panel,card,cardClass,arrow){
+  panel.classList.add("closing");
+  const finish=()=>{
+    panel.removeEventListener("animationend",finish);
+    panel.remove();
+  };
+  panel.addEventListener("animationend",finish);
+  card.classList.remove(cardClass);
+  if(arrow)arrow.textContent="⌃";
+}
+
 function toggleAccordion(card){
   const key=card.dataset.sheet;
   const data=sheetData[key];
   if(!data)return;
   const old=card.nextElementSibling;
-  if(old && old.classList.contains("accordion-panel")){ old.remove(); card.classList.remove("expanded"); card.querySelector(".arrow").textContent="⌃"; return; }
+  if(old && old.classList.contains("accordion-panel")){
+    animatePanelClose(old,card,"expanded",card.querySelector(".arrow"));
+    return;
+  }
   document.querySelectorAll(".catalog-card.expanded").forEach(open=>{
     const panel=open.nextElementSibling;
-    if(panel && panel.classList.contains("accordion-panel"))panel.remove();
-    open.classList.remove("expanded");
-    const a=open.querySelector(".arrow"); if(a)a.textContent="⌃";
+    if(panel && panel.classList.contains("accordion-panel")){
+      animatePanelClose(panel,open,"expanded",open.querySelector(".arrow"));
+    }
   });
   const panel=document.createElement("div");
   panel.className="accordion-panel";
@@ -677,15 +968,14 @@ function toggleHomeAccordion(card){
   if(!data)return;
   const old=card.nextElementSibling;
   if(old && old.classList.contains("home-accordion-panel")){
-    old.remove(); card.classList.remove("home-card-expanded");
-    const a=card.querySelector(".chev"); if(a)a.textContent="⌃";
+    animatePanelClose(old,card,"home-card-expanded",card.querySelector(".chev"));
     return;
   }
   document.querySelectorAll(".app-card.home-card-expanded").forEach(open=>{
     const panel=open.nextElementSibling;
-    if(panel && panel.classList.contains("home-accordion-panel"))panel.remove();
-    open.classList.remove("home-card-expanded");
-    const a=open.querySelector(".chev"); if(a)a.textContent="⌃";
+    if(panel && panel.classList.contains("home-accordion-panel")){
+      animatePanelClose(panel,open,"home-card-expanded",open.querySelector(".chev"));
+    }
   });
   const panel=document.createElement("div");
   panel.className="home-accordion-panel";
