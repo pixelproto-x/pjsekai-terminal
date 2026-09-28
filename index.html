@@ -1458,9 +1458,8 @@ function saveAITranslationCache(){
   }
 }
 
-function isPlainNonText(source){
-  return !/[\u3400-\u4dbf\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(source) &&
-    !/[A-Za-zÀ-ÖØ-öø-ÿА-Яа-я؀-ۿऀ-ॿ฀-๿]/.test(source);
+function isNonTranslatableToken(source){
+  return /^(?:[\\s\\d.,:;!?%+\\-_/|·•…()]+|https?:\\/\\/\\S+|[♪♫✦›‹⌃⌄✓→←]+)$/.test(source);
 }
 
 async function getAITranslator(targetLanguage){
