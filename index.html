@@ -160,7 +160,18 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 
 .official-strip{height:150px;margin:0 0 14px;border-radius:24px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid rgba(255,255,255,.8);background:#fff}
 .official-strip img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 24%}
-.catalog-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.sekai-world-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sekai-world-card{min-height:190px!important;overflow:hidden!important;position:relative!important;color:#fff!important;background:#252735!important;padding:0!important;border-radius:24px!important}
+.sekai-world-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .45s var(--ios-ease),filter .35s ease}
+.sekai-world-card:hover .sekai-world-image{transform:scale(1.035);filter:saturate(1.08)}
+.sekai-world-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,17,28,.08) 20%,rgba(15,17,28,.72) 100%);z-index:1}
+.sekai-world-card .tiny-icon,.sekai-world-card .arrow,.sekai-world-copy{z-index:2}
+.sekai-world-card .tiny-icon{position:absolute;left:14px;top:14px;background:var(--world-accent)!important;color:#fff;border:1px solid rgba(255,255,255,.45)}
+.sekai-world-card .arrow{position:absolute;right:15px;top:14px;color:#fff}
+.sekai-world-copy{position:absolute;left:16px;right:16px;bottom:15px}
+.sekai-world-copy h3{margin:0 0 5px;font-size:18px;letter-spacing:-.025em}
+.sekai-world-copy p{margin:0;color:rgba(255,255,255,.82);font-size:11px;line-height:1.6}
+@media(max-width:640px){.sekai-world-grid{grid-template-columns:1fr}.sekai-world-card{min-height:175px!important}}.catalog-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .accordion-wrap{display:contents}
 .catalog-card{
   width:100%;min-height:0;border:1px solid var(--line);background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(22px) saturate(145%);-webkit-backdrop-filter:blur(20px) saturate(140%);border-radius:18px;
@@ -676,13 +687,13 @@ button{
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="official-strip"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt="Project SEKAI 官方角色視覺"></div>
-    <div class="catalog-grid">
-      <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">⌃</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
-      <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">⌃</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
-      <button class="catalog-card" data-sheet="street"><span class="tiny-icon" style="background:#ff9756">03</span><span class="arrow">⌃</span><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p><span class="color-orb" style="background:#ff9756"></span></button>
-      <button class="catalog-card" data-sheet="wonderland"><span class="tiny-icon" style="background:#9179f5">04</span><span class="arrow">⌃</span><h3>Wonderland</h3><p>充滿不可思議的舞台。</p><span class="color-orb" style="background:#9179f5"></span></button>
-      <button class="catalog-card" data-sheet="empty"><span class="tiny-icon" style="background:#666f7e">05</span><span class="arrow">⌃</span><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p><span class="color-orb" style="background:#666f7e"></span></button>
-      <button class="catalog-card" data-sheet="virtual"><span class="tiny-icon" style="background:#5fc596">06</span><span class="arrow">⌃</span><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p><span class="color-orb" style="background:#5fc596"></span></button>
+    <div class="catalog-grid sekai-world-grid">
+      <button class="catalog-card sekai-world-card" data-sheet="classroom" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png');--world-accent:#58c4e3"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt="教室的 SEKAI 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">01</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p></span></button>
+      <button class="catalog-card sekai-world-card" data-sheet="stage" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite02_iphone_1.png');--world-accent:#f06d9b"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite02_iphone_1.png" alt="舞台的 SEKAI 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">02</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p></span></button>
+      <button class="catalog-card sekai-world-card" data-sheet="street" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite03_iphone_1.png');--world-accent:#ff9756"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite03_iphone_1.png" alt="街道的 SEKAI 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">03</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p></span></button>
+      <button class="catalog-card sekai-world-card" data-sheet="wonderland" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite04_iphone_1.png');--world-accent:#9179f5"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite04_iphone_1.png" alt="Wonderland 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">04</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>Wonderland</h3><p>充滿不可思議的舞台。</p></span></button>
+      <button class="catalog-card sekai-world-card" data-sheet="empty" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png');--world-accent:#666f7e"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png" alt="空無的 SEKAI 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">05</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p></span></button>
+      <button class="catalog-card sekai-world-card" data-sheet="virtual" style="--world-image:url('https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png');--world-accent:#5fc596"><img class="sekai-world-image" src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt="Virtual Singer 官方視覺"><span class="sekai-world-shade"></span><span class="tiny-icon">06</span><span class="arrow">⌃</span><span class="sekai-world-copy"><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p></span></button>
     </div>
   </section>
 
