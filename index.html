@@ -900,7 +900,7 @@ function updateLens(cx,drag){
 function resetLens(){tabs.forEach(t=>{t.style.removeProperty("--lens");t.classList.remove("lens-near")})}
 function setIndicator(index,animate=true){
   const m=getTabMetrics(),cx=m.cx(index);
-  bottomBar.style.setProperty("--tab-x",(cx-m.r.width/2)+"px");
+  bottomBar.style.setProperty("--tab-x",(cx-36)+"px");
   bottomBar.style.setProperty("--tab-y","0px");
   bottomBar.style.setProperty("--tab-w","72px");bottomBar.style.setProperty("--tab-h","48px");
   bottomBar.style.setProperty("--tab-scale-x","1");bottomBar.style.setProperty("--tab-scale-y","1");bottomBar.style.setProperty("--tab-rotate","0deg");
@@ -927,7 +927,7 @@ function moveTabDrag(e){
   draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=now;
   const m=getTabMetrics(),dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
   if(Math.hypot(dx,dy)>4)draggingTabMoved=true;
-  const minX=m.cx(0)-m.r.width/2,maxX=m.cx(4)-m.r.width/2;
+  const minX=m.cx(0)-36,maxX=m.cx(4)-36;
   const x=Math.max(minX,Math.min(maxX,draggingStartOffset+dx));
   const y=Math.max(-10,Math.min(10,dy));
   const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1000);
