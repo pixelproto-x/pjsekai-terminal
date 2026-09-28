@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project SEKAI｜Terminal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','Noto Sans TC','sans-serif']}}}}
+</script>
+<style>
+:root{--accent:#21d4fd;--accent2:#7c3aed;--bg:#080b14;--panel:#101625}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f8fafc;font-family:Inter,"Noto Sans TC",sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(135deg,transparent 24%,var(--accent) 25%,transparent 26%),linear-gradient(45deg,transparent 74%,var(--accent2) 75%,transparent 76%);background-size:90px 90px;mix-blend-mode:screen}
+.glow{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 60%,transparent),0 0 28px color-mix(in srgb,var(--accent) 18%,transparent)}
+.panel{background:linear-gradient(145deg,rgba(20,28,47,.96),rgba(8,12,24,.96));border:1px solid rgba(255,255,255,.09);clip-path:polygon(0 12px,12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.diag{position:relative;overflow:hidden}.diag:after{content:"";position:absolute;width:55%;height:220%;right:-15%;top:-60%;transform:rotate(28deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);pointer-events:none}
+.world.active{outline:2px solid var(--accent);box-shadow:0 0 20px color-mix(in srgb,var(--accent) 30%,transparent)}
+.world{transition:.2s}.world:hover{transform:translateY(-2px)}
+.track{height:150px;perspective:600px;overflow:hidden;background:radial-gradient(ellipse at 50% 115%,rgba(34,211,238,.22),transparent 55%),#080d19}
+.lane{position:absolute;left:8%;right:8%;bottom:-65px;height:230px;transform:rotateX(61deg);border:2px solid var(--accent);background:repeating-linear-gradient(90deg,transparent 0 19%,rgba(255,255,255,.08) 19.2% 19.7%),repeating-linear-gradient(0deg,transparent 0 19%,rgba(255,255,255,.08) 19.2% 19.7%);box-shadow:0 0 30px color-mix(in srgb,var(--accent) 22%,transparent)}
+.note{position:absolute;bottom:42px;width:28px;height:12px;background:var(--accent);box-shadow:0 0 16px var(--accent);transform:skewX(-20deg)}
+input{outline:none}.accent{color:var(--accent)}
+</style>
+</head>
+<body>
+<header class="sticky top-0 z-20 border-b border-white/10 bg-[#080b14]/90 backdrop-blur">
+<div class="max-w-7xl mx-auto px-4 py-3 flex gap-3 items-center">
+<div class="font-black tracking-tight text-xl whitespace-nowrap"><span class="accent">SEKAI</span><span class="text-white">//TERMINAL</span></div>
+<div class="hidden md:block text-xs text-white/40">PROJECT SEKAI TOOLBOX</div>
+<div class="ml-auto relative w-full max-w-sm">
+<input id="search" class="w-full bg-white/5 border border-white/10 px-4 py-2 text-sm" placeholder="搜尋玩家、歌曲、卡片、活動…">
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+<section class="diag panel p-5">
+<div class="flex items-end justify-between gap-4 mb-4"><div><div class="text-xs accent font-bold tracking-[.3em]">SEKAI SELECT</div><h1 class="text-3xl md:text-5xl font-black">世界切換 TERMINAL</h1></div><div class="text-xs text-white/40">LIVE THEME ENGINE</div></div>
+<div id="worlds" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+<button class="world active p-3 text-left bg-cyan-400/10" data-a="#21d4fd" data-b="#7c3aed"><b>教室</b><span class="block text-[10px] opacity-50">CLASSROOM</span></button>
+<button class="world p-3 text-left bg-pink-400/10" data-a="#fb7185" data-b="#f59e0b"><b>舞台</b><span class="block text-[10px] opacity-50">STAGE</span></button>
+<button class="world p-3 text-left bg-orange-400/10" data-a="#fb923c" data-b="#ef4444"><b>街道</b><span class="block text-[10px] opacity-50">STREET</span></button>
+<button class="world p-3 text-left bg-violet-400/10" data-a="#a78bfa" data-b="#ec4899"><b>幻想</b><span class="block text-[10px] opacity-50">FANTASY</span></button>
+<button class="world p-3 text-left bg-slate-400/10" data-a="#94a3b8" data-b="#64748b"><b>空無</b><span class="block text-[10px] opacity-50">EMPTY</span></button>
+<button class="world p-3 text-left bg-emerald-400/10" data-a="#34d399" data-b="#06b6d4"><b>虛擬</b><span class="block text-[10px] opacity-50">VIRTUAL</span></button>
+</div>
+</section>
+
+<section class="panel p-5">
+<div class="flex flex-wrap gap-3 items-center justify-between mb-4"><div><div class="text-xs accent tracking-widest">PLAYER DASHBOARD</div><h2 class="text-2xl font-black">玩家資料終端</h2></div><div class="flex gap-2"><input id="playerId" class="bg-black/30 border border-white/10 px-3 py-2 text-sm" placeholder="輸入玩家 ID"><button id="loadPlayer" class="px-4 py-2 bg-white text-black font-bold text-sm">載入</button></div></div>
+<div class="flex gap-2 mb-4"><button class="mode px-3 py-1.5 bg-white text-black text-xs font-bold">ID 模式</button><button class="mode px-3 py-1.5 bg-white/5 text-xs">公開資料</button></div>
+<div class="grid md:grid-cols-5 gap-3">
+<div class="md:col-span-2 grid grid-cols-2 gap-3">
+<div class="panel p-4"><div class="text-xs opacity-50">TOTAL POWER</div><div id="power" class="text-3xl font-black mt-1">000,000</div><div class="accent text-xs mt-2">★4 SLOT READY</div></div>
+<div class="panel p-4"><div class="text-xs opacity-50">AP / FC</div><div class="text-2xl font-black mt-1">00 / 00</div><div class="text-xs opacity-40 mt-2">PERFECT TRACK</div></div>
+</div>
+<div class="md:col-span-3 panel p-4"><div class="flex justify-between text-xs mb-2"><span class="opacity-50">26-CHARACTER CR MATRIX</span><span class="accent">READY</span></div><div id="matrix" class="grid grid-cols-13 gap-1"></div></div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-3">
+<div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 01</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 1</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 02</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 2</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 03</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 3</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 04</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 4</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 05</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 5</div></div>
+</div>
+</section>
+
+<section class="grid lg:grid-cols-2 gap-6">
+<div class="panel p-5">
+<div class="flex justify-between mb-4"><div><div class="text-xs accent tracking-widest">3D RHYTHM TRAINING</div><h2 class="text-2xl font-black">節奏訓練室</h2></div><button id="mirror" class="px-3 py-2 bg-white/5 border border-white/10 text-xs">MIRROR OFF</button></div>
+<div class="track relative"><div class="lane"></div><i class="note left-[28%]"></i><i class="note left-[53%]" style="bottom:65px"></i><i class="note left-[70%]" style="bottom:88px"></i></div>
+<div class="grid grid-cols-3 gap-2 mt-3">
+<label class="bg-white/5 p-3 text-xs">速度<select id="speed" class="bg-transparent ml-2"><option>0.5x</option><option>0.75x</option><option selected>1.0x</option><option>1.25x</option><option>1.5x</option></select></label>
+<button class="bg-white/5 text-xs" id="offset">AP OFFSET</button><button class="bg-white text-black font-bold text-xs" id="train">進入訓練</button>
+</div>
+</div>
+<div class="panel p-5">
+<div class="text-xs accent tracking-widest">STRATEGY CALCULATION</div><h2 class="text-2xl font-black mb-4">活動策略計算</h2>
+<div class="grid sm:grid-cols-2 gap-3">
+<div class="bg-white/5 p-4"><div class="text-xs opacity-50">火消し消耗</div><div class="flex gap-2 mt-3"><input id="energy" type="number" value="10" class="w-20 bg-black/30 border border-white/10 px-2 py-2"><button id="calc" class="bg-white text-black px-3 text-xs font-bold">計算</button></div><div id="calcOut" class="accent font-bold mt-3">預估：0 次</div></div>
+<div class="bg-white/5 p-4"><div class="text-xs opacity-50">體力回滿倒數</div><div id="timer" class="text-3xl font-black mt-2">00:00:00</div><button id="startTimer" class="text-xs mt-3 border border-white/10 px-3 py-2">啟動倒數</button></div>
+</div>
+</div>
+</section>
+
+<section class="panel p-5">
+<div class="text-xs accent tracking-widest">MEDIA ENCYCLOPEDIA</div><h2 class="text-2xl font-black mb-4">媒體圖鑑</h2>
+<div class="grid lg:grid-cols-2 gap-4">
+<div class="aspect-video bg-black/60 border border-white/10 flex items-center justify-center relative"><div class="text-center"><div class="text-5xl">▶</div><div class="text-xs opacity-50 mt-2">OFFICIAL YOUTUBE MV PLAYER</div></div></div>
+<div class="panel p-4"><div class="text-xs opacity-50 mb-3">CARD TRAINING PREVIEW</div><div class="grid grid-cols-2 gap-3"><div class="aspect-[3/4] bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-end p-3"><span class="text-xs">BEFORE</span></div><div class="aspect-[3/4] bg-gradient-to-br from-white/20 to-transparent border border-white/10 flex items-end p-3"><span class="text-xs accent">AFTER</span></div></div></div>
+</div>
+</section>
+<footer class="text-center text-[10px] text-white/30 py-3">PROJECT SEKAI TOOLBOX · TERMINAL SKELETON</footer>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+document.querySelectorAll(".world").forEach(b=>b.onclick=()=>{document.querySelectorAll(".world").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.documentElement.style.setProperty("--accent",b.dataset.a);document.documentElement.style.setProperty("--accent2",b.dataset.b)});
+for(let i=0;i<26;i++){const x=document.createElement("span");x.className="aspect-square bg-white/10 text-[8px] flex items-center justify-center";x.textContent=String.fromCharCode(65+i);$("#matrix").appendChild(x)}
+$("#loadPlayer").onclick=()=>{$("#power").textContent=($("#playerId").value.replace(/\D/g,"").slice(-6)||"000000").padStart(6,"0")};
+$("#mirror").onclick=e=>e.currentTarget.textContent=e.currentTarget.textContent.includes("OFF")?"MIRROR ON":"MIRROR OFF";
+$("#calc").onclick=()=>{$("#calcOut").textContent="預估："+Math.max(0,Math.floor(100/Math.max(1,+$("#energy").value)))+" 次"};
+$("#offset").onclick=()=>alert("AP Offset 設定介面已準備完成。");
+$("#train").onclick=()=>alert("3D 訓練室入口已準備完成。");
+let end=0;function tick(){if(!end)return;let d=Math.max(0,end-Date.now()),s=Math.floor(d/1000),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;$("#timer").textContent=[h,m,s].map(x=>String(x).padStart(2,"0")).join(":");if(d)requestAnimationFrame(tick);else end=0}
+$("#startTimer").onclick=()=>{end=Date.now()+3600000;tick()};
+$("#search").oninput=e=>{document.title=e.target.value?e.target.value+"｜SEKAI Terminal":"Project SEKAI｜Terminal"};
+</script>
+</body>
+</html>
