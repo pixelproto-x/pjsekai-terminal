@@ -225,15 +225,18 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   width:min(720px,calc(100% - 24px));padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
   background:rgba(249,249,252,.8);backdrop-filter:blur(25px) saturate(150%);-webkit-backdrop-filter:blur(25px) saturate(150%);
   border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:0 15px 50px rgba(23,25,36,.14);
-  --tab-index:0;--tab-x:0px;--tab-duration:.42s;--tab-ease:cubic-bezier(.22,.9,.28,1.18);
+  --tab-index:0;--tab-x:0px;--tab-scale-x:1;--tab-scale-y:1;--tab-duration:.42s;--tab-ease:cubic-bezier(.22,.9,.28,1.18);
   touch-action:pan-y;user-select:none
 }
 .bottom-bar:before{display:none}
 .tab-indicator{
   position:absolute;z-index:0;left:8px;top:8px;bottom:8px;width:calc((100% - 32px)/5);
-  border-radius:18px;background:#1b1d28;transform:translate3d(var(--tab-x),0,0);
-  transition:transform var(--tab-duration) var(--tab-ease);
-  box-shadow:0 5px 16px rgba(27,29,40,.16);pointer-events:none
+  border-radius:999px;background:#1b1d28;
+  transform:translate3d(var(--tab-x),0,0) scaleX(var(--tab-scale-x,1)) scaleY(var(--tab-scale-y,1));
+  transform-origin:center;
+  transition:transform var(--tab-duration) var(--tab-ease),border-radius .28s ease;
+  box-shadow:0 5px 16px rgba(27,29,40,.16);pointer-events:none;
+  will-change:transform
 }
 .bottom-bar.is-dragging .tab-indicator{transition:none}
 .tab{position:relative;z-index:1;border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:color .22s ease,transform .18s var(--tab-ease);touch-action:none}
@@ -893,8 +896,25 @@ function moveTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
   const delta=e.clientX-draggingStartX;
   if(Math.abs(delta)>5)draggingTabMoved=true;
-  const x=clampTabOffset(draggingStartOffset+delta);
+  const rawX=draggingStartOffset+delta;
+  const step=getTabStep();
+  const maxX=step*4;
+  let x=rawX;
+  let edgePull=0;
+  if(rawX<0){
+    edgePull=Math.min(1,Math.abs(rawX)/90);
+    x=-Math.pow(Math.abs(rawX),.72)*.52;
+  }else if(rawX>maxX){
+    edgePull=Math.min(1,(rawX-maxX)/90);
+    x=maxX+Math.pow(rawX-maxX,.72)*.52;
+  }else{
+    x=clampTabOffset(rawX);
+  }
+  const squeeze=.08*edgePull;
+  const stretch=.10*edgePull;
   bottomBar.style.setProperty("--tab-x",x+"px");
+  bottomBar.style.setProperty("--tab-scale-x",(1-squeeze).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-y",(1+stretch).toFixed(3));
   if(e.cancelable)e.preventDefault();
 }
 function endTabDrag(e){
@@ -903,6 +923,8 @@ function endTabDrag(e){
   const step=getTabStep();
   const index=Math.max(0,Math.min(4,Math.round(x/step)));
   const target=tabs[index];
+  bottomBar.style.setProperty("--tab-scale-x","1");
+  bottomBar.style.setProperty("--tab-scale-y","1");
   draggingTab=false;
   draggingPointerId=null;
   bottomBar.classList.remove("is-dragging");
