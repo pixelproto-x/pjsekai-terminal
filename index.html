@@ -277,7 +277,7 @@ html[dir="rtl"] .field-label,html[dir="rtl"] .field-help{text-align:right}
   box-shadow:0 5px 16px rgba(35,42,65,.11),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
   transform:translate3d(0,var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease),box-shadow .25s ease;
-  pointer-events:auto;will-change:transform;
+  pointer-events:none;will-change:transform;
 }
 .tab-indicator:before{
   content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
