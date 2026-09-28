@@ -959,8 +959,8 @@ function moveTabDrag(e){
 }
 function endTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-  const m=getTabMetrics(),x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0,cx=m.r.width/2+x+36;
-  const index=Math.max(0,Math.min(4,Math.round(cx/m.slot-.5)));
+  const m=getTabMetrics(),x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0,cx=m.r.width/2+x;
+  const index=Math.max(0,Math.min(4,Math.round((cx-m.cx(0))/m.step)));
   const target=tabs[index];setIndicator(index,true);
   draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
   if(draggingTabMoved){suppressTabClick=true;requestAnimationFrame(()=>suppressTabClick=false);if(target)go(target.dataset.go)}else updateTabMotion(currentRoute);
