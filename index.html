@@ -15,13 +15,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:
-radial-gradient(circle at 8% 10%,rgba(82,207,232,.18),transparent 22%),
-radial-gradient(circle at 92% 18%,rgba(255,91,157,.16),transparent 22%),
-radial-gradient(circle at 16% 72%,rgba(145,121,245,.12),transparent 24%),
-radial-gradient(circle at 88% 78%,rgba(255,211,79,.14),transparent 22%),
-linear-gradient(180deg,#f8f9fc 0,#eef0f5 100%);
-color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:linear-gradient(180deg,#fafafd 0,#eef0f5 100%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button,input,select{font:inherit}
 button{cursor:pointer}
 a{text-decoration:none;color:inherit}
@@ -30,26 +24,12 @@ button,input,select{outline:none}
 
 .top-accent{position:fixed;z-index:100;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--violet),var(--orange),var(--green))}
 .sekai-ambience{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-.ambient-orb{position:absolute;border-radius:50%;filter:blur(1px);opacity:.55}
-.orb-cyan{width:250px;height:250px;left:-80px;top:130px;background:radial-gradient(circle at 35% 35%,rgba(82,207,232,.34),rgba(82,207,232,0) 68%)}
-.orb-pink{width:290px;height:290px;right:-100px;top:300px;background:radial-gradient(circle at 50% 45%,rgba(255,91,157,.25),rgba(255,91,157,0) 68%)}
-.orb-yellow{width:230px;height:230px;left:7%;bottom:5%;background:radial-gradient(circle at 50% 50%,rgba(255,211,79,.2),rgba(255,211,79,0) 70%)}
-.orb-violet{width:320px;height:320px;right:5%;bottom:8%;background:radial-gradient(circle at 50% 50%,rgba(145,121,245,.18),rgba(145,121,245,0) 70%)}
-.orb-green{width:190px;height:190px;left:42%;top:38%;background:radial-gradient(circle at 50% 50%,rgba(97,199,149,.13),rgba(97,199,149,0) 70%)}
-.ambient-note{position:absolute;font-weight:900;opacity:.13;line-height:1;transform:rotate(-12deg)}
-.note-one{font-size:72px;left:4%;top:34%;color:var(--cyan)}
-.note-two{font-size:58px;right:6%;top:55%;color:var(--pink);transform:rotate(15deg)}
-.note-three{font-size:46px;left:46%;bottom:18%;color:var(--violet);transform:rotate(8deg)}
-.ambient-shape{position:absolute;border:2px solid rgba(255,255,255,.55);opacity:.55;mix-blend-mode:multiply}
-.shape-one{width:150px;height:150px;right:-32px;top:100px;border-radius:38px;transform:rotate(24deg);background:linear-gradient(135deg,rgba(82,207,232,.1),transparent)}
-.shape-two{width:105px;height:105px;left:3%;bottom:28%;border-radius:50%;border-width:16px;border-color:rgba(255,91,157,.1)}
-.shape-three{width:175px;height:70px;left:35%;top:16%;transform:rotate(-12deg);border-radius:99px;border-color:rgba(255,211,79,.14)}
-.ambient-label{position:absolute;font-size:8px;font-weight:900;letter-spacing:.18em;opacity:.18;white-space:nowrap}
-.label-one{left:4%;top:17%;color:#45aec6;transform:rotate(-7deg)}
-.label-two{right:4%;top:42%;color:#7b69d5;transform:rotate(8deg)}
-.label-three{left:5%;bottom:12%;color:#d48b20;transform:rotate(5deg)}
-
-
+.official-art{position:absolute;overflow:hidden;border-radius:32px;opacity:.16;filter:saturate(.85) blur(.1px);box-shadow:0 30px 70px rgba(25,27,40,.08)}
+.official-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(242,243,247,.9),rgba(242,243,247,.2),rgba(242,243,247,.9))}
+.official-art img{display:block;width:100%;height:100%;object-fit:cover}
+.art-left{width:440px;height:155px;left:-225px;top:160px;transform:rotate(-4deg)}
+.art-right{width:440px;height:155px;right:-230px;top:390px;transform:rotate(5deg)}
+.art-bottom{width:520px;height:155px;left:50%;bottom:35px;transform:translateX(-50%) rotate(-2deg);opacity:.1}
 .app-shell{max-width:1480px;margin:auto;padding:30px 28px 120px;position:relative}
 .app-shell:before{content:"";position:absolute;inset:0 0 0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border-radius:36px}
 .topbar{position:sticky;top:18px;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 12px 10px 17px;background:rgba(250,250,253,.72);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 10px 30px rgba(30,32,45,.08)}
@@ -78,6 +58,8 @@ button,input,select{outline:none}
   background:radial-gradient(circle at 88% 14%,rgba(82,207,232,.8),transparent 22%),radial-gradient(circle at 70% 86%,rgba(255,91,157,.72),transparent 30%),linear-gradient(135deg,#191b28 0%,#292b3a 100%);
   color:#fff;box-shadow:0 25px 65px rgba(23,25,37,.18);
 }
+.hero-official-art{position:absolute;z-index:1;right:-30px;top:0;width:60%;height:100%;overflow:hidden;opacity:.7;mix-blend-mode:screen}
+.hero-official-art img{width:100%;height:100%;object-fit:cover;object-position:center;mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38%,#000 100%)}
 .hero:before{content:"";position:absolute;width:520px;height:520px;right:-120px;top:-110px;border-radius:40%;transform:rotate(14deg);background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.22)}
 .hero:after{content:"";position:absolute;width:240px;height:240px;right:80px;bottom:-120px;border:62px solid rgba(255,255,255,.12);border-radius:50%}
 .hero-worlds{position:absolute;right:7%;top:15%;display:grid;grid-template-columns:repeat(3,58px);gap:8px;transform:rotate(-8deg);opacity:.8}
@@ -147,6 +129,8 @@ button,input,select{outline:none}
 .quick .qicon{width:38px;height:38px;border-radius:13px;background:#eceef4;display:grid;place-items:center}
 .quick strong{font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
 
+.official-strip{height:150px;margin:0 0 14px;border-radius:24px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid rgba(255,255,255,.8);background:#fff}
+.official-strip img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
 .catalog-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .accordion-wrap{display:contents}
 .catalog-card{
@@ -213,8 +197,14 @@ button,input,select{outline:none}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
-  .sekai-ambience{opacity:.72}
+  .sekai-ambience{opacity:.7}
+  .official-art{opacity:.1}
+  .art-left{left:-285px;top:120px}
+  .art-right{right:-285px;top:330px}
+  .art-bottom{width:420px;height:125px;bottom:24px}
+  .hero-official-art{right:-120px;width:120%;opacity:.55}
   .hero-worlds{right:-24px;top:18%;transform:scale(.8) rotate(-8deg)}
+  .official-strip{height:115px}
 
   .app-shell{padding:10px 13px 118px}.topbar{top:9px;padding:8px 9px 8px 12px;border-radius:19px}
   .brand-text strong{font-size:12px}
@@ -235,20 +225,9 @@ button,input,select{outline:none}
 <body>
 <div class="top-accent"></div>
 <div class="sekai-ambience" aria-hidden="true">
-  <span class="ambient-orb orb-cyan"></span>
-  <span class="ambient-orb orb-pink"></span>
-  <span class="ambient-orb orb-yellow"></span>
-  <span class="ambient-orb orb-violet"></span>
-  <span class="ambient-orb orb-green"></span>
-  <span class="ambient-note note-one">♫</span>
-  <span class="ambient-note note-two">♪</span>
-  <span class="ambient-note note-three">✦</span>
-  <span class="ambient-shape shape-one"></span>
-  <span class="ambient-shape shape-two"></span>
-  <span class="ambient-shape shape-three"></span>
-  <span class="ambient-label label-one">LEO/need</span>
-  <span class="ambient-label label-two">VIRTUAL SINGER</span>
-  <span class="ambient-label label-three">25時、ナイトコードで。</span>
+  <div class="official-art art-left"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt=""></div>
+  <div class="official-art art-right"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png" alt=""></div>
+  <div class="official-art art-bottom"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png" alt=""></div>
 </div>
 
 <div class="app-shell">
@@ -266,6 +245,7 @@ button,input,select{outline:none}
 <main>
   <section class="page active" data-page="home">
     <div class="hero">
+      <div class="hero-official-art" aria-hidden="true"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_virtualsinger_1.png" alt=""></div>
       <div class="hero-worlds" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div>
       <div class="hero-content">
         <div class="kicker">SEKAI TERMINAL · 2.0</div>
@@ -324,6 +304,7 @@ button,input,select{outline:none}
       <div><div class="kicker">WORLD DIRECTORY</div><h1 class="page-title">SEKAI</h1><p class="page-subtitle">先選一個世界，再進入該世界的歌曲、角色與相關內容。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
+    <div class="official-strip"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt="Project SEKAI 官方角色視覺"></div>
     <div class="catalog-grid">
       <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">⌃</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
       <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">⌃</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
