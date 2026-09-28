@@ -902,10 +902,10 @@ function setIndicator(index,animate=true){
   const m=getTabMetrics(),cx=m.cx(index);
   bottomBar.style.setProperty("--tab-x",(cx-m.r.width/2)+"px");
   bottomBar.style.setProperty("--tab-y","0px");
-  bottomBar.style.setProperty("--tab-w","48px");bottomBar.style.setProperty("--tab-h","48px");
+  bottomBar.style.setProperty("--tab-w","72px");bottomBar.style.setProperty("--tab-h","48px");
   bottomBar.style.setProperty("--tab-scale-x","1");bottomBar.style.setProperty("--tab-scale-y","1");bottomBar.style.setProperty("--tab-rotate","0deg");
   bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
-  tabIndicator.style.borderRadius="50%";
+  tabIndicator.style.borderRadius="17px";
   updateLens(cx,false);
 }
 function beginTabDrag(e){
@@ -943,8 +943,8 @@ function moveTabDrag(e){
   bottomBar.style.setProperty("--tab-rotate",Math.max(-4,Math.min(4,draggingVelocityX*.006))+"deg");
   const cx=m.r.width/2+x;
   const infEdge=Math.max(0,1-Math.min(Math.abs(cx-m.cx(0)),Math.abs(cx-m.cx(4)))/(m.slot*.9));
-  const ry=50-Math.min(14,edge*10),rx=50+Math.min(14,stretch*55);
-  tabIndicator.style.borderRadius=rx.toFixed(1)+"% "+(100-rx).toFixed(1)+"% "+(rx-4).toFixed(1)+"% "+(104-rx).toFixed(1)+"% / "+ry.toFixed(1)+"% "+(100-ry).toFixed(1)+"% "+(ry+4).toFixed(1)+"% "+(96-ry).toFixed(1)+"%";
+  const ry=50-Math.min(10,edge*7),rx=50+Math.min(8,stretch*32);
+  tabIndicator.style.borderRadius=(18+Math.min(8,stretch*32)).toFixed(1)+"px";
   tabs.forEach((t,i)=>t.classList.toggle("active",i===Math.max(0,Math.min(4,Math.round(cx/m.slot-.5)))));
   updateLens(cx,true);if(e.cancelable)e.preventDefault();
 }
