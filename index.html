@@ -649,6 +649,120 @@ button{
     transition-duration:.01ms!important;
   }
 }
+
+/* ===== Stage 1 global theme system ===== */
+body[data-sekai-theme="classroom"]{
+  --theme-accent:#52cfe8;--theme-accent-2:#6aa4ff;--theme-glow:rgba(82,207,232,.24);--theme-glow-2:rgba(106,164,255,.18);
+  --theme-surface:rgba(233,248,255,.42);
+}
+body[data-sekai-theme="stage"]{
+  --theme-accent:#ff5b9d;--theme-accent-2:#9179f5;--theme-glow:rgba(255,91,157,.24);--theme-glow-2:rgba(145,121,245,.18);
+  --theme-surface:rgba(255,235,246,.42);
+}
+body[data-sekai-theme="street"]{
+  --theme-accent:#ff9450;--theme-accent-2:#ffd34f;--theme-glow:rgba(255,148,80,.24);--theme-glow-2:rgba(255,211,79,.18);
+  --theme-surface:rgba(255,246,227,.42);
+}
+body[data-sekai-theme="wonderland"]{
+  --theme-accent:#9179f5;--theme-accent-2:#ff70bd;--theme-glow:rgba(145,121,245,.24);--theme-glow-2:rgba(255,112,189,.17);
+  --theme-surface:rgba(242,237,255,.44);
+}
+body[data-sekai-theme="empty"]{
+  --theme-accent:#5967a8;--theme-accent-2:#9ca7d2;--theme-glow:rgba(89,103,168,.25);--theme-glow-2:rgba(156,167,210,.16);
+  --theme-surface:rgba(229,234,250,.36);
+}
+body[data-sekai-theme="virtual"]{
+  --theme-accent:#61c795;--theme-accent-2:#52cfe8;--theme-glow:rgba(97,199,149,.24);--theme-glow-2:rgba(82,207,232,.18);
+  --theme-surface:rgba(232,250,244,.42);
+}
+body[data-sekai-theme] .top-accent{
+  background:linear-gradient(90deg,var(--theme-accent),var(--theme-accent-2),var(--theme-accent),var(--pink),var(--yellow));
+}
+body[data-sekai-theme] .sekai-ambience:after{
+  background:
+    radial-gradient(circle at 10% 8%,var(--theme-glow),transparent 31%),
+    radial-gradient(circle at 90% 28%,var(--theme-glow-2),transparent 28%),
+    linear-gradient(180deg,rgba(242,243,247,.02) 0%,rgba(242,243,247,.045) 42%,rgba(17,19,29,.1) 100%);
+}
+body[data-sekai-theme] .brand-mark{
+  background:conic-gradient(from 220deg,var(--theme-accent),var(--theme-accent-2),var(--pink),var(--yellow),var(--theme-accent));
+}
+body[data-sekai-theme] .chip-dot{
+  background:linear-gradient(135deg,var(--theme-accent),var(--theme-accent-2),var(--pink));
+}
+body[data-sekai-theme] .bottom-bar{
+  box-shadow:0 10px 30px rgba(25,27,40,.13),0 0 32px var(--theme-glow),inset 0 1px 0 rgba(255,255,255,.65);
+}
+body[data-sekai-theme] .tab-indicator{
+  box-shadow:0 5px 16px rgba(35,42,65,.11),0 0 22px var(--theme-glow),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
+}
+body[data-sekai-theme] .primary-btn{
+  box-shadow:0 8px 22px var(--theme-glow);
+}
+body[data-sekai-theme] .theme-choice.active{
+  border-color:var(--theme-accent);box-shadow:0 10px 24px var(--theme-glow),inset 0 0 0 1px var(--theme-accent);
+  background:var(--theme-surface);
+}
+.theme-grid{
+  position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px
+}
+.theme-choice{
+  min-width:0;border:1px solid var(--line);background:rgba(255,255,255,.34);border-radius:18px;padding:12px 10px;
+  text-align:left;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:var(--shadow-sm)
+}
+.theme-choice:hover{transform:translateY(-1px);background:rgba(255,255,255,.7)}
+.theme-choice .theme-dot{
+  width:34px;height:34px;min-width:34px;border-radius:13px;box-shadow:0 5px 12px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.45)
+}
+.theme-choice strong{display:block;font-size:11px;font-weight:850}
+.theme-choice small{display:block;color:var(--muted);font-size:8px;margin-top:2px}
+.data-action-row{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
+.data-action{
+  min-height:48px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.72);font-size:11px;font-weight:850;
+  display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:var(--shadow-sm);transition:.2s
+}
+.data-action:hover{background:#fff;transform:translateY(-1px)}
+.data-status{position:relative;z-index:1;margin-top:11px;color:var(--muted);font-size:9px;line-height:1.6}
+.share-link-row{position:relative;z-index:1;display:flex;gap:8px;margin-top:15px}
+.share-link-input{min-width:0;flex:1;border:1px solid var(--line);background:rgba(255,255,255,.82);border-radius:15px;padding:12px;font-size:10px;color:var(--muted)}
+.share-link-row .data-action{min-width:90px;max-width:120px}
+.search-overlay{
+  position:fixed;z-index:200;inset:0;display:none;align-items:flex-start;justify-content:center;padding:74px 16px 24px
+}
+.search-overlay.open{display:flex}
+.search-backdrop{position:absolute;inset:0;background:rgba(18,20,31,.34);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.search-dialog{
+  position:relative;z-index:1;width:min(720px,100%);max-height:min(78vh,760px);overflow:auto;border:1px solid rgba(255,255,255,.76);
+  border-radius:26px;background:rgba(250,250,253,.9);box-shadow:0 30px 90px rgba(10,12,22,.28),inset 0 1px 0 rgba(255,255,255,.9);
+  padding:16px;animation:searchDialogIn .24s var(--ios-ease) both
+}
+@keyframes searchDialogIn{from{opacity:0;transform:translateY(-10px) scale(.985)}to{opacity:1;transform:none}}
+.search-dialog-head{display:flex;align-items:center;gap:8px}
+.search-dialog-head .search-input{box-shadow:none;background:rgba(255,255,255,.88)}
+.search-close{width:44px;height:44px;border:1px solid var(--line);border-radius:15px;background:#fff;font-size:17px}
+.search-section-title{margin:17px 2px 8px;font-size:9px;color:var(--muted);font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+.search-recent{display:flex;flex-wrap:wrap;gap:7px}
+.search-chip{
+  border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:999px;padding:8px 11px;font-size:9px;font-weight:750;color:#5f626d
+}
+.search-results{display:grid;gap:7px}
+.search-result{
+  width:100%;border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:17px;padding:12px 13px;
+  display:flex;align-items:center;gap:11px;text-align:left;transition:.18s
+}
+.search-result:hover{background:#fff;transform:translateY(-1px)}
+.search-result .result-icon{width:36px;height:36px;min-width:36px;border-radius:12px;background:var(--theme-surface,#eef0f5);display:grid;place-items:center;font-size:15px}
+.search-result strong{display:block;font-size:11px}.search-result span{display:block;color:var(--muted);font-size:9px;margin-top:3px;line-height:1.45}
+.search-empty{padding:20px 8px;text-align:center;color:var(--muted);font-size:10px}
+.search-hint{color:var(--muted);font-size:8px;margin:9px 2px 0}
+@media(max-width:640px){
+  .theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .search-overlay{padding:58px 10px 15px}
+  .search-dialog{border-radius:23px;padding:12px;max-height:84vh}
+  .share-link-row{flex-direction:column}
+  .share-link-row .data-action{max-width:none;width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -920,6 +1034,68 @@ button{
       <p>拖動上方滑桿，即時調整介面的顯示效果。</p>
       <div class="preview-glass"><span>PROJECT SEKAI</span><strong>介面預覽</strong><span>♫  世界計畫  ♫</span></div>
     </div>
+    
+    <div class="settings-card">
+      <div class="settings-row-head">
+        <div>
+          <strong>SEKAI 世界主題</strong>
+          <span>切換六大 SEKAI 主題。UI 色彩、光暈與底部導航會即時跟著變化。</span>
+        </div>
+      </div>
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-choice" data-theme="classroom" type="button" aria-label="教室的 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#52cfe8,#6aa4ff)"></span><span><strong>教室</strong><small>Classroom</small></span>
+        </button>
+        <button class="theme-choice" data-theme="stage" type="button" aria-label="舞台的 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#ff5b9d,#9179f5)"></span><span><strong>舞台</strong><small>Stage</small></span>
+        </button>
+        <button class="theme-choice" data-theme="street" type="button" aria-label="街頭的 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#ff9450,#ffd34f)"></span><span><strong>街頭</strong><small>Street</small></span>
+        </button>
+        <button class="theme-choice" data-theme="wonderland" type="button" aria-label="奇幻的 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#9179f5,#ff70bd)"></span><span><strong>奇幻</strong><small>Wonderland</small></span>
+        </button>
+        <button class="theme-choice" data-theme="empty" type="button" aria-label="無人的 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#5967a8,#9ca7d2)"></span><span><strong>無人</strong><small>Empty</small></span>
+        </button>
+        <button class="theme-choice" data-theme="virtual" type="button" aria-label="虛擬歌手 SEKAI">
+          <span class="theme-dot" style="background:linear-gradient(135deg,#61c795,#52cfe8)"></span><span><strong>虛擬</strong><small>Virtual Singer</small></span>
+        </button>
+      </div>
+      <div class="data-status" id="themeStatus">目前主題：虛擬</div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-row-head">
+        <div>
+          <strong>本機資料</strong>
+          <span>所有工具資料以 LocalStorage 為核心儲存。可匯出 JSON 備份，也能在其他裝置匯入。</span>
+        </div>
+      </div>
+      <div class="data-action-row">
+        <button class="data-action" id="exportDataBtn" type="button">⇩ 匯出 JSON 備份</button>
+        <button class="data-action" id="importDataBtn" type="button">⇧ 匯入 JSON 備份</button>
+        <button class="data-action" id="resetDataBtn" type="button">↺ 重設本機資料</button>
+        <button class="data-action" id="copyStateBtn" type="button">⧉ 複製資料摘要</button>
+      </div>
+      <input id="stateImportInput" type="file" accept="application/json,.json" hidden>
+      <div class="data-status" id="dataStatus">資料庫狀態：本機模式</div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-row-head">
+        <div>
+          <strong>隊伍分享連結</strong>
+          <span>使用 URL Hash 建立免後端分享碼。之後 My SEKAI 的 5 人隊伍資料會直接沿用這個底層。</span>
+        </div>
+      </div>
+      <div class="share-link-row">
+        <input id="teamShareLink" class="share-link-input" readonly aria-label="隊伍分享連結" placeholder="按下建立分享連結">
+        <button class="data-action" id="createShareBtn" type="button">建立連結</button>
+        <button class="data-action" id="copyShareBtn" type="button">複製</button>
+      </div>
+      <div class="data-status" id="shareStatus">目前尚未建立分享連結。</div>
+    </div>
   </section>
 
   <section class="page" data-page="profile">
@@ -964,9 +1140,137 @@ button{
   <button class="tab" data-go="profile"><span class="tab-icon">♙</span>我的</button>
 </nav>
 
+
+<div id="searchOverlay" class="search-overlay" aria-hidden="true">
+  <div class="search-backdrop" data-close-search="1"></div>
+  <section class="search-dialog" role="dialog" aria-modal="true" aria-labelledby="globalSearchTitle">
+    <div class="search-dialog-head">
+      <input id="globalSearchInput" class="search-input" type="search" autocomplete="off" spellcheck="false"
+        aria-label="全站搜尋" placeholder="搜尋歌曲、SEKAI、角色、卡片、活動、工具…">
+      <button id="searchCloseBtn" class="search-close" type="button" aria-label="關閉搜尋">×</button>
+    </div>
+    <div class="search-hint">全站搜尋 · 可搜尋目前所有入口與已建立的資料分類</div>
+    <div id="globalSearchRecentWrap">
+      <div class="search-section-title">最近搜尋</div>
+      <div id="globalSearchRecent" class="search-recent"></div>
+    </div>
+    <div class="search-section-title">搜尋結果</div>
+    <div id="globalSearchResults" class="search-results">
+      <div class="search-empty">輸入關鍵字開始搜尋</div>
+    </div>
+  </section>
+</div>
+
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
+
+
+const APP_STATE_KEY="pjsekaiTerminalAppState";
+const APP_STATE_VERSION=1;
+const SEKAI_THEMES={
+  classroom:{label:"教室",sub:"Classroom SEKAI"},
+  stage:{label:"舞台",sub:"Stage SEKAI"},
+  street:{label:"街頭",sub:"Street SEKAI"},
+  wonderland:{label:"奇幻",sub:"Wonderland SEKAI"},
+  empty:{label:"無人",sub:"Empty SEKAI"},
+  virtual:{label:"虛擬",sub:"Virtual Singer SEKAI"}
+};
+function createDefaultAppState(){
+  return {
+    version:APP_STATE_VERSION,
+    settings:{
+      theme:"virtual",
+      opacity:22,
+      language:"auto"
+    },
+    profile:{
+      playerId:"",
+      name:""
+    },
+    team:[],
+    favorites:{songs:[],cards:[]},
+    snapshots:[],
+    recentSearches:[],
+    meta:{createdAt:new Date().toISOString()}
+  };
+}
+function normalizeAppState(raw){
+  const base=createDefaultAppState();
+  if(!raw || typeof raw!=="object")return base;
+  const out={
+    ...base,
+    ...raw,
+    version:APP_STATE_VERSION,
+    settings:{...base.settings,...(raw.settings&&typeof raw.settings==="object"?raw.settings:{})},
+    profile:{...base.profile,...(raw.profile&&typeof raw.profile==="object"?raw.profile:{})},
+    favorites:{...base.favorites,...(raw.favorites&&typeof raw.favorites==="object"?raw.favorites:{})},
+    team:Array.isArray(raw.team)?raw.team:[],
+    snapshots:Array.isArray(raw.snapshots)?raw.snapshots:[],
+    recentSearches:Array.isArray(raw.recentSearches)?raw.recentSearches:[],
+    meta:{...base.meta,...(raw.meta&&typeof raw.meta==="object"?raw.meta:{})}
+  };
+  if(!SEKAI_THEMES[out.settings.theme])out.settings.theme="virtual";
+  out.settings.opacity=Math.max(0,Math.min(100,Number(out.settings.opacity)||22));
+  out.settings.language=typeof out.settings.language==="string"?out.settings.language:"auto";
+  out.profile.playerId=String(out.profile.playerId||"").replace(/\D/g,"").slice(0,32);
+  out.profile.name=String(out.profile.name||"").slice(0,80);
+  out.recentSearches=out.recentSearches.map(x=>String(x||"").trim()).filter(Boolean).slice(0,12);
+  return out;
+}
+function loadAppState(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(APP_STATE_KEY)||"null");
+    const state=normalizeAppState(parsed);
+    const legacyOpacity=Number(localStorage.getItem("sekaiGlassOpacity"));
+    const legacyLanguage=localStorage.getItem("sekaiLanguage");
+    if(parsed===null){
+      if(Number.isFinite(legacyOpacity))state.settings.opacity=Math.max(0,Math.min(100,legacyOpacity));
+      if(legacyLanguage)state.settings.language=legacyLanguage;
+    }
+    return state;
+  }catch(_){
+    return createDefaultAppState();
+  }
+}
+let appState=loadAppState();
+function saveAppState(){
+  try{
+    appState=normalizeAppState(appState);
+    localStorage.setItem(APP_STATE_KEY,JSON.stringify(appState));
+    const status=$("#dataStatus");
+    if(status)status.textContent="資料庫狀態：本機模式 · 已儲存";
+    return true;
+  }catch(_){
+    const status=$("#dataStatus");
+    if(status)status.textContent="資料庫狀態：儲存失敗，請檢查瀏覽器空間";
+    return false;
+  }
+}
+function updateAppState(mutator,save=true){
+  const draft=normalizeAppState(appState);
+  try{mutator(draft);}catch(_){return false;}
+  appState=normalizeAppState(draft);
+  return save?saveAppState():true;
+}
+function applySekaiTheme(theme,save=true){
+  const next=SEKAI_THEMES[theme]?theme:"virtual";
+  document.body.dataset.sekaiTheme=next;
+  document.documentElement.style.setProperty("--theme-accent",next==="virtual"?"#61c795":"var(--theme-accent)");
+  document.querySelectorAll(".theme-choice").forEach(btn=>{
+    const active=btn.dataset.theme===next;
+    btn.classList.toggle("active",active);
+    btn.setAttribute("aria-pressed",String(active));
+  });
+  const status=$("#themeStatus");
+  if(status)status.textContent="目前主題："+SEKAI_THEMES[next].label+" · "+SEKAI_THEMES[next].sub;
+  if(save){
+    appState.settings.theme=next;
+    saveAppState();
+    localStorage.setItem("sekaiTheme",next);
+  }
+}
+
 
 const pages=[...document.querySelectorAll(".page")];
 const tabs=[...document.querySelectorAll(".tab")];
@@ -1136,7 +1440,16 @@ const enText={
   "篩選入口已開啟：目前可用關鍵字搜尋":"Filter opened. Keyword search is currently available.",
   "語言":"Language","介面語言":"Interface language","未手動指定時，會依瀏覽器語言自動選擇。":"When not manually selected, the browser language is used automatically.",
   "輸入玩家 ID":"Enter Player ID","輸入玩家 ID，這裡只負責玩家相關內容。":"Enter a Player ID for the player section.",
-  "自動（瀏覽器語言）":"Auto (browser language)","已展開":"Expanded"
+  "自動（瀏覽器語言）":"Auto (browser language)","已展開":"Expanded",
+  "SEKAI 世界主題":"SEKAI World Theme","切換六大 SEKAI 主題。UI 色彩、光暈與底部導航會即時跟著變化。":"Switch among six SEKAI themes. UI colors, glow and bottom navigation update instantly.",
+  "教室":"Classroom","舞台":"Stage","街頭":"Street","奇幻":"Wonderland","無人":"Empty","虛擬":"Virtual",
+  "本機資料":"Local Data","所有工具資料以 LocalStorage 為核心儲存。可匯出 JSON 備份，也能在其他裝置匯入。":"Tool data is stored locally with LocalStorage. Export a JSON backup or import it on another device.",
+  "匯出 JSON 備份":"Export JSON Backup","匯入 JSON 備份":"Import JSON Backup","重設本機資料":"Reset Local Data","複製資料摘要":"Copy Data Summary",
+  "資料庫狀態：本機模式":"Data store: Local mode","隊伍分享連結":"Team Share Link","使用 URL Hash 建立免後端分享碼。之後 My SEKAI 的 5 人隊伍資料會直接沿用這個底層。":"Create a backend-free URL Hash share code. My SEKAI's 5-person team data will use this foundation.",
+  "建立連結":"Create Link","複製":"Copy","搜尋結果":"Search Results","最近搜尋":"Recent Searches","尚無搜尋紀錄":"No recent searches",
+  "輸入關鍵字開始搜尋":"Enter a keyword to start searching","找不到相符的內容":"No matching content found","關閉搜尋":"Close Search","全站搜尋":"Global Search",
+  "正在開啟":"Opening","隊伍分享連結已建立":"Team share link created","已載入分享隊伍資料":"Shared team data loaded",
+  "分享碼無效或已損壞":"Invalid or damaged share code","本機資料已匯入":"Local data imported","本機資料已重設":"Local data reset"
 };
 
 const langOverrides={
@@ -1566,7 +1879,11 @@ function applyLanguage(language,save=true){
   const chosen=language==="auto"?detectBrowserLanguage():normalizeLocale(language);
   aiTranslationGeneration++;
   currentLanguage=chosen;
-  if(save)localStorage.setItem("sekaiLanguage",language||"auto");
+  if(save){
+    localStorage.setItem("sekaiLanguage",language||"auto");
+    appState.settings.language=language||"auto";
+    saveAppState();
+  }
   document.documentElement.lang=chosen;
   document.documentElement.dir=chosen==="ar"?"rtl":"ltr";
   document.title="Project SEKAI｜"+(t("玩家工具箱")||"Player Toolbox");
@@ -1843,6 +2160,7 @@ function go(page){
   routeInitialized=true;
 }
 function initRoute(){
+  if(applyTeamShareFromHash())return;
   const route=location.hash.replace("#","")||"home";
   go(pages.some(p=>p.dataset.page===route)?route:"home");
 }
@@ -1852,10 +2170,7 @@ document.addEventListener("click",e=>{
 });
 $("#homeBrand").onclick=()=>go("home");
 $("#scrollTopBtn").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
-$("#globalSearchBtn").onclick=()=>{
-  go("songs");
-  setTimeout(()=>$("#songSearch")?.focus(),250);
-};
+$("#globalSearchBtn").onclick=()=>openGlobalSearch();
 
 const homeData={
   "home-songs":["歌曲 Music",["全部歌曲","收藏歌曲","難度分類","MV / 對應影片","歌曲資料","歌曲工具"]],
@@ -2016,6 +2331,8 @@ document.addEventListener("click",e=>{
 $("#loadPlayer").onclick=()=>{
   const id=$("#playerId").value.replace(/\D/g,"").slice(-6)||"000000";
   $("#playerPower").textContent=id.padStart(6,"0");
+  appState.profile.playerId=id;
+  saveAppState();
 };
 $("#songFilter").onclick=()=>{
   const box=$("#songSearch");
@@ -2028,6 +2345,313 @@ $("#songSearch").oninput=e=>{
     card.style.opacity=!q || card.innerText.toLowerCase().includes(q) ? "1" : ".3";
   });
 };
+
+function routeForSheetKey(key){
+  if(/^song-/.test(key))return "songs";
+  if(/^unit-/.test(key))return "characters";
+  if(/^card-/.test(key))return "cards";
+  if(/^event-/.test(key))return "events";
+  if(/^player-|^rhythm-|^music-|^card-tool|^event-tool/.test(key))return "profile";
+  if(/^(classroom|stage|street|wonderland|empty|virtual)$/.test(key))return "sekai";
+  return "home";
+}
+function buildGlobalSearchIndex(){
+  const items=[];
+  const add=(title,meta,route,icon="⌕",kind="入口")=>{
+    const cleanTitle=String(title||"").trim(), cleanMeta=String(meta||"").trim();
+    if(!cleanTitle)return;
+    items.push({title:cleanTitle,meta:cleanMeta,route:route||"home",icon,kind});
+  };
+  pages.forEach(page=>{
+    const route=page.dataset.page||"home";
+    add(page.querySelector(".page-title")?.textContent||route,page.querySelector(".page-subtitle")?.textContent||"",route,"◎","頁面");
+    page.querySelectorAll("[data-go]").forEach(el=>{
+      if(el.closest(".bottom-bar"))return;
+      const title=el.querySelector("h3,strong")?.textContent||el.textContent;
+      if(title) add(title,route+" · 導航",el.dataset.go||route,"›","入口");
+    });
+    page.querySelectorAll("[data-sheet]").forEach(el=>{
+      const title=el.querySelector("h3,strong")?.textContent||el.textContent;
+      const key=el.dataset.sheet;
+      if(title) add(title,route+" · 功能分類",route,"⌄","分類");
+      if(key && sheetData[key]) add(sheetData[key][0],sheetData[key][1],routeForSheetKey(key),"▣","功能");
+    });
+    page.querySelectorAll("[data-home-sheet]").forEach(el=>{
+      const key=el.dataset.homeSheet;
+      if(key && homeData[key]){
+        add(homeData[key][0],homeData[key][0]+" · 首頁入口",routeForSheetKey(key.replace(/^home-/,""))||"home","⌂","首頁");
+        homeData[key][1].forEach(label=>add(label,homeData[key][0],"home","›","子項"));
+      }
+    });
+  });
+  Object.entries(SEKAI_THEMES).forEach(([key,value])=>add(value.label,value.sub,"settings","✦","主題"));
+  const seen=new Set();
+  return items.filter(item=>{
+    const key=item.title+"|"+item.route;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
+function renderGlobalSearchResults(query=""){
+  const input=String(query||"").trim().toLowerCase();
+  const box=$("#globalSearchResults"), recentWrap=$("#globalSearchRecentWrap");
+  if(!box)return;
+  const index=buildGlobalSearchIndex();
+  if(!input){
+    box.innerHTML='<div class="search-empty">輸入關鍵字開始搜尋</div>';
+    if(recentWrap)recentWrap.style.display=appState.recentSearches.length?"":"none";
+    return;
+  }
+  if(recentWrap)recentWrap.style.display="none";
+  const results=index.filter(item=>(item.title+" "+item.meta+" "+item.kind).toLowerCase().includes(input)).slice(0,18);
+  if(!results.length){
+    box.innerHTML='<div class="search-empty">找不到相符的內容</div>';
+    return;
+  }
+  box.innerHTML=results.map((item,i)=>'<button class="search-result" type="button" data-search-route="'+item.route+'" data-search-index="'+i+'"><span class="result-icon">'+item.icon+'</span><span><strong>'+item.title+'</strong><span>'+item.meta+'</span></span></button>').join("");
+}
+function renderRecentSearches(){
+  const box=$("#globalSearchRecent");
+  if(!box)return;
+  if(!appState.recentSearches.length){
+    box.innerHTML='<span class="search-empty" style="padding:4px">尚無搜尋紀錄</span>';
+    return;
+  }
+  box.innerHTML=appState.recentSearches.map(q=>'<button class="search-chip" type="button" data-recent-search="'+q.replace(/"/g,"&quot;")+'">⌕ '+q+'</button>').join("");
+}
+function rememberGlobalSearch(query){
+  const q=String(query||"").trim();
+  if(!q)return;
+  appState.recentSearches=[q,...appState.recentSearches.filter(x=>x!==q)].slice(0,12);
+  saveAppState();
+}
+function openGlobalSearch(){
+  const overlay=$("#searchOverlay"), input=$("#globalSearchInput");
+  if(!overlay)return;
+  renderRecentSearches();
+  renderGlobalSearchResults("");
+  overlay.classList.add("open");
+  overlay.setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>input?.focus());
+}
+function closeGlobalSearch(){
+  const overlay=$("#searchOverlay");
+  if(!overlay)return;
+  overlay.classList.remove("open");
+  overlay.setAttribute("aria-hidden","true");
+}
+$("#searchCloseBtn")?.addEventListener("click",closeGlobalSearch);
+$("#searchOverlay")?.addEventListener("click",e=>{
+  if(e.target.closest("[data-close-search]"))closeGlobalSearch();
+});
+$("#globalSearchInput")?.addEventListener("input",e=>renderGlobalSearchResults(e.target.value));
+$("#globalSearchInput")?.addEventListener("keydown",e=>{
+  if(e.key==="Escape")closeGlobalSearch();
+  if(e.key==="Enter"){
+    const q=e.target.value.trim();
+    if(q)rememberGlobalSearch(q);
+  }
+});
+document.addEventListener("click",e=>{
+  const recent=e.target.closest("[data-recent-search]");
+  if(recent){
+    const input=$("#globalSearchInput");
+    if(input){
+      input.value=recent.dataset.recentSearch||"";
+      renderGlobalSearchResults(input.value);
+      input.focus();
+    }
+    return;
+  }
+  const result=e.target.closest("[data-search-route]");
+  if(result){
+    const input=$("#globalSearchInput");
+    const q=input?.value?.trim()||"";
+    if(q)rememberGlobalSearch(q);
+    closeGlobalSearch();
+    go(result.dataset.searchRoute||"home");
+    showToast(t("正在開啟")+" "+(result.querySelector("strong")?.textContent||t("入口")));
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")closeGlobalSearch();
+  if((e.key==="/" || (e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k") && !/input|textarea|select/i.test(document.activeElement?.tagName||"")){
+    e.preventDefault();openGlobalSearch();
+  }
+});
+
+function buildExportState(){
+  return {
+    ...normalizeAppState(appState),
+    version:APP_STATE_VERSION,
+    meta:{...appState.meta,exportedAt:new Date().toISOString()},
+    exportInfo:{
+      app:"Project SEKAI｜玩家工具箱",
+      stage:"stage-1-global-foundation"
+    }
+  };
+}
+function downloadTextFile(filename,textValue,type="application/json"){
+  const blob=new Blob([textValue],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportAppData(){
+  const json=JSON.stringify(buildExportState(),null,2);
+  const date=new Date().toISOString().slice(0,10);
+  downloadTextFile("pjsekai-terminal-backup-"+date+".json",json);
+  showToast("JSON 備份已匯出");
+}
+function applyImportedState(raw){
+  if(!raw || typeof raw!=="object")throw new Error("invalid");
+  const normalized=normalizeAppState(raw);
+  appState=normalized;
+  saveAppState();
+  localStorage.setItem("sekaiGlassOpacity",String(appState.settings.opacity));
+  localStorage.setItem("sekaiLanguage",appState.settings.language||"auto");
+  localStorage.setItem("sekaiTheme",appState.settings.theme);
+  applySekaiTheme(appState.settings.theme,false);
+  applyOpacity(appState.settings.opacity,false);
+  applyLanguage(appState.settings.language||"auto",false);
+  const player=$("#playerId");
+  if(player)player.value=appState.profile.playerId||"";
+  renderRecentSearches();
+}
+$("#exportDataBtn")?.addEventListener("click",exportAppData);
+$("#importDataBtn")?.addEventListener("click",()=>$("#stateImportInput")?.click());
+$("#stateImportInput")?.addEventListener("change",async e=>{
+  const file=e.target.files?.[0];
+  e.target.value="";
+  if(!file)return;
+  try{
+    const textValue=await file.text();
+    const parsed=JSON.parse(textValue);
+    if(parsed.version && Number(parsed.version)>APP_STATE_VERSION)throw new Error("future");
+    applyImportedState(parsed);
+    showToast("本機資料已匯入");
+  }catch(err){
+    showToast(err?.message==="future"?"備份版本較新，無法匯入":"JSON 格式無效，匯入失敗");
+  }
+});
+$("#resetDataBtn")?.addEventListener("click",()=>{
+  if(!window.confirm("確定要重設本機資料嗎？這只會清除本工具的資料，不會刪除翻譯快取。"))return;
+  appState=createDefaultAppState();
+  saveAppState();
+  localStorage.removeItem("sekaiGlassOpacity");
+  localStorage.removeItem("sekaiLanguage");
+  localStorage.removeItem("sekaiTheme");
+  applySekaiTheme("virtual",false);
+  applyOpacity(22,false);
+  applyLanguage("auto",false);
+  const player=$("#playerId");
+  if(player)player.value="";
+  showToast("本機資料已重設");
+});
+$("#copyStateBtn")?.addEventListener("click",async()=>{
+  const summary=JSON.stringify({
+    theme:appState.settings.theme,
+    opacity:appState.settings.opacity,
+    language:appState.settings.language,
+    playerId:appState.profile.playerId,
+    teamSlots:Array.isArray(appState.team)?appState.team.length:0,
+    favoritesSongs:appState.favorites.songs.length,
+    favoritesCards:appState.favorites.cards.length,
+    snapshots:appState.snapshots.length
+  },null,2);
+  try{await navigator.clipboard.writeText(summary);showToast("資料摘要已複製");}
+  catch(_){showToast("瀏覽器不允許剪貼簿操作");}
+});
+
+function bytesToBase64Url(bytes){
+  let binary="";
+  const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+  return btoa(binary).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function base64UrlToBytes(textValue){
+  const padded=textValue.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((textValue.length+3)%4);
+  const binary=atob(padded);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
+function createTeamSharePayload(){
+  return {
+    v:1,
+    player:{
+      id:String(appState.profile.playerId||"").slice(0,32),
+      name:String(appState.profile.name||"").slice(0,80)
+    },
+    team:Array.isArray(appState.team)?appState.team.slice(0,5):[]
+  };
+}
+function createTeamShareLink(){
+  try{
+    const json=JSON.stringify(createTeamSharePayload());
+    const code=bytesToBase64Url(new TextEncoder().encode(json));
+    const link=location.origin+location.pathname+"#share="+code;
+    $("#teamShareLink").value=link;
+    if(link.length>8000){
+      $("#shareStatus").textContent="分享連結過長，請減少隊伍資料後再建立。";
+    }else{
+      history.replaceState({}, "", "#share="+code);
+      $("#shareStatus").textContent="已建立 URL Hash 分享碼 · 開啟此連結即可載入隊伍資料。";
+      showToast("隊伍分享連結已建立");
+    }
+    return link;
+  }catch(_){
+    showToast("建立分享連結失敗");
+    return "";
+  }
+}
+async function copyTeamShareLink(){
+  const input=$("#teamShareLink");
+  if(!input?.value)createTeamShareLink();
+  if(!input?.value)return;
+  try{await navigator.clipboard.writeText(input.value);showToast("分享連結已複製");}
+  catch(_){input.select();showToast("請手動複製分享連結");}
+}
+$("#createShareBtn")?.addEventListener("click",createTeamShareLink);
+$("#copyShareBtn")?.addEventListener("click",copyTeamShareLink);
+
+function applyTeamShareFromHash(){
+  const hash=location.hash.replace(/^#/,"");
+  if(!hash.startsWith("share="))return false;
+  const code=hash.slice(6);
+  try{
+    const payload=JSON.parse(new TextDecoder().decode(base64UrlToBytes(code)));
+    const player=payload?.player&&typeof payload.player==="object"?payload.player:{};
+    const team=Array.isArray(payload?.team)?payload.team.slice(0,5):[];
+    appState.profile.playerId=String(player.id||"").replace(/\D/g,"").slice(0,32);
+    appState.profile.name=String(player.name||"").slice(0,80);
+    appState.team=team;
+    saveAppState();
+    const playerInput=$("#playerId");
+    if(playerInput)playerInput.value=appState.profile.playerId;
+    history.replaceState({}, "", "#home");
+    showToast("已載入分享隊伍資料");
+    return true;
+  }catch(_){
+    history.replaceState({}, "", "#home");
+    showToast("分享碼無效或已損壞");
+    return false;
+  }
+}
+
+$(".theme-choice") && document.addEventListener("click",e=>{
+  const choice=e.target.closest(".theme-choice[data-theme]");
+  if(!choice)return;
+  applySekaiTheme(choice.dataset.theme);
+  showToast("主題已切換："+SEKAI_THEMES[choice.dataset.theme].label);
+});
+
+const legacyTheme=localStorage.getItem("sekaiTheme");
+appState.settings.theme=SEKAI_THEMES[legacyTheme]?legacyTheme:appState.settings.theme;
+
+
 const root=document.documentElement;
 const opacityRange=$("#opacityRange");
 const opacityValue=$("#opacityValue");
@@ -2045,7 +2669,11 @@ function applyOpacity(value,save=true){
   if(opacityRange)opacityRange.value=String(v);
   if(opacityValue)opacityValue.textContent=v+"%";
   presets.forEach(p=>p.classList.toggle("active",Number(p.dataset.opacity)===v));
-  if(save)localStorage.setItem("sekaiGlassOpacity",String(v));
+  if(save){
+    localStorage.setItem("sekaiGlassOpacity",String(v));
+    appState.settings.opacity=v;
+    saveAppState();
+  }
 }
 
 const savedOpacity=Number(localStorage.getItem("sekaiGlassOpacity")||22);
@@ -2053,6 +2681,12 @@ applyOpacity(savedOpacity,false);
 opacityRange?.addEventListener("input",e=>applyOpacity(e.target.value));
 presets.forEach(p=>p.addEventListener("click",()=>applyOpacity(p.dataset.opacity)));
 
+applySekaiTheme(appState.settings.theme,false);
+applyOpacity(appState.settings.opacity,false);
+refreshLanguageSelect();
+applyLanguage(appState.settings.language||localStorage.getItem("sekaiLanguage")||"auto",false);
+const initialPlayer=$("#playerId");
+if(initialPlayer)initialPlayer.value=appState.profile.playerId||"";
 window.addEventListener("hashchange",initRoute);
 initRoute();
 syncBottomBarIndicator();
