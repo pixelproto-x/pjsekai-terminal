@@ -223,44 +223,25 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .bottom-bar{
   position:fixed;z-index:80;left:50%;bottom:calc(14px + var(--safe-bottom));transform:translateX(-50%);
   width:min(720px,calc(100% - 24px));height:64px;padding:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
-  background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
-  --tab-x:0px;--tab-y:0px;--tab-w:48px;--tab-h:48px;--tab-scale-x:1;--tab-scale-y:1;--tab-rotate:0deg;
-  --tab-duration:.45s;--tab-ease:cubic-bezier(.22,1,.36,1);
+  background:rgba(250,250,252,.28);border:1px solid rgba(255,255,255,.58);border-radius:24px;
+  box-shadow:0 10px 30px rgba(25,27,40,.13),inset 0 1px 0 rgba(255,255,255,.62);
+  backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);
+  --tab-x:0px;--tab-y:0px;--tab-w:52px;--tab-h:52px;--tab-scale-x:1;--tab-scale-y:1;--tab-rotate:0deg;
+  --tab-duration:.45s;--tab-ease:cubic-bezier(.22,1,.36,1);--tab-stretch-x:0;--frame-radius:24px;
   touch-action:none;user-select:none;overflow:visible;
 }
 .tab-indicator{
-  position:absolute;z-index:0;left:50%;top:50%;width:var(--tab-w);height:var(--tab-h);
-  margin-left:calc(var(--tab-w) / -2);margin-top:calc(var(--tab-h) / -2);
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 32% 24%,rgba(255,255,255,.55),transparent 30%),
-    radial-gradient(circle at 68% 72%,rgba(150,175,255,.16),transparent 50%),
-    rgba(255,255,255,.24);
-  border:1px solid rgba(255,255,255,.72);
-  box-shadow:0 8px 24px rgba(35,42,65,.14),inset 0 1px rgba(255,255,255,.65),0 0 18px rgba(255,255,255,.13);
+  position:absolute;z-index:2;left:50%;top:50%;width:52px;height:52px;
+  margin-left:-26px;margin-top:-26px;border-radius:18px;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.58);
+  box-shadow:0 6px 18px rgba(35,42,65,.10),inset 0 1px rgba(255,255,255,.58);
   transform:translate3d(var(--tab-x),var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease);
   pointer-events:auto;will-change:transform;
 }
-.tab-indicator:before{content:"";position:absolute;inset:2px;border-radius:inherit;pointer-events:none;background:linear-gradient(145deg,rgba(255,255,255,.3),transparent 42%,rgba(140,165,220,.08))}
-.bottom-bar.is-dragging .tab-indicator{box-shadow:0 12px 28px rgba(35,42,65,.18),inset 0 1px rgba(255,255,255,.72),0 0 22px rgba(255,255,255,.2)}
-.bottom-bar:before{
-  content:"";position:absolute;inset:0;border-radius:24px;pointer-events:none;
-  background:rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.42);
-  opacity:0;transform-origin:center;
-  transition:opacity .35s var(--tab-ease),border-radius .2s var(--tab-ease);
-}
-.bottom-bar.is-dragging:before{
-  opacity:.9;
-  transform:translate3d(calc(var(--tab-x)*.035),calc(var(--tab-y)*.12),0)
-    scaleX(calc(1 + var(--tab-stretch-x,0)));
-  border-radius:var(--frame-radius,24px);
-}
-.bottom-bar.is-dragging{
-  --frame-radius:24px;
-}
-
+.tab-indicator:before{content:"";position:absolute;inset:2px;border-radius:inherit;pointer-events:none;background:linear-gradient(145deg,rgba(255,255,255,.30),transparent 45%,rgba(150,175,255,.08))}
+.bottom-bar.is-dragging .tab-indicator{box-shadow:0 9px 22px rgba(35,42,65,.15),inset 0 1px rgba(255,255,255,.68)}
 .tab{position:relative;z-index:1;border:0;background:transparent;color:#858893;border-radius:18px;padding:7px 3px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:800;transition:color .2s ease,transform .3s var(--tab-ease),opacity .2s ease;touch-action:none;--lens:1}
 .tab .tab-icon{font-size:18px;line-height:1;transform:scale(var(--lens));transition:transform .3s var(--tab-ease);transform-origin:center}
 .tab.lens-near,.tab.active{color:#20232d}.tab.lens-near .tab-icon,.tab.active .tab-icon{font-weight:900}
