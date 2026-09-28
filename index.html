@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f4f8">
 <meta name="color-scheme" content="light">
-<title>Project SEKAI｜SEKAI Terminal</title>
+<title>Project SEKAI｜玩家工具箱</title>
 <style>
 :root{
   --bg:#f2f3f7;--panel:rgba(255,255,255,.84);--panel-solid:#fff;--ink:#181a22;--muted:#7a7d88;
@@ -322,7 +322,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 <header class="topbar">
   <button class="brand" id="homeBrand" aria-label="回到首頁">
     <span class="brand-mark"></span>
-    <span class="brand-text"><strong>PROJECT SEKAI</strong><span>SEKAI TERMINAL</span></span>
+    <span class="brand-text"><strong>PROJECT SEKAI</strong><span>PROJECT SEKAI</span></span>
   </button>
   <div class="top-actions">
     <button class="top-icon" id="globalSearchBtn" aria-label="搜尋">⌕</button>
@@ -336,7 +336,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
       <div class="hero-official-art" aria-hidden="true"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt=""></div>
       <div class="hero-worlds" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div>
       <div class="hero-content">
-        <div class="kicker">SEKAI TERMINAL · 2.0</div>
+        <div class="kicker">PROJECT SEKAI · 2.0</div>
         <h1>COLORFUL<br>STAGE!<span>YOUR SEKAI STARTS HERE</span></h1>
         <p>把大型遊戲網站改成像 iOS App 一樣的資訊架構。首頁只負責導航，點進每個入口，再用更多卡片探索內容。</p>
         <div class="hero-actions">
@@ -377,7 +377,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
       </button>
       <button class="app-card card-dark" data-home-sheet="home-tools">
         <span class="icon">⌘</span><span class="chev">⌃</span>
-        <span><h3>工具 Game Tools</h3><p>玩家終端、Rhythm Lab、各種工具</p></span>
+        <span><h3>工具 Game Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
       </button>
       <button class="app-card card-green" data-home-sheet="home-profile">
         <span class="icon">♙</span><span class="chev">⌃</span>
@@ -471,46 +471,46 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 
   <section class="page" data-page="tools">
     <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>SEKAI TERMINAL</div><div class="kicker">PLAYER AREA</div><h1 class="page-title">工具</h1><p class="page-subtitle">所有玩家工具集中在這裡。每張卡片再進入自己的工具頁，而不是全部堆在首頁。</p></div>
+      <div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">玩家專區</div><h1 class="page-title">工具</h1><p class="page-subtitle">常用玩家工具都整理在這裡，點選卡片即可查看。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="stat-grid">
-      <div class="stat"><small>TERMINAL</small><strong>2.0</strong></div>
-      <div class="stat"><small>TOOLS</small><strong>08</strong></div>
-      <div class="stat"><small>LAYOUT</small><strong>iOS</strong></div>
-      <div class="stat"><small>STATUS</small><strong>READY</strong></div>
+      <div class="stat"><small>版本</small><strong>2.0</strong></div>
+      <div class="stat"><small>工具</small><strong>08</strong></div>
+      <div class="stat"><small>介面</small><strong>iOS</strong></div>
+      <div class="stat"><small>狀態</small><strong>READY</strong></div>
     </div>
     <div class="catalog-grid" style="margin-top:14px">
-      <button class="catalog-card w2" data-sheet="player-profile"><span class="tiny-icon" style="background:#1f2230">♙</span><span class="arrow">⌃</span><h3>玩家終端</h3><p>玩家 ID、基本狀態與個人資料。</p></button>
-      <button class="catalog-card w2" data-sheet="rhythm-lab"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">⌃</span><h3>Rhythm Lab</h3><p>速度、Mirror 與節奏練習設定。</p></button>
+      <button class="catalog-card w2" data-sheet="player-profile"><span class="tiny-icon" style="background:#1f2230">♙</span><span class="arrow">⌃</span><h3>玩家資料</h3><p>玩家 ID、基本狀態與個人資料。</p></button>
+      <button class="catalog-card w2" data-sheet="rhythm-lab"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">⌃</span><h3>節奏設定</h3><p>速度、Mirror 與節奏練習設定。</p></button>
       <button class="catalog-card" data-sheet="event-tool"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">⌃</span><h3>活動計算</h3><p>周回估算工具。</p></button>
-      <button class="catalog-card" data-sheet="music-tool"><span class="tiny-icon" style="background:var(--pink)">▶</span><span class="arrow">⌃</span><h3>Music Archive</h3><p>歌曲與 MV 快速入口。</p></button>
-      <button class="catalog-card" data-sheet="card-tool"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">⌃</span><h3>Card Archive</h3><p>卡片資料入口。</p></button>
+      <button class="catalog-card" data-sheet="music-tool"><span class="tiny-icon" style="background:var(--pink)">▶</span><span class="arrow">⌃</span><h3>歌曲資料</h3><p>歌曲與 MV 快速入口。</p></button>
+      <button class="catalog-card" data-sheet="card-tool"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">⌃</span><h3>卡片資料</h3><p>卡片資料入口。</p></button>
       <button class="catalog-card" data-go="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">⌃</span><h3>設定</h3><p>介面、搜尋與本機偏好。</p></button>
     </div>
   </section>
 
   <section class="page" data-page="settings">
     <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>SEKAI TERMINAL</div><div class="kicker">APP PREFERENCES</div><h1 class="page-title">設定</h1><p class="page-subtitle">調整 iOS 玻璃介面的透明程度。設定會保存在這台裝置，下次開啟仍會保留。</p></div>
+      <div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">顯示設定</div><h1 class="page-title">設定</h1><p class="page-subtitle">調整 iOS 玻璃介面的透明程度。設定會保存在這台裝置，下次開啟仍會保留。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
 
     <div class="settings-card">
       <div class="settings-row-head">
         <div>
-          <strong>玻璃透明度</strong>
-          <span>數值越低，越能看到底層《世界計畫》官方背景；數值越高，介面越實。</span>
+          <strong>介面透明度</strong>
+          <span>調整介面的透明程度，找到你喜歡的顯示效果。</span>
         </div>
         <strong id="opacityValue">22%</strong>
       </div>
       <input id="opacityRange" class="opacity-range" type="range" min="8" max="58" step="1" value="22">
-      <div class="settings-scale"><span>更透明</span><span>平衡</span><span>更實</span></div>
+      <div class="settings-scale"><span>較透明</span><span>平衡</span><span>較明確</span></div>
     </div>
 
     <div class="settings-card">
       <div class="settings-row-head">
-        <div><strong>預設透明度</strong><span>快速套用推薦值。</span></div>
+        <div><strong>顯示效果</strong><span>快速套用顯示效果。</span></div>
       </div>
       <div class="preset-row">
         <button class="preset" data-opacity="12">12%<small>Glass</small></button>
@@ -521,10 +521,10 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
     </div>
 
     <div class="settings-card preview-card">
-      <div class="kicker">LIVE PREVIEW</div>
-      <h2>SEKAI GLASS</h2>
-      <p>拖動上面的透明度，即時看看背景、玻璃和內容之間的關係。</p>
-      <div class="preview-glass"><span>PROJECT SEKAI</span><strong>透明玻璃 Preview</strong><span>♫  世界計畫  ♫</span></div>
+      <div class="kicker">即時預覽</div>
+      <h2>SEKAI STYLE</h2>
+      <p>拖動上方滑桿，即時調整介面的顯示效果。</p>
+      <div class="preview-glass"><span>PROJECT SEKAI</span><strong>介面預覽</strong><span>♫  世界計畫  ♫</span></div>
     </div>
   </section>
 
@@ -555,7 +555,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 </main>
 </div>
 
-<footer class="footer">PROJECT SEKAI · SEKAI TERMINAL · Fan-made interface concept · Not affiliated with SEGA or Colorful Palette.</footer>
+<footer class="footer">PROJECT SEKAI · PROJECT SEKAI · Fan-made interface concept · 本網站為非官方粉絲作品，與 SEGA、Colorful Palette 無隸屬關係.</footer>
 
 <nav class="bottom-bar" aria-label="主選單">
   <button class="tab active" data-go="home"><span class="tab-icon">⌂</span>首頁</button>
@@ -598,49 +598,49 @@ const homeData={
   "home-characters":["角色 Characters",["全部角色","Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。","Virtual Singer"]],
   "home-cards":["卡片 Cards",["全部卡片","我的收藏","特訓狀態","團體分類","稀有度","卡片搜尋"]],
   "home-events":["活動 Events",["目前活動","活動計算器","排名紀錄","歷史活動"]],
-  "home-tools":["工具 Game Tools",["玩家終端","Rhythm Lab","活動計算","Music Archive","Card Archive","設定"]],
+  "home-tools":["工具 Game Tools",["玩家資料","節奏設定","活動計算","歌曲資料","卡片資料","設定"]],
   "home-profile":["我的 Profile",["玩家資料","我的收藏","最近使用","設定"]]
 };
 
 const sheetData={
   news:["最新情報","近期更新與網站公告",["最新首頁","SEKAI 入口更新","工具區重新整理","行動版介面更新"]],
   favorites:["我的收藏","你保存的內容會從這裡進入",["收藏歌曲","收藏卡片","最近收藏","收藏設定"]],
-  about:["關於 Terminal","Fan-made Project SEKAI 介面概念",["SEKAI Terminal 2.0","iOS-inspired layout","Responsive mobile UI","Not affiliated with SEGA or Colorful Palette"]],
+  about:["關於 Terminal","Project SEKAI 同人介面作品",["SEKAI Terminal 2.0","iOS 風格介面","Responsive mobile UI","本網站為非官方粉絲作品，與 SEGA、Colorful Palette 無隸屬關係"]],
   classroom:["教室的 SEKAI","World 01",["角色","歌曲","世界資訊","相關 MV"]],
   stage:["舞台的 SEKAI","World 02",["角色","歌曲","舞台資訊","相關 MV"]],
   street:["街道的 SEKAI","World 03",["角色","歌曲","街頭資訊","相關 MV"]],
   wonderland:["Wonderland","World 04",["角色","歌曲","劇場資訊","相關 MV"]],
   empty:["空無的 SEKAI","World 05",["角色","歌曲","世界資訊","相關 MV"]],
   virtual:["Virtual Singer","World 06",["角色","歌曲","歌唱入口","相關 MV"]],
-  "song-all":["全部歌曲","Music Library",["歌曲搜尋","歌曲列表","歌手分類","快速收藏"]],
-  "song-favorite":["收藏歌曲","Music Library",["已收藏","最近收藏","移除收藏","排序"]],
-  "song-difficulty":["難度分類","Music Library",["Easy","Normal","Hard","Expert / Master"]],
-  "song-mv":["MV / 對應影片","Music Library",["官方 MV","3D MV","2D MV","影片搜尋"]],
-  "song-info":["歌曲資料","Music Library",["BPM","類型","歌唱成員","相關世界"]],
-  "song-tools":["歌曲工具","Music Library",["練習設定","Mirror","速度","快速筆記"]],
-  "unit-leos":["Leo/need","Character Unit",["團體資料","星乃一歌","天馬咲希","望月穗波 / 日野森志步"]],
-  "unit-mmj":["MORE MORE JUMP!","Character Unit",["團體資料","花里みのり","桐谷遙","桃井愛莉 / 日野森雫"]],
-  "unit-vbs":["Vivid BAD SQUAD","Character Unit",["團體資料","小豆沢こはね","白石杏","東雲彰人 / 青柳冬彌"]],
-  "unit-wxs":["Wonderlands×Showtime","Character Unit",["團體資料","天馬司","鳳えむ","草薙寧々 / 神代類"]],
-  "unit-25ji":["25時、ナイトコードで。","Character Unit",["團體資料","宵崎奏","朝比奈まふゆ","東雲絵名 / 暁山瑞希"]],
-  "unit-virtual":["Virtual Singer","Character Unit",["角色資料","初音ミク","鏡音リン / 鏡音レン","巡音ルカ / MEIKO / KAITO"]],
-  "card-all":["全部卡片","Card Archive",["卡片瀏覽","卡片搜尋","依角色","依團體"]],
-  "card-favorite":["我的收藏","Card Archive",["已收藏","最近收藏","分類","排序"]],
-  "card-trained":["特訓狀態","Card Archive",["未特訓","特訓完成","狀態查詢","進度"]],
-  "card-unit":["團體分類","Card Archive",["Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。"]],
-  "card-rarity":["稀有度","Card Archive",["★1","★2","★3","★4 / Birthday"]],
-  "card-search":["卡片搜尋","Card Archive",["關鍵字","角色","團體","稀有度"]],
-  "event-current":["目前活動","Event Center",["活動首頁","活動歌曲","活動報酬","活動商店"]],
-  "event-calc":["活動計算器","Event Center",["周回估算","資源估算","體力估算","點數目標"]],
-  "event-ranking":["排名紀錄","Event Center",["最高排名","活動紀錄","歷史紀錄","統計"]],
-  "event-history":["歷史活動","Event Center",["往期活動","活動搜尋","活動類型","快速開啟"]],
-  "player-profile":["玩家終端","Player Area",["Player ID","基本狀態","進度","同步狀態"]],
-  "rhythm-lab":["Rhythm Lab","Player Area",["速度設定","Mirror","練習模式","重置設定"]],
-  "event-tool":["活動計算","Player Area",["輸入體力","計算周回","目標估算","結果"]],
-  "music-tool":["Music Archive","Player Area",["歌曲","MV","收藏","搜尋"]],
-  "card-tool":["Card Archive","Player Area",["卡片","角色","收藏","搜尋"]],
+  "song-all":["全部歌曲","歌曲專區",["歌曲搜尋","歌曲列表","歌手分類","快速收藏"]],
+  "song-favorite":["收藏歌曲","歌曲專區",["已收藏","最近收藏","移除收藏","排序"]],
+  "song-difficulty":["難度分類","歌曲專區",["Easy","Normal","Hard","Expert / Master"]],
+  "song-mv":["MV / 對應影片","歌曲專區",["官方 MV","3D MV","2D MV","影片搜尋"]],
+  "song-info":["歌曲資料","歌曲專區",["BPM","類型","歌唱成員","相關世界"]],
+  "song-tools":["歌曲工具","歌曲專區",["練習設定","Mirror","速度","快速筆記"]],
+  "unit-leos":["Leo/need","團體角色",["團體資料","星乃一歌","天馬咲希","望月穗波 / 日野森志步"]],
+  "unit-mmj":["MORE MORE JUMP!","團體角色",["團體資料","花里みのり","桐谷遙","桃井愛莉 / 日野森雫"]],
+  "unit-vbs":["Vivid BAD SQUAD","團體角色",["團體資料","小豆沢こはね","白石杏","東雲彰人 / 青柳冬彌"]],
+  "unit-wxs":["Wonderlands×Showtime","團體角色",["團體資料","天馬司","鳳えむ","草薙寧々 / 神代類"]],
+  "unit-25ji":["25時、ナイトコードで。","團體角色",["團體資料","宵崎奏","朝比奈まふゆ","東雲絵名 / 暁山瑞希"]],
+  "unit-virtual":["Virtual Singer","團體角色",["角色資料","初音ミク","鏡音リン / 鏡音レン","巡音ルカ / MEIKO / KAITO"]],
+  "card-all":["全部卡片","卡片資料",["卡片瀏覽","卡片搜尋","依角色","依團體"]],
+  "card-favorite":["我的收藏","卡片資料",["已收藏","最近收藏","分類","排序"]],
+  "card-trained":["特訓狀態","卡片資料",["未特訓","特訓完成","狀態查詢","進度"]],
+  "card-unit":["團體分類","卡片資料",["Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。"]],
+  "card-rarity":["稀有度","卡片資料",["★1","★2","★3","★4 / Birthday"]],
+  "card-search":["卡片搜尋","卡片資料",["關鍵字","角色","團體","稀有度"]],
+  "event-current":["目前活動","活動專區",["活動首頁","活動歌曲","活動報酬","活動商店"]],
+  "event-calc":["活動計算器","活動專區",["周回估算","資源估算","體力估算","點數目標"]],
+  "event-ranking":["排名紀錄","活動專區",["最高排名","活動紀錄","歷史紀錄","統計"]],
+  "event-history":["歷史活動","活動專區",["往期活動","活動搜尋","活動類型","快速開啟"]],
+  "player-profile":["玩家資料","玩家專區",["Player ID","基本狀態","進度","同步狀態"]],
+  "rhythm-lab":["節奏設定","玩家專區",["速度設定","Mirror","練習模式","重置設定"]],
+  "event-tool":["活動計算","玩家專區",["輸入體力","計算周回","目標估算","結果"]],
+  "music-tool":["歌曲資料","玩家專區",["歌曲","MV","收藏","搜尋"]],
+  "card-tool":["卡片資料","玩家專區",["卡片","角色","收藏","搜尋"]],
   settings:["設定","App Preferences",["顯示偏好","搜尋設定","本機資料","關於"]],
-  recent:["最近使用","My SEKAI",["最近歌曲","最近角色","最近卡片","最近工具"]]
+  recent:["最近使用","我的專區",["最近歌曲","最近角色","最近卡片","最近工具"]]
 };
 
 function toggleAccordion(card){
