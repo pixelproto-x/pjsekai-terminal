@@ -1573,6 +1573,177 @@ $("#languageSelect")?.addEventListener("change",e=>{
   showToast(LANGUAGE_LABELS[selected==="auto"?currentLanguage:selected]+" · "+t("設定"));
   requestAITranslation(currentLanguage);
 });
+let draggingLastX=0;
+let draggingLastY=0;
+let draggingLastTime=0;
+let draggingVelocityX=0;
+let draggingVelocityY=0;
+let suppressTabClick=false;
+
+const INDICATOR_W=72;
+const INDICATOR_H=48;
+
+function getIndicatorLeft(index){
+  const t=tabs[Math.max(0,Math.min(tabs.length-1,index))];
+  if(!t)return 0;
+  return t.offsetLeft+(t.offsetWidth-INDICATOR_W)/2;
+}
+function getTabCenter(index){
+  return getIndicatorLeft(index)+INDICATOR_W/2;
+}
+function setIndicator(index,animate=true){
+  const left=getIndicatorLeft(index);
+  bottomBar.style.setProperty("--tab-left",left+"px");
+  bottomBar.style.setProperty("--tab-y","0px");
+  bottomBar.style.setProperty("--tab-w",INDICATOR_W+"px");
+  bottomBar.style.setProperty("--tab-h",INDICATOR_H+"px");
+  bottomBar.style.setProperty("--tab-scale-x","1");
+  bottomBar.style.setProperty("--tab-scale-y","1");
+  bottomBar.style.setProperty("--tab-rotate","0deg");
+  bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
+  tabIndicator.style.borderRadius="14px";
+  updateLens(getTabCenter(index),false);
+}
+function updateLens(cx,drag){
+  const centers=tabs.map((_,i)=>getTabCenter(i));
+  const spacing=centers.length>1?Math.max(1,centers[1]-centers[0]):Math.max(1,bottomBar.clientWidth/5);
+  const sigma=spacing*(drag?.8:.5);
+  tabs.forEach((t,i)=>{
+    const inf=Math.exp(-Math.pow((cx-centers[i])/sigma,2)/2);
+    t.style.setProperty("--lens",(1+.22*inf).toFixed(3));
+    t.classList.toggle("lens-near",drag&&inf>.62);
+  });
+}
+function resetLens(){tabs.forEach(t=>{t.style.removeProperty("--lens");t.classList.remove("lens-near")})}
+function beginTabDrag(e){
+  if(!tabIndicator)return;
+  const r=tabIndicator.getBoundingClientRect();
+  if(Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2))>Math.max(r.width,r.height)*.65)return;
+  draggingTab=true;draggingTabMoved=false;draggingPointerId=e.pointerId;
+  draggingStartX=e.clientX;draggingStartY=e.clientY;
+  draggingStartLeft=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||getIndicatorLeft(tabs.findIndex(t=>t.classList.contains("active")));
+  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=performance.now();
+  draggingVelocityX=draggingVelocityY=0;
+  bottomBar.style.setProperty("--tab-duration","0s");
+  bottomBar.classList.add("is-dragging");
+  try{bottomBar.setPointerCapture(e.pointerId)}catch(_){}
+}
+function moveTabDrag(e){
+  if(!draggingTab||e.pointerId!==draggingPointerId)return;
+
+  const now=performance.now(),dt=Math.max(8,now-draggingLastTime);
+  const vx=(e.clientX-draggingLastX)/(dt/1000),vy=(e.clientY-draggingLastY)/(dt/1000);
+  draggingVelocityX=draggingVelocityX*.72+vx*.28;
+  draggingVelocityY=draggingVelocityY*.72+vy*.28;
+  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=now;
+
+  const dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
+  if(Math.hypot(dx,dy)>4)draggingTabMoved=true;
+
+  const minLeft=getIndicatorLeft(0);
+  const maxLeft=getIndicatorLeft(tabs.length-1);
+
+  const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1000);
+  const travel=Math.min(1,Math.abs(dx)/(Math.max(1,maxLeft-minLeft)));
+  const stretch=Math.min(.20,.08*travel+.12*speed);
+
+  // 先算出拖曳後尺寸，再用「最外緣」做硬限制。
+  const scaleX=1+stretch;
+  const scaleY=1-stretch*.3;
+  const halfW=(INDICATOR_W*scaleX)/2;
+  const halfH=(INDICATOR_H*scaleY)/2;
+
+  const barRect=bottomBar.getBoundingClientRect();
+  const cs=getComputedStyle(bottomBar);
+  const borderX=(parseFloat(cs.borderLeftWidth)||0);
+  const borderY=(parseFloat(cs.borderTopWidth)||0);
+  const padL=parseFloat(cs.paddingLeft)||0;
+  const padR=parseFloat(cs.paddingRight)||0;
+  const padT=parseFloat(cs.paddingTop)||0;
+  const padB=parseFloat(cs.paddingBottom)||0;
+
+  const innerLeft=borderX+padL;
+  const innerRight=barRect.width-borderX-padR;
+  const innerTop=borderY+padT;
+  const innerBottom=barRect.height-borderY-padB;
+
+  const minCenter=innerLeft+halfW;
+  const maxCenter=innerRight-halfW;
+
+  // 仍以各 tab 的位置作為可活動區間，但絕不允許最外緣越界。
+  const targetCenter=Math.max(minCenter,Math.min(maxCenter,
+    draggingStartLeft+dx+INDICATOR_W/2));
+
+  const left=targetCenter-INDICATOR_W/2;
+  const centerY=Math.max(innerTop+halfH,Math.min(innerBottom-halfH,barRect.height/2+dy));
+  const y=centerY-barRect.height/2;
+
+  const edgeDist=Math.min(targetCenter-minCenter,maxCenter-targetCenter);
+  const edge=Math.max(0,1-Math.min(edgeDist/24,1));
+
+  bottomBar.style.setProperty("--tab-left",left+"px");
+  bottomBar.style.setProperty("--tab-y",y+"px");
+  bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.05).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.3+edge*.06).toFixed(3));
+  bottomBar.style.setProperty("--tab-rotate",Math.max(-3,Math.min(3,draggingVelocityX*.004))+"deg");
+
+  const finalScaleX=1+stretch+edge*.05;
+  const finalScaleY=1-stretch*.3+edge*.06;
+  const renderedHalfW=(INDICATOR_W*finalScaleX)/2;
+  const renderedHalfH=(INDICATOR_H*finalScaleY)/2;
+
+  // 二次保護：把最終 transform 後的尺寸也納入邊界。
+  const safeMinCenter=innerLeft+renderedHalfW;
+  const safeMaxCenter=innerRight-renderedHalfW;
+  const safeCenter=Math.max(safeMinCenter,Math.min(safeMaxCenter,left+INDICATOR_W/2));
+  bottomBar.style.setProperty("--tab-left",(safeCenter-INDICATOR_W/2)+"px");
+
+  const tabsCenter=safeCenter;
+  const nearest=tabs.reduce((best,_,i)=>{
+    return Math.abs(tabsCenter-getTabCenter(i))<Math.abs(tabsCenter-getTabCenter(best))?i:best;
+  },0);
+
+  tabs.forEach((t,i)=>t.classList.toggle("active",i===nearest));
+  tabIndicator.style.borderRadius=(14+Math.min(6,stretch*22)).toFixed(1)+"px";
+  updateLens(tabsCenter,true);
+  if(e.cancelable)e.preventDefault();
+}
+function endTabDrag(e){
+  if(!draggingTab||e.pointerId!==draggingPointerId)return;
+  const left=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||0;
+  const center=left+INDICATOR_W/2;
+  const index=tabs.reduce((best,_,i)=>{
+    return Math.abs(center-getTabCenter(i))<Math.abs(center-getTabCenter(best))?i:best;
+  },0);
+  const target=tabs[index];
+  setIndicator(index,true);
+  draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
+  if(draggingTabMoved){
+    suppressTabClick=true;
+    requestAnimationFrame(()=>suppressTabClick=false);
+    if(target)go(target.dataset.go);
+  }else{
+    updateTabMotion(currentRoute);
+  }
+}
+
+function syncBottomBarIndicator(){
+  if(!bottomBar||!tabs.length)return;
+  const current=Math.max(0,tabs.findIndex(t=>t.classList.contains("active")));
+  setIndicator(current,false);
+}
+window.addEventListener("resize",syncBottomBarIndicator,{passive:true});
+window.visualViewport?.addEventListener("resize",syncBottomBarIndicator,{passive:true});
+bottomBar?.addEventListener("pointerdown",beginTabDrag);
+bottomBar?.addEventListener("pointermove",moveTabDrag);
+bottomBar?.addEventListener("pointerup",endTabDrag);
+bottomBar?.addEventListener("pointercancel",endTabDrag);
+bottomBar?.addEventListener("click",e=>{
+  if(suppressTabClick)e.preventDefault();
+});
+
+
+
 const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
