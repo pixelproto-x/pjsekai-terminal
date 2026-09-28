@@ -525,10 +525,9 @@ document.addEventListener("click",e=>{
   if(s){toggleAccordion(s);return;}
   const action=e.target.closest("[data-accordion-action]");
   if(action){
-  if(action){
-    const label=action.querySelector("strong")?.textContent||"";
     action.querySelector("span").textContent="✓";
     setTimeout(()=>{ action.querySelector("span").textContent="›"; },650);
+    return;
   }
   const homeAction=e.target.closest("[data-home-action]");
   if(homeAction){
