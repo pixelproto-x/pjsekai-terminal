@@ -2,117 +2,504 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101526">
-<title>Project SEKAI｜COLORFUL TERMINAL</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f4f8">
+<meta name="color-scheme" content="light">
+<title>Project SEKAI｜SEKAI Terminal</title>
 <style>
-:root{--ink:#171927;--paper:#f7f5ef;--muted:#727482;--line:#d9d8d2;--cyan:#50d8ee;--pink:#ff5d9e;--yellow:#ffd44d;--violet:#8e75ff;--orange:#ff8c42}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font-family:Arial,"Noto Sans TC",sans-serif;overflow-x:hidden}
-button,a,input,select{font:inherit}button,a{cursor:pointer}a{text-decoration:none;color:inherit}
-.topline{height:5px;background:linear-gradient(90deg,var(--pink) 0 17%,var(--yellow) 17% 34%,var(--cyan) 34% 51%,var(--violet) 51% 68%,var(--orange) 68% 85%,#72d96d 85%)}
-.header{height:82px;background:rgba(247,245,239,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
-.header-inner{height:100%;max-width:1440px;margin:auto;padding:0 28px;display:flex;align-items:center;gap:35px}
-.brand{font-size:21px;font-weight:1000;letter-spacing:-.06em;white-space:nowrap}.brand i{font-style:normal;color:var(--pink)}
-.nav{display:flex;gap:24px;font-size:12px;font-weight:800}.nav a{padding:31px 0;border-bottom:3px solid transparent}.nav a:hover{border-color:var(--pink)}
-.header-tools{margin-left:auto;display:flex;gap:8px}.search{width:180px;border:1px solid var(--line);background:#fff;padding:10px 13px;outline:0;font-size:12px}.iconbtn{width:40px;height:40px;border:1px solid var(--line);background:#fff}
-.hero{min-height:720px;position:relative;overflow:hidden;background:#16192a;color:#fff}
-.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,#141729 0%,#171a2e 43%,rgba(23,26,46,.15) 100%)}
-.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:70px 70px;mask-image:linear-gradient(90deg,#000,transparent 90%)}
-.hero-shape{position:absolute;right:-4%;top:-15%;width:68%;height:120%;transform:rotate(-9deg);background:linear-gradient(135deg,rgba(80,216,238,.85),rgba(142,117,255,.72) 42%,rgba(255,93,158,.8));clip-path:polygon(22% 0,100% 0,100% 100%,0 100%,38% 58%,15% 42%);opacity:.88}
-.hero-shape:after{content:"";position:absolute;inset:18%;border:2px solid rgba(255,255,255,.4);transform:rotate(9deg)}
-.hero-content{max-width:1440px;margin:auto;position:relative;z-index:2;padding:110px 28px 90px}
-.eyebrow{font-size:11px;font-weight:900;letter-spacing:.35em;color:var(--cyan)}.hero h1{font-size:clamp(70px,11vw,170px);line-height:.78;letter-spacing:-.095em;margin:18px 0;font-weight:1000}.hero h1 span{display:block;font-size:.21em;letter-spacing:.38em;line-height:1.5;margin-left:8px;color:#fff}.hero-copy{max-width:550px;color:#c8cad4;font-size:14px;line-height:2}
-.hero-actions{display:flex;gap:10px;margin-top:35px;flex-wrap:wrap}.cta{border:1px solid rgba(255,255,255,.28);padding:15px 22px;font-size:11px;font-weight:900;letter-spacing:.14em;background:rgba(255,255,255,.06);color:#fff}.cta.main{background:#fff;color:#151728;border-color:#fff}.cta:hover{transform:translateY(-3px)}
-.hero-stamp{position:absolute;right:5%;bottom:45px;z-index:3;width:130px;height:130px;border:1px solid rgba(255,255,255,.45);border-radius:50%;display:grid;place-items:center;text-align:center;font-size:9px;letter-spacing:.2em;transform:rotate(-14deg)}
-.ticker{height:44px;background:#171927;color:#fff;display:flex;align-items:center;overflow:hidden;font-size:11px;font-weight:900;letter-spacing:.18em}.ticker span{white-space:nowrap;animation:marquee 28s linear infinite}@keyframes marquee{to{transform:translateX(-50%)}}
-.wrap{max-width:1440px;margin:auto;padding:95px 28px}.heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:35px}.overline{font-size:10px;letter-spacing:.3em;color:#8b8d96;font-weight:900}.heading h2{font-size:clamp(42px,6vw,78px);letter-spacing:-.075em;line-height:.82;margin:10px 0 0;font-weight:1000}.more{font-size:10px;font-weight:900;letter-spacing:.2em;border-bottom:1px solid var(--ink);padding-bottom:7px}
-.news{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:14px}.news-card{min-height:350px;background:#fff;border:1px solid var(--line);position:relative;overflow:hidden;transition:.25s}.news-card:hover{transform:translateY(-6px);box-shadow:0 16px 35px #1b1c260f}.news-card:first-child{background:#15182a;color:#fff}.news-art{height:190px;background:linear-gradient(135deg,var(--cyan),var(--violet));position:relative}.news-card:nth-child(2) .news-art{background:linear-gradient(135deg,var(--pink),var(--orange))}.news-card:nth-child(3) .news-art{background:linear-gradient(135deg,var(--yellow),#ff9d5c)}.news-art:before{content:"";position:absolute;width:150px;height:150px;border:28px solid rgba(255,255,255,.5);border-radius:50%;right:10%;top:10%;mix-blend-mode:overlay}.news-body{padding:22px}.date{font-size:9px;letter-spacing:.2em;color:#9a9ba2;font-weight:800}.news-card:first-child .date{color:#9ea6bf}.news-body h3{font-size:23px;line-height:1;margin:10px 0;font-weight:1000}.news-body p{font-size:11px;line-height:1.8;color:#777984}.news-card:first-child p{color:#b6bac8}
-.sekai{background:#e9e8e3}.worlds{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.world{height:310px;position:relative;overflow:hidden;color:#fff;border:0;padding:0;transition:.25s}.world:nth-child(1){grid-column:span 4;background:#5cbfe0}.world:nth-child(2){grid-column:span 4;background:#f06b99}.world:nth-child(3){grid-column:span 4;background:#ff984f}.world:nth-child(4){grid-column:span 5;background:#9a80f4}.world:nth-child(5){grid-column:span 3;background:#69717d}.world:nth-child(6){grid-column:span 4;background:#55bd8e}.world:hover{transform:scale(.985)}.world:before{content:"";position:absolute;inset:-30%;background:repeating-linear-gradient(135deg,transparent 0 30px,rgba(255,255,255,.12) 31px 34px);transform:rotate(8deg)}.world:after{content:"";position:absolute;right:-35px;bottom:-70px;width:250px;height:250px;border:55px solid rgba(255,255,255,.15);border-radius:50%}.world-text{position:absolute;left:22px;bottom:20px;text-align:left;z-index:2}.world-num{font-size:9px;letter-spacing:.3em}.world h3{font-size:31px;line-height:.9;margin:8px 0 5px;font-weight:1000}.world p{font-size:10px;margin:0;opacity:.8}
-.characters{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.character{height:390px;position:relative;overflow:hidden;color:#fff;background:var(--cc)}.character:before{content:"";position:absolute;width:250px;height:350px;left:50%;top:3%;transform:translateX(-50%);background:linear-gradient(150deg,rgba(255,255,255,.65),rgba(255,255,255,.08));clip-path:polygon(50% 0,75% 9%,92% 30%,80% 58%,100% 100%,50% 88%,0 100%,20% 58%,8% 30%,25% 9%);opacity:.72}.character:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.72));}.char-info{position:absolute;z-index:2;left:20px;right:20px;bottom:18px}.char-info small{font-size:9px;letter-spacing:.2em;opacity:.75}.char-info h3{font-size:28px;margin:7px 0 2px;font-weight:1000}.char-info p{font-size:9px;letter-spacing:.2em;margin:0;opacity:.7}
-.tools{background:#171927;color:#fff}.tool-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.tool{background:#202337;border:1px solid #ffffff18;padding:25px;min-height:230px;position:relative;overflow:hidden}.tool.big{grid-column:span 7}.tool.mid{grid-column:span 5}.tool.small{grid-column:span 4}.tool h3{font-size:24px;margin:8px 0;font-weight:1000}.tool p{font-size:11px;color:#a9adbd;line-height:1.8}.tool-number{font-size:55px;font-weight:1000;letter-spacing:-.07em;color:var(--cyan)}.form{display:flex;gap:8px;margin-top:18px}.form input,.form select{min-width:0;flex:1;background:#111421;border:1px solid #ffffff16;color:#fff;padding:12px;outline:0;font-size:11px}.form button{background:#fff;border:0;padding:0 18px;font-weight:900;font-size:10px}.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.mini div{background:#111421;padding:14px}.mini b{display:block;font-size:20px;margin-top:4px}.tool-art{position:absolute;right:-35px;bottom:-60px;width:190px;height:190px;border:35px solid color-mix(in srgb,var(--cyan) 30%,transparent);border-radius:50%}
-.footer{background:#0d0f19;color:#aeb1bd;padding:55px 28px}.footer-inner{max-width:1440px;margin:auto;display:flex;justify-content:space-between;gap:30px}.footer strong{color:#fff;font-size:20px}.footer p{font-size:10px;line-height:1.8}.footer-links{display:flex;gap:20px;font-size:10px}
-@media(max-width:900px){.nav{display:none}.header-inner{padding:0 18px}.hero{min-height:650px}.hero-shape{width:105%;right:-35%;opacity:.6}.hero-content{padding:90px 20px}.news{grid-template-columns:1fr}.news-card:first-child{grid-row:auto}.worlds{grid-template-columns:1fr 1fr}.world,.world:nth-child(n){grid-column:span 1}.characters{grid-template-columns:1fr 1fr}.tool-grid{grid-template-columns:1fr}.tool,.tool.big,.tool.mid,.tool.small{grid-column:auto}.footer-inner{flex-direction:column}}
-@media(max-width:560px){.hero h1{font-size:68px}.wrap{padding:65px 18px}.worlds,.characters{grid-template-columns:1fr}.world{height:270px}.character{height:330px}.header{height:64px}.header-inner{height:64px}.search{width:130px}}
+:root{
+  --bg:#f2f3f7;--panel:rgba(255,255,255,.84);--panel-solid:#fff;--ink:#181a22;--muted:#7a7d88;
+  --line:rgba(24,26,34,.09);--shadow:0 14px 40px rgba(25,27,40,.08);--shadow-sm:0 7px 24px rgba(25,27,40,.06);
+  --pink:#ff5b9d;--cyan:#52cfe8;--yellow:#ffd34f;--violet:#9179f5;--orange:#ff9450;--green:#61c795;
+  --radius:26px;--radius-sm:18px;--safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#f7f8fb 0,#eef0f5 100%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+button,input,select{outline:none}
+::selection{background:#181a22;color:#fff}
+
+.top-accent{position:fixed;z-index:100;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--violet),var(--orange),var(--green))}
+
+.app-shell{max-width:1480px;margin:auto;padding:30px 28px 120px}
+.topbar{position:sticky;top:18px;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 12px 10px 17px;background:rgba(250,250,253,.72);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:0 10px 30px rgba(30,32,45,.08)}
+.brand{display:flex;align-items:center;gap:11px;min-width:210px}
+.brand-mark{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 220deg,var(--cyan),var(--violet),var(--pink),var(--yellow),var(--cyan));position:relative;box-shadow:0 7px 18px rgba(145,121,245,.24)}
+.brand-mark:after{content:"✦";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:16px;text-shadow:0 1px 4px rgba(0,0,0,.15)}
+.brand-text strong{display:block;font-size:13px;letter-spacing:.02em}
+.brand-text span{display:block;color:var(--muted);font-size:10px;margin-top:1px}
+.top-actions{margin-left:auto;display:flex;gap:8px}
+.top-icon{width:40px;height:40px;border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:13px;color:var(--ink);font-size:15px;transition:.2s}
+.top-icon:hover{transform:translateY(-1px);background:#fff}
+
+.page{display:none;animation:pageIn .32s ease both}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:66px 6px 30px}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.page-title{font-size:clamp(48px,7vw,88px);line-height:.9;letter-spacing:-.06em;margin:10px 0 0;font-weight:850}
+.page-subtitle{max-width:600px;font-size:13px;line-height:1.9;color:var(--muted);margin-top:13px}
+.back-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.75);border-radius:999px;padding:10px 14px;font-size:11px;font-weight:800;transition:.2s}
+.back-btn:hover{background:#fff;transform:translateX(-2px)}
+
+.hero{
+  margin-top:24px;position:relative;overflow:hidden;border-radius:34px;min-height:360px;padding:44px;
+  background:radial-gradient(circle at 88% 14%,rgba(82,207,232,.8),transparent 22%),radial-gradient(circle at 70% 86%,rgba(255,91,157,.72),transparent 30%),linear-gradient(135deg,#191b28 0%,#292b3a 100%);
+  color:#fff;box-shadow:0 25px 65px rgba(23,25,37,.18);
+}
+.hero:before{content:"";position:absolute;width:520px;height:520px;right:-120px;top:-110px;border-radius:40%;transform:rotate(14deg);background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.22)}
+.hero:after{content:"";position:absolute;width:240px;height:240px;right:80px;bottom:-120px;border:62px solid rgba(255,255,255,.12);border-radius:50%}
+.hero-content{position:relative;z-index:2;max-width:700px}
+.hero .kicker{color:#d7d9e2}
+.hero h1{font-size:clamp(48px,8vw,96px);line-height:.86;letter-spacing:-.075em;margin:13px 0 16px;font-weight:900}
+.hero h1 span{display:block;color:#fff;opacity:.72;font-size:.23em;letter-spacing:.21em;line-height:1.5;margin-top:16px}
+.hero p{max-width:560px;color:#d0d2db;font-size:13px;line-height:1.9}
+.hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:25px}
+.primary-btn,.secondary-btn{border:0;border-radius:999px;padding:12px 18px;font-size:11px;font-weight:800;transition:.22s}
+.primary-btn{background:#fff;color:#171923}.secondary-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff}
+.primary-btn:hover,.secondary-btn:hover{transform:translateY(-2px)}
+
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:54px 3px 18px}
+.section-head h2{font-size:28px;letter-spacing:-.04em;margin:6px 0 0}
+.section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
+
+.home-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:15px}
+.app-card{
+  grid-column:span 4;min-height:188px;padding:23px;border:1px solid rgba(255,255,255,.72);border-radius:var(--radius);
+  background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow-sm);
+  position:relative;overflow:hidden;text-align:left;transition:transform .23s,box-shadow .23s;
+}
+.app-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.app-card.feature{grid-column:span 8;min-height:225px}
+.app-card.wide{grid-column:span 6}
+.app-card .icon{
+  width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:19px;color:#fff;margin-bottom:34px;
+  box-shadow:0 9px 20px rgba(0,0,0,.12)
+}
+.app-card h3{font-size:24px;letter-spacing:-.04em;margin:0 0 6px;font-weight:850}
+.app-card p{font-size:11px;color:var(--muted);line-height:1.7;margin:0;max-width:390px}
+.app-card .chev{position:absolute;right:22px;top:22px;color:#a1a4ae;font-size:16px}
+.app-card .badge{position:absolute;right:18px;bottom:18px;padding:5px 8px;border-radius:999px;background:rgba(24,26,34,.06);font-size:9px;font-weight:800;color:#7d8089}
+.tile-art{position:absolute;right:-30px;bottom:-42px;width:190px;height:190px;border-radius:50%;border:48px solid rgba(255,255,255,.38);pointer-events:none}
+.card-pink .icon{background:linear-gradient(135deg,#ff70aa,#ef5c97)}
+.card-cyan .icon{background:linear-gradient(135deg,#6bdcf0,#44bedd)}
+.card-yellow .icon{background:linear-gradient(135deg,#ffdf72,#f3b943)}
+.card-violet .icon{background:linear-gradient(135deg,#a693ff,#7862db)}
+.card-orange .icon{background:linear-gradient(135deg,#ffac73,#ff7e42)}
+.card-green .icon{background:linear-gradient(135deg,#7cddb2,#4eaf83)}
+.card-dark{background:linear-gradient(140deg,#1d1f2b,#2c2f40);color:#fff;border-color:rgba(255,255,255,.06)}
+.card-dark p{color:#b9bbc5}.card-dark .badge{background:rgba(255,255,255,.09);color:#c9cad1}.card-dark .chev{color:#aaaebd}
+
+.quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.quick{border:1px solid var(--line);background:rgba(255,255,255,.73);border-radius:20px;padding:17px;text-align:left;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.quick .qicon{width:38px;height:38px;border-radius:13px;background:#eceef4;display:grid;place-items:center}
+.quick strong{font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+
+.catalog-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.catalog-card{
+  grid-column:span 4;min-height:190px;border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:24px;
+  padding:23px;box-shadow:var(--shadow-sm);text-align:left;position:relative;overflow:hidden;transition:.2s
+}
+.catalog-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.catalog-card.w2{grid-column:span 6}
+.catalog-card h3{font-size:22px;letter-spacing:-.035em;margin:42px 0 6px}
+.catalog-card p{font-size:11px;line-height:1.75;color:var(--muted);max-width:420px}
+.catalog-card .tiny-icon{position:absolute;left:20px;top:20px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:14px}
+.catalog-card .arrow{position:absolute;right:19px;top:20px;color:#a3a6af}
+.catalog-card .color-orb{position:absolute;right:-55px;bottom:-70px;width:180px;height:180px;border-radius:50%;opacity:.15}
+
+.list-panel{margin-top:14px;background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:25px;box-shadow:var(--shadow-sm);overflow:hidden}
+.list-row{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;display:flex;align-items:center;gap:15px;padding:15px 18px;text-align:left}
+.list-row:last-child{border-bottom:0}
+.list-row:hover{background:rgba(243,244,248,.72)}
+.row-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:900;flex:none}
+.row-main{min-width:0;flex:1}.row-title{font-size:12px;font-weight:800}.row-meta{font-size:10px;color:var(--muted);margin-top:3px}
+.row-arrow{color:#a3a6ae}
+.search-panel{display:flex;gap:8px;margin-top:4px}
+.search-input{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.85);border-radius:17px;padding:13px 15px;font-size:12px;box-shadow:var(--shadow-sm)}
+.filter-btn{border:1px solid var(--line);background:#fff;border-radius:17px;padding:0 16px;font-size:11px;font-weight:800}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:rgba(255,255,255,.77);border:1px solid var(--line);border-radius:21px;padding:19px;box-shadow:var(--shadow-sm)}
+.stat small{display:block;font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.08em}
+.stat strong{display:block;font-size:27px;margin-top:9px;letter-spacing:-.04em}
+
+.detail-sheet{
+  position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;padding:18px;
+  background:rgba(15,17,24,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
+}
+.detail-sheet.open{display:flex}
+.sheet{
+  width:min(860px,100%);max-height:min(88vh,760px);overflow:auto;background:rgba(251,251,253,.95);border:1px solid rgba(255,255,255,.75);
+  border-radius:32px 32px 24px 24px;box-shadow:0 28px 80px rgba(15,17,25,.25);padding:20px
+}
+.sheet-grabber{width:42px;height:5px;border-radius:99px;background:#d5d6dc;margin:0 auto 18px}
+.sheet-head{display:flex;align-items:start;gap:14px}.sheet-head h3{font-size:30px;letter-spacing:-.05em;margin:0}.sheet-head p{font-size:11px;color:var(--muted);line-height:1.7;margin:7px 0 0}
+.sheet-close{margin-left:auto;width:36px;height:36px;border:0;border-radius:50%;background:#eceef3}
+.sheet-content{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
+.sheet-item{border:1px solid var(--line);background:#fff;border-radius:19px;padding:16px;text-align:left}
+.sheet-item strong{font-size:12px}.sheet-item span{display:block;color:var(--muted);font-size:10px;line-height:1.7;margin-top:5px}
+
+.bottom-bar{
+  position:fixed;z-index:80;left:50%;bottom:calc(14px + var(--safe-bottom));transform:translateX(-50%);
+  width:min(720px,calc(100% - 24px));padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+  background:rgba(249,249,252,.8);backdrop-filter:blur(25px) saturate(150%);-webkit-backdrop-filter:blur(25px) saturate(150%);
+  border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:0 15px 50px rgba(23,25,36,.14)
+}
+.tab{border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:.18s}
+.tab .tab-icon{font-size:17px;line-height:1}.tab.active{background:#1b1d28;color:#fff}.tab:hover{color:#181a22}.tab.active:hover{color:#fff}
+
+.footer{max-width:1480px;margin:auto;padding:15px 28px 150px;color:#90939e;font-size:10px;text-align:center}
+
+.hide{display:none!important}
+body.sheet-open{overflow:hidden}
+
+@media(max-width:980px){
+  .app-shell{padding:20px 18px 120px}.topbar{top:12px}
+  .brand{min-width:0}.brand-text span{display:none}
+  .home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide{grid-column:span 6}
+  .catalog-card,.catalog-card.w2{grid-column:span 6}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .app-shell{padding:10px 13px 118px}.topbar{top:9px;padding:8px 9px 8px 12px;border-radius:19px}
+  .brand-text strong{font-size:12px}
+  .top-icon{width:38px;height:38px}.page-head{padding:47px 3px 22px;align-items:start;flex-direction:column}
+  .page-title{font-size:56px}.page-subtitle{font-size:12px}
+  .hero{margin-top:13px;padding:29px 24px;min-height:425px;border-radius:28px}
+  .hero h1{font-size:55px}.hero p{font-size:12px}
+  .home-grid,.catalog-grid{grid-template-columns:1fr}.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide,.catalog-card,.catalog-card.w2{grid-column:auto}
+  .app-card{min-height:170px;padding:20px;border-radius:23px}.app-card h3{font-size:22px}
+  .section-head{margin-top:38px}.quick-row{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr 1fr}
+  .sheet-content{grid-template-columns:1fr}.sheet{border-radius:28px 28px 20px 20px}
+  .footer{padding-left:15px;padding-right:15px}
+}
 </style>
 </head>
 <body>
-<div class="topline"></div>
-<header class="header">
-<div class="header-inner">
-<a class="brand" href="#">PROJECT SEKAI <i>✦</i></a>
-<nav class="nav"><a href="#news">NEWS</a><a href="#sekai">SEKAI</a><a href="#characters">CHARACTERS</a><a href="#tools">GAME TOOLS</a></nav>
-<div class="header-tools"><input id="search" class="search" placeholder="搜尋網站內容"><button class="iconbtn" id="top">↑</button></div>
-</div>
+<div class="top-accent"></div>
+
+<div class="app-shell">
+<header class="topbar">
+  <button class="brand" id="homeBrand" aria-label="回到首頁">
+    <span class="brand-mark"></span>
+    <span class="brand-text"><strong>PROJECT SEKAI</strong><span>SEKAI TERMINAL</span></span>
+  </button>
+  <div class="top-actions">
+    <button class="top-icon" id="globalSearchBtn" aria-label="搜尋">⌕</button>
+    <button class="top-icon" id="scrollTopBtn" aria-label="置頂">↑</button>
+  </div>
 </header>
 
-<section class="hero">
-<div class="hero-grid"></div><div class="hero-shape"></div>
-<div class="hero-content">
-<div class="eyebrow">PROJECT SEKAI · COLORFUL STAGE!</div>
-<h1>COLORFUL<br>STAGE<span>WHERE MUSIC CONNECTS US</span></h1>
-<div class="hero-copy">探索屬於你的 SEKAI。瀏覽最新情報、角色、世界與玩家工具，從一個真正像遊戲官網的入口開始。</div>
-<div class="hero-actions"><a class="cta main" href="#news">EXPLORE NEWS　↗</a><a class="cta" href="#sekai">ENTER SEKAI</a></div>
-</div>
-<div class="hero-stamp">SEKAI<br>TERMINAL<br>2026</div>
-</section>
+<main>
+  <section class="page active" data-page="home">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="kicker">SEKAI TERMINAL · 2.0</div>
+        <h1>COLORFUL<br>STAGE!<span>YOUR SEKAI STARTS HERE</span></h1>
+        <p>把大型遊戲網站改成像 iOS App 一樣的資訊架構。首頁只負責導航，點進每個入口，再用更多卡片探索內容。</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-go="sekai">探索 SEKAI</button>
+          <button class="secondary-btn" data-go="tools">開啟工具</button>
+        </div>
+      </div>
+    </div>
 
-<div class="ticker"><span>✦ PROJECT SEKAI　✦ COLORFUL STAGE!　✦ VIRTUAL SINGER　✦ MORE MORE JUMP!　✦ Vivid BAD SQUAD　✦ Wonderlands×Showtime　✦ Nightcord at 25:00　✦ PROJECT SEKAI　✦ COLORFUL STAGE!　✦</span></div>
+    <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
 
-<section id="news" class="wrap">
-<div class="heading"><div><div class="overline">LATEST INFORMATION</div><h2>NEWS</h2></div><a class="more" href="#">VIEW ALL →</a></div>
-<div class="news">
-<article class="news-card"><div class="news-art"></div><div class="news-body"><div class="date">2026.09.28　/　SPECIAL</div><h3>WELCOME TO THE NEW SEKAI.</h3><p>全新資訊首頁正式更新。探索新的世界入口與玩家工具。</p></div></article>
-<article class="news-card"><div class="news-art"></div><div class="news-body"><div class="date">2026.09.27　/　UPDATE</div><h3>WORLD SELECT</h3><p>六大 SEKAI 世界入口重新設計。</p></div></article>
-<article class="news-card"><div class="news-art"></div><div class="news-body"><div class="date">2026.09.26　/　TOOLS</div><h3>PLAYER TERMINAL</h3><p>玩家資料、節奏訓練與活動計算工具。</p></div></article>
-</div>
-</section>
+    <div class="home-grid">
+      <button class="app-card feature card-cyan" data-go="songs">
+        <span class="icon">♫</span><span class="chev">›</span>
+        <h3>歌曲 Music</h3><p>歌曲資料、難度、收藏、MV 與搜尋全部收在這裡。</p><span class="badge">SONG LIBRARY</span><span class="tile-art"></span>
+      </button>
+      <button class="app-card card-pink" data-go="sekai">
+        <span class="icon">◎</span><span class="chev">›</span>
+        <h3>SEKAI</h3><p>六大世界入口。</p><span class="badge">06 WORLDS</span>
+      </button>
+      <button class="app-card card-violet" data-go="characters">
+        <span class="icon">☆</span><span class="chev">›</span>
+        <h3>角色 Characters</h3><p>團體、成員、角色資料。</p><span class="badge">CAST</span>
+      </button>
+      <button class="app-card card-yellow" data-go="cards">
+        <span class="icon">▣</span><span class="chev">›</span>
+        <h3>卡片 Cards</h3><p>卡片圖鑑、收藏、訓練入口。</p><span class="badge">ARCHIVE</span>
+      </button>
+      <button class="app-card card-orange" data-go="events">
+        <span class="icon">✦</span><span class="chev">›</span>
+        <h3>活動 Events</h3><p>活動資料與周回工具。</p><span class="badge">EVENT</span>
+      </button>
+      <button class="app-card card-dark wide" data-go="tools">
+        <span class="icon">⌘</span><span class="chev">›</span>
+        <h3>工具 Game Tools</h3><p>玩家終端、節奏訓練、Mirror、活動計算與其他實用工具。</p><span class="badge">PLAYER AREA</span><span class="tile-art"></span>
+      </button>
+      <button class="app-card card-green" data-go="profile">
+        <span class="icon">♙</span><span class="chev">›</span>
+        <h3>我的 Profile</h3><p>玩家 ID、最近使用、設定。</p><span class="badge">MY SEKAI</span>
+      </button>
+    </div>
 
-<section id="sekai" class="sekai">
-<div class="wrap">
-<div class="heading"><div><div class="overline">DISCOVER YOUR WORLD</div><h2>SEKAI</h2></div><div class="more">06 WORLDS</div></div>
-<div class="worlds">
-<button class="world" style="--wc:#5cbfe0"><div class="world-text"><div class="world-num">01 / CLASSROOM</div><h3>教室的 SEKAI</h3><p>青春與歌聲開始的地方</p></div></button>
-<button class="world" style="--wc:#f06b99"><div class="world-text"><div class="world-num">02 / STAGE</div><h3>舞台的 SEKAI</h3><p>聚光燈與夢想交會</p></div></button>
-<button class="world" style="--wc:#ff984f"><div class="world-text"><div class="world-num">03 / STREET</div><h3>街道的 SEKAI</h3><p>城市中的音樂與夥伴</p></div></button>
-<button class="world" style="--wc:#9a80f4"><div class="world-text"><div class="world-num">04 / WONDERLAND</div><h3>Wonderland</h3><p>不可思議的幻想舞台</p></div></button>
-<button class="world" style="--wc:#69717d"><div class="world-text"><div class="world-num">05 / EMPTY</div><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律</p></div></button>
-<button class="world" style="--wc:#55bd8e"><div class="world-text"><div class="world-num">06 / VIRTUAL</div><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲</p></div></button>
-</div>
-</div>
-</section>
+    <div class="section-head"><div><div class="kicker">RECENT</div><h2>快速進入</h2></div></div>
+    <div class="quick-row">
+      <button class="quick" data-sheet="news"><span class="qicon">◷</span><span><strong>最新情報</strong><span>查看近期更新</span></span></button>
+      <button class="quick" data-sheet="favorites"><span class="qicon">♡</span><span><strong>我的收藏</strong><span>歌曲與卡片</span></span></button>
+      <button class="quick" data-sheet="about"><span class="qicon">i</span><span><strong>關於 Terminal</strong><span>網站資訊</span></span></button>
+    </div>
+  </section>
 
-<section id="characters" class="wrap">
-<div class="heading"><div><div class="overline">MEET THE CAST</div><h2>CHARACTERS</h2></div><a class="more" href="#">CHARACTER LIST →</a></div>
-<div class="characters">
-<article class="character" style="--cc:#55bde0"><div class="char-info"><small>LEO/need</small><h3>星乃一歌</h3><p>HOSHINO ICHIKA</p></div></article>
-<article class="character" style="--cc:#f07ca7"><div class="char-info"><small>MORE MORE JUMP!</small><h3>花里みのり</h3><p>HANASATO MINORI</p></div></article>
-<article class="character" style="--cc:#ff9652"><div class="char-info"><small>Vivid BAD SQUAD</small><h3>小豆沢こはね</h3><p>AZUSAWA KOHANE</p></div></article>
-<article class="character" style="--cc:#9a83ef"><div class="char-info"><small>25時、ナイトコードで。</small><h3>宵崎奏</h3><p>YOISAKI KANADE</p></div></article>
-</div>
-</section>
+  <section class="page" data-page="sekai">
+    <div class="page-head">
+      <div><div class="kicker">WORLD DIRECTORY</div><h1 class="page-title">SEKAI</h1><p class="page-subtitle">先選一個世界，再進入該世界的歌曲、角色與相關內容。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="catalog-grid">
+      <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">›</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
+      <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">›</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
+      <button class="catalog-card" data-sheet="street"><span class="tiny-icon" style="background:#ff9756">03</span><span class="arrow">›</span><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p><span class="color-orb" style="background:#ff9756"></span></button>
+      <button class="catalog-card" data-sheet="wonderland"><span class="tiny-icon" style="background:#9179f5">04</span><span class="arrow">›</span><h3>Wonderland</h3><p>充滿不可思議的舞台。</p><span class="color-orb" style="background:#9179f5"></span></button>
+      <button class="catalog-card" data-sheet="empty"><span class="tiny-icon" style="background:#666f7e">05</span><span class="arrow">›</span><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p><span class="color-orb" style="background:#666f7e"></span></button>
+      <button class="catalog-card" data-sheet="virtual"><span class="tiny-icon" style="background:#5fc596">06</span><span class="arrow">›</span><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p><span class="color-orb" style="background:#5fc596"></span></button>
+    </div>
+  </section>
 
-<section id="tools" class="tools">
-<div class="wrap">
-<div class="heading"><div><div class="overline" style="color:var(--cyan)">PLAYER AREA</div><h2>GAME TOOLS</h2></div><div class="more" style="border-color:#fff">TERMINAL 2.0</div></div>
-<div class="tool-grid">
-<article class="tool big"><div class="overline" style="color:var(--cyan)">PLAYER PROFILE</div><h3>玩家資料終端</h3><p>輸入玩家 ID，快速載入你的基本資料。</p><div class="form"><input id="playerId" placeholder="PLAYER ID"><button id="load">LOAD</button></div><div class="mini"><div><small>POWER</small><b id="power">000000</b></div><div><small>AP</small><b>00</b></div><div><small>FC</small><b>00</b></div></div><div class="tool-art"></div></article>
-<article class="tool mid"><div class="overline" style="color:var(--pink)">RHYTHM LAB</div><h3>節奏訓練室</h3><p>調整速度與 Mirror 模式，準備下一場演出。</p><div class="form"><select id="speed"><option>0.5x</option><option>0.75x</option><option selected>1.0x</option><option>1.25x</option><option>1.5x</option></select><button id="mirror">MIRROR OFF</button></div><div class="tool-art" style="border-color:rgba(255,93,158,.3)"></div></article>
-<article class="tool small"><div class="overline" style="color:var(--yellow)">EVENT</div><h3>活動計算</h3><p>輸入火消し數量，快速估算周回。</p><div class="form"><input id="energy" type="number" value="10"><button id="calc">CALC</button></div><div id="out" class="tool-number">0</div></article>
-<article class="tool small"><div class="overline" style="color:#72d96d">MUSIC</div><h3>MV ARCHIVE</h3><p>官方 MV 與歌曲入口。</p><button class="cta" style="margin-top:12px">OPEN MUSIC →</button></article>
-<article class="tool small"><div class="overline" style="color:var(--violet)">CARD</div><h3>CARD ARCHIVE</h3><p>查看卡片、訓練與收藏資料。</p><button class="cta" style="margin-top:12px">OPEN CARDS →</button></article>
-</div>
-</div>
-</section>
+  <section class="page" data-page="songs">
+    <div class="page-head">
+      <div><div class="kicker">MUSIC LIBRARY</div><h1 class="page-title">歌曲</h1><p class="page-subtitle">把歌曲功能集中到一個 App 專區，進入後再選擇要看的內容。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="search-panel"><input id="songSearch" class="search-input" placeholder="搜尋歌曲、歌手、關鍵字"><button class="filter-btn" id="songFilter">篩選</button></div>
+    <div class="section-head"><div><div class="kicker">MUSIC</div><h2>歌曲功能</h2></div></div>
+    <div class="catalog-grid">
+      <button class="catalog-card" data-sheet="song-all"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">›</span><h3>全部歌曲</h3><p>進入完整歌曲列表與搜尋。</p></button>
+      <button class="catalog-card" data-sheet="song-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>收藏歌曲</h3><p>只顯示你標記的歌曲。</p></button>
+      <button class="catalog-card" data-sheet="song-difficulty"><span class="tiny-icon" style="background:var(--violet)">◆</span><span class="arrow">›</span><h3>難度分類</h3><p>依難度與譜面入口整理。</p></button>
+      <button class="catalog-card" data-sheet="song-mv"><span class="tiny-icon" style="background:var(--orange)">▶</span><span class="arrow">›</span><h3>MV / 對應影片</h3><p>集中影片與 MV 入口。</p></button>
+      <button class="catalog-card" data-sheet="song-info"><span class="tiny-icon" style="background:var(--yellow);color:#222">i</span><span class="arrow">›</span><h3>歌曲資料</h3><p>BPM、類型、歌唱成員等資訊入口。</p></button>
+      <button class="catalog-card" data-sheet="song-tools"><span class="tiny-icon" style="background:var(--green)">⌘</span><span class="arrow">›</span><h3>歌曲工具</h3><p>練習與快速檢視相關工具。</p></button>
+    </div>
+  </section>
 
-<footer class="footer"><div class="footer-inner"><div><strong>PROJECT SEKAI ✦</strong><p>SEKAI TERMINAL is a fan-made interface concept.<br>Not affiliated with SEGA or Colorful Palette.</p></div><div class="footer-links"><a href="#news">NEWS</a><a href="#sekai">SEKAI</a><a href="#characters">CHARACTERS</a><a href="#tools">TOOLS</a></div></div></footer>
+  <section class="page" data-page="characters">
+    <div class="page-head">
+      <div><div class="kicker">CHARACTER DIRECTORY</div><h1 class="page-title">角色</h1><p class="page-subtitle">先選團體，再進入成員與角色相關內容。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="catalog-grid">
+      <button class="catalog-card" data-sheet="unit-leos"><span class="tiny-icon" style="background:var(--cyan)">L</span><span class="arrow">›</span><h3>Leo/need</h3><p>團體、成員、歌曲與相關入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-mmj"><span class="tiny-icon" style="background:var(--pink)">M</span><span class="arrow">›</span><h3>MORE MORE JUMP!</h3><p>偶像與舞台相關內容。</p></button>
+      <button class="catalog-card" data-sheet="unit-vbs"><span class="tiny-icon" style="background:var(--orange)">V</span><span class="arrow">›</span><h3>Vivid BAD SQUAD</h3><p>街頭音樂與角色入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-wxs"><span class="tiny-icon" style="background:var(--yellow);color:#222">W</span><span class="arrow">›</span><h3>Wonderlands×Showtime</h3><p>劇場與角色內容。</p></button>
+      <button class="catalog-card" data-sheet="unit-25ji"><span class="tiny-icon" style="background:var(--violet)">N</span><span class="arrow">›</span><h3>25時、ナイトコードで。</h3><p>夜與創作的角色入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-virtual"><span class="tiny-icon" style="background:var(--green)">VS</span><span class="arrow">›</span><h3>Virtual Singer</h3><p>虛擬歌手相關內容。</p></button>
+    </div>
+  </section>
+
+  <section class="page" data-page="cards">
+    <div class="page-head">
+      <div><div class="kicker">CARD ARCHIVE</div><h1 class="page-title">卡片</h1><p class="page-subtitle">卡片不直接全部塞在首頁，進入卡片專區後再選功能。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="catalog-grid">
+      <button class="catalog-card" data-sheet="card-all"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">›</span><h3>全部卡片</h3><p>完整卡片瀏覽與搜尋。</p></button>
+      <button class="catalog-card" data-sheet="card-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>我的收藏</h3><p>集中你保存的卡片。</p></button>
+      <button class="catalog-card" data-sheet="card-trained"><span class="tiny-icon" style="background:var(--cyan)">★</span><span class="arrow">›</span><h3>特訓狀態</h3><p>查看卡片進度相關入口。</p></button>
+      <button class="catalog-card" data-sheet="card-unit"><span class="tiny-icon" style="background:var(--orange)">◎</span><span class="arrow">›</span><h3>團體分類</h3><p>依角色團體快速瀏覽。</p></button>
+      <button class="catalog-card" data-sheet="card-rarity"><span class="tiny-icon" style="background:var(--yellow);color:#222">4★</span><span class="arrow">›</span><h3>稀有度</h3><p>依稀有度快速篩選。</p></button>
+      <button class="catalog-card" data-sheet="card-search"><span class="tiny-icon" style="background:var(--green)">⌕</span><span class="arrow">›</span><h3>卡片搜尋</h3><p>用關鍵字尋找卡片。</p></button>
+    </div>
+  </section>
+
+  <section class="page" data-page="events">
+    <div class="page-head">
+      <div><div class="kicker">EVENT CENTER</div><h1 class="page-title">活動</h1><p class="page-subtitle">活動資料與計算器分開整理，點開後再進入各種工具。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="catalog-grid">
+      <button class="catalog-card w2" data-sheet="event-current"><span class="tiny-icon" style="background:var(--pink)">✦</span><span class="arrow">›</span><h3>目前活動</h3><p>查看活動入口、活動頁與相關資訊。</p></button>
+      <button class="catalog-card w2" data-sheet="event-calc"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">›</span><h3>活動計算器</h3><p>計算周回與資源需求。</p></button>
+      <button class="catalog-card" data-sheet="event-ranking"><span class="tiny-icon" style="background:var(--yellow);color:#222">#</span><span class="arrow">›</span><h3>排名紀錄</h3><p>整理自己的活動紀錄。</p></button>
+      <button class="catalog-card" data-sheet="event-history"><span class="tiny-icon" style="background:var(--violet)">◷</span><span class="arrow">›</span><h3>歷史活動</h3><p>回顧過往活動入口。</p></button>
+    </div>
+  </section>
+
+  <section class="page" data-page="tools">
+    <div class="page-head">
+      <div><div class="kicker">PLAYER AREA</div><h1 class="page-title">工具</h1><p class="page-subtitle">所有玩家工具集中在這裡。每張卡片再進入自己的工具頁，而不是全部堆在首頁。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><small>TERMINAL</small><strong>2.0</strong></div>
+      <div class="stat"><small>TOOLS</small><strong>08</strong></div>
+      <div class="stat"><small>LAYOUT</small><strong>iOS</strong></div>
+      <div class="stat"><small>STATUS</small><strong>READY</strong></div>
+    </div>
+    <div class="catalog-grid" style="margin-top:14px">
+      <button class="catalog-card w2" data-sheet="player-profile"><span class="tiny-icon" style="background:#1f2230">♙</span><span class="arrow">›</span><h3>玩家終端</h3><p>玩家 ID、基本狀態與個人資料。</p></button>
+      <button class="catalog-card w2" data-sheet="rhythm-lab"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">›</span><h3>Rhythm Lab</h3><p>速度、Mirror 與節奏練習設定。</p></button>
+      <button class="catalog-card" data-sheet="event-tool"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">›</span><h3>活動計算</h3><p>周回估算工具。</p></button>
+      <button class="catalog-card" data-sheet="music-tool"><span class="tiny-icon" style="background:var(--pink)">▶</span><span class="arrow">›</span><h3>Music Archive</h3><p>歌曲與 MV 快速入口。</p></button>
+      <button class="catalog-card" data-sheet="card-tool"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">›</span><h3>Card Archive</h3><p>卡片資料入口。</p></button>
+      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">›</span><h3>設定</h3><p>介面、搜尋與本機偏好。</p></button>
+    </div>
+  </section>
+
+  <section class="page" data-page="profile">
+    <div class="page-head">
+      <div><div class="kicker">MY SEKAI</div><h1 class="page-title">我的</h1><p class="page-subtitle">個人內容獨立一頁，避免玩家資料和其他功能混在首頁。</p></div>
+      <button class="back-btn" data-go="home">‹ 首頁</button>
+    </div>
+    <div class="app-card card-dark" style="width:100%;min-height:240px;margin-bottom:15px">
+      <span class="icon">♙</span><h3>玩家資料</h3><p>輸入玩家 ID，這裡只負責玩家相關內容。</p>
+      <div class="form" style="display:flex;gap:8px;margin-top:18px">
+        <input id="playerId" class="search-input" style="background:#11131d;border-color:#ffffff18;color:#fff" placeholder="PLAYER ID">
+        <button id="loadPlayer" class="primary-btn">載入</button>
+      </div>
+      <div class="stat-grid" style="margin-top:14px">
+        <div class="stat" style="background:#11131d;color:#fff;border-color:#ffffff12"><small>PLAYER</small><strong id="playerPower">000000</strong></div>
+        <div class="stat" style="background:#11131d;color:#fff;border-color:#ffffff12"><small>AP</small><strong>00</strong></div>
+        <div class="stat" style="background:#11131d;color:#fff;border-color:#ffffff12"><small>FC</small><strong>00</strong></div>
+        <div class="stat" style="background:#11131d;color:#fff;border-color:#ffffff12"><small>SYNC</small><strong>OK</strong></div>
+      </div>
+    </div>
+    <div class="catalog-grid">
+      <button class="catalog-card" data-sheet="favorites"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>我的收藏</h3><p>歌曲與卡片收藏。</p></button>
+      <button class="catalog-card" data-sheet="recent"><span class="tiny-icon" style="background:var(--cyan)">◷</span><span class="arrow">›</span><h3>最近使用</h3><p>最近開啟的內容。</p></button>
+      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">›</span><h3>設定</h3><p>偏好與介面設定。</p></button>
+    </div>
+  </section>
+</main>
+</div>
+
+<footer class="footer">PROJECT SEKAI · SEKAI TERMINAL · Fan-made interface concept · Not affiliated with SEGA or Colorful Palette.</footer>
+
+<nav class="bottom-bar" aria-label="主選單">
+  <button class="tab active" data-go="home"><span class="tab-icon">⌂</span>首頁</button>
+  <button class="tab" data-go="sekai"><span class="tab-icon">◎</span>SEKAI</button>
+  <button class="tab" data-go="songs"><span class="tab-icon">♫</span>歌曲</button>
+  <button class="tab" data-go="tools"><span class="tab-icon">⌘</span>工具</button>
+  <button class="tab" data-go="profile"><span class="tab-icon">♙</span>我的</button>
+</nav>
+
+<div class="detail-sheet" id="detailSheet" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-head">
+      <div><h3 id="sheetTitle">內容</h3><p id="sheetSubtitle">選擇一個功能。</p></div>
+      <button class="sheet-close" id="sheetClose" aria-label="關閉">✕</button>
+    </div>
+    <div class="sheet-content" id="sheetContent"></div>
+  </div>
+</div>
 
 <script>
-const $=s=>document.querySelector(s);
-$("#top").onclick=()=>scrollTo({top:0,behavior:"smooth"});
-$("#load").onclick=()=>$("#power").textContent=($("#playerId").value.replace(/\D/g,"").slice(-6)||"000000").padStart(6,"0");
-$("#mirror").onclick=e=>e.currentTarget.textContent=e.currentTarget.textContent.includes("OFF")?"MIRROR ON":"MIRROR OFF";
-$("#calc").onclick=()=>$("#out").textContent=Math.max(0,Math.floor(100/Math.max(1,+$("#energy").value)));
-$("#search").oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll(".news-card,.world,.character,.tool").forEach(x=>x.style.opacity=!q||x.innerText.toLowerCase().includes(q)?"1":".2")};
+const pages=[...document.querySelectorAll(".page")];
+const tabs=[...document.querySelectorAll(".tab")];
+const $=(s,root=document)=>root.querySelector(s);
+
+function go(page){
+  const target=pages.find(p=>p.dataset.page===page) || pages[0];
+  pages.forEach(p=>p.classList.toggle("active",p===target));
+  tabs.forEach(t=>t.classList.toggle("active",t.dataset.go===page));
+  window.scrollTo({top:0,behavior:"smooth"});
+  history.replaceState({}, "", "#"+page);
+}
+function initRoute(){
+  const route=location.hash.replace("#","")||"home";
+  go(pages.some(p=>p.dataset.page===route)?route:"home");
+}
+document.addEventListener("click",e=>{
+  const goBtn=e.target.closest("[data-go]");
+  if(goBtn){e.preventDefault();go(goBtn.dataset.go);return;}
+});
+$("#homeBrand").onclick=()=>go("home");
+$("#scrollTopBtn").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+$("#globalSearchBtn").onclick=()=>{
+  go("songs");
+  setTimeout(()=>$("#songSearch")?.focus(),250);
+};
+
+const sheetData={
+  news:["最新情報","近期更新與網站公告",["最新首頁","SEKAI 入口更新","工具區重新整理","行動版介面更新"]],
+  favorites:["我的收藏","你保存的內容會從這裡進入",["收藏歌曲","收藏卡片","最近收藏","收藏設定"]],
+  about:["關於 Terminal","Fan-made Project SEKAI 介面概念",["SEKAI Terminal 2.0","iOS-inspired layout","Responsive mobile UI","Not affiliated with SEGA or Colorful Palette"]],
+  classroom:["教室的 SEKAI","World 01",["角色","歌曲","世界資訊","相關 MV"]],
+  stage:["舞台的 SEKAI","World 02",["角色","歌曲","舞台資訊","相關 MV"]],
+  street:["街道的 SEKAI","World 03",["角色","歌曲","街頭資訊","相關 MV"]],
+  wonderland:["Wonderland","World 04",["角色","歌曲","劇場資訊","相關 MV"]],
+  empty:["空無的 SEKAI","World 05",["角色","歌曲","世界資訊","相關 MV"]],
+  virtual:["Virtual Singer","World 06",["角色","歌曲","歌唱入口","相關 MV"]],
+  "song-all":["全部歌曲","Music Library",["歌曲搜尋","歌曲列表","歌手分類","快速收藏"]],
+  "song-favorite":["收藏歌曲","Music Library",["已收藏","最近收藏","移除收藏","排序"]],
+  "song-difficulty":["難度分類","Music Library",["Easy","Normal","Hard","Expert / Master"]],
+  "song-mv":["MV / 對應影片","Music Library",["官方 MV","3D MV","2D MV","影片搜尋"]],
+  "song-info":["歌曲資料","Music Library",["BPM","類型","歌唱成員","相關世界"]],
+  "song-tools":["歌曲工具","Music Library",["練習設定","Mirror","速度","快速筆記"]],
+  "unit-leos":["Leo/need","Character Unit",["團體資料","星乃一歌","天馬咲希","望月穗波 / 日野森志步"]],
+  "unit-mmj":["MORE MORE JUMP!","Character Unit",["團體資料","花里みのり","桐谷遙","桃井愛莉 / 日野森雫"]],
+  "unit-vbs":["Vivid BAD SQUAD","Character Unit",["團體資料","小豆沢こはね","白石杏","東雲彰人 / 青柳冬彌"]],
+  "unit-wxs":["Wonderlands×Showtime","Character Unit",["團體資料","天馬司","鳳えむ","草薙寧々 / 神代類"]],
+  "unit-25ji":["25時、ナイトコードで。","Character Unit",["團體資料","宵崎奏","朝比奈まふゆ","東雲絵名 / 暁山瑞希"]],
+  "unit-virtual":["Virtual Singer","Character Unit",["角色資料","初音ミク","鏡音リン / 鏡音レン","巡音ルカ / MEIKO / KAITO"]],
+  "card-all":["全部卡片","Card Archive",["卡片瀏覽","卡片搜尋","依角色","依團體"]],
+  "card-favorite":["我的收藏","Card Archive",["已收藏","最近收藏","分類","排序"]],
+  "card-trained":["特訓狀態","Card Archive",["未特訓","特訓完成","狀態查詢","進度"]],
+  "card-unit":["團體分類","Card Archive",["Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。"]],
+  "card-rarity":["稀有度","Card Archive",["★1","★2","★3","★4 / Birthday"]],
+  "card-search":["卡片搜尋","Card Archive",["關鍵字","角色","團體","稀有度"]],
+  "event-current":["目前活動","Event Center",["活動首頁","活動歌曲","活動報酬","活動商店"]],
+  "event-calc":["活動計算器","Event Center",["周回估算","資源估算","體力估算","點數目標"]],
+  "event-ranking":["排名紀錄","Event Center",["最高排名","活動紀錄","歷史紀錄","統計"]],
+  "event-history":["歷史活動","Event Center",["往期活動","活動搜尋","活動類型","快速開啟"]],
+  "player-profile":["玩家終端","Player Area",["Player ID","基本狀態","進度","同步狀態"]],
+  "rhythm-lab":["Rhythm Lab","Player Area",["速度設定","Mirror","練習模式","重置設定"]],
+  "event-tool":["活動計算","Player Area",["輸入體力","計算周回","目標估算","結果"]],
+  "music-tool":["Music Archive","Player Area",["歌曲","MV","收藏","搜尋"]],
+  "card-tool":["Card Archive","Player Area",["卡片","角色","收藏","搜尋"]],
+  settings:["設定","App Preferences",["顯示偏好","搜尋設定","本機資料","關於"]],
+  recent:["最近使用","My SEKAI",["最近歌曲","最近角色","最近卡片","最近工具"]]
+};
+
+function openSheet(key){
+  const data=sheetData[key];
+  if(!data)return;
+  $("#sheetTitle").textContent=data[0];
+  $("#sheetSubtitle").textContent=data[1];
+  $("#sheetContent").innerHTML=data[2].map((x,i)=>'<button class="sheet-item" data-sheet-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>點開後進入這個內容。</span></button>').join("");
+  $("#detailSheet").classList.add("open");
+  $("#detailSheet").setAttribute("aria-hidden","false");
+  document.body.classList.add("sheet-open");
+}
+function closeSheet(){
+  $("#detailSheet").classList.remove("open");
+  $("#detailSheet").setAttribute("aria-hidden","true");
+  document.body.classList.remove("sheet-open");
+}
+document.addEventListener("click",e=>{
+  const s=e.target.closest("[data-sheet]");
+  if(s){openSheet(s.dataset.sheet);return;}
+  if(e.target.id==="sheetClose" || e.target.id==="detailSheet")closeSheet();
+});
+
+$("#loadPlayer").onclick=()=>{
+  const id=$("#playerId").value.replace(/\D/g,"").slice(-6)||"000000";
+  $("#playerPower").textContent=id.padStart(6,"0");
+};
+$("#songFilter").onclick=()=>{
+  const box=$("#songSearch");
+  box.value=box.value?box.value:"範例：歌名 / 角色 / MV";
+  box.focus();
+};
+$("#songSearch").oninput=e=>{
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('[data-page="songs"] .catalog-card').forEach(card=>{
+    card.style.opacity=!q || card.innerText.toLowerCase().includes(q) ? "1" : ".3";
+  });
+};
+window.addEventListener("hashchange",initRoute);
+initRoute();
 </script>
 </body>
 </html>
