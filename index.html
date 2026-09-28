@@ -1275,6 +1275,7 @@ function activeLanguage(){
 let currentLanguage=activeLanguage();
 
 function t(source){
+  if(currentLanguage==="zh-TW")return source;
   const pack=langOverrides[currentLanguage]||{};
   return Object.prototype.hasOwnProperty.call(pack,source)?pack[source]:
     Object.prototype.hasOwnProperty.call(enText,source)?enText[source]:source;
@@ -1694,7 +1695,7 @@ function toggleHomeAccordion(card){
   card.classList.add("home-card-expanded");
   card.setAttribute("aria-expanded","true");
   card.querySelector(".chev").textContent="⌄";
-  showToast(data[0]+" 已展開");
+  showToast(t(data[0])+" "+t("已展開"));
 }
 
 const homeActionRoutes={
