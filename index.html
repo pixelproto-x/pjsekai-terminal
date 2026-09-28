@@ -3,103 +3,154 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project SEKAI｜Terminal</title>
+<meta name="theme-color" content="#090b18">
+<title>Project SEKAI｜SEKAI TERMINAL</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','Noto Sans TC','sans-serif']}}}}
 </script>
 <style>
-:root{--accent:#21d4fd;--accent2:#7c3aed;--bg:#080b14;--panel:#101625}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f8fafc;font-family:Inter,"Noto Sans TC",sans-serif;overflow-x:hidden}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(135deg,transparent 24%,var(--accent) 25%,transparent 26%),linear-gradient(45deg,transparent 74%,var(--accent2) 75%,transparent 76%);background-size:90px 90px;mix-blend-mode:screen}
-.glow{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 60%,transparent),0 0 28px color-mix(in srgb,var(--accent) 18%,transparent)}
-.panel{background:linear-gradient(145deg,rgba(20,28,47,.96),rgba(8,12,24,.96));border:1px solid rgba(255,255,255,.09);clip-path:polygon(0 12px,12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
-.diag{position:relative;overflow:hidden}.diag:after{content:"";position:absolute;width:55%;height:220%;right:-15%;top:-60%;transform:rotate(28deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);pointer-events:none}
-.world.active{outline:2px solid var(--accent);box-shadow:0 0 20px color-mix(in srgb,var(--accent) 30%,transparent)}
-.world{transition:.2s}.world:hover{transform:translateY(-2px)}
-.track{height:150px;perspective:600px;overflow:hidden;background:radial-gradient(ellipse at 50% 115%,rgba(34,211,238,.22),transparent 55%),#080d19}
-.lane{position:absolute;left:8%;right:8%;bottom:-65px;height:230px;transform:rotateX(61deg);border:2px solid var(--accent);background:repeating-linear-gradient(90deg,transparent 0 19%,rgba(255,255,255,.08) 19.2% 19.7%),repeating-linear-gradient(0deg,transparent 0 19%,rgba(255,255,255,.08) 19.2% 19.7%);box-shadow:0 0 30px color-mix(in srgb,var(--accent) 22%,transparent)}
-.note{position:absolute;bottom:42px;width:28px;height:12px;background:var(--accent);box-shadow:0 0 16px var(--accent);transform:skewX(-20deg)}
-input{outline:none}.accent{color:var(--accent)}
+:root{--a:#63e6ff;--b:#8b5cf6;--pink:#ff6fb5;--bg:#070913}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,"Noto Sans TC",sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 70% 5%,color-mix(in srgb,var(--b) 18%,transparent),transparent 32%),radial-gradient(circle at 10% 35%,color-mix(in srgb,var(--a) 11%,transparent),transparent 28%),linear-gradient(180deg,#0b0d1c 0,#070913 55%,#04050b 100%)}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.12;background-image:linear-gradient(135deg,transparent 24%,#fff 25%,transparent 26%),linear-gradient(45deg,transparent 74%,#fff 75%,transparent 76%);background-size:120px 120px}
+*{scrollbar-width:thin;scrollbar-color:var(--a) #080a12}
+.nav{background:linear-gradient(180deg,rgba(6,7,15,.94),rgba(6,7,15,.72));backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
+.logo{font-weight:1000;letter-spacing:-.07em}.logo span{color:var(--a)}
+.hero{min-height:680px;position:relative;display:flex;align-items:center;overflow:hidden;background:linear-gradient(110deg,rgba(7,9,19,.98) 8%,rgba(7,9,19,.78) 46%,rgba(7,9,19,.2) 100%)}
+.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 76% 46%,color-mix(in srgb,var(--a) 22%,transparent),transparent 18%),linear-gradient(125deg,transparent 0 56%,rgba(255,255,255,.05) 56.2% 56.8%,transparent 57%)}
+.hero-art{position:absolute;right:-5%;top:4%;width:65%;height:92%;opacity:.92;background:radial-gradient(ellipse at 55% 48%,color-mix(in srgb,var(--b) 30%,transparent),transparent 40%),linear-gradient(135deg,transparent 0 32%,color-mix(in srgb,var(--a) 20%,transparent) 32.2% 32.6%,transparent 32.8% 100%),linear-gradient(160deg,transparent 0 45%,rgba(255,255,255,.09) 45.2% 45.5%,transparent 45.7%);transform:skewX(-8deg)}
+.hero-copy{position:relative;z-index:2}.eyebrow{font-size:11px;letter-spacing:.42em;color:var(--a);font-weight:800}.hero h1{font-size:clamp(4rem,10vw,9rem);line-height:.78;letter-spacing:-.09em;font-weight:1000;text-shadow:0 0 40px color-mix(in srgb,var(--a) 20%,transparent)}
+.hero h1 small{display:block;font-size:.2em;line-height:1.4;letter-spacing:.45em;color:#fff;margin-left:.12em}
+.btn{border:1px solid rgba(255,255,255,.16);padding:13px 20px;font-size:12px;font-weight:900;letter-spacing:.08em;transition:.2s;position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-3px);border-color:var(--a);box-shadow:0 0 30px color-mix(in srgb,var(--a) 20%,transparent)}
+.btn.primary{background:#fff;color:#070913}
+.section{max-width:1320px;margin:auto;padding:90px 20px}.section-title{font-size:clamp(2rem,5vw,4rem);font-weight:1000;letter-spacing:-.06em;line-height:.9}
+.kicker{font-size:10px;letter-spacing:.35em;color:var(--a);font-weight:900}
+.card{background:linear-gradient(145deg,rgba(20,23,40,.9),rgba(8,9,18,.94));border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden}
+.card:after{content:"";position:absolute;right:-25%;top:-50%;width:70%;height:180%;transform:rotate(28deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);pointer-events:none}
+.news-item{min-height:190px;padding:22px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.75))}
+.news-item:hover{border-color:var(--a);transform:translateY(-5px)}
+.world-card{min-height:330px;transition:.25s}.world-card:hover{transform:translateY(-8px) scale(1.01);border-color:var(--a)}
+.world-bg{position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,color-mix(in srgb,var(--wc) 32%,transparent),transparent 38%),linear-gradient(135deg,transparent 38%,color-mix(in srgb,var(--wc) 15%,transparent) 38.5% 50%,transparent 50.5%)}
+.world-label{position:absolute;left:22px;bottom:20px;z-index:2}.world-label h3{font-size:2.4rem;font-weight:1000;line-height:.9}
+.char{min-height:260px;padding:20px;display:flex;align-items:flex-end}.char-art{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--cc) 35%,transparent),transparent 25%),linear-gradient(145deg,color-mix(in srgb,var(--cc) 18%,transparent),transparent 58%)}.char-sil{position:absolute;left:50%;top:12%;width:145px;height:185px;transform:translateX(-50%);border-radius:48% 52% 42% 58%;background:linear-gradient(145deg,rgba(255,255,255,.35),color-mix(in srgb,var(--cc) 55%,#101322));filter:drop-shadow(0 0 30px color-mix(in srgb,var(--cc) 35%,transparent));clip-path:polygon(50% 0,78% 10%,95% 35%,82% 66%,92% 100%,50% 88%,8% 100%,18% 65%,5% 35%,22% 10%)}
+.char-info{position:relative;z-index:2}.char-info h3{font-size:1.6rem;font-weight:1000}.char-info p{font-size:10px;color:#ffffff80;letter-spacing:.2em}
+.marquee{border-block:1px solid rgba(255,255,255,.1);overflow:hidden;white-space:nowrap;background:#fff;color:#080913;font-size:12px;font-weight:1000;letter-spacing:.18em}.marquee div{display:inline-block;padding:13px 0;animation:scroll 24s linear infinite}@keyframes scroll{to{transform:translateX(-50%)}}
+.tabs button.active{color:#fff;border-color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent)}
+.fade{animation:fade .6s ease both}@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(max-width:700px){.hero{min-height:610px}.hero-art{width:100%;right:-28%;opacity:.55}.section{padding:65px 16px}.navlinks{display:none}}
 </style>
 </head>
 <body>
-<header class="sticky top-0 z-20 border-b border-white/10 bg-[#080b14]/90 backdrop-blur">
-<div class="max-w-7xl mx-auto px-4 py-3 flex gap-3 items-center">
-<div class="font-black tracking-tight text-xl whitespace-nowrap"><span class="accent">SEKAI</span><span class="text-white">//TERMINAL</span></div>
-<div class="hidden md:block text-xs text-white/40">PROJECT SEKAI TOOLBOX</div>
-<div class="ml-auto relative w-full max-w-sm">
-<input id="search" class="w-full bg-white/5 border border-white/10 px-4 py-2 text-sm" placeholder="搜尋玩家、歌曲、卡片、活動…">
+<header class="nav sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto px-5 h-[72px] flex items-center gap-8">
+<a href="#" class="logo text-xl whitespace-nowrap">SEKAI<span>✦</span>TERMINAL</a>
+<nav class="navlinks hidden lg:flex items-center gap-7 text-[11px] font-bold text-white/55">
+<a href="#news" class="hover:text-white">NEWS</a><a href="#worlds" class="hover:text-white">SEKAI</a><a href="#characters" class="hover:text-white">CHARACTERS</a><a href="#tools" class="hover:text-white">TOOLS</a>
+</nav>
+<div class="ml-auto flex items-center gap-2">
+<input id="search" class="hidden sm:block w-48 bg-white/5 border border-white/10 px-3 py-2 text-xs outline-none focus:border-[var(--a)]" placeholder="SEARCH">
+<button id="menu" class="btn px-4 py-2">MENU</button>
 </div>
 </div>
 </header>
-<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-<section class="diag panel p-5">
-<div class="flex items-end justify-between gap-4 mb-4"><div><div class="text-xs accent font-bold tracking-[.3em]">SEKAI SELECT</div><h1 class="text-3xl md:text-5xl font-black">世界切換 TERMINAL</h1></div><div class="text-xs text-white/40">LIVE THEME ENGINE</div></div>
-<div id="worlds" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-<button class="world active p-3 text-left bg-cyan-400/10" data-a="#21d4fd" data-b="#7c3aed"><b>教室</b><span class="block text-[10px] opacity-50">CLASSROOM</span></button>
-<button class="world p-3 text-left bg-pink-400/10" data-a="#fb7185" data-b="#f59e0b"><b>舞台</b><span class="block text-[10px] opacity-50">STAGE</span></button>
-<button class="world p-3 text-left bg-orange-400/10" data-a="#fb923c" data-b="#ef4444"><b>街道</b><span class="block text-[10px] opacity-50">STREET</span></button>
-<button class="world p-3 text-left bg-violet-400/10" data-a="#a78bfa" data-b="#ec4899"><b>幻想</b><span class="block text-[10px] opacity-50">FANTASY</span></button>
-<button class="world p-3 text-left bg-slate-400/10" data-a="#94a3b8" data-b="#64748b"><b>空無</b><span class="block text-[10px] opacity-50">EMPTY</span></button>
-<button class="world p-3 text-left bg-emerald-400/10" data-a="#34d399" data-b="#06b6d4"><b>虛擬</b><span class="block text-[10px] opacity-50">VIRTUAL</span></button>
+
+<main>
+<section class="hero">
+<div class="hero-art"></div>
+<div class="max-w-[1400px] w-full mx-auto px-6 md:px-12">
+<div class="hero-copy max-w-3xl fade">
+<div class="eyebrow mb-5">PROJECT SEKAI · FAN TOOLBOX</div>
+<h1>SEKAI<small>WHERE MUSIC CONNECTS US</small></h1>
+<p class="mt-7 max-w-xl text-sm md:text-base leading-7 text-white/55">一個以大型遊戲官方網站為靈感打造的 Project SEKAI 資訊與工具入口。探索世界、角色、歌曲與玩家工具。</p>
+<div class="flex flex-wrap gap-3 mt-8">
+<a class="btn primary" href="#tools">EXPLORE TERMINAL ↗</a><a class="btn" href="#worlds">DISCOVER SEKAI</a>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#070913] to-transparent"></div>
+</section>
+
+<div class="marquee"><div>PROJECT SEKAI ✦ COLORFUL STAGE! ✦ VIRTUAL SINGER ✦ MORE MORE JUMP! ✦ Vivid BAD SQUAD ✦ Wonderlands×Showtime ✦ Nightcord at 25:00 ✦ PROJECT SEKAI ✦ COLORFUL STAGE! ✦ VIRTUAL SINGER ✦</div></div>
+
+<section id="news" class="section">
+<div class="flex items-end justify-between mb-8"><div><div class="kicker">LATEST INFORMATION</div><h2 class="section-title mt-3">NEWS<span class="text-white/20">.</span></h2></div><button class="text-xs text-white/45 hover:text-white">VIEW ALL →</button></div>
+<div class="grid md:grid-cols-3 gap-4">
+<article class="card news-item transition"><div class="text-[10px] text-white/35 mb-auto">2026.09.28 · SYSTEM</div><h3 class="font-black text-xl">SEKAI TERMINAL 2.0</h3><p class="text-xs text-white/45 mt-2">全新首頁體驗與資訊入口正式開放。</p></article>
+<article class="card news-item transition"><div class="text-[10px] text-white/35 mb-auto">2026.09.27 · UPDATE</div><h3 class="font-black text-xl">WORLD SELECT</h3><p class="text-xs text-white/45 mt-2">六大世界主題切換系統加入。</p></article>
+<article class="card news-item transition"><div class="text-[10px] text-white/35 mb-auto">2026.09.26 · TOOL</div><h3 class="font-black text-xl">PLAYER TERMINAL</h3><p class="text-xs text-white/45 mt-2">玩家資料與計算工具入口更新。</p></article>
 </div>
 </section>
 
-<section class="panel p-5">
-<div class="flex flex-wrap gap-3 items-center justify-between mb-4"><div><div class="text-xs accent tracking-widest">PLAYER DASHBOARD</div><h2 class="text-2xl font-black">玩家資料終端</h2></div><div class="flex gap-2"><input id="playerId" class="bg-black/30 border border-white/10 px-3 py-2 text-sm" placeholder="輸入玩家 ID"><button id="loadPlayer" class="px-4 py-2 bg-white text-black font-bold text-sm">載入</button></div></div>
-<div class="flex gap-2 mb-4"><button class="mode px-3 py-1.5 bg-white text-black text-xs font-bold">ID 模式</button><button class="mode px-3 py-1.5 bg-white/5 text-xs">公開資料</button></div>
-<div class="grid md:grid-cols-5 gap-3">
-<div class="md:col-span-2 grid grid-cols-2 gap-3">
-<div class="panel p-4"><div class="text-xs opacity-50">TOTAL POWER</div><div id="power" class="text-3xl font-black mt-1">000,000</div><div class="accent text-xs mt-2">★4 SLOT READY</div></div>
-<div class="panel p-4"><div class="text-xs opacity-50">AP / FC</div><div class="text-2xl font-black mt-1">00 / 00</div><div class="text-xs opacity-40 mt-2">PERFECT TRACK</div></div>
-</div>
-<div class="md:col-span-3 panel p-4"><div class="flex justify-between text-xs mb-2"><span class="opacity-50">26-CHARACTER CR MATRIX</span><span class="accent">READY</span></div><div id="matrix" class="grid grid-cols-13 gap-1"></div></div>
-</div>
-<div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-3">
-<div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 01</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 1</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 02</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 2</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 03</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 3</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 04</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 4</div></div><div class="diag panel p-3 min-h-28"><div class="text-[10px] opacity-40">PLAYER 05</div><div class="text-lg font-black mt-3">★4</div><div class="text-xs accent">POWER ———</div><div class="text-[10px] opacity-40 mt-2">CARD SLOT 5</div></div>
+<section id="worlds" class="section pt-0">
+<div class="mb-8"><div class="kicker">THE WORLDS</div><h2 class="section-title mt-3">SEKAI / 世界</h2></div>
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<article class="card world-card" style="--wc:#60a5fa"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">01</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">CLASSROOM</p><h3>教室的 SEKAI</h3><p class="text-xs text-white/45 mt-2">教室、青春與未知的歌聲</p></div></article><article class="card world-card" style="--wc:#fb7185"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">02</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">STAGE</p><h3>舞台的 SEKAI</h3><p class="text-xs text-white/45 mt-2">聚光燈下，向夢想前進</p></div></article><article class="card world-card" style="--wc:#fb923c"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">03</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">STREET</p><h3>街道的 SEKAI</h3><p class="text-xs text-white/45 mt-2">音樂、夥伴與城市的節奏</p></div></article><article class="card world-card" style="--wc:#c084fc"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">04</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">FANTASY</p><h3>Wonderland</h3><p class="text-xs text-white/45 mt-2">充滿奇想的不可思議世界</p></div></article><article class="card world-card" style="--wc:#94a3b8"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">05</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">EMPTY</p><h3>空無的 SEKAI</h3><p class="text-xs text-white/45 mt-2">寂靜之中仍然存在的旋律</p></div></article><article class="card world-card" style="--wc:#34d399"><div class="world-bg"></div><div class="absolute right-5 top-5 text-[9px] tracking-[.25em] text-white/35">06</div><div class="world-label"><p class="text-[10px] tracking-[.3em] text-white/45">VIRTUAL</p><h3>Virtual Singer</h3><p class="text-xs text-white/45 mt-2">跨越次元傳達歌聲</p></div></article>
 </div>
 </section>
 
-<section class="grid lg:grid-cols-2 gap-6">
-<div class="panel p-5">
-<div class="flex justify-between mb-4"><div><div class="text-xs accent tracking-widest">3D RHYTHM TRAINING</div><h2 class="text-2xl font-black">節奏訓練室</h2></div><button id="mirror" class="px-3 py-2 bg-white/5 border border-white/10 text-xs">MIRROR OFF</button></div>
-<div class="track relative"><div class="lane"></div><i class="note left-[28%]"></i><i class="note left-[53%]" style="bottom:65px"></i><i class="note left-[70%]" style="bottom:88px"></i></div>
-<div class="grid grid-cols-3 gap-2 mt-3">
-<label class="bg-white/5 p-3 text-xs">速度<select id="speed" class="bg-transparent ml-2"><option>0.5x</option><option>0.75x</option><option selected>1.0x</option><option>1.25x</option><option>1.5x</option></select></label>
-<button class="bg-white/5 text-xs" id="offset">AP OFFSET</button><button class="bg-white text-black font-bold text-xs" id="train">進入訓練</button>
-</div>
-</div>
-<div class="panel p-5">
-<div class="text-xs accent tracking-widest">STRATEGY CALCULATION</div><h2 class="text-2xl font-black mb-4">活動策略計算</h2>
-<div class="grid sm:grid-cols-2 gap-3">
-<div class="bg-white/5 p-4"><div class="text-xs opacity-50">火消し消耗</div><div class="flex gap-2 mt-3"><input id="energy" type="number" value="10" class="w-20 bg-black/30 border border-white/10 px-2 py-2"><button id="calc" class="bg-white text-black px-3 text-xs font-bold">計算</button></div><div id="calcOut" class="accent font-bold mt-3">預估：0 次</div></div>
-<div class="bg-white/5 p-4"><div class="text-xs opacity-50">體力回滿倒數</div><div id="timer" class="text-3xl font-black mt-2">00:00:00</div><button id="startTimer" class="text-xs mt-3 border border-white/10 px-3 py-2">啟動倒數</button></div>
-</div>
+<section id="characters" class="section pt-0">
+<div class="flex items-end justify-between mb-8"><div><div class="kicker">CHARACTER ARCHIVE</div><h2 class="section-title mt-3">CHARACTERS</h2></div><div class="tabs flex gap-1"><button class="active border border-white/10 px-3 py-2 text-[10px]" data-filter="all">ALL</button><button class="border border-white/10 px-3 py-2 text-[10px]" data-filter="unit">UNIT</button></div></div>
+<div id="chars" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<article class="card char transition" style="--cc:#60a5fa"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 01</p><h3>星乃一歌</h3><p>HOSHINO ICHIKA</p></div></article><article class="card char transition" style="--cc:#f9a8d4"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 02</p><h3>花里みのり</h3><p>HANASATO MINORI</p></div></article><article class="card char transition" style="--cc:#fb923c"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 03</p><h3>小豆沢こはね</h3><p>AZUSAWA KOHANE</p></div></article><article class="card char transition" style="--cc:#facc15"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 04</p><h3>天馬司</h3><p>TENMA TSUKASA</p></div></article><article class="card char transition" style="--cc:#c4b5fd"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 05</p><h3>宵崎奏</h3><p>Yoisaki Kanade</p></div></article><article class="card char transition" style="--cc:#34d399"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 06</p><h3>初音ミク</h3><p>HATSUNE MIKU</p></div></article><article class="card char transition" style="--cc:#fb7185"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 07</p><h3>鳳えむ</h3><p>OTOMU? EMU</p></div></article><article class="card char transition" style="--cc:#93c5fd"><div class="char-art"></div><div class="char-sil"></div><div class="char-info"><p>CHARACTER 08</p><h3>青柳冬弥</h3><p>AOYAGI TOYA</p></div></article>
 </div>
 </section>
 
-<section class="panel p-5">
-<div class="text-xs accent tracking-widest">MEDIA ENCYCLOPEDIA</div><h2 class="text-2xl font-black mb-4">媒體圖鑑</h2>
-<div class="grid lg:grid-cols-2 gap-4">
-<div class="aspect-video bg-black/60 border border-white/10 flex items-center justify-center relative"><div class="text-center"><div class="text-5xl">▶</div><div class="text-xs opacity-50 mt-2">OFFICIAL YOUTUBE MV PLAYER</div></div></div>
-<div class="panel p-4"><div class="text-xs opacity-50 mb-3">CARD TRAINING PREVIEW</div><div class="grid grid-cols-2 gap-3"><div class="aspect-[3/4] bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-end p-3"><span class="text-xs">BEFORE</span></div><div class="aspect-[3/4] bg-gradient-to-br from-white/20 to-transparent border border-white/10 flex items-end p-3"><span class="text-xs accent">AFTER</span></div></div></div>
+<section id="tools" class="section pt-0">
+<div class="mb-8"><div class="kicker">PLAYER TOOLS</div><h2 class="section-title mt-3">TERMINAL</h2></div>
+<div class="grid lg:grid-cols-3 gap-4">
+<article class="card p-6 lg:col-span-2">
+<div class="flex items-center justify-between"><div><p class="kicker">PLAYER DATA</p><h3 class="text-2xl font-black mt-2">PLAYER DASHBOARD</h3></div><span class="text-[10px] text-white/30">ONLINE</span></div>
+<div class="grid sm:grid-cols-3 gap-3 mt-6">
+<label class="sm:col-span-2"><span class="text-[10px] text-white/40">PLAYER ID</span><input id="playerId" class="w-full mt-2 bg-black/30 border border-white/10 px-3 py-3 text-sm outline-none focus:border-[var(--a)]" placeholder="輸入玩家 ID"></label>
+<button id="loadPlayer" class="btn primary self-end">LOAD DATA</button>
+</div>
+<div class="grid grid-cols-3 gap-3 mt-4">
+<div class="bg-white/5 p-4"><p class="text-[9px] text-white/35">POWER</p><strong id="power" class="text-2xl">000000</strong></div>
+<div class="bg-white/5 p-4"><p class="text-[9px] text-white/35">AP</p><strong class="text-2xl">00</strong></div>
+<div class="bg-white/5 p-4"><p class="text-[9px] text-white/35">FC</p><strong class="text-2xl">00</strong></div>
+</div>
+</article>
+<article class="card p-6">
+<p class="kicker">RHYTHM</p><h3 class="text-2xl font-black mt-2">TRAINING ROOM</h3>
+<div class="mt-5 aspect-[16/9] bg-black/40 border border-white/10 relative overflow-hidden">
+<div class="absolute inset-x-[18%] bottom-[-45%] h-[100%] border-2 border-[var(--a)] rotate-0" style="transform:perspective(400px) rotateX(58deg)"></div>
+<div class="absolute left-[30%] bottom-10 w-8 h-3 bg-[var(--a)] shadow-[0_0_20px_var(--a)]"></div><div class="absolute left-[57%] bottom-16 w-8 h-3 bg-[var(--pink)] shadow-[0_0_20px_var(--pink)]"></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-3"><select id="speed" class="bg-white/5 border border-white/10 p-3 text-xs"><option>0.5x</option><option>0.75x</option><option selected>1.0x</option><option>1.25x</option><option>1.5x</option></select><button id="mirror" class="btn">MIRROR OFF</button></div>
+</article>
+<article class="card p-6">
+<p class="kicker">CALCULATOR</p><h3 class="text-2xl font-black mt-2">EVENT STRATEGY</h3>
+<p class="text-xs text-white/40 mt-3">快速估算火消し與活動周回次數。</p>
+<div class="flex gap-2 mt-6"><input id="energy" type="number" value="10" class="w-full bg-black/30 border border-white/10 px-3 py-3 text-sm"><button id="calc" class="btn primary">CALC</button></div>
+<div id="calcOut" class="mt-5 text-sm text-[var(--a)]">預估：0 次</div>
+</article>
+<article class="card p-6 lg:col-span-2">
+<p class="kicker">MEDIA</p><h3 class="text-2xl font-black mt-2">MUSIC / MV ARCHIVE</h3>
+<div class="mt-5 aspect-video bg-gradient-to-br from-white/10 to-black border border-white/10 flex items-center justify-center">
+<div class="text-center"><div class="w-16 h-16 rounded-full border border-white/20 grid place-items-center text-xl mx-auto">▶</div><p class="text-[10px] tracking-[.25em] text-white/40 mt-4">OFFICIAL MV PLAYER</p></div>
+</div>
+</article>
 </div>
 </section>
-<footer class="text-center text-[10px] text-white/30 py-3">PROJECT SEKAI TOOLBOX · TERMINAL SKELETON</footer>
 </main>
+
+<footer class="border-t border-white/10">
+<div class="max-w-[1400px] mx-auto px-6 py-12 flex flex-col md:flex-row gap-5 justify-between text-[10px] text-white/35">
+<div><div class="logo text-lg text-white">SEKAI<span>✦</span>TERMINAL</div><p class="mt-2">Fan-made toolbox interface · Not affiliated with SEGA / Colorful Palette.</p></div>
+<div class="flex gap-5"><a href="#news">NEWS</a><a href="#worlds">SEKAI</a><a href="#characters">CHARACTERS</a><a href="#tools">TOOLS</a></div>
+</div>
+</footer>
+
 <script>
 const $=s=>document.querySelector(s);
-document.querySelectorAll(".world").forEach(b=>b.onclick=()=>{document.querySelectorAll(".world").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.documentElement.style.setProperty("--accent",b.dataset.a);document.documentElement.style.setProperty("--accent2",b.dataset.b)});
-for(let i=0;i<26;i++){const x=document.createElement("span");x.className="aspect-square bg-white/10 text-[8px] flex items-center justify-center";x.textContent=String.fromCharCode(65+i);$("#matrix").appendChild(x)}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
 $("#loadPlayer").onclick=()=>{$("#power").textContent=($("#playerId").value.replace(/\D/g,"").slice(-6)||"000000").padStart(6,"0")};
 $("#mirror").onclick=e=>e.currentTarget.textContent=e.currentTarget.textContent.includes("OFF")?"MIRROR ON":"MIRROR OFF";
 $("#calc").onclick=()=>{$("#calcOut").textContent="預估："+Math.max(0,Math.floor(100/Math.max(1,+$("#energy").value)))+" 次"};
-$("#offset").onclick=()=>alert("AP Offset 設定介面已準備完成。");
-$("#train").onclick=()=>alert("3D 訓練室入口已準備完成。");
-let end=0;function tick(){if(!end)return;let d=Math.max(0,end-Date.now()),s=Math.floor(d/1000),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;$("#timer").textContent=[h,m,s].map(x=>String(x).padStart(2,"0")).join(":");if(d)requestAnimationFrame(tick);else end=0}
-$("#startTimer").onclick=()=>{end=Date.now()+3600000;tick()};
-$("#search").oninput=e=>{document.title=e.target.value?e.target.value+"｜SEKAI Terminal":"Project SEKAI｜Terminal"};
+$("#search").oninput=e=>document.title=e.target.value?e.target.value+"｜SEKAI TERMINAL":"Project SEKAI｜SEKAI TERMINAL";
+$("#menu").onclick=()=>window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
 </script>
 </body>
 </html>
