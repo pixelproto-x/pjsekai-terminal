@@ -470,15 +470,7 @@ button{
 .bottom-bar{
   isolation:isolate;
 }
-.bottom-bar:after{
-  content:"";
-  position:absolute;
-  inset:3px;
-  border-radius:21px;
-  pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.34),transparent 45%);
-  opacity:.7;
-}
+
 .tab{
   position:relative;
   z-index:1;
@@ -490,10 +482,7 @@ button{
 .tab .tab-icon{
   transition:transform .32s var(--ios-spring),filter .25s ease;
 }
-.tab.active{
-  box-shadow:0 7px 18px rgba(27,29,40,.14);
-  transform:translateY(-1px);
-}
+.tab.active{box-shadow:none;transform:translateY(-1px)}
 .tab.active .tab-icon{
   transform:translateY(-1px) scale(1.08);
 }
