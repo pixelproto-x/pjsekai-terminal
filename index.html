@@ -224,10 +224,19 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   position:fixed;z-index:80;left:50%;bottom:calc(14px + var(--safe-bottom));transform:translateX(-50%);
   width:min(720px,calc(100% - 24px));padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
   background:rgba(249,249,252,.8);backdrop-filter:blur(25px) saturate(150%);-webkit-backdrop-filter:blur(25px) saturate(150%);
-  border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:0 15px 50px rgba(23,25,36,.14)
+  border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:0 15px 50px rgba(23,25,36,.14);
+  --tab-index:0;--tab-duration:.42s;--tab-ease:cubic-bezier(.22,.9,.28,1.18)
 }
-.tab{border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:.18s}
-.tab .tab-icon{font-size:17px;line-height:1}.tab.active{background:#1b1d28;color:#fff}.tab:hover{color:#181a22}.tab.active:hover{color:#fff}
+.bottom-bar:before{
+  content:"";position:absolute;z-index:0;left:8px;top:8px;bottom:8px;
+  width:calc((100% - 32px)/5);border-radius:18px;background:#1b1d28;
+  transform:translateX(calc(var(--tab-index) * (100% + 4px)));
+  transition:transform var(--tab-duration) var(--tab-ease);
+  box-shadow:0 5px 16px rgba(27,29,40,.16)
+}
+.tab{position:relative;z-index:1;border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:color .22s ease,transform .18s var(--tab-ease)}
+.tab .tab-icon{font-size:17px;line-height:1;transition:transform .28s var(--tab-ease)}
+.tab.active{background:transparent;color:#fff}.tab:hover{color:#181a22}.tab.active:hover{color:#fff}.tab.active .tab-icon{transform:scale(1.04)}
 
 .footer{max-width:1480px;margin:auto;padding:15px 28px 150px;color:#d2d4dd;font-size:10px;text-align:center;text-shadow:0 1px 5px rgba(0,0,0,.25)}
 
@@ -852,8 +861,11 @@ let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
 
 function updateTabMotion(page){
-  tabs.forEach(t=>{
+  tabs.forEach((t,i)=>{
     t.classList.toggle("active",t.dataset.go===page);
+    if(t.dataset.go===page){
+      document.querySelector(".bottom-bar")?.style.setProperty("--tab-index",String(i));
+    }
   });
 }
 
