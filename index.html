@@ -231,12 +231,12 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   touch-action:none;user-select:none;overflow:visible;isolation:isolate;
 }
 .tab-indicator{
-  position:absolute;z-index:2;left:50%;top:50%;width:var(--tab-w);height:var(--tab-h);min-width:72px;
-  margin-top:-26px;border-radius:17px;
+  position:absolute;z-index:2;left:var(--tab-left,0px);top:50%;width:var(--tab-w);height:var(--tab-h);min-width:72px;
+  margin-left:0;margin-top:-24px;border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
   border:1px solid rgba(255,255,255,.68);
   box-shadow:0 5px 16px rgba(35,42,65,.11),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
-  transform:translate3d(var(--tab-x),var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
+  transform:translate3d(0,var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease),box-shadow .25s ease;
   pointer-events:auto;will-change:transform;
 }
