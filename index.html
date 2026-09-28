@@ -1256,7 +1256,7 @@ function updateAppState(mutator,save=true){
 function applySekaiTheme(theme,save=true){
   const next=SEKAI_THEMES[theme]?theme:"virtual";
   document.body.dataset.sekaiTheme=next;
-  document.documentElement.style.setProperty("--theme-accent",next==="virtual"?"#61c795":"var(--theme-accent)");
+  document.documentElement.style.removeProperty("--theme-accent");
   document.querySelectorAll(".theme-choice").forEach(btn=>{
     const active=btn.dataset.theme===next;
     btn.classList.toggle("active",active);
@@ -2346,6 +2346,11 @@ $("#songSearch").oninput=e=>{
   });
 };
 
+function escapeHtml(value){
+  return String(value??"").replace(/[&<>"']/g,ch=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
 function routeForSheetKey(key){
   if(/^song-/.test(key))return "songs";
   if(/^unit-/.test(key))return "characters";
@@ -2409,7 +2414,7 @@ function renderGlobalSearchResults(query=""){
     box.innerHTML='<div class="search-empty">找不到相符的內容</div>';
     return;
   }
-  box.innerHTML=results.map((item,i)=>'<button class="search-result" type="button" data-search-route="'+item.route+'" data-search-index="'+i+'"><span class="result-icon">'+item.icon+'</span><span><strong>'+item.title+'</strong><span>'+item.meta+'</span></span></button>').join("");
+  box.innerHTML=results.map((item,i)=>'<button class="search-result" type="button" data-search-route="'+escapeHtml(item.route)+'" data-search-index="'+i+'"><span class="result-icon">'+escapeHtml(item.icon)+'</span><span><strong>'+escapeHtml(item.title)+'</strong><span>'+escapeHtml(item.meta)+'</span></span></button>').join("");
 }
 function renderRecentSearches(){
   const box=$("#globalSearchRecent");
@@ -2418,7 +2423,7 @@ function renderRecentSearches(){
     box.innerHTML='<span class="search-empty" style="padding:4px">尚無搜尋紀錄</span>';
     return;
   }
-  box.innerHTML=appState.recentSearches.map(q=>'<button class="search-chip" type="button" data-recent-search="'+q.replace(/"/g,"&quot;")+'">⌕ '+q+'</button>').join("");
+  box.innerHTML=appState.recentSearches.map(q=>'<button class="search-chip" type="button" data-recent-search="'+escapeHtml(q)+'">⌕ '+escapeHtml(q)+'</button>').join("");
 }
 function rememberGlobalSearch(query){
   const q=String(query||"").trim();
