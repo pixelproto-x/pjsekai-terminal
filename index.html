@@ -970,9 +970,8 @@ function moveTabDrag(e){
     draggingStartLeft+dx+INDICATOR_W/2));
 
   const left=targetCenter-INDICATOR_W/2;
-  const maxY= Math.max(0,Math.min(10,innerBottom-innerTop-INDICATOR_H));
-  const minY= Math.min(0,Math.max(-10,innerTop+halfH-(barRect.height/2)));
-  const y=Math.max(minY,Math.min(maxY,dy));
+  const centerY=Math.max(innerTop+halfH,Math.min(innerBottom-halfH,barRect.height/2+dy));
+  const y=centerY-barRect.height/2;
 
   const edgeDist=Math.min(targetCenter-minCenter,maxCenter-targetCenter);
   const edge=Math.max(0,1-Math.min(edgeDist/24,1));
