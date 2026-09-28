@@ -111,7 +111,8 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .section-head:after{content:"✦  ♪  ♫";font-size:12px;letter-spacing:.18em;color:rgba(145,121,245,.42);margin-left:auto;margin-bottom:5px}
 .section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
 
-.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.home-feature{min-width:0;display:flex;flex-direction:column;gap:0}
 .app-card{
   min-height:82px;padding:14px 48px 14px 14px;border:1px solid rgba(255,255,255,.78);border-radius:20px;
   background:rgba(255,255,255,var(--glass-opacity));backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);
@@ -139,7 +140,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .home-card-expanded{border-bottom-left-radius:8px;border-bottom-right-radius:8px;background:#fff}
 .home-card-expanded .chev{color:#555963}
 .home-accordion-panel{
-  grid-column:1 / -1;
+  width:100%;
   margin-top:-6px;padding:8px;background:rgba(235,237,243,calc(var(--glass-opacity) + .18));border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;animation:accordionIn .22s ease both
 }
@@ -617,35 +618,49 @@ button{
     <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
 
     <div class="home-grid">
+      <div class="home-feature">
       <button class="app-card card-cyan" data-home-sheet="home-songs">
         <span class="icon">♫</span><span class="chev">⌃</span>
         <span><h3>歌曲 Music</h3><p>歌曲、難度、收藏、MV、搜尋</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-pink" data-home-sheet="home-sekai">
         <span class="icon">◎</span><span class="chev">⌃</span>
         <span><h3>SEKAI</h3><p>六大世界、世界資訊、相關內容</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-violet" data-home-sheet="home-characters">
         <span class="icon">☆</span><span class="chev">⌃</span>
         <span><h3>角色 Characters</h3><p>團體、成員、角色資料</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-yellow" data-home-sheet="home-cards">
         <span class="icon">▣</span><span class="chev">⌃</span>
         <span><h3>卡片 Cards</h3><p>圖鑑、收藏、特訓、稀有度</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-orange" data-home-sheet="home-events">
         <span class="icon">✦</span><span class="chev">⌃</span>
         <span><h3>活動 Events</h3><p>目前活動、歷史、排名、計算器</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-dark" data-home-sheet="home-tools">
         <span class="icon">⌘</span><span class="chev">⌃</span>
         <span><h3>工具 Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
       </button>
+      </div>
+      <div class="home-feature">
       <button class="app-card card-green" data-home-sheet="home-profile">
         <span class="icon">♙</span><span class="chev">⌃</span>
         <span><h3>我的 Profile</h3><p>玩家資料、收藏、最近使用、設定</p></span>
       </button>
-    </div>
+      </div>
+    </div>>
 
     <div class="section-head"><div><div class="kicker">RECENT</div><h2>快速進入</h2></div></div>
     <div class="quick-row">
