@@ -225,41 +225,41 @@ button,input,select{outline:none}
     <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
 
     <div class="home-grid">
-      <button class="app-card feature card-cyan" data-go="songs">
+      <button class="app-card card-cyan" data-home-sheet="home-songs">
         <span class="icon">♫</span><span class="chev">⌃</span>
-        <h3>歌曲 Music</h3><p>歌曲資料、難度、收藏、MV 與搜尋全部收在這裡。</p><span class="badge">SONG LIBRARY</span><span class="tile-art"></span>
+        <span><h3>歌曲 Music</h3><p>歌曲、難度、收藏、MV、搜尋</p></span>
       </button>
-      <button class="app-card card-pink" data-go="sekai">
+      <button class="app-card card-pink" data-home-sheet="home-sekai">
         <span class="icon">◎</span><span class="chev">⌃</span>
-        <h3>SEKAI</h3><p>六大世界入口。</p><span class="badge">06 WORLDS</span>
+        <span><h3>SEKAI</h3><p>六大世界、世界資訊、相關內容</p></span>
       </button>
-      <button class="app-card card-violet" data-go="characters">
+      <button class="app-card card-violet" data-home-sheet="home-characters">
         <span class="icon">☆</span><span class="chev">⌃</span>
-        <h3>角色 Characters</h3><p>團體、成員、角色資料。</p><span class="badge">CAST</span>
+        <span><h3>角色 Characters</h3><p>團體、成員、角色資料</p></span>
       </button>
-      <button class="app-card card-yellow" data-go="cards">
+      <button class="app-card card-yellow" data-home-sheet="home-cards">
         <span class="icon">▣</span><span class="chev">⌃</span>
-        <h3>卡片 Cards</h3><p>卡片圖鑑、收藏、訓練入口。</p><span class="badge">ARCHIVE</span>
+        <span><h3>卡片 Cards</h3><p>圖鑑、收藏、特訓、稀有度</p></span>
       </button>
-      <button class="app-card card-orange" data-go="events">
+      <button class="app-card card-orange" data-home-sheet="home-events">
         <span class="icon">✦</span><span class="chev">⌃</span>
-        <h3>活動 Events</h3><p>活動資料與周回工具。</p><span class="badge">EVENT</span>
+        <span><h3>活動 Events</h3><p>目前活動、歷史、排名、計算器</p></span>
       </button>
-      <button class="app-card card-dark wide" data-go="tools">
+      <button class="app-card card-dark" data-home-sheet="home-tools">
         <span class="icon">⌘</span><span class="chev">⌃</span>
-        <h3>工具 Game Tools</h3><p>玩家終端、節奏訓練、Mirror、活動計算與其他實用工具。</p><span class="badge">PLAYER AREA</span><span class="tile-art"></span>
+        <span><h3>工具 Game Tools</h3><p>玩家終端、Rhythm Lab、各種工具</p></span>
       </button>
-      <button class="app-card card-green" data-go="profile">
+      <button class="app-card card-green" data-home-sheet="home-profile">
         <span class="icon">♙</span><span class="chev">⌃</span>
-        <h3>我的 Profile</h3><p>玩家 ID、最近使用、設定。</p><span class="badge">MY SEKAI</span>
+        <span><h3>我的 Profile</h3><p>玩家資料、收藏、最近使用、設定</p></span>
       </button>
     </div>
 
     <div class="section-head"><div><div class="kicker">RECENT</div><h2>快速進入</h2></div></div>
     <div class="quick-row">
-      <button class="quick" data-sheet="news"><span class="qicon">◷</span><span><strong>最新情報</strong><span>查看近期更新</span></span></button>
-      <button class="quick" data-sheet="favorites"><span class="qicon">♡</span><span><strong>我的收藏</strong><span>歌曲與卡片</span></span></button>
-      <button class="quick" data-sheet="about"><span class="qicon">i</span><span><strong>關於 Terminal</strong><span>網站資訊</span></span></button>
+      <button class="quick" data-go="home"><span class="qicon">◷</span><span><strong>最新情報</strong><span>查看近期更新</span></span></button>
+      <button class="quick" data-go="profile"><span class="qicon">♡</span><span><strong>我的收藏</strong><span>歌曲與卡片</span></span></button>
+      <button class="quick" data-go="tools"><span class="qicon">i</span><span><strong>關於 Terminal</strong><span>網站資訊</span></span></button>
     </div>
   </section>
 
@@ -519,9 +519,9 @@ function toggleHomeAccordion(card){
 }
 
 document.addEventListener("click",e=>{
-  const home=e.target.closest("[data-home-sheet]");
+  const home=e.target.closest(".app-card[data-home-sheet]");
   if(home){toggleHomeAccordion(home);return;}
-  const s=e.target.closest("[data-sheet]");
+  const s=e.target.closest(".catalog-card[data-sheet]");
   if(s){toggleAccordion(s);return;}
   const action=e.target.closest("[data-accordion-action]");
   if(action){
