@@ -238,7 +238,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
     rgba(255,255,255,.24);
   border:1px solid rgba(255,255,255,.72);
   box-shadow:0 8px 24px rgba(35,42,65,.14),inset 0 1px rgba(255,255,255,.65),0 0 18px rgba(255,255,255,.13);
-  transform:translate3d(var(--tab-x),calc(var(--tab-y) - 50%),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
+  transform:translate3d(var(--tab-x),var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease);
   pointer-events:auto;will-change:transform;
 }
