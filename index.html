@@ -67,24 +67,23 @@ button,input,select{outline:none}
 .section-head h2{font-size:28px;letter-spacing:-.04em;margin:6px 0 0}
 .section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
 
-.home-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:15px}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .app-card{
-  grid-column:span 4;min-height:188px;padding:23px;border:1px solid rgba(255,255,255,.72);border-radius:var(--radius);
+  min-height:82px;padding:14px 48px 14px 14px;border:1px solid rgba(255,255,255,.78);border-radius:20px;
   background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow-sm);
-  position:relative;overflow:hidden;text-align:left;transition:transform .23s,box-shadow .23s;
+  position:relative;overflow:hidden;text-align:left;display:flex;align-items:center;gap:13px;transition:.2s;
 }
-.app-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
-.app-card.feature{grid-column:span 8;min-height:225px}
-.app-card.wide{grid-column:span 6}
+.app-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.app-card.feature,.app-card.wide{min-height:82px;grid-column:auto}
 .app-card .icon{
-  width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:19px;color:#fff;margin-bottom:34px;
-  box-shadow:0 9px 20px rgba(0,0,0,.12)
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:18px;color:#fff;
+  box-shadow:0 7px 16px rgba(0,0,0,.11);flex:none
 }
-.app-card h3{font-size:24px;letter-spacing:-.04em;margin:0 0 6px;font-weight:850}
-.app-card p{font-size:11px;color:var(--muted);line-height:1.7;margin:0;max-width:390px}
-.app-card .chev{position:absolute;right:22px;top:22px;color:#a1a4ae;font-size:16px}
-.app-card .badge{position:absolute;right:18px;bottom:18px;padding:5px 8px;border-radius:999px;background:rgba(24,26,34,.06);font-size:9px;font-weight:800;color:#7d8089}
-.tile-art{position:absolute;right:-30px;bottom:-42px;width:190px;height:190px;border-radius:50%;border:48px solid rgba(255,255,255,.38);pointer-events:none}
+.app-card h3{font-size:15px;letter-spacing:-.025em;margin:0 0 3px;font-weight:850}
+.app-card p{font-size:10px;color:var(--muted);line-height:1.5;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-card .chev{position:absolute;right:17px;top:50%;transform:translateY(-50%);color:#9ca0aa;font-size:17px;font-weight:700}
+.app-card .badge{position:absolute;right:44px;top:50%;transform:translateY(-50%);padding:5px 8px;border-radius:999px;background:rgba(24,26,34,.06);font-size:8px;font-weight:800;color:#7d8089}
+.tile-art{display:none}
 .card-pink .icon{background:linear-gradient(135deg,#ff70aa,#ef5c97)}
 .card-cyan .icon{background:linear-gradient(135deg,#6bdcf0,#44bedd)}
 .card-yellow .icon{background:linear-gradient(135deg,#ffdf72,#f3b943)}
@@ -99,18 +98,32 @@ button,input,select{outline:none}
 .quick .qicon{width:38px;height:38px;border-radius:13px;background:#eceef4;display:grid;place-items:center}
 .quick strong{font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
 
-.catalog-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.catalog-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.accordion-wrap{display:contents}
 .catalog-card{
-  grid-column:span 4;min-height:190px;border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:24px;
-  padding:23px;box-shadow:var(--shadow-sm);text-align:left;position:relative;overflow:hidden;transition:.2s
+  width:100%;min-height:0;border:1px solid var(--line);background:rgba(255,255,255,.82);border-radius:18px;
+  padding:0;box-shadow:var(--shadow-sm);text-align:left;position:relative;overflow:hidden;transition:.2s;
+  display:flex;align-items:center;gap:13px;color:var(--ink)
 }
-.catalog-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
-.catalog-card.w2{grid-column:span 6}
-.catalog-card h3{font-size:22px;letter-spacing:-.035em;margin:42px 0 6px}
-.catalog-card p{font-size:11px;line-height:1.75;color:var(--muted);max-width:420px}
-.catalog-card .tiny-icon{position:absolute;left:20px;top:20px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:14px}
-.catalog-card .arrow{position:absolute;right:19px;top:20px;color:#a3a6af}
-.catalog-card .color-orb{position:absolute;right:-55px;bottom:-70px;width:180px;height:180px;border-radius:50%;opacity:.15}
+.catalog-card:hover{background:#fff;transform:none;box-shadow:var(--shadow-sm)}
+.catalog-card.w2{grid-column:auto}
+.catalog-card h3{font-size:14px;letter-spacing:-.025em;margin:0 0 3px;font-weight:820}
+.catalog-card p{font-size:10px;line-height:1.5;color:var(--muted);max-width:none;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catalog-card .tiny-icon{position:relative;left:auto;top:auto;margin:10px 0 10px 12px;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:11px;flex:none}
+.catalog-card .arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#9ca0aa;font-size:17px;font-weight:700;transition:transform .2s}
+.catalog-card.expanded .arrow{transform:translateY(-50%);color:#555963}
+.accordion-panel{
+  grid-column:1 / -1;margin-top:-2px;margin-bottom:2px;padding:9px;background:rgba(235,237,243,.68);
+  border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+  animation:accordionIn .22s ease both
+}
+@keyframes accordionIn{from{opacity:0;transform:translateY(-5px);max-height:0}to{opacity:1;transform:none;max-height:500px}}
+.accordion-item{
+  border:1px solid rgba(24,26,34,.07);background:rgba(255,255,255,.9);border-radius:14px;padding:13px 14px;
+  text-align:left;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px
+}
+.accordion-item:hover{background:#fff}
+.accordion-item strong{font-size:11px}.accordion-item span{font-size:14px;color:#b0b3bc}
 
 .list-panel{margin-top:14px;background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:25px;box-shadow:var(--shadow-sm);overflow:hidden}
 .list-row{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;display:flex;align-items:center;gap:15px;padding:15px 18px;text-align:left}
@@ -128,21 +141,8 @@ button,input,select{outline:none}
 .stat small{display:block;font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.08em}
 .stat strong{display:block;font-size:27px;margin-top:9px;letter-spacing:-.04em}
 
-.detail-sheet{
-  position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;padding:18px;
-  background:rgba(15,17,24,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
-}
-.detail-sheet.open{display:flex}
-.sheet{
-  width:min(860px,100%);max-height:min(88vh,760px);overflow:auto;background:rgba(251,251,253,.95);border:1px solid rgba(255,255,255,.75);
-  border-radius:32px 32px 24px 24px;box-shadow:0 28px 80px rgba(15,17,25,.25);padding:20px
-}
-.sheet-grabber{width:42px;height:5px;border-radius:99px;background:#d5d6dc;margin:0 auto 18px}
-.sheet-head{display:flex;align-items:start;gap:14px}.sheet-head h3{font-size:30px;letter-spacing:-.05em;margin:0}.sheet-head p{font-size:11px;color:var(--muted);line-height:1.7;margin:7px 0 0}
-.sheet-close{margin-left:auto;width:36px;height:36px;border:0;border-radius:50%;background:#eceef3}
-.sheet-content{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
-.sheet-item{border:1px solid var(--line);background:#fff;border-radius:19px;padding:16px;text-align:left}
-.sheet-item strong{font-size:12px}.sheet-item span{display:block;color:var(--muted);font-size:10px;line-height:1.7;margin-top:5px}
+.detail-sheet{display:none}
+
 
 .bottom-bar{
   position:fixed;z-index:80;left:50%;bottom:calc(14px + var(--safe-bottom));transform:translateX(-50%);
@@ -156,13 +156,12 @@ button,input,select{outline:none}
 .footer{max-width:1480px;margin:auto;padding:15px 28px 150px;color:#90939e;font-size:10px;text-align:center}
 
 .hide{display:none!important}
-body.sheet-open{overflow:hidden}
 
 @media(max-width:980px){
   .app-shell{padding:20px 18px 120px}.topbar{top:12px}
   .brand{min-width:0}.brand-text span{display:none}
-  .home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide{grid-column:span 6}
-  .catalog-card,.catalog-card.w2{grid-column:span 6}
+  .home-grid{grid-template-columns:1fr 1fr}
+  .catalog-card,.catalog-card.w2{grid-column:auto}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
@@ -173,7 +172,8 @@ body.sheet-open{overflow:hidden}
   .hero{margin-top:13px;padding:29px 24px;min-height:425px;border-radius:28px}
   .hero h1{font-size:55px}.hero p{font-size:12px}
   .home-grid,.catalog-grid{grid-template-columns:1fr}.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide,.catalog-card,.catalog-card.w2{grid-column:auto}
-  .app-card{min-height:170px;padding:20px;border-radius:23px}.app-card h3{font-size:22px}
+  .app-card{min-height:76px;padding:10px 44px 10px 10px;border-radius:18px}.app-card h3{font-size:14px}.app-card p{font-size:9px}.app-card .icon{width:38px;height:38px;border-radius:12px}.app-card .badge{display:none}
+  .accordion-panel{grid-template-columns:1fr}
   .section-head{margin-top:38px}.quick-row{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr 1fr}
   .sheet-content{grid-template-columns:1fr}.sheet{border-radius:28px 28px 20px 20px}
   .footer{padding-left:15px;padding-right:15px}
@@ -213,31 +213,31 @@ body.sheet-open{overflow:hidden}
 
     <div class="home-grid">
       <button class="app-card feature card-cyan" data-go="songs">
-        <span class="icon">♫</span><span class="chev">›</span>
+        <span class="icon">♫</span><span class="chev">⌃</span>
         <h3>歌曲 Music</h3><p>歌曲資料、難度、收藏、MV 與搜尋全部收在這裡。</p><span class="badge">SONG LIBRARY</span><span class="tile-art"></span>
       </button>
       <button class="app-card card-pink" data-go="sekai">
-        <span class="icon">◎</span><span class="chev">›</span>
+        <span class="icon">◎</span><span class="chev">⌃</span>
         <h3>SEKAI</h3><p>六大世界入口。</p><span class="badge">06 WORLDS</span>
       </button>
       <button class="app-card card-violet" data-go="characters">
-        <span class="icon">☆</span><span class="chev">›</span>
+        <span class="icon">☆</span><span class="chev">⌃</span>
         <h3>角色 Characters</h3><p>團體、成員、角色資料。</p><span class="badge">CAST</span>
       </button>
       <button class="app-card card-yellow" data-go="cards">
-        <span class="icon">▣</span><span class="chev">›</span>
+        <span class="icon">▣</span><span class="chev">⌃</span>
         <h3>卡片 Cards</h3><p>卡片圖鑑、收藏、訓練入口。</p><span class="badge">ARCHIVE</span>
       </button>
       <button class="app-card card-orange" data-go="events">
-        <span class="icon">✦</span><span class="chev">›</span>
+        <span class="icon">✦</span><span class="chev">⌃</span>
         <h3>活動 Events</h3><p>活動資料與周回工具。</p><span class="badge">EVENT</span>
       </button>
       <button class="app-card card-dark wide" data-go="tools">
-        <span class="icon">⌘</span><span class="chev">›</span>
+        <span class="icon">⌘</span><span class="chev">⌃</span>
         <h3>工具 Game Tools</h3><p>玩家終端、節奏訓練、Mirror、活動計算與其他實用工具。</p><span class="badge">PLAYER AREA</span><span class="tile-art"></span>
       </button>
       <button class="app-card card-green" data-go="profile">
-        <span class="icon">♙</span><span class="chev">›</span>
+        <span class="icon">♙</span><span class="chev">⌃</span>
         <h3>我的 Profile</h3><p>玩家 ID、最近使用、設定。</p><span class="badge">MY SEKAI</span>
       </button>
     </div>
@@ -256,12 +256,12 @@ body.sheet-open{overflow:hidden}
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="catalog-grid">
-      <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">›</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
-      <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">›</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
-      <button class="catalog-card" data-sheet="street"><span class="tiny-icon" style="background:#ff9756">03</span><span class="arrow">›</span><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p><span class="color-orb" style="background:#ff9756"></span></button>
-      <button class="catalog-card" data-sheet="wonderland"><span class="tiny-icon" style="background:#9179f5">04</span><span class="arrow">›</span><h3>Wonderland</h3><p>充滿不可思議的舞台。</p><span class="color-orb" style="background:#9179f5"></span></button>
-      <button class="catalog-card" data-sheet="empty"><span class="tiny-icon" style="background:#666f7e">05</span><span class="arrow">›</span><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p><span class="color-orb" style="background:#666f7e"></span></button>
-      <button class="catalog-card" data-sheet="virtual"><span class="tiny-icon" style="background:#5fc596">06</span><span class="arrow">›</span><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p><span class="color-orb" style="background:#5fc596"></span></button>
+      <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">⌃</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
+      <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">⌃</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
+      <button class="catalog-card" data-sheet="street"><span class="tiny-icon" style="background:#ff9756">03</span><span class="arrow">⌃</span><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p><span class="color-orb" style="background:#ff9756"></span></button>
+      <button class="catalog-card" data-sheet="wonderland"><span class="tiny-icon" style="background:#9179f5">04</span><span class="arrow">⌃</span><h3>Wonderland</h3><p>充滿不可思議的舞台。</p><span class="color-orb" style="background:#9179f5"></span></button>
+      <button class="catalog-card" data-sheet="empty"><span class="tiny-icon" style="background:#666f7e">05</span><span class="arrow">⌃</span><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p><span class="color-orb" style="background:#666f7e"></span></button>
+      <button class="catalog-card" data-sheet="virtual"><span class="tiny-icon" style="background:#5fc596">06</span><span class="arrow">⌃</span><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p><span class="color-orb" style="background:#5fc596"></span></button>
     </div>
   </section>
 
@@ -273,12 +273,12 @@ body.sheet-open{overflow:hidden}
     <div class="search-panel"><input id="songSearch" class="search-input" placeholder="搜尋歌曲、歌手、關鍵字"><button class="filter-btn" id="songFilter">篩選</button></div>
     <div class="section-head"><div><div class="kicker">MUSIC</div><h2>歌曲功能</h2></div></div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-sheet="song-all"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">›</span><h3>全部歌曲</h3><p>進入完整歌曲列表與搜尋。</p></button>
-      <button class="catalog-card" data-sheet="song-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>收藏歌曲</h3><p>只顯示你標記的歌曲。</p></button>
-      <button class="catalog-card" data-sheet="song-difficulty"><span class="tiny-icon" style="background:var(--violet)">◆</span><span class="arrow">›</span><h3>難度分類</h3><p>依難度與譜面入口整理。</p></button>
-      <button class="catalog-card" data-sheet="song-mv"><span class="tiny-icon" style="background:var(--orange)">▶</span><span class="arrow">›</span><h3>MV / 對應影片</h3><p>集中影片與 MV 入口。</p></button>
-      <button class="catalog-card" data-sheet="song-info"><span class="tiny-icon" style="background:var(--yellow);color:#222">i</span><span class="arrow">›</span><h3>歌曲資料</h3><p>BPM、類型、歌唱成員等資訊入口。</p></button>
-      <button class="catalog-card" data-sheet="song-tools"><span class="tiny-icon" style="background:var(--green)">⌘</span><span class="arrow">›</span><h3>歌曲工具</h3><p>練習與快速檢視相關工具。</p></button>
+      <button class="catalog-card" data-sheet="song-all"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">⌃</span><h3>全部歌曲</h3><p>進入完整歌曲列表與搜尋。</p></button>
+      <button class="catalog-card" data-sheet="song-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">⌃</span><h3>收藏歌曲</h3><p>只顯示你標記的歌曲。</p></button>
+      <button class="catalog-card" data-sheet="song-difficulty"><span class="tiny-icon" style="background:var(--violet)">◆</span><span class="arrow">⌃</span><h3>難度分類</h3><p>依難度與譜面入口整理。</p></button>
+      <button class="catalog-card" data-sheet="song-mv"><span class="tiny-icon" style="background:var(--orange)">▶</span><span class="arrow">⌃</span><h3>MV / 對應影片</h3><p>集中影片與 MV 入口。</p></button>
+      <button class="catalog-card" data-sheet="song-info"><span class="tiny-icon" style="background:var(--yellow);color:#222">i</span><span class="arrow">⌃</span><h3>歌曲資料</h3><p>BPM、類型、歌唱成員等資訊入口。</p></button>
+      <button class="catalog-card" data-sheet="song-tools"><span class="tiny-icon" style="background:var(--green)">⌘</span><span class="arrow">⌃</span><h3>歌曲工具</h3><p>練習與快速檢視相關工具。</p></button>
     </div>
   </section>
 
@@ -288,12 +288,12 @@ body.sheet-open{overflow:hidden}
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-sheet="unit-leos"><span class="tiny-icon" style="background:var(--cyan)">L</span><span class="arrow">›</span><h3>Leo/need</h3><p>團體、成員、歌曲與相關入口。</p></button>
-      <button class="catalog-card" data-sheet="unit-mmj"><span class="tiny-icon" style="background:var(--pink)">M</span><span class="arrow">›</span><h3>MORE MORE JUMP!</h3><p>偶像與舞台相關內容。</p></button>
-      <button class="catalog-card" data-sheet="unit-vbs"><span class="tiny-icon" style="background:var(--orange)">V</span><span class="arrow">›</span><h3>Vivid BAD SQUAD</h3><p>街頭音樂與角色入口。</p></button>
-      <button class="catalog-card" data-sheet="unit-wxs"><span class="tiny-icon" style="background:var(--yellow);color:#222">W</span><span class="arrow">›</span><h3>Wonderlands×Showtime</h3><p>劇場與角色內容。</p></button>
-      <button class="catalog-card" data-sheet="unit-25ji"><span class="tiny-icon" style="background:var(--violet)">N</span><span class="arrow">›</span><h3>25時、ナイトコードで。</h3><p>夜與創作的角色入口。</p></button>
-      <button class="catalog-card" data-sheet="unit-virtual"><span class="tiny-icon" style="background:var(--green)">VS</span><span class="arrow">›</span><h3>Virtual Singer</h3><p>虛擬歌手相關內容。</p></button>
+      <button class="catalog-card" data-sheet="unit-leos"><span class="tiny-icon" style="background:var(--cyan)">L</span><span class="arrow">⌃</span><h3>Leo/need</h3><p>團體、成員、歌曲與相關入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-mmj"><span class="tiny-icon" style="background:var(--pink)">M</span><span class="arrow">⌃</span><h3>MORE MORE JUMP!</h3><p>偶像與舞台相關內容。</p></button>
+      <button class="catalog-card" data-sheet="unit-vbs"><span class="tiny-icon" style="background:var(--orange)">V</span><span class="arrow">⌃</span><h3>Vivid BAD SQUAD</h3><p>街頭音樂與角色入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-wxs"><span class="tiny-icon" style="background:var(--yellow);color:#222">W</span><span class="arrow">⌃</span><h3>Wonderlands×Showtime</h3><p>劇場與角色內容。</p></button>
+      <button class="catalog-card" data-sheet="unit-25ji"><span class="tiny-icon" style="background:var(--violet)">N</span><span class="arrow">⌃</span><h3>25時、ナイトコードで。</h3><p>夜與創作的角色入口。</p></button>
+      <button class="catalog-card" data-sheet="unit-virtual"><span class="tiny-icon" style="background:var(--green)">VS</span><span class="arrow">⌃</span><h3>Virtual Singer</h3><p>虛擬歌手相關內容。</p></button>
     </div>
   </section>
 
@@ -303,12 +303,12 @@ body.sheet-open{overflow:hidden}
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-sheet="card-all"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">›</span><h3>全部卡片</h3><p>完整卡片瀏覽與搜尋。</p></button>
-      <button class="catalog-card" data-sheet="card-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>我的收藏</h3><p>集中你保存的卡片。</p></button>
-      <button class="catalog-card" data-sheet="card-trained"><span class="tiny-icon" style="background:var(--cyan)">★</span><span class="arrow">›</span><h3>特訓狀態</h3><p>查看卡片進度相關入口。</p></button>
-      <button class="catalog-card" data-sheet="card-unit"><span class="tiny-icon" style="background:var(--orange)">◎</span><span class="arrow">›</span><h3>團體分類</h3><p>依角色團體快速瀏覽。</p></button>
-      <button class="catalog-card" data-sheet="card-rarity"><span class="tiny-icon" style="background:var(--yellow);color:#222">4★</span><span class="arrow">›</span><h3>稀有度</h3><p>依稀有度快速篩選。</p></button>
-      <button class="catalog-card" data-sheet="card-search"><span class="tiny-icon" style="background:var(--green)">⌕</span><span class="arrow">›</span><h3>卡片搜尋</h3><p>用關鍵字尋找卡片。</p></button>
+      <button class="catalog-card" data-sheet="card-all"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">⌃</span><h3>全部卡片</h3><p>完整卡片瀏覽與搜尋。</p></button>
+      <button class="catalog-card" data-sheet="card-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">⌃</span><h3>我的收藏</h3><p>集中你保存的卡片。</p></button>
+      <button class="catalog-card" data-sheet="card-trained"><span class="tiny-icon" style="background:var(--cyan)">★</span><span class="arrow">⌃</span><h3>特訓狀態</h3><p>查看卡片進度相關入口。</p></button>
+      <button class="catalog-card" data-sheet="card-unit"><span class="tiny-icon" style="background:var(--orange)">◎</span><span class="arrow">⌃</span><h3>團體分類</h3><p>依角色團體快速瀏覽。</p></button>
+      <button class="catalog-card" data-sheet="card-rarity"><span class="tiny-icon" style="background:var(--yellow);color:#222">4★</span><span class="arrow">⌃</span><h3>稀有度</h3><p>依稀有度快速篩選。</p></button>
+      <button class="catalog-card" data-sheet="card-search"><span class="tiny-icon" style="background:var(--green)">⌕</span><span class="arrow">⌃</span><h3>卡片搜尋</h3><p>用關鍵字尋找卡片。</p></button>
     </div>
   </section>
 
@@ -318,10 +318,10 @@ body.sheet-open{overflow:hidden}
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="catalog-grid">
-      <button class="catalog-card w2" data-sheet="event-current"><span class="tiny-icon" style="background:var(--pink)">✦</span><span class="arrow">›</span><h3>目前活動</h3><p>查看活動入口、活動頁與相關資訊。</p></button>
-      <button class="catalog-card w2" data-sheet="event-calc"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">›</span><h3>活動計算器</h3><p>計算周回與資源需求。</p></button>
-      <button class="catalog-card" data-sheet="event-ranking"><span class="tiny-icon" style="background:var(--yellow);color:#222">#</span><span class="arrow">›</span><h3>排名紀錄</h3><p>整理自己的活動紀錄。</p></button>
-      <button class="catalog-card" data-sheet="event-history"><span class="tiny-icon" style="background:var(--violet)">◷</span><span class="arrow">›</span><h3>歷史活動</h3><p>回顧過往活動入口。</p></button>
+      <button class="catalog-card w2" data-sheet="event-current"><span class="tiny-icon" style="background:var(--pink)">✦</span><span class="arrow">⌃</span><h3>目前活動</h3><p>查看活動入口、活動頁與相關資訊。</p></button>
+      <button class="catalog-card w2" data-sheet="event-calc"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">⌃</span><h3>活動計算器</h3><p>計算周回與資源需求。</p></button>
+      <button class="catalog-card" data-sheet="event-ranking"><span class="tiny-icon" style="background:var(--yellow);color:#222">#</span><span class="arrow">⌃</span><h3>排名紀錄</h3><p>整理自己的活動紀錄。</p></button>
+      <button class="catalog-card" data-sheet="event-history"><span class="tiny-icon" style="background:var(--violet)">◷</span><span class="arrow">⌃</span><h3>歷史活動</h3><p>回顧過往活動入口。</p></button>
     </div>
   </section>
 
@@ -337,12 +337,12 @@ body.sheet-open{overflow:hidden}
       <div class="stat"><small>STATUS</small><strong>READY</strong></div>
     </div>
     <div class="catalog-grid" style="margin-top:14px">
-      <button class="catalog-card w2" data-sheet="player-profile"><span class="tiny-icon" style="background:#1f2230">♙</span><span class="arrow">›</span><h3>玩家終端</h3><p>玩家 ID、基本狀態與個人資料。</p></button>
-      <button class="catalog-card w2" data-sheet="rhythm-lab"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">›</span><h3>Rhythm Lab</h3><p>速度、Mirror 與節奏練習設定。</p></button>
-      <button class="catalog-card" data-sheet="event-tool"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">›</span><h3>活動計算</h3><p>周回估算工具。</p></button>
-      <button class="catalog-card" data-sheet="music-tool"><span class="tiny-icon" style="background:var(--pink)">▶</span><span class="arrow">›</span><h3>Music Archive</h3><p>歌曲與 MV 快速入口。</p></button>
-      <button class="catalog-card" data-sheet="card-tool"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">›</span><h3>Card Archive</h3><p>卡片資料入口。</p></button>
-      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">›</span><h3>設定</h3><p>介面、搜尋與本機偏好。</p></button>
+      <button class="catalog-card w2" data-sheet="player-profile"><span class="tiny-icon" style="background:#1f2230">♙</span><span class="arrow">⌃</span><h3>玩家終端</h3><p>玩家 ID、基本狀態與個人資料。</p></button>
+      <button class="catalog-card w2" data-sheet="rhythm-lab"><span class="tiny-icon" style="background:var(--cyan)">♫</span><span class="arrow">⌃</span><h3>Rhythm Lab</h3><p>速度、Mirror 與節奏練習設定。</p></button>
+      <button class="catalog-card" data-sheet="event-tool"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">⌃</span><h3>活動計算</h3><p>周回估算工具。</p></button>
+      <button class="catalog-card" data-sheet="music-tool"><span class="tiny-icon" style="background:var(--pink)">▶</span><span class="arrow">⌃</span><h3>Music Archive</h3><p>歌曲與 MV 快速入口。</p></button>
+      <button class="catalog-card" data-sheet="card-tool"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">⌃</span><h3>Card Archive</h3><p>卡片資料入口。</p></button>
+      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">⌃</span><h3>設定</h3><p>介面、搜尋與本機偏好。</p></button>
     </div>
   </section>
 
@@ -351,7 +351,7 @@ body.sheet-open{overflow:hidden}
       <div><div class="kicker">MY SEKAI</div><h1 class="page-title">我的</h1><p class="page-subtitle">個人內容獨立一頁，避免玩家資料和其他功能混在首頁。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
-    <div class="app-card card-dark" style="width:100%;min-height:240px;margin-bottom:15px">
+    <div class="app-card card-dark" style="width:100%;min-height:86px;margin-bottom:15px;display:block;padding-right:18px">
       <span class="icon">♙</span><h3>玩家資料</h3><p>輸入玩家 ID，這裡只負責玩家相關內容。</p>
       <div class="form" style="display:flex;gap:8px;margin-top:18px">
         <input id="playerId" class="search-input" style="background:#11131d;border-color:#ffffff18;color:#fff" placeholder="PLAYER ID">
@@ -365,9 +365,9 @@ body.sheet-open{overflow:hidden}
       </div>
     </div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-sheet="favorites"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">›</span><h3>我的收藏</h3><p>歌曲與卡片收藏。</p></button>
-      <button class="catalog-card" data-sheet="recent"><span class="tiny-icon" style="background:var(--cyan)">◷</span><span class="arrow">›</span><h3>最近使用</h3><p>最近開啟的內容。</p></button>
-      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">›</span><h3>設定</h3><p>偏好與介面設定。</p></button>
+      <button class="catalog-card" data-sheet="favorites"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">⌃</span><h3>我的收藏</h3><p>歌曲與卡片收藏。</p></button>
+      <button class="catalog-card" data-sheet="recent"><span class="tiny-icon" style="background:var(--cyan)">◷</span><span class="arrow">⌃</span><h3>最近使用</h3><p>最近開啟的內容。</p></button>
+      <button class="catalog-card" data-sheet="settings"><span class="tiny-icon" style="background:#7b7f8d">⚙</span><span class="arrow">⌃</span><h3>設定</h3><p>偏好與介面設定。</p></button>
     </div>
   </section>
 </main>
@@ -382,17 +382,6 @@ body.sheet-open{overflow:hidden}
   <button class="tab" data-go="tools"><span class="tab-icon">⌘</span>工具</button>
   <button class="tab" data-go="profile"><span class="tab-icon">♙</span>我的</button>
 </nav>
-
-<div class="detail-sheet" id="detailSheet" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true">
-    <div class="sheet-grabber"></div>
-    <div class="sheet-head">
-      <div><h3 id="sheetTitle">內容</h3><p id="sheetSubtitle">選擇一個功能。</p></div>
-      <button class="sheet-close" id="sheetClose" aria-label="關閉">✕</button>
-    </div>
-    <div class="sheet-content" id="sheetContent"></div>
-  </div>
-</div>
 
 <script>
 const pages=[...document.querySelectorAll(".page")];
@@ -462,25 +451,35 @@ const sheetData={
   recent:["最近使用","My SEKAI",["最近歌曲","最近角色","最近卡片","最近工具"]]
 };
 
-function openSheet(key){
+function toggleAccordion(card){
+  const key=card.dataset.sheet;
   const data=sheetData[key];
   if(!data)return;
-  $("#sheetTitle").textContent=data[0];
-  $("#sheetSubtitle").textContent=data[1];
-  $("#sheetContent").innerHTML=data[2].map((x,i)=>'<button class="sheet-item" data-sheet-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>點開後進入這個內容。</span></button>').join("");
-  $("#detailSheet").classList.add("open");
-  $("#detailSheet").setAttribute("aria-hidden","false");
-  document.body.classList.add("sheet-open");
+  const old=card.nextElementSibling;
+  if(old && old.classList.contains("accordion-panel")){ old.remove(); card.classList.remove("expanded"); card.querySelector(".arrow").textContent="⌃"; return; }
+  document.querySelectorAll(".catalog-card.expanded").forEach(open=>{
+    const panel=open.nextElementSibling;
+    if(panel && panel.classList.contains("accordion-panel"))panel.remove();
+    open.classList.remove("expanded");
+    const a=open.querySelector(".arrow"); if(a)a.textContent="⌃";
+  });
+  const panel=document.createElement("div");
+  panel.className="accordion-panel";
+  panel.innerHTML=data[2].map((x,i)=>'<button class="accordion-item" data-accordion-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>›</span></button>').join("");
+  card.insertAdjacentElement("afterend",panel);
+  card.classList.add("expanded");
+  card.querySelector(".arrow").textContent="⌄";
 }
-function closeSheet(){
-  $("#detailSheet").classList.remove("open");
-  $("#detailSheet").setAttribute("aria-hidden","true");
-  document.body.classList.remove("sheet-open");
-}
+
 document.addEventListener("click",e=>{
   const s=e.target.closest("[data-sheet]");
-  if(s){openSheet(s.dataset.sheet);return;}
-  if(e.target.id==="sheetClose" || e.target.id==="detailSheet")closeSheet();
+  if(s){toggleAccordion(s);return;}
+  const action=e.target.closest("[data-accordion-action]");
+  if(action){
+    const label=action.querySelector("strong")?.textContent||"";
+    action.querySelector("span").textContent="✓";
+    setTimeout(()=>{ action.querySelector("span").textContent="›"; },650);
+  }
 });
 
 $("#loadPlayer").onclick=()=>{
