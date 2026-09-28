@@ -67,7 +67,7 @@ button,input,select{outline:none}
 .section-head h2{font-size:28px;letter-spacing:-.04em;margin:6px 0 0}
 .section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
 
-.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .app-card{
   min-height:82px;padding:14px 48px 14px 14px;border:1px solid rgba(255,255,255,.78);border-radius:20px;
   background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow-sm);
@@ -80,6 +80,7 @@ button,input,select{outline:none}
   box-shadow:0 7px 16px rgba(0,0,0,.11);flex:none
 }
 .app-card h3{font-size:15px;letter-spacing:-.025em;margin:0 0 3px;font-weight:850}
+.app-card > span:not(.icon):not(.chev){min-width:0;display:block}
 .app-card p{font-size:10px;color:var(--muted);line-height:1.5;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-card .chev{position:absolute;right:17px;top:50%;transform:translateY(-50%);color:#9ca0aa;font-size:17px;font-weight:700}
 .app-card .badge{position:absolute;right:44px;top:50%;transform:translateY(-50%);padding:5px 8px;border-radius:999px;background:rgba(24,26,34,.06);font-size:8px;font-weight:800;color:#7d8089}
@@ -90,6 +91,18 @@ button,input,select{outline:none}
 .card-violet .icon{background:linear-gradient(135deg,#a693ff,#7862db)}
 .card-orange .icon{background:linear-gradient(135deg,#ffac73,#ff7e42)}
 .card-green .icon{background:linear-gradient(135deg,#7cddb2,#4eaf83)}
+.home-card-expanded{border-bottom-left-radius:8px;border-bottom-right-radius:8px;background:#fff}
+.home-card-expanded .chev{color:#555963}
+.home-accordion-panel{
+  margin-top:-6px;padding:8px;background:rgba(235,237,243,.68);border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;animation:accordionIn .22s ease both
+}
+.home-accordion-item{
+  border:1px solid rgba(24,26,34,.07);background:rgba(255,255,255,.92);border-radius:14px;padding:13px 14px;
+  min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left
+}
+.home-accordion-item:hover{background:#fff}
+.home-accordion-item strong{font-size:11px}.home-accordion-item span{font-size:14px;color:#b0b3bc}
 .card-dark{background:linear-gradient(140deg,#1d1f2b,#2c2f40);color:#fff;border-color:rgba(255,255,255,.06)}
 .card-dark p{color:#b9bbc5}.card-dark .badge{background:rgba(255,255,255,.09);color:#c9cad1}.card-dark .chev{color:#aaaebd}
 
@@ -160,7 +173,6 @@ button,input,select{outline:none}
 @media(max-width:980px){
   .app-shell{padding:20px 18px 120px}.topbar{top:12px}
   .brand{min-width:0}.brand-text span{display:none}
-  .home-grid{grid-template-columns:1fr 1fr}
   .catalog-card,.catalog-card.w2{grid-column:auto}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
 }
@@ -171,7 +183,8 @@ button,input,select{outline:none}
   .page-title{font-size:56px}.page-subtitle{font-size:12px}
   .hero{margin-top:13px;padding:29px 24px;min-height:425px;border-radius:28px}
   .hero h1{font-size:55px}.hero p{font-size:12px}
-  .home-grid,.catalog-grid{grid-template-columns:1fr}.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide,.catalog-card,.catalog-card.w2{grid-column:auto}
+.home-grid,.catalog-grid{grid-template-columns:1fr}.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide,.catalog-card,.catalog-card.w2{grid-column:auto}
+  .home-accordion-panel{grid-template-columns:1fr}
   .app-card{min-height:76px;padding:10px 44px 10px 10px;border-radius:18px}.app-card h3{font-size:14px}.app-card p{font-size:9px}.app-card .icon{width:38px;height:38px;border-radius:12px}.app-card .badge{display:none}
   .accordion-panel{grid-template-columns:1fr}
   .section-head{margin-top:38px}.quick-row{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr 1fr}
@@ -410,6 +423,16 @@ $("#globalSearchBtn").onclick=()=>{
   setTimeout(()=>$("#songSearch")?.focus(),250);
 };
 
+const homeData={
+  "home-songs":["歌曲 Music",["全部歌曲","收藏歌曲","難度分類","MV / 對應影片","歌曲資料","歌曲工具"]],
+  "home-sekai":["SEKAI",["六大世界","教室的 SEKAI","舞台的 SEKAI","街道的 SEKAI","Wonderland","空無的 SEKAI","Virtual Singer"]],
+  "home-characters":["角色 Characters",["全部角色","Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。","Virtual Singer"]],
+  "home-cards":["卡片 Cards",["全部卡片","我的收藏","特訓狀態","團體分類","稀有度","卡片搜尋"]],
+  "home-events":["活動 Events",["目前活動","活動計算器","排名紀錄","歷史活動"]],
+  "home-tools":["工具 Game Tools",["玩家終端","Rhythm Lab","活動計算","Music Archive","Card Archive","設定"]],
+  "home-profile":["我的 Profile",["玩家資料","我的收藏","最近使用","設定"]]
+};
+
 const sheetData={
   news:["最新情報","近期更新與網站公告",["最新首頁","SEKAI 入口更新","工具區重新整理","行動版介面更新"]],
   favorites:["我的收藏","你保存的內容會從這裡進入",["收藏歌曲","收藏卡片","最近收藏","收藏設定"]],
@@ -471,14 +494,46 @@ function toggleAccordion(card){
   card.querySelector(".arrow").textContent="⌄";
 }
 
+function toggleHomeAccordion(card){
+  const key=card.dataset.homeSheet;
+  const data=homeData[key];
+  if(!data)return;
+  const old=card.nextElementSibling;
+  if(old && old.classList.contains("home-accordion-panel")){
+    old.remove(); card.classList.remove("home-card-expanded");
+    const a=card.querySelector(".chev"); if(a)a.textContent="⌃";
+    return;
+  }
+  document.querySelectorAll(".app-card.home-card-expanded").forEach(open=>{
+    const panel=open.nextElementSibling;
+    if(panel && panel.classList.contains("home-accordion-panel"))panel.remove();
+    open.classList.remove("home-card-expanded");
+    const a=open.querySelector(".chev"); if(a)a.textContent="⌃";
+  });
+  const panel=document.createElement("div");
+  panel.className="home-accordion-panel";
+  panel.innerHTML=data[1].map((x,i)=>'<button class="home-accordion-item" data-home-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>›</span></button>').join("");
+  card.insertAdjacentElement("afterend",panel);
+  card.classList.add("home-card-expanded");
+  card.querySelector(".chev").textContent="⌄";
+}
+
 document.addEventListener("click",e=>{
+  const home=e.target.closest("[data-home-sheet]");
+  if(home){toggleHomeAccordion(home);return;}
   const s=e.target.closest("[data-sheet]");
   if(s){toggleAccordion(s);return;}
   const action=e.target.closest("[data-accordion-action]");
   if(action){
+  if(action){
     const label=action.querySelector("strong")?.textContent||"";
     action.querySelector("span").textContent="✓";
     setTimeout(()=>{ action.querySelector("span").textContent="›"; },650);
+  }
+  const homeAction=e.target.closest("[data-home-action]");
+  if(homeAction){
+    homeAction.querySelector("span").textContent="✓";
+    setTimeout(()=>{ homeAction.querySelector("span").textContent="›"; },650);
   }
 });
 
