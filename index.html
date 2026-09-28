@@ -941,7 +941,7 @@ function moveTabDrag(e){
   bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.06).toFixed(3));
   bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.35+edge*.08).toFixed(3));
   bottomBar.style.setProperty("--tab-rotate",Math.max(-4,Math.min(4,draggingVelocityX*.006))+"deg");
-  const cx=m.r.width/2+x;
+  const cx=m.r.width/2+x+36;
   const infEdge=Math.max(0,1-Math.min(Math.abs(cx-m.cx(0)),Math.abs(cx-m.cx(4)))/(m.slot*.9));
   const ry=50-Math.min(10,edge*7),rx=50+Math.min(8,stretch*32);
   tabIndicator.style.borderRadius=(14+Math.min(6,stretch*24)).toFixed(1)+"px";
@@ -950,7 +950,7 @@ function moveTabDrag(e){
 }
 function endTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-  const m=getTabMetrics(),x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0,cx=m.r.width/2+x;
+  const m=getTabMetrics(),x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0,cx=m.r.width/2+x+36;
   const index=Math.max(0,Math.min(4,Math.round(cx/m.slot-.5)));
   const target=tabs[index];setIndicator(index,true);
   draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
