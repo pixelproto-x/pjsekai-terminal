@@ -7,7 +7,7 @@
 <meta name="color-scheme" content="light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Telugu:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Project SEKAI｜玩家工具箱</title>
 <style>
 :root{
@@ -39,7 +39,7 @@ input::placeholder{color:#9da1ad;opacity:1}
 button:focus-visible,input:focus-visible{
   outline:3px solid rgba(145,121,245,.42);outline-offset:2px
 }
-body{margin:0;background:#202333;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Noto Sans JP","Noto Sans KR","Noto Sans Arabic","Noto Sans Devanagari","Noto Sans Thai","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:#202333;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans","Noto Sans TC","Noto Sans JP","Noto Sans KR","Noto Sans Arabic","Noto Sans Devanagari","Noto Sans Thai","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button,input,select{font:inherit}
 button{cursor:pointer}
 a{text-decoration:none;color:inherit}
@@ -949,11 +949,19 @@ const bottomBar=document.querySelector(".bottom-bar");
 const tabIndicator=document.querySelector(".tab-indicator");
 const toast=$("#toast");
 let toastTimer=0;
-const SUPPORTED_LANGUAGES=["zh-TW","zh-CN","en","ja","ko","es","fr","de","pt-BR","ru","it","th","vi","id","tr","ar","hi","nl","pl","ms"];
+const AI_TRANSLATOR_SOURCE="zh-Hant";
+const AI_TRANSLATOR_TARGETS={
+  "zh-TW":"zh-Hant","zh-CN":"zh",en:"en",ja:"ja",ko:"ko",es:"es",fr:"fr",de:"de","pt-BR":"pt",ru:"ru",it:"it",
+  th:"th",vi:"vi",id:"id",tr:"tr",ar:"ar",hi:"hi",nl:"nl",pl:"pl",ms:"ms",bg:"bg",bn:"bn",cs:"cs",da:"da",el:"el",
+  fi:"fi",he:"he",hr:"hr",hu:"hu",kn:"kn",lt:"lt",mr:"mr",no:"no",ro:"ro",sk:"sk",sl:"sl",sv:"sv",ta:"ta",te:"te",uk:"uk"
+};
+const SUPPORTED_LANGUAGES=Object.keys(AI_TRANSLATOR_TARGETS);
 const LANGUAGE_LABELS={
-  "zh-TW":"繁體中文","zh-CN":"简体中文",en:"English",ja:"日本語",ko:"한국어",es:"Español",fr:"Français",de:"Deutsch",
-  "pt-BR":"Português",ru:"Русский",it:"Italiano",th:"ไทย",vi:"Tiếng Việt",id:"Bahasa Indonesia",tr:"Türkçe",
-  ar:"العربية",hi:"हिन्दी",nl:"Nederlands",pl:"Polski",ms:"Bahasa Melayu"
+  "zh-TW":"繁體中文（台灣）","zh-CN":"简体中文",en:"English",ja:"日本語",ko:"한국어",es:"Español",fr:"Français",de:"Deutsch",
+  "pt-BR":"Português (Brasil)",ru:"Русский",it:"Italiano",th:"ไทย",vi:"Tiếng Việt",id:"Bahasa Indonesia",tr:"Türkçe",
+  ar:"العربية",hi:"हिन्दी",nl:"Nederlands",pl:"Polski",ms:"Bahasa Melayu",bg:"Български",bn:"বাংলা",cs:"Čeština",
+  da:"Dansk",el:"Ελληνικά",fi:"Suomi",he:"עברית",hr:"Hrvatski",hu:"Magyar",kn:"ಕನ್ನಡ",lt:"Lietuvių",mr:"मराठी",
+  no:"Norsk",ro:"Română",sk:"Slovenčina",sl:"Slovenščina",sv:"Svenska",ta:"தமிழ்",te:"తెలుగు",uk:"Українська"
 };
 
 const enText={
@@ -1317,15 +1325,26 @@ const langOverrides={
 };
 
 const extraLanguageAliases={
-  "zh-Hant":"zh-TW","zh-Hans":"zh-CN","pt":"pt-BR","iw":"ar"
+  "zh-Hant":"zh-TW","zh-Hans":"zh-CN",pt:"pt-BR",iw:"he",nb:"no",nn:"no"
 };
 const baseLanguageMap={
-  zh:"zh-TW",en:"en",ja:"ja",ko:"ko",es:"es",fr:"fr",de:"de",pt:"pt-BR",ru:"ru",
-  it:"it",th:"th",vi:"vi",id:"id",tr:"tr",ar:"ar",hi:"hi",nl:"nl",pl:"pl",ms:"ms"
+  zh:"zh-TW",en:"en",ja:"ja",ko:"ko",es:"es",fr:"fr",de:"de",pt:"pt-BR",ru:"ru",it:"it",th:"th",vi:"vi",id:"id",
+  tr:"tr",ar:"ar",hi:"hi",nl:"nl",pl:"pl",ms:"ms",bg:"bg",bn:"bn",cs:"cs",da:"da",el:"el",fi:"fi",he:"he",
+  hr:"hr",hu:"hu",kn:"kn",lt:"lt",mr:"mr",no:"no",ro:"ro",sk:"sk",sl:"sl",sv:"sv",ta:"ta",te:"te",uk:"uk"
 };
 
+const AI_TRANSLATION_CACHE_KEY="sekaiAITranslationCacheV2";
 const textMemory=new WeakMap();
 const attrMemory=new WeakMap();
+let aiTranslationCache={};
+let aiTranslationGeneration=0;
+const aiTranslatorInstances=new Map();
+
+try{
+  aiTranslationCache=JSON.parse(localStorage.getItem(AI_TRANSLATION_CACHE_KEY)||"{}")||{};
+}catch(_){
+  aiTranslationCache={};
+}
 
 function normalizeLocale(locale){
   if(!locale)return "en";
@@ -1334,78 +1353,193 @@ function normalizeLocale(locale){
   const exact=SUPPORTED_LANGUAGES.find(x=>x.toLowerCase()===raw.toLowerCase());
   if(exact)return exact;
   const prefix=raw.toLowerCase().split("-")[0];
-  if(baseLanguageMap[prefix])return baseLanguageMap[prefix];
-  const match=SUPPORTED_LANGUAGES.find(x=>x.toLowerCase()===prefix);
-  if(match)return match;
-  const mapped=Object.entries(extraLanguageAliases).find(([k])=>k.toLowerCase()===raw.toLowerCase());
-  return mapped?mapped[1]:"en";
+  return baseLanguageMap[prefix]||"en";
 }
+
 function detectBrowserLanguage(){
   const candidates=[...(navigator.languages||[]),navigator.language||"en"];
   for(const candidate of candidates){
-    const normalized=normalizeLocale(candidate);
-    if(normalized!=="en" || String(candidate).toLowerCase().startsWith("en"))return normalized;
+    const raw=String(candidate||"").trim();
+    const normalized=normalizeLocale(raw);
+    if(normalized!=="en" || raw.toLowerCase().startsWith("en"))return normalized;
   }
   return "en";
 }
+
 function activeLanguage(){
   const saved=localStorage.getItem("sekaiLanguage")||"auto";
-  return saved==="auto" || !saved ? detectBrowserLanguage() : normalizeLocale(saved);
+  return saved==="auto"||!saved?detectBrowserLanguage():normalizeLocale(saved);
 }
 let currentLanguage=activeLanguage();
 
-function t(source){
+function fallbackTranslation(source){
   if(currentLanguage==="zh-TW")return source;
   const pack=langOverrides[currentLanguage]||{};
   return Object.prototype.hasOwnProperty.call(pack,source)?pack[source]:
     Object.prototype.hasOwnProperty.call(enText,source)?enText[source]:source;
 }
+
+function t(source){
+  if(currentLanguage==="zh-TW")return source;
+  const aiPack=aiTranslationCache[currentLanguage];
+  const aiValue=aiPack&&aiPack[source];
+  return aiValue||fallbackTranslation(source);
+}
+
+function rememberSourceText(node){
+  let source=textMemory.get(node);
+  if(source==null){
+    source=node.nodeValue.trim();
+    textMemory.set(node,source);
+  }
+  return source;
+}
+
+function rememberSourceAttr(el,attr){
+  let record=attrMemory.get(el);
+  if(!record){record={};attrMemory.set(el,record);}
+  if(record[attr]==null)record[attr]=el.getAttribute(attr);
+  return record[attr];
+}
+
 function rememberAndTranslate(rootNode=document.body){
   const walker=document.createTreeWalker(rootNode,NodeFilter.SHOW_TEXT,{
     acceptNode(node){
       const p=node.parentElement;
-      if(!p || /^(SCRIPT|STYLE|NOSCRIPT|OPTION)$/.test(p.tagName))return NodeFilter.FILTER_REJECT;
+      if(!p||/^(SCRIPT|STYLE|NOSCRIPT|OPTION)$/.test(p.tagName))return NodeFilter.FILTER_REJECT;
       return node.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
     }
   });
   const nodes=[];
   while(walker.nextNode())nodes.push(walker.currentNode);
   for(const node of nodes){
-    let source=textMemory.get(node);
-    if(source==null){
-      source=node.nodeValue.trim();
-      textMemory.set(node,source);
-    }
+    const source=rememberSourceText(node);
     const raw=node.nodeValue;
-    const leading=(raw.match(/^\\s*/)||[""])[0];
-    const trailing=(raw.match(/\\s*$/)||[""])[0];
+    const leading=(raw.match(/^\s*/)||[""])[0];
+    const trailing=(raw.match(/\s*$/)||[""])[0];
     node.nodeValue=leading+t(source)+trailing;
   }
   const elements=rootNode.querySelectorAll?.("input,textarea,button,[aria-label],select")||[];
   elements.forEach(el=>{
     ["placeholder","aria-label","title"].forEach(attr=>{
-      const value=el.getAttribute(attr);
-      if(value==null)return;
-      let source=attrMemory.get(el)?.[attr];
-      if(source==null){
-        source=value;
-        const record=attrMemory.get(el)||{};
-        record[attr]=source;attrMemory.set(el,record);
-      }
-      el.setAttribute(attr,t(source));
+      if(!el.hasAttribute(attr))return;
+      const source=rememberSourceAttr(el,attr);
+      if(source!=null)el.setAttribute(attr,t(source));
     });
   });
 }
+
+function collectTranslationSources(rootNode=document.body){
+  const sources=new Set();
+  const walker=document.createTreeWalker(rootNode,NodeFilter.SHOW_TEXT,{
+    acceptNode(node){
+      const p=node.parentElement;
+      if(!p||/^(SCRIPT|STYLE|NOSCRIPT|OPTION)$/.test(p.tagName))return NodeFilter.FILTER_REJECT;
+      return node.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }
+  });
+  while(walker.nextNode())sources.add(rememberSourceText(walker.currentNode));
+  const elements=rootNode.querySelectorAll?.("input,textarea,button,[aria-label],select")||[];
+  elements.forEach(el=>{
+    ["placeholder","aria-label","title"].forEach(attr=>{
+      if(!el.hasAttribute(attr))return;
+      const source=rememberSourceAttr(el,attr);
+      if(source) sources.add(source);
+    });
+  });
+  return [...sources].filter(Boolean);
+}
+
+function saveAITranslationCache(){
+  try{
+    localStorage.setItem(AI_TRANSLATION_CACHE_KEY,JSON.stringify(aiTranslationCache));
+  }catch(_){
+    // Storage full: keep the in-memory cache and continue working.
+  }
+}
+
+function isPlainNonText(source){
+  return !/[\u3400-\u4dbf\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(source) &&
+    !/[A-Za-zÀ-ÖØ-öø-ÿА-Яа-я؀-ۿऀ-ॿ฀-๿]/.test(source);
+}
+
+async function getAITranslator(targetLanguage){
+  const target=AI_TRANSLATOR_TARGETS[targetLanguage];
+  if(!target||target===AI_TRANSLATOR_SOURCE||!("Translator" in self))return null;
+  if(aiTranslatorInstances.has(target))return aiTranslatorInstances.get(target);
+  const availability=await Translator.availability({
+    sourceLanguage:AI_TRANSLATOR_SOURCE,
+    targetLanguage:target
+  });
+  if(availability==="unavailable")return null;
+  const translator=await Translator.create({
+    sourceLanguage:AI_TRANSLATOR_SOURCE,
+    targetLanguage:target
+  });
+  aiTranslatorInstances.set(target,translator);
+  return translator;
+}
+
+async function runAITranslation(language=currentLanguage){
+  const runId=++aiTranslationGeneration;
+  if(language==="zh-TW")return;
+  const target=AI_TRANSLATOR_TARGETS[language];
+  if(!target||!("Translator" in self))return;
+
+  const sources=collectTranslationSources(document.body);
+  const bucket=aiTranslationCache[language]||(aiTranslationCache[language]={});
+  const missing=sources.filter(source=>!bucket[source]&&!isPlainNonText(source));
+  if(!missing.length){
+    rememberAndTranslate(document.body);
+    return;
+  }
+
+  try{
+    const translator=await getAITranslator(language);
+    if(!translator||runId!==aiTranslationGeneration)return;
+
+    for(let i=0;i<missing.length;i++){
+      if(runId!==aiTranslationGeneration||currentLanguage!==language)return;
+      const source=missing[i];
+      try{
+        const translated=(await translator.translate(source)).trim();
+        if(translated)bucket[source]=translated;
+      }catch(error){
+        console.warn("[SEKAI AI Translation] Failed:",source,error);
+      }
+      if(i%6===0||i===missing.length-1){
+        saveAITranslationCache();
+        rememberAndTranslate(document.body);
+      }
+    }
+    saveAITranslationCache();
+    rememberAndTranslate(document.body);
+  }catch(error){
+    console.warn("[SEKAI AI Translation] Unavailable:",error);
+  }
+}
+
+function requestAITranslation(language=currentLanguage){
+  if(language==="zh-TW")return;
+  runAITranslation(language);
+}
+
 function refreshLanguageSelect(){
   const select=$("#languageSelect");
   if(!select)return;
   const saved=localStorage.getItem("sekaiLanguage")||"auto";
-  select.value=saved;
-  const autoOpt=[...select.options].find(o=>o.value==="auto");
+  const options=[{value:"auto",label:"自動（瀏覽器語言）"},...SUPPORTED_LANGUAGES.map(code=>({
+    value:code,label:LANGUAGE_LABELS[code]
+  }))];
+  select.innerHTML=options.map(o=>'<option value="'+o.value+'">'+o.label+'</option>').join("");
+  select.value=SUPPORTED_LANGUAGES.includes(saved)?saved:(saved==="auto"?"auto":"auto");
+  const autoOpt=select.options[0];
   if(autoOpt)autoOpt.textContent=t("自動（瀏覽器語言）");
 }
+
 function applyLanguage(language,save=true){
-  const chosen=language==="auto" ? detectBrowserLanguage() : normalizeLocale(language);
+  const chosen=language==="auto"?detectBrowserLanguage():normalizeLocale(language);
+  aiTranslationGeneration++;
   currentLanguage=chosen;
   if(save)localStorage.setItem("sekaiLanguage",language||"auto");
   document.documentElement.lang=chosen;
@@ -1418,199 +1552,13 @@ function applyLanguage(language,save=true){
   const player=$("#playerId");
   if(player)player.placeholder=chosen==="zh-TW"?"輸入玩家 ID":t("輸入玩家 ID，這裡只負責玩家相關內容。");
 }
+
 refreshLanguageSelect();
 applyLanguage(localStorage.getItem("sekaiLanguage")||"auto",false);
-$("#languageSelect")?.addEventListener("change",e=>{
-  localStorage.setItem("sekaiLanguage",e.target.value);
-  applyLanguage(e.target.value,false);
-  showToast(LANGUAGE_LABELS[e.target.value==="auto"?currentLanguage:e.target.value]+" · "+t("設定"));
-});
 
-function showToast(message){
-  if(!toast)return;
-  toast.textContent=message;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>toast.classList.remove("show"),1800);
-}
-document.querySelectorAll("[data-home-sheet],[data-sheet]").forEach(card=>{
-  card.setAttribute("aria-expanded","false");
-});
-let draggingTab=false;
-let draggingTabMoved=false;
-let draggingPointerId=null;
-let draggingStartX=0;
-let draggingStartY=0;
-let draggingStartLeft=0;
-let draggingLastX=0;
-let draggingLastY=0;
-let draggingLastTime=0;
-let draggingVelocityX=0;
-let draggingVelocityY=0;
-let suppressTabClick=false;
-
-const INDICATOR_W=72;
-const INDICATOR_H=48;
-
-function getIndicatorLeft(index){
-  const t=tabs[Math.max(0,Math.min(tabs.length-1,index))];
-  if(!t)return 0;
-  return t.offsetLeft+(t.offsetWidth-INDICATOR_W)/2;
-}
-function getTabCenter(index){
-  return getIndicatorLeft(index)+INDICATOR_W/2;
-}
-function setIndicator(index,animate=true){
-  const left=getIndicatorLeft(index);
-  bottomBar.style.setProperty("--tab-left",left+"px");
-  bottomBar.style.setProperty("--tab-y","0px");
-  bottomBar.style.setProperty("--tab-w",INDICATOR_W+"px");
-  bottomBar.style.setProperty("--tab-h",INDICATOR_H+"px");
-  bottomBar.style.setProperty("--tab-scale-x","1");
-  bottomBar.style.setProperty("--tab-scale-y","1");
-  bottomBar.style.setProperty("--tab-rotate","0deg");
-  bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
-  tabIndicator.style.borderRadius="14px";
-  updateLens(getTabCenter(index),false);
-}
-function updateLens(cx,drag){
-  const centers=tabs.map((_,i)=>getTabCenter(i));
-  const spacing=centers.length>1?Math.max(1,centers[1]-centers[0]):Math.max(1,bottomBar.clientWidth/5);
-  const sigma=spacing*(drag?.8:.5);
-  tabs.forEach((t,i)=>{
-    const inf=Math.exp(-Math.pow((cx-centers[i])/sigma,2)/2);
-    t.style.setProperty("--lens",(1+.22*inf).toFixed(3));
-    t.classList.toggle("lens-near",drag&&inf>.62);
-  });
-}
-function resetLens(){tabs.forEach(t=>{t.style.removeProperty("--lens");t.classList.remove("lens-near")})}
-function beginTabDrag(e){
-  if(!tabIndicator)return;
-  const r=tabIndicator.getBoundingClientRect();
-  if(Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2))>Math.max(r.width,r.height)*.65)return;
-  draggingTab=true;draggingTabMoved=false;draggingPointerId=e.pointerId;
-  draggingStartX=e.clientX;draggingStartY=e.clientY;
-  draggingStartLeft=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||getIndicatorLeft(tabs.findIndex(t=>t.classList.contains("active")));
-  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=performance.now();
-  draggingVelocityX=draggingVelocityY=0;
-  bottomBar.style.setProperty("--tab-duration","0s");
-  bottomBar.classList.add("is-dragging");
-  try{bottomBar.setPointerCapture(e.pointerId)}catch(_){}
-}
-function moveTabDrag(e){
-  if(!draggingTab||e.pointerId!==draggingPointerId)return;
-
-  const now=performance.now(),dt=Math.max(8,now-draggingLastTime);
-  const vx=(e.clientX-draggingLastX)/(dt/1000),vy=(e.clientY-draggingLastY)/(dt/1000);
-  draggingVelocityX=draggingVelocityX*.72+vx*.28;
-  draggingVelocityY=draggingVelocityY*.72+vy*.28;
-  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=now;
-
-  const dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
-  if(Math.hypot(dx,dy)>4)draggingTabMoved=true;
-
-  const minLeft=getIndicatorLeft(0);
-  const maxLeft=getIndicatorLeft(tabs.length-1);
-
-  const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1000);
-  const travel=Math.min(1,Math.abs(dx)/(Math.max(1,maxLeft-minLeft)));
-  const stretch=Math.min(.20,.08*travel+.12*speed);
-
-  // 先算出拖曳後尺寸，再用「最外緣」做硬限制。
-  const scaleX=1+stretch;
-  const scaleY=1-stretch*.3;
-  const halfW=(INDICATOR_W*scaleX)/2;
-  const halfH=(INDICATOR_H*scaleY)/2;
-
-  const barRect=bottomBar.getBoundingClientRect();
-  const cs=getComputedStyle(bottomBar);
-  const borderX=(parseFloat(cs.borderLeftWidth)||0);
-  const borderY=(parseFloat(cs.borderTopWidth)||0);
-  const padL=parseFloat(cs.paddingLeft)||0;
-  const padR=parseFloat(cs.paddingRight)||0;
-  const padT=parseFloat(cs.paddingTop)||0;
-  const padB=parseFloat(cs.paddingBottom)||0;
-
-  const innerLeft=borderX+padL;
-  const innerRight=barRect.width-borderX-padR;
-  const innerTop=borderY+padT;
-  const innerBottom=barRect.height-borderY-padB;
-
-  const minCenter=innerLeft+halfW;
-  const maxCenter=innerRight-halfW;
-
-  // 仍以各 tab 的位置作為可活動區間，但絕不允許最外緣越界。
-  const targetCenter=Math.max(minCenter,Math.min(maxCenter,
-    draggingStartLeft+dx+INDICATOR_W/2));
-
-  const left=targetCenter-INDICATOR_W/2;
-  const centerY=Math.max(innerTop+halfH,Math.min(innerBottom-halfH,barRect.height/2+dy));
-  const y=centerY-barRect.height/2;
-
-  const edgeDist=Math.min(targetCenter-minCenter,maxCenter-targetCenter);
-  const edge=Math.max(0,1-Math.min(edgeDist/24,1));
-
-  bottomBar.style.setProperty("--tab-left",left+"px");
-  bottomBar.style.setProperty("--tab-y",y+"px");
-  bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.05).toFixed(3));
-  bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.3+edge*.06).toFixed(3));
-  bottomBar.style.setProperty("--tab-rotate",Math.max(-3,Math.min(3,draggingVelocityX*.004))+"deg");
-
-  const finalScaleX=1+stretch+edge*.05;
-  const finalScaleY=1-stretch*.3+edge*.06;
-  const renderedHalfW=(INDICATOR_W*finalScaleX)/2;
-  const renderedHalfH=(INDICATOR_H*finalScaleY)/2;
-
-  // 二次保護：把最終 transform 後的尺寸也納入邊界。
-  const safeMinCenter=innerLeft+renderedHalfW;
-  const safeMaxCenter=innerRight-renderedHalfW;
-  const safeCenter=Math.max(safeMinCenter,Math.min(safeMaxCenter,left+INDICATOR_W/2));
-  bottomBar.style.setProperty("--tab-left",(safeCenter-INDICATOR_W/2)+"px");
-
-  const tabsCenter=safeCenter;
-  const nearest=tabs.reduce((best,_,i)=>{
-    return Math.abs(tabsCenter-getTabCenter(i))<Math.abs(tabsCenter-getTabCenter(best))?i:best;
-  },0);
-
-  tabs.forEach((t,i)=>t.classList.toggle("active",i===nearest));
-  tabIndicator.style.borderRadius=(14+Math.min(6,stretch*22)).toFixed(1)+"px";
-  updateLens(tabsCenter,true);
-  if(e.cancelable)e.preventDefault();
-}
-function endTabDrag(e){
-  if(!draggingTab||e.pointerId!==draggingPointerId)return;
-  const left=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||0;
-  const center=left+INDICATOR_W/2;
-  const index=tabs.reduce((best,_,i)=>{
-    return Math.abs(center-getTabCenter(i))<Math.abs(center-getTabCenter(best))?i:best;
-  },0);
-  const target=tabs[index];
-  setIndicator(index,true);
-  draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
-  if(draggingTabMoved){
-    suppressTabClick=true;
-    requestAnimationFrame(()=>suppressTabClick=false);
-    if(target)go(target.dataset.go);
-  }else{
-    updateTabMotion(currentRoute);
-  }
-}
-
-function syncBottomBarIndicator(){
-  if(!bottomBar||!tabs.length)return;
-  const current=Math.max(0,tabs.findIndex(t=>t.classList.contains("active")));
-  setIndicator(current,false);
-}
-window.addEventListener("resize",syncBottomBarIndicator,{passive:true});
-window.visualViewport?.addEventListener("resize",syncBottomBarIndicator,{passive:true});
-bottomBar?.addEventListener("pointerdown",beginTabDrag);
-bottomBar?.addEventListener("pointermove",moveTabDrag);
-bottomBar?.addEventListener("pointerup",endTabDrag);
-bottomBar?.addEventListener("pointercancel",endTabDrag);
-bottomBar?.addEventListener("click",e=>{
-  if(suppressTabClick)e.preventDefault();
-});
-
+document.addEventListener("pointerdown",()=>{
+  if(currentLanguage!=="zh-TW")requestAITranslation(currentLanguage);
+},{passive:true});
 
 const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
