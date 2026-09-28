@@ -867,8 +867,7 @@ let draggingTabMoved=false;
 let draggingPointerId=null;
 let draggingStartX=0;
 let draggingStartY=0;
-let draggingStartCenter=0;
-let draggingStartYOffset=0;
+let draggingStartLeft=0;
 let draggingLastX=0;
 let draggingLastY=0;
 let draggingLastTime=0;
@@ -876,94 +875,107 @@ let draggingVelocityX=0;
 let draggingVelocityY=0;
 let suppressTabClick=false;
 
-function getTabStep(){
-  if(!bottomBar)return 0;
-  const slot=(bottomBar.clientWidth-32)/5;
-  return slot+4;
+const INDICATOR_W=72;
+const INDICATOR_H=48;
+
+function getIndicatorLeft(index){
+  const t=tabs[Math.max(0,Math.min(tabs.length-1,index))];
+  if(!t)return 0;
+  return t.offsetLeft+(t.offsetWidth-INDICATOR_W)/2;
 }
-function clampTabOffset(x){
-  const step=getTabStep();
-  return Math.max(0,Math.min(step*4,x));
+function getTabCenter(index){
+  return getIndicatorLeft(index)+INDICATOR_W/2;
 }
-function getTabMetrics(){
-  const r=bottomBar.getBoundingClientRect();
-  const cs=getComputedStyle(bottomBar);
-  const pl=parseFloat(cs.paddingLeft)||0;
-  const pr=parseFloat(cs.paddingRight)||0;
-  const gap=parseFloat(cs.columnGap)||parseFloat(cs.gap)||0;
-  const inner=r.width-pl-pr;
-  const slot=(inner-gap*4)/5;
-  const step=slot+gap;
-  return {r,slot,step,cx(i){return pl+slot/2+Math.max(0,Math.min(4,i))*step}};
+function setIndicator(index,animate=true){
+  const left=getIndicatorLeft(index);
+  bottomBar.style.setProperty("--tab-left",left+"px");
+  bottomBar.style.setProperty("--tab-y","0px");
+  bottomBar.style.setProperty("--tab-w",INDICATOR_W+"px");
+  bottomBar.style.setProperty("--tab-h",INDICATOR_H+"px");
+  bottomBar.style.setProperty("--tab-scale-x","1");
+  bottomBar.style.setProperty("--tab-scale-y","1");
+  bottomBar.style.setProperty("--tab-rotate","0deg");
+  bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
+  tabIndicator.style.borderRadius="14px";
+  updateLens(getTabCenter(index),false);
 }
 function updateLens(cx,drag){
-  const m=getTabMetrics(),sigma=m.slot*(drag?.8:.5);
+  const centers=tabs.map((_,i)=>getTabCenter(i));
+  const spacing=centers.length>1?Math.max(1,centers[1]-centers[0]):Math.max(1,bottomBar.clientWidth/5);
+  const sigma=spacing*(drag?.8:.5);
   tabs.forEach((t,i)=>{
-    const inf=Math.exp(-Math.pow((cx-m.cx(i))/sigma,2)/2);
+    const inf=Math.exp(-Math.pow((cx-centers[i])/sigma,2)/2);
     t.style.setProperty("--lens",(1+.22*inf).toFixed(3));
     t.classList.toggle("lens-near",drag&&inf>.62);
   });
 }
 function resetLens(){tabs.forEach(t=>{t.style.removeProperty("--lens");t.classList.remove("lens-near")})}
-function setIndicator(index,animate=true){
-  const m=getTabMetrics(),cx=m.cx(index);
-  bottomBar.style.setProperty("--tab-x",(cx-m.r.width/2)+"px");
-  bottomBar.style.setProperty("--tab-y","0px");
-  bottomBar.style.setProperty("--tab-w","72px");bottomBar.style.setProperty("--tab-h","48px");
-  bottomBar.style.setProperty("--tab-scale-x","1");bottomBar.style.setProperty("--tab-scale-y","1");bottomBar.style.setProperty("--tab-rotate","0deg");
-  bottomBar.style.setProperty("--tab-duration",animate?".45s":"0s");
-  tabIndicator.style.borderRadius="14px";
-  updateLens(cx,false);
-}
 function beginTabDrag(e){
   if(!tabIndicator)return;
   const r=tabIndicator.getBoundingClientRect();
   if(Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2))>Math.max(r.width,r.height)*.65)return;
   draggingTab=true;draggingTabMoved=false;draggingPointerId=e.pointerId;
   draggingStartX=e.clientX;draggingStartY=e.clientY;
-  const barRect=bottomBar.getBoundingClientRect();
-  draggingStartCenter=barRect.width/2+(parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0);
-  draggingStartYOffset=0;draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=performance.now();
-  draggingVelocityX=draggingVelocityY=0;bottomBar.style.setProperty("--tab-duration","0s");bottomBar.classList.add("is-dragging");
+  draggingStartLeft=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||getIndicatorLeft(tabs.findIndex(t=>t.classList.contains("active")));
+  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=performance.now();
+  draggingVelocityX=draggingVelocityY=0;
+  bottomBar.style.setProperty("--tab-duration","0s");
+  bottomBar.classList.add("is-dragging");
   try{bottomBar.setPointerCapture(e.pointerId)}catch(_){}
 }
 function moveTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
   const now=performance.now(),dt=Math.max(8,now-draggingLastTime);
   const vx=(e.clientX-draggingLastX)/(dt/1000),vy=(e.clientY-draggingLastY)/(dt/1000);
-  draggingVelocityX=draggingVelocityX*.72+vx*.28;draggingVelocityY=draggingVelocityY*.72+vy*.28;
+  draggingVelocityX=draggingVelocityX*.72+vx*.28;
+  draggingVelocityY=draggingVelocityY*.72+vy*.28;
   draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=now;
-  const m=getTabMetrics(),dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
+
+  const dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
   if(Math.hypot(dx,dy)>4)draggingTabMoved=true;
-  const minCenter=m.cx(0),maxCenter=m.cx(4);
-  const center=Math.max(minCenter,Math.min(maxCenter,draggingStartCenter+dx));
-  const x=center-m.r.width/2;
+
+  const minLeft=getIndicatorLeft(0);
+  const maxLeft=getIndicatorLeft(tabs.length-1);
+  const left=Math.max(minLeft,Math.min(maxLeft,draggingStartLeft+dx));
+  const center=left+INDICATOR_W/2;
   const y=Math.max(-10,Math.min(10,dy));
+
   const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1000);
-  const stretch=Math.min(.22,.10*Math.min(1,Math.hypot(dx,dy)/(m.slot*.8))+.12*speed);
-  const frameStretch=Math.min(.055,Math.max(0,Math.abs(dx)/(m.slot*4))*0.055+speed*.000012);
-  const frameRadius=Math.max(16,24-Math.min(8,Math.abs(dx)/(m.slot*4)*8));
-  bottomBar.style.setProperty("--tab-stretch-x",frameStretch.toFixed(3));
-  bottomBar.style.setProperty("--frame-radius",frameRadius.toFixed(1)+"px");
-  const edge=Math.max(0,1-Math.min(Math.min(center-minCenter,maxCenter-center)/24,1));
-  bottomBar.style.setProperty("--tab-x",x+"px");bottomBar.style.setProperty("--tab-y",y+"px");
-  bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.06).toFixed(3));
-  bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.35+edge*.08).toFixed(3));
-  bottomBar.style.setProperty("--tab-rotate",Math.max(-4,Math.min(4,draggingVelocityX*.006))+"deg");
-  const cx=center;
-  const infEdge=Math.max(0,1-Math.min(Math.abs(cx-m.cx(0)),Math.abs(cx-m.cx(4)))/(m.slot*.9));
-  const ry=50-Math.min(10,edge*7),rx=50+Math.min(8,stretch*32);
-  tabIndicator.style.borderRadius=(14+Math.min(6,stretch*24)).toFixed(1)+"px";
-  tabs.forEach((t,i)=>t.classList.toggle("active",i===Math.max(0,Math.min(4,Math.round(cx/m.slot-.5)))));
-  updateLens(cx,true);if(e.cancelable)e.preventDefault();
+  const travel=Math.min(1,Math.abs(dx)/(Math.max(1,maxLeft-minLeft)));
+  const stretch=Math.min(.20,.08*travel+.12*speed);
+  const edge=Math.max(0,1-Math.min(Math.min(left-minLeft,maxLeft-left)/24,1));
+
+  bottomBar.style.setProperty("--tab-left",left+"px");
+  bottomBar.style.setProperty("--tab-y",y+"px");
+  bottomBar.style.setProperty("--tab-scale-x",(1+stretch+edge*.05).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.3+edge*.06).toFixed(3));
+  bottomBar.style.setProperty("--tab-rotate",Math.max(-3,Math.min(3,draggingVelocityX*.004))+"deg");
+
+  const nearest=tabs.reduce((best,_,i)=>{
+    return Math.abs(center-getTabCenter(i))<Math.abs(center-getTabCenter(best))?i:best;
+  },0);
+  tabs.forEach((t,i)=>t.classList.toggle("active",i===nearest));
+  tabIndicator.style.borderRadius=(14+Math.min(6,stretch*22)).toFixed(1)+"px";
+  updateLens(center,true);
+  if(e.cancelable)e.preventDefault();
 }
 function endTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-  const m=getTabMetrics(),x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0,cx=m.r.width/2+x;
-  const index=Math.max(0,Math.min(4,Math.round((cx-m.cx(0))/m.step)));
-  const target=tabs[index];setIndicator(index,true);
+  const left=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-left"))||0;
+  const center=left+INDICATOR_W/2;
+  const index=tabs.reduce((best,_,i)=>{
+    return Math.abs(center-getTabCenter(i))<Math.abs(center-getTabCenter(best))?i:best;
+  },0);
+  const target=tabs[index];
+  setIndicator(index,true);
   draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
-  if(draggingTabMoved){suppressTabClick=true;requestAnimationFrame(()=>suppressTabClick=false);if(target)go(target.dataset.go)}else updateTabMotion(currentRoute);
+  if(draggingTabMoved){
+    suppressTabClick=true;
+    requestAnimationFrame(()=>suppressTabClick=false);
+    if(target)go(target.dataset.go);
+  }else{
+    updateTabMotion(currentRoute);
+  }
 }
 
 bottomBar?.addEventListener("pointerdown",beginTabDrag);
