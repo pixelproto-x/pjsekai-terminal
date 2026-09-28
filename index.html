@@ -109,7 +109,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .section-head:after{content:"✦  ♪  ♫";font-size:12px;letter-spacing:.18em;color:rgba(145,121,245,.42);margin-left:auto;margin-bottom:5px}
 .section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
 
-.home-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .app-card{
   min-height:82px;padding:14px 48px 14px 14px;border:1px solid rgba(255,255,255,.78);border-radius:20px;
   background:rgba(255,255,255,var(--glass-opacity));backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72);
@@ -146,8 +146,8 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 }
 .home-accordion-item:hover{background:#fff}
 .home-accordion-item strong{font-size:11px}.home-accordion-item span{font-size:14px;color:#b0b3bc}
-.card-dark{background:linear-gradient(140deg,rgba(22,24,36,var(--dark-glass-opacity)),rgba(42,45,61,calc(var(--dark-glass-opacity) * .92)));backdrop-filter:blur(24px) saturate(130%);-webkit-backdrop-filter:blur(24px) saturate(130%);color:#fff;border-color:rgba(255,255,255,.12);box-shadow:0 18px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.16)}
-.card-dark p{color:#b9bbc5}.card-dark .badge{background:rgba(255,255,255,.09);color:#c9cad1}.card-dark .chev{color:#aaaebd}
+.card-dark{background:rgba(255,255,255,var(--glass-opacity));color:var(--ink);border-color:rgba(255,255,255,.78);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.72)}
+.card-dark p{color:var(--muted)}.card-dark .badge{background:rgba(24,26,34,.06);color:#7d8089}.card-dark .chev{color:#9ca0aa}
 
 .quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .quick{border:1px solid var(--line);background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(9px) saturate(135%);-webkit-backdrop-filter:blur(9px) saturate(135%);border-radius:20px;padding:17px;text-align:left;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
@@ -304,6 +304,14 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   .official-gallery div{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 }
 
+/* UI POLISH */
+.home-grid .app-card{min-height:92px}
+.home-grid .app-card.card-dark .icon{background:linear-gradient(135deg,#8f95a6,#666c7c)}
+.home-grid .app-card:hover{border-color:rgba(255,255,255,.95);box-shadow:0 12px 30px rgba(25,27,40,.09),inset 0 1px 0 rgba(255,255,255,.82)}
+.home-grid .app-card .chev{font-size:18px}
+.quick{min-height:68px}
+@media(max-width:640px){.home-grid{grid-template-columns:1fr}.home-grid .app-card{min-height:76px}}
+
 @media(max-width:640px){
   .page{animation:none}
   .app-card,.catalog-card,.quick,.top-icon,.primary-btn,.secondary-btn{transition:none}
@@ -377,7 +385,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
       </button>
       <button class="app-card card-dark" data-home-sheet="home-tools">
         <span class="icon">⌘</span><span class="chev">⌃</span>
-        <span><h3>工具 Game Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
+        <span><h3>工具 Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
       </button>
       <button class="app-card card-green" data-home-sheet="home-profile">
         <span class="icon">♙</span><span class="chev">⌃</span>
@@ -389,7 +397,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
     <div class="quick-row">
       <button class="quick" data-go="home"><span class="qicon">◷</span><span><strong>最新情報</strong><span>查看近期更新</span></span></button>
       <button class="quick" data-go="profile"><span class="qicon">♡</span><span><strong>我的收藏</strong><span>歌曲與卡片</span></span></button>
-      <button class="quick" data-go="tools"><span class="qicon">i</span><span><strong>關於 Terminal</strong><span>網站資訊</span></span></button>
+      <button class="quick" data-go="tools"><span class="qicon">⌘</span><span><strong>工具中心</strong><span>快速開啟常用工具</span></span></button>
     </div>
   </section>
 
