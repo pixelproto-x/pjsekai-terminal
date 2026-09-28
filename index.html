@@ -412,6 +412,16 @@ button{
 .page.route-from-left{
   animation:routeFromLeft .38s var(--ios-ease) both;
 }
+.page.route-slide-old-left,.page.route-slide-old-right,
+.page.route-slide-new-left,.page.route-slide-new-right{
+  animation-duration:.38s;
+  animation-timing-function:var(--ios-ease);
+  animation-fill-mode:both;
+}
+.page.route-slide-old-left{animation-name:routeSlideOldLeft}
+.page.route-slide-old-right{animation-name:routeSlideOldRight}
+.page.route-slide-new-left{animation-name:routeSlideNewLeft}
+.page.route-slide-new-right{animation-name:routeSlideNewRight}
 @keyframes routeFromRight{
   from{opacity:0;transform:translate3d(18px,4px,0) scale(.992)}
   65%{opacity:1}
@@ -421,6 +431,22 @@ button{
   from{opacity:0;transform:translate3d(-18px,4px,0) scale(.992)}
   65%{opacity:1}
   to{opacity:1;transform:none}
+}
+@keyframes routeSlideOldLeft{
+  from{opacity:1;transform:translate3d(0,0,0)}
+  to{opacity:0;transform:translate3d(-64px,0,0)}
+}
+@keyframes routeSlideOldRight{
+  from{opacity:1;transform:translate3d(0,0,0)}
+  to{opacity:0;transform:translate3d(64px,0,0)}
+}
+@keyframes routeSlideNewLeft{
+  from{opacity:0;transform:translate3d(-64px,0,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes routeSlideNewRight{
+  from{opacity:0;transform:translate3d(64px,0,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
 }
 
 /* press feedback */
@@ -1762,23 +1788,56 @@ function updateTabMotion(page){
 
 function go(page){
   const target=pages.find(p=>p.dataset.page===page) || pages[0];
+  const source=pages.find(p=>p.classList.contains("active") && p!==target) || null;
   const nextRoute=target.dataset.page;
   const fromIndex=routeOrder.indexOf(currentRoute);
   const toIndex=routeOrder.indexOf(nextRoute);
   const direction=(!routeInitialized || fromIndex===-1 || toIndex>=fromIndex)?"right":"left";
 
-  pages.forEach(p=>{
-    p.classList.remove("route-from-right","route-from-left");
-    p.classList.toggle("active",p===target);
-  });
-
-  target.classList.add(direction==="right"?"route-from-right":"route-from-left");
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    target.classList.remove("route-from-right","route-from-left");
-  }));
-
   updateTabMotion(nextRoute);
-  window.scrollTo({top:0,behavior:routeInitialized?"smooth":"auto"});
+
+  if(!routeInitialized || !source || source===target){
+    pages.forEach(p=>{
+      p.classList.remove("active","route-slide-old-left","route-slide-old-right","route-slide-new-left","route-slide-new-right","route-from-right","route-from-left");
+      p.style.removeProperty("position");
+      p.style.removeProperty("left");
+      p.style.removeProperty("top");
+      p.style.removeProperty("width");
+    });
+    target.classList.add("active");
+    target.classList.add(direction==="right"?"route-from-right":"route-from-left");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      target.classList.remove("route-from-right","route-from-left");
+    }));
+    window.scrollTo({top:0,behavior:"auto"});
+  }else{
+    const parent=source.offsetParent || source.parentElement;
+    const parentRect=parent.getBoundingClientRect();
+    const sourceRect=source.getBoundingClientRect();
+
+    target.classList.add("active");
+    target.style.position="absolute";
+    target.style.left=(sourceRect.left-parentRect.left)+"px";
+    target.style.top=(sourceRect.top-parentRect.top+parent.scrollTop)+"px";
+    target.style.width=sourceRect.width+"px";
+
+    source.classList.add(direction==="right"?"route-slide-old-left":"route-slide-old-right");
+    target.classList.add(direction==="right"?"route-slide-new-right":"route-slide-new-left");
+
+    const finish=()=>{
+      source.classList.remove("active","route-slide-old-left","route-slide-old-right");
+      target.classList.remove("route-slide-new-left","route-slide-new-right");
+      target.style.removeProperty("position");
+      target.style.removeProperty("left");
+      target.style.removeProperty("top");
+      target.style.removeProperty("width");
+      target.style.removeProperty("animation");
+    };
+    target.addEventListener("animationend",finish,{once:true});
+    window.setTimeout(finish,450);
+    window.scrollTo({top:0,behavior:"auto"});
+  }
+
   history.replaceState({}, "", "#"+nextRoute);
   currentRoute=nextRoute;
   routeInitialized=true;
