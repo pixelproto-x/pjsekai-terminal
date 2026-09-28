@@ -868,6 +868,7 @@ let draggingTab=false;
 let draggingTabMoved=false;
 let draggingPointerId=null;
 let draggingStartX=0;
+let draggingStartY=0;
 let draggingStartOffset=0;
 let suppressTabClick=false;
 
@@ -888,6 +889,7 @@ function beginTabDrag(e){
   draggingTabMoved=false;
   draggingPointerId=e.pointerId;
   draggingStartX=e.clientX;
+  draggingStartY=e.clientY;
   draggingStartOffset=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0;
   bottomBar.classList.add("is-dragging");
   try{bottomBar.setPointerCapture(e.pointerId)}catch(_){}
