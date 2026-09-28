@@ -886,8 +886,11 @@ function clampTabOffset(x){
   return Math.max(0,Math.min(step*4,x));
 }
 function getTabMetrics(){
-  const r=bottomBar.getBoundingClientRect(), slot=r.width/5;
-  return {r,slot,cx(i){return (i+.5)*slot}};
+  const r=bottomBar.getBoundingClientRect();
+  const rects=tabs.map(t=>t.getBoundingClientRect());
+  const centers=rects.map(t=>t.left+t.width/2-r.left);
+  const slot=centers.length>1?centers[1]-centers[0]:r.width/5;
+  return {r,slot,cx(i){return centers[Math.max(0,Math.min(centers.length-1,i))]}};
 }
 function updateLens(cx,drag){
   const m=getTabMetrics(),sigma=m.slot*(drag?.8:.5);
