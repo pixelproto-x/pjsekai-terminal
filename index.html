@@ -228,7 +228,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);
   --tab-x:0px;--tab-y:0px;--tab-w:0px;--tab-h:52px;--tab-scale-x:1;--tab-scale-y:1;--tab-rotate:0deg;
   --tab-duration:.45s;--tab-ease:cubic-bezier(.22,1,.36,1);
-  touch-action:none;user-select:none;overflow:visible;isolation:isolate;
+  touch-action:none;user-select:none;overflow:hidden;isolation:isolate;
 }
 .tab-indicator{
   position:absolute;z-index:2;left:var(--tab-left,0px);top:50%;width:var(--tab-w);height:var(--tab-h);min-width:72px;
@@ -925,6 +925,7 @@ function beginTabDrag(e){
 }
 function moveTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
+
   const now=performance.now(),dt=Math.max(8,now-draggingLastTime);
   const vx=(e.clientX-draggingLastX)/(dt/1000),vy=(e.clientY-draggingLastY)/(dt/1000);
   draggingVelocityX=draggingVelocityX*.72+vx*.28;
@@ -936,14 +937,45 @@ function moveTabDrag(e){
 
   const minLeft=getIndicatorLeft(0);
   const maxLeft=getIndicatorLeft(tabs.length-1);
-  const left=Math.max(minLeft,Math.min(maxLeft,draggingStartLeft+dx));
-  const center=left+INDICATOR_W/2;
-  const y=Math.max(-10,Math.min(10,dy));
 
   const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1000);
   const travel=Math.min(1,Math.abs(dx)/(Math.max(1,maxLeft-minLeft)));
   const stretch=Math.min(.20,.08*travel+.12*speed);
-  const edge=Math.max(0,1-Math.min(Math.min(left-minLeft,maxLeft-left)/24,1));
+
+  // 先算出拖曳後尺寸，再用「最外緣」做硬限制。
+  const scaleX=1+stretch;
+  const scaleY=1-stretch*.3;
+  const halfW=(INDICATOR_W*scaleX)/2;
+  const halfH=(INDICATOR_H*scaleY)/2;
+
+  const barRect=bottomBar.getBoundingClientRect();
+  const cs=getComputedStyle(bottomBar);
+  const borderX=(parseFloat(cs.borderLeftWidth)||0);
+  const borderY=(parseFloat(cs.borderTopWidth)||0);
+  const padL=parseFloat(cs.paddingLeft)||0;
+  const padR=parseFloat(cs.paddingRight)||0;
+  const padT=parseFloat(cs.paddingTop)||0;
+  const padB=parseFloat(cs.paddingBottom)||0;
+
+  const innerLeft=borderX+padL;
+  const innerRight=barRect.width-borderX-padR;
+  const innerTop=borderY+padT;
+  const innerBottom=barRect.height-borderY-padB;
+
+  const minCenter=innerLeft+halfW;
+  const maxCenter=innerRight-halfW;
+
+  // 仍以各 tab 的位置作為可活動區間，但絕不允許最外緣越界。
+  const targetCenter=Math.max(minCenter,Math.min(maxCenter,
+    draggingStartLeft+dx+INDICATOR_W/2));
+
+  const left=targetCenter-INDICATOR_W/2;
+  const maxY= Math.max(0,Math.min(10,innerBottom-innerTop-INDICATOR_H));
+  const minY= Math.min(0,Math.max(-10,innerTop+halfH-(barRect.height/2)));
+  const y=Math.max(minY,Math.min(maxY,dy));
+
+  const edgeDist=Math.min(targetCenter-minCenter,maxCenter-targetCenter);
+  const edge=Math.max(0,1-Math.min(edgeDist/24,1));
 
   bottomBar.style.setProperty("--tab-left",left+"px");
   bottomBar.style.setProperty("--tab-y",y+"px");
@@ -951,12 +983,25 @@ function moveTabDrag(e){
   bottomBar.style.setProperty("--tab-scale-y",(1-stretch*.3+edge*.06).toFixed(3));
   bottomBar.style.setProperty("--tab-rotate",Math.max(-3,Math.min(3,draggingVelocityX*.004))+"deg");
 
+  const finalScaleX=1+stretch+edge*.05;
+  const finalScaleY=1-stretch*.3+edge*.06;
+  const renderedHalfW=(INDICATOR_W*finalScaleX)/2;
+  const renderedHalfH=(INDICATOR_H*finalScaleY)/2;
+
+  // 二次保護：把最終 transform 後的尺寸也納入邊界。
+  const safeMinCenter=innerLeft+renderedHalfW;
+  const safeMaxCenter=innerRight-renderedHalfW;
+  const safeCenter=Math.max(safeMinCenter,Math.min(safeMaxCenter,left+INDICATOR_W/2));
+  bottomBar.style.setProperty("--tab-left",(safeCenter-INDICATOR_W/2)+"px");
+
+  const tabsCenter=safeCenter;
   const nearest=tabs.reduce((best,_,i)=>{
-    return Math.abs(center-getTabCenter(i))<Math.abs(center-getTabCenter(best))?i:best;
+    return Math.abs(tabsCenter-getTabCenter(i))<Math.abs(tabsCenter-getTabCenter(best))?i:best;
   },0);
+
   tabs.forEach((t,i)=>t.classList.toggle("active",i===nearest));
   tabIndicator.style.borderRadius=(14+Math.min(6,stretch*22)).toFixed(1)+"px";
-  updateLens(center,true);
+  updateLens(tabsCenter,true);
   if(e.cancelable)e.preventDefault();
 }
 function endTabDrag(e){
