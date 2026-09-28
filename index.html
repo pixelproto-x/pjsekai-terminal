@@ -894,34 +894,43 @@ function beginTabDrag(e){
 }
 function moveTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-  const delta=e.clientX-draggingStartX;
-  if(Math.abs(delta)>5)draggingTabMoved=true;
-  const rawX=draggingStartOffset+delta;
+  const dx=e.clientX-draggingStartX;
+  const dy=e.clientY-draggingStartY;
+  if(Math.hypot(dx,dy)>5)draggingTabMoved=true;
   const step=getTabStep();
   const maxX=step*4;
-  let x=rawX;
-  let edgePull=0;
-  if(rawX<0){
-    edgePull=Math.min(1,Math.abs(rawX)/90);
-    x=-Math.pow(Math.abs(rawX),.72)*.52;
-  }else if(rawX>maxX){
-    edgePull=Math.min(1,(rawX-maxX)/90);
-    x=maxX+Math.pow(rawX-maxX,.72)*.52;
-  }else{
-    x=clampTabOffset(rawX);
-  }
-  const squeeze=.08*edgePull;
-  const stretch=.10*edgePull;
+  const barRect=bottomBar.getBoundingClientRect();
+  const indicatorW=tabIndicator.getBoundingClientRect().width;
+  const minX=0;
+  const maxAllowed=Math.max(0,barRect.width-16-indicatorW);
+  let rawX=draggingStartOffset+dx;
+  let x=Math.max(minX,Math.min(maxAllowed,rawX));
+
+  /* 在格子內自由拖動；接近四周時產生液態擠壓 */
+  const edge=Math.min(x-minX,maxAllowed-x);
+  const edgeZone=Math.min(38,Math.max(12,indicatorW*.32));
+  const pull=Math.max(0,Math.min(1,(edgeZone-edge)/edgeZone));
+  const horizontalSqueeze=.075*pull;
+  const verticalStretch=.10*pull;
+
   bottomBar.style.setProperty("--tab-x",x+"px");
-  bottomBar.style.setProperty("--tab-scale-x",(1-squeeze).toFixed(3));
-  bottomBar.style.setProperty("--tab-scale-y",(1+stretch).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-x",(1-horizontalSqueeze).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-y",(1+verticalStretch).toFixed(3));
+
+  /* 拖動到哪個功能，就即時把該項目視為目前選取 */
+  const center=x+indicatorW/2;
+  const index=Math.max(0,Math.min(4,Math.floor(center/((barRect.width-16)/5))));
+  tabs.forEach((t,i)=>t.classList.toggle("active",i===index));
   if(e.cancelable)e.preventDefault();
 }
 function endTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
   const x=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0;
-  const step=getTabStep();
-  const index=Math.max(0,Math.min(4,Math.round(x/step)));
+  const barRect=bottomBar.getBoundingClientRect();
+  const indicatorW=tabIndicator.getBoundingClientRect().width;
+  const maxAllowed=Math.max(0,barRect.width-16-indicatorW);
+  const center=x+indicatorW/2;
+  const index=Math.max(0,Math.min(4,Math.round((center-indicatorW/2)/((maxAllowed)/4))));
   const target=tabs[index];
   bottomBar.style.setProperty("--tab-scale-x","1");
   bottomBar.style.setProperty("--tab-scale-y","1");
