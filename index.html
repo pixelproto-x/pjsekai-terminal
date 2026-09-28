@@ -904,12 +904,18 @@ function moveTabDrag(e){
   const maxX=Math.max(0,br.width-16-ir.width),maxY=Math.max(0,br.height-16-ir.height);
   const x=Math.max(0,Math.min(maxX,draggingStartOffset+dx));
   const y=Math.max(0,Math.min(maxY,draggingStartYOffset+dy));
-  const ex=Math.min(x,maxX-x),ey=Math.min(y,maxY-y),zone=Math.min(30,Math.max(9,ir.width*.2));
+  const ex=Math.min(x,maxX-x),ey=Math.min(y,maxY-y),zone=Math.min(38,Math.max(10,ir.width*.28));
   const px=Math.max(0,Math.min(1,(zone-ex)/zone)),py=Math.max(0,Math.min(1,(zone-ey)/zone));
-  const p=Math.max(px,py);
+  const left=x<maxX*.5,right=!left,top=y<maxY*.5,bottom=!top;
+  /* 像不會破掉的泡泡：被哪一邊頂住，就往反方向鼓起 */
   let sx=1,sy=1;
-  if(px>=py){sx=1-.11*p;sy=1+.14*p}else{sx=1+.14*p;sy=1-.11*p}
-  const corner=px*py*.035;sx+=corner;sy+=corner;
+  if(px>0){sx=1-.18*px;sy=1+.22*px}
+  if(py>0){sx=Math.max(sx,1+.22*py);sy=Math.min(sy,1-.18*py)}
+  if(px>0&&py>0){sx+=.05*px*py;sy+=.05*px*py}
+  /* 四角接觸時讓變形更圓、更有彈性 */
+  const edgePull=Math.max(px,py);
+  const squash=.035*edgePull;
+  sx+=squash;sy+=squash;
   bottomBar.style.setProperty("--tab-x",x+"px");
   bottomBar.style.setProperty("--tab-y",y+"px");
   bottomBar.style.setProperty("--tab-scale-x",sx.toFixed(3));
