@@ -7,7 +7,7 @@
 <meta name="color-scheme" content="light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Project SEKAI｜玩家工具箱</title>
 <style>
 :root{
@@ -39,7 +39,7 @@ input::placeholder{color:#9da1ad;opacity:1}
 button:focus-visible,input:focus-visible{
   outline:3px solid rgba(145,121,245,.42);outline-offset:2px
 }
-body{margin:0;background:#202333;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:#202333;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC","Noto Sans JP","Noto Sans KR","Noto Sans Arabic","Noto Sans Devanagari","Noto Sans Thai","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button,input,select{font:inherit}
 button{cursor:pointer}
 a{text-decoration:none;color:inherit}
@@ -226,6 +226,21 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .settings-card:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 45%);pointer-events:none}
 .settings-row-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .settings-row-head strong{font-size:14px}.settings-row-head span{display:block;color:var(--muted);font-size:10px;line-height:1.7;margin-top:5px;max-width:620px}
+.language-setting{margin-top:10px}
+.language-select{
+  width:100%;min-height:48px;border:1px solid var(--line);background:rgba(255,255,255,.72);
+  color:var(--ink);border-radius:16px;padding:0 14px;font-size:12px;font-weight:700;
+  box-shadow:var(--shadow-sm);appearance:auto;
+}
+.language-select:focus{outline:3px solid rgba(145,121,245,.30);outline-offset:2px}
+html[dir="rtl"] .page-subtitle,html[dir="rtl"] .settings-row-head{text-align:right}
+html[dir="rtl"] .app-card,html[dir="rtl"] .catalog-card,html[dir="rtl"] .quick,html[dir="rtl"] .list-row{text-align:right}
+html[dir="rtl"] .app-card .chev{right:auto;left:17px}
+html[dir="rtl"] .app-card{padding-left:48px;padding-right:14px}
+html[dir="rtl"] .catalog-card .arrow{right:auto;left:16px}
+html[dir="rtl"] .catalog-card .tiny-icon{margin-left:0;margin-right:12px}
+html[dir="rtl"] .search-panel{direction:rtl}
+html[dir="rtl"] .field-label,html[dir="rtl"] .field-help{text-align:right}
 #opacityValue{font-size:26px;letter-spacing:-.04em;white-space:nowrap}
 .opacity-range{position:relative;z-index:1;width:100%;margin:28px 0 10px;accent-color:var(--violet);height:5px}
 .settings-scale{position:relative;z-index:1;display:flex;justify-content:space-between;color:var(--muted);font-size:9px}
@@ -817,6 +832,38 @@ button{
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
 
+    <div class="settings-card language-setting">
+      <div class="settings-row-head">
+        <div>
+          <strong>語言</strong>
+          <span>未手動指定時，會依瀏覽器語言自動選擇。</span>
+        </div>
+      </div>
+      <select id="languageSelect" class="language-select" aria-label="介面語言">
+        <option value="auto">自動（瀏覽器語言）</option>
+        <option value="zh-TW">繁體中文</option>
+        <option value="zh-CN">简体中文</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="pt-BR">Português</option>
+        <option value="ru">Русский</option>
+        <option value="it">Italiano</option>
+        <option value="th">ไทย</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="id">Bahasa Indonesia</option>
+        <option value="tr">Türkçe</option>
+        <option value="ar">العربية</option>
+        <option value="hi">हिन्दी</option>
+        <option value="nl">Nederlands</option>
+        <option value="pl">Polski</option>
+        <option value="ms">Bahasa Melayu</option>
+      </select>
+    </div>
+
     <div class="settings-card">
       <div class="settings-row-head">
         <div>
@@ -894,6 +941,7 @@ button{
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
+
 const pages=[...document.querySelectorAll(".page")];
 const tabs=[...document.querySelectorAll(".tab")];
 const $=(s,root=document)=>root.querySelector(s);
@@ -901,6 +949,319 @@ const bottomBar=document.querySelector(".bottom-bar");
 const tabIndicator=document.querySelector(".tab-indicator");
 const toast=$("#toast");
 let toastTimer=0;
+const SUPPORTED_LANGUAGES=["zh-TW","zh-CN","en","ja","ko","es","fr","de","pt-BR","ru","it","th","vi","id","tr","ar","hi","nl","pl","ms"];
+const LANGUAGE_LABELS={
+  "zh-TW":"繁體中文","zh-CN":"简体中文",en:"English",ja:"日本語",ko:"한국어",es:"Español",fr:"Français",de:"Deutsch",
+  "pt-BR":"Português",ru:"Русский",it:"Italiano",th:"ไทย",vi:"Tiếng Việt",id:"Bahasa Indonesia",tr:"Türkçe",
+  ar:"العربية",hi:"हिन्दी",nl:"Nederlands",pl:"Polski",ms:"Bahasa Melayu"
+};
+
+const enText={
+  "玩家工具箱":"Player Toolbox","回到首頁":"Back to Home","搜尋":"Search","置頂":"Top","主選單":"Main navigation",
+  "探索 SEKAI":"Explore SEKAI","開啟工具":"Open Tools","選擇一個入口":"Choose an entry","快速進入":"Quick Access",
+  "最新情報":"Latest News","查看近期更新":"View recent updates","我的收藏":"My Favorites","歌曲與卡片":"Songs & cards",
+  "工具中心":"Tool Center","快速開啟常用工具":"Quickly open common tools","歌曲":"Songs","歌曲 Music":"Songs",
+  "SEKAI":"SEKAI","角色":"Characters","角色 Characters":"Characters","卡片":"Cards","活動":"Events",
+  "工具":"Tools","工具 Tools":"Tools","我的":"Profile","我的 Profile":"My Profile",
+  "歌曲、難度、收藏、MV、搜尋":"Songs, difficulties, favorites, MV and search",
+  "六大世界、世界資訊、相關內容":"Six worlds, world information and related content",
+  "團體、成員、角色資料":"Units, members and character data","圖鑑、收藏、特訓、稀有度":"Gallery, favorites, training and rarity",
+  "目前活動、歷史、排名、計算器":"Current events, history, rankings and calculators",
+  "玩家資料、節奏設定、各種工具":"Player data, rhythm settings and tools",
+  "玩家資料、收藏、最近使用、設定":"Player data, favorites, recent items and settings",
+  "先選一個世界，再進入該世界的歌曲、角色與相關內容。":"Choose a world, then explore its songs, characters and related content.",
+  "首頁":"Home","教室的 SEKAI":"Classroom SEKAI","舞台的 SEKAI":"Stage SEKAI","街道的 SEKAI":"Street SEKAI",
+  "青春、友情與還沒說出口的歌。":"Youth, friendship, and songs left unsaid.",
+  "燈光亮起後，夢想開始向前。":"When the lights come on, dreams move forward.",
+  "城市、音樂與夥伴。":"The city, music, and friends.","充滿不可思議的舞台。":"A stage full of wonder.",
+  "空無的 SEKAI":"Empty SEKAI","安靜卻沒有消失的旋律。":"A quiet melody that never disappeared.",
+  "跨越次元傳達的歌聲。":"A voice carried across dimensions.",
+  "歌曲搜尋":"Song Search","輸入歌名、歌手或關鍵字":"Enter a song title, singer, or keyword.",
+  "可使用歌曲名稱、歌手或 MV 關鍵字。":"Search by song title, singer, or MV keyword.",
+  "歌曲篩選":"Song Filter","篩選":"Filter","歌曲功能":"Song Functions","全部歌曲":"All Songs",
+  "進入完整歌曲列表與搜尋。":"Open the full song list and search.",
+  "收藏歌曲":"Favorite Songs","只顯示你標記的歌曲。":"Show only songs you saved.",
+  "難度分類":"Difficulty","依難度與譜面入口整理。":"Browse by difficulty and chart.",
+  "MV / 對應影片":"MV / Videos","集中影片與 MV 入口。":"Centralized video and MV entry.",
+  "歌曲資料":"Song Data","BPM、類型、歌唱成員等資訊入口。":"BPM, type, vocal members and more.",
+  "歌曲工具":"Song Tools","練習與快速檢視相關工具。":"Practice and quick-view tools.",
+  "先選團體，再進入成員與角色相關內容。":"Choose a unit, then explore its members and character content.",
+  "團體、成員、歌曲與相關入口。":"Unit, members, songs and related entries.",
+  "偶像與舞台相關內容。":"Idol and stage content.","街頭音樂與角色入口。":"Street music and character entries.",
+  "劇場與角色內容。":"Theater and character content.","夜與創作的角色入口。":"Night-themed character entries.",
+  "虛擬歌手相關內容。":"Virtual Singer content.","卡片不直接全部塞在首頁，進入卡片專區後再選功能。":"Open the card archive to explore card functions.",
+  "卡片":"Cards","全部卡片":"All Cards","完整卡片瀏覽與搜尋。":"Browse and search all cards.",
+  "集中你保存的卡片。":"View your saved cards.","特訓狀態":"Training Status","查看卡片進度相關入口。":"Card progress and training status.",
+  "團體分類":"Unit Categories","依角色團體快速瀏覽。":"Browse quickly by unit.",
+  "稀有度":"Rarity","依稀有度快速篩選。":"Filter quickly by rarity.","卡片搜尋":"Card Search",
+  "用關鍵字尋找卡片。":"Find cards by keyword.",
+  "活動資料與計算器分開整理，點開後再進入各種工具。":"Event data and calculators are organized separately.",
+  "目前活動":"Current Event","查看活動入口、活動頁與相關資訊。":"Open the event page and related information.",
+  "活動計算器":"Event Calculator","計算周回與資源需求。":"Calculate runs and resource needs.",
+  "排名紀錄":"Ranking History","整理自己的活動紀錄。":"Organize your event history.",
+  "歷史活動":"Event History","回顧過往活動入口。":"Review past events.",
+  "玩家專區":"Player Area","常用玩家工具都整理在這裡，點選卡片即可查看。":"Common player tools are organized here.",
+  "版本":"Version","介面":"Interface","狀態":"Status","玩家資料":"Player Data",
+  "玩家 ID、基本狀態與個人資料。":"Player ID, basic status and profile.",
+  "節奏設定":"Rhythm Settings","速度、Mirror 與節奏練習設定。":"Speed, Mirror and rhythm practice settings.",
+  "活動計算":"Event Calculation","周回估算工具。":"Run estimation tool.","卡片資料":"Card Data","卡片資料入口。":"Card data entry.",
+  "設定":"Settings","介面、搜尋與本機偏好。":"Interface, search and local preferences.",
+  "顯示設定":"Display Settings","調整介面的透明程度與顯示效果。設定會保存在這台裝置，下次開啟仍會保留。":"Adjust transparency and display effects. Settings are saved on this device.",
+  "介面透明度":"Interface Opacity","調整介面的透明程度，找到你喜歡的顯示效果。":"Adjust interface transparency.",
+  "較透明":"More Transparent","平衡":"Balanced","較明確":"More Solid",
+  "顯示效果":"Display Effects","快速套用顯示效果。":"Quickly apply a display preset.","即時預覽":"Live Preview",
+  "拖動上方滑桿，即時調整介面的顯示效果。":"Drag the slider above to adjust the interface.",
+  "介面預覽":"Interface Preview","世界計畫":"Project SEKAI",
+  "個人內容獨立一頁，避免玩家資料和其他功能混在首頁。":"Personal content has its own page.",
+  "輸入玩家 ID，這裡只負責玩家相關內容。":"Enter a Player ID for the player section.",
+  "目前為本機介面示範，不會上傳玩家資料。":"This is a local interface demo. Player data is not uploaded.",
+  "載入":"Load","歌曲與卡片收藏。":"Song and card favorites.","最近使用":"Recent",
+  "最近開啟的內容。":"Recently opened content.","偏好與介面設定。":"Preferences and interface settings.",
+  "本網站為非官方粉絲作品，與 SEGA、Colorful Palette 無隸屬關係.":"Unofficial fan-made interface. Not affiliated with SEGA or Colorful Palette.",
+  "功能即將推出":"This feature is coming soon","正在開啟":"Opening","入口":"Entry",
+  "篩選入口已開啟：目前可用關鍵字搜尋":"Filter opened. Keyword search is currently available.",
+  "語言":"Language","未手動指定時，會依瀏覽器語言自動選擇。":"When not manually selected, the browser language is used automatically.",
+  "輸入玩家 ID":"Enter Player ID","輸入玩家 ID，這裡只負責玩家相關內容。":"Enter a Player ID for the player section.",
+  "自動（瀏覽器語言）":"Auto (browser language)","已展開":"Expanded"
+};
+
+const langOverrides={
+"zh-CN":{
+  "玩家工具箱":"玩家工具箱","回到首頁":"返回首页","搜尋":"搜索","置頂":"置顶","主選單":"主菜单",
+  "探索 SEKAI":"探索 SEKAI","開啟工具":"打开工具","選擇一個入口":"选择一个入口","快速進入":"快速进入",
+  "最新情報":"最新情报","查看近期更新":"查看近期更新","我的收藏":"我的收藏","歌曲與卡片":"歌曲与卡片",
+  "工具中心":"工具中心","歌曲":"歌曲","角色":"角色","卡片":"卡片","活動":"活动","工具":"工具","我的":"我的",
+  "歌曲搜尋":"歌曲搜索","篩選":"筛选","歌曲功能":"歌曲功能","全部歌曲":"全部歌曲","收藏歌曲":"收藏歌曲",
+  "難度分類":"难度分类","歌曲資料":"歌曲资料","歌曲工具":"歌曲工具","卡片資料":"卡片资料","活動計算器":"活动计算器",
+  "玩家資料":"玩家资料","節奏設定":"节奏设置","設定":"设置","語言":"语言","顯示設定":"显示设置",
+  "介面透明度":"界面透明度","顯示效果":"显示效果","即時預覽":"实时预览","較透明":"更透明","平衡":"平衡","較明確":"更明确",
+  "載入":"加载","最近使用":"最近使用","首頁":"首页","功能即將推出":"功能即将推出","正在開啟":"正在打开",
+  "自動（瀏覽器語言）":"自动（浏览器语言）"
+},
+"en":{
+  "探索 SEKAI":"Explore SEKAI","開啟工具":"Open Tools","選擇一個入口":"Choose an entry","快速進入":"Quick Access",
+  "我的":"Profile","首頁":"Home","歌曲":"Songs","角色":"Characters","卡片":"Cards","活動":"Events","工具":"Tools",
+  "我的收藏":"My Favorites","工具中心":"Tool Center","最新情報":"Latest News","搜尋":"Search","置頂":"Top",
+  "篩選":"Filter","載入":"Load","設定":"Settings","語言":"Language","顯示設定":"Display Settings","介面透明度":"Interface Opacity",
+  "顯示效果":"Display Effects","即時預覽":"Live Preview","較透明":"More Transparent","平衡":"Balanced","較明確":"More Solid",
+  "功能即將推出":"This feature is coming soon","正在開啟":"Opening","自動（瀏覽器語言）":"Auto (browser language)"
+},
+"ja":{
+  "玩家工具箱":"プレイヤーツール","回到首頁":"ホームに戻る","搜尋":"検索","置頂":"トップ","主選單":"メインメニュー",
+  "探索 SEKAI":"SEKAIを探索","開啟工具":"ツールを開く","選擇一個入口":"入口を選択","快速進入":"クイックアクセス",
+  "最新情報":"最新情報","查看近期更新":"最近の更新を見る","我的收藏":"お気に入り","歌曲與卡片":"楽曲とカード",
+  "工具中心":"ツールセンター","首頁":"ホーム","歌曲":"楽曲","角色":"キャラクター","卡片":"カード","活動":"イベント","工具":"ツール","我的":"マイページ",
+  "歌曲搜尋":"楽曲検索","篩選":"絞り込み","歌曲功能":"楽曲機能","全部歌曲":"全楽曲","收藏歌曲":"お気に入り楽曲",
+  "難度分類":"難易度","歌曲資料":"楽曲データ","歌曲工具":"楽曲ツール","卡片資料":"カードデータ","活動計算器":"イベント計算機",
+  "玩家資料":"プレイヤーデータ","節奏設定":"リズム設定","設定":"設定","語言":"言語","顯示設定":"表示設定",
+  "介面透明度":"インターフェース透明度","顯示效果":"表示効果","即時預覽":"ライブプレビュー","較透明":"透明度高め","平衡":"バランス","較明確":"不透明度高め",
+  "載入":"読み込む","最近使用":"最近使用","功能即將推出":"この機能は近日公開","正在開啟":"開いています","自動（瀏覽器語言）":"自動（ブラウザ言語）"
+},
+"ko":{
+  "玩家工具箱":"플레이어 도구","回到首頁":"홈으로","搜尋":"검색","置頂":"맨 위","主選單":"메인 메뉴",
+  "探索 SEKAI":"SEKAI 탐색","開啟工具":"도구 열기","選擇一個入口":"입구 선택","快速進入":"빠른 이동",
+  "最新情報":"최신 정보","查看近期更新":"최근 업데이트 보기","我的收藏":"내 즐겨찾기","歌曲與卡片":"노래 및 카드",
+  "工具中心":"도구 센터","首頁":"홈","歌曲":"노래","角色":"캐릭터","卡片":"카드","活動":"이벤트","工具":"도구","我的":"내 정보",
+  "歌曲搜尋":"노래 검색","篩選":"필터","歌曲功能":"노래 기능","全部歌曲":"전체 노래","收藏歌曲":"즐겨찾는 노래",
+  "難度分類":"난이도","歌曲資料":"노래 데이터","歌曲工具":"노래 도구","卡片資料":"카드 데이터","活動計算器":"이벤트 계산기",
+  "玩家資料":"플레이어 데이터","節奏設定":"리듬 설정","設定":"설정","語言":"언어","顯示設定":"표시 설정",
+  "介面透明度":"인터페이스 투명도","顯示效果":"표시 효과","即時預覽":"실시간 미리보기","較透明":"더 투명","平衡":"균형","較明確":"더 선명",
+  "載入":"불러오기","最近使用":"최근 사용","功能即將推出":"이 기능은 곧 제공됩니다","正在開啟":"여는 중","自動（瀏覽器語言）":"자동(브라우저 언어)"
+},
+"es":{
+  "玩家工具箱":"Herramientas del jugador","回到首頁":"Volver al inicio","搜尋":"Buscar","置頂":"Arriba","主選單":"Menú principal",
+  "探索 SEKAI":"Explorar SEKAI","開啟工具":"Abrir herramientas","選擇一個入口":"Elegir una sección","快速進入":"Acceso rápido",
+  "最新情報":"Últimas noticias","查看近期更新":"Ver actualizaciones","我的收藏":"Mis favoritos","歌曲與卡片":"Canciones y cartas",
+  "工具中心":"Centro de herramientas","首頁":"Inicio","歌曲":"Canciones","角色":"Personajes","卡片":"Cartas","活動":"Eventos","工具":"Herramientas","我的":"Perfil",
+  "歌曲搜尋":"Buscar canciones","篩選":"Filtrar","歌曲功能":"Funciones de canciones","全部歌曲":"Todas las canciones","收藏歌曲":"Canciones favoritas",
+  "難度分類":"Dificultad","歌曲資料":"Datos de canciones","歌曲工具":"Herramientas de canciones","卡片資料":"Datos de cartas","活動計算器":"Calculadora de eventos",
+  "玩家資料":"Datos del jugador","節奏設定":"Ajustes de ritmo","設定":"Ajustes","語言":"Idioma","顯示設定":"Ajustes de pantalla",
+  "介面透明度":"Opacidad de interfaz","顯示效果":"Efectos de pantalla","即時預覽":"Vista previa","較透明":"Más transparente","平衡":"Equilibrado","較明確":"Más sólido",
+  "載入":"Cargar","最近使用":"Recientes","功能即將推出":"Esta función estará disponible pronto","正在開啟":"Abriendo","自動（瀏覽器語言）":"Automático (idioma del navegador)"
+},
+"fr":{
+  "玩家工具箱":"Outils du joueur","回到首頁":"Accueil","搜尋":"Rechercher","置頂":"Haut","主選單":"Menu principal",
+  "探索 SEKAI":"Explorer SEKAI","開啟工具":"Ouvrir les outils","選擇一個入口":"Choisir une section","快速進入":"Accès rapide",
+  "最新情報":"Actualités","我的收藏":"Mes favoris","歌曲與卡片":"Chansons et cartes","工具中心":"Centre des outils",
+  "首頁":"Accueil","歌曲":"Chansons","角色":"Personnages","卡片":"Cartes","活動":"Événements","工具":"Outils","我的":"Profil",
+  "歌曲搜尋":"Recherche de chansons","篩選":"Filtrer","歌曲功能":"Fonctions musicales","全部歌曲":"Toutes les chansons","收藏歌曲":"Chansons favorites",
+  "難度分類":"Difficulté","歌曲資料":"Données des chansons","歌曲工具":"Outils de chansons","卡片資料":"Données des cartes","活動計算器":"Calculateur d'événements",
+  "玩家資料":"Données du joueur","節奏設定":"Réglages du rythme","設定":"Réglages","語言":"Langue","顯示設定":"Affichage",
+  "介面透明度":"Opacité de l'interface","顯示效果":"Effets d'affichage","即時預覽":"Aperçu en direct","較透明":"Plus transparent","平衡":"Équilibré","較明確":"Plus opaque",
+  "載入":"Charger","最近使用":"Récents","功能即將推出":"Fonction bientôt disponible","正在開啟":"Ouverture","自動（瀏覽器語言）":"Automatique (langue du navigateur)"
+},
+"de":{
+  "玩家工具箱":"Spieler-Tools","回到首頁":"Startseite","搜尋":"Suchen","置頂":"Nach oben","主選單":"Hauptmenü",
+  "探索 SEKAI":"SEKAI erkunden","開啟工具":"Tools öffnen","選擇一個入口":"Bereich wählen","快速進入":"Schnellzugriff",
+  "最新情報":"Neuigkeiten","我的收藏":"Meine Favoriten","歌曲與卡片":"Songs & Karten","工具中心":"Tool-Center",
+  "首頁":"Startseite","歌曲":"Songs","角色":"Charaktere","卡片":"Karten","活動":"Events","工具":"Tools","我的":"Profil",
+  "歌曲搜尋":"Songs suchen","篩選":"Filtern","歌曲功能":"Song-Funktionen","全部歌曲":"Alle Songs","收藏歌曲":"Favorisierte Songs",
+  "難度分類":"Schwierigkeit","歌曲資料":"Song-Daten","歌曲工具":"Song-Tools","卡片資料":"Kartendaten","活動計算器":"Event-Rechner",
+  "玩家資料":"Spielerdaten","節奏設定":"Rhythmus-Einstellungen","設定":"Einstellungen","語言":"Sprache","顯示設定":"Anzeige",
+  "介面透明度":"Oberflächen-Transparenz","顯示效果":"Anzeigeeffekte","即時預覽":"Live-Vorschau","較透明":"Transparenter","平衡":"Ausgewogen","較明確":"Deckender",
+  "載入":"Laden","最近使用":"Zuletzt verwendet","功能即將推出":"Diese Funktion kommt bald","正在開啟":"Wird geöffnet","自動（瀏覽器語言）":"Automatisch (Browsersprache)"
+},
+"pt-BR":{
+  "玩家工具箱":"Ferramentas do jogador","回到首頁":"Início","搜尋":"Pesquisar","置頂":"Topo","主選單":"Menu principal",
+  "探索 SEKAI":"Explorar SEKAI","開啟工具":"Abrir ferramentas","選擇一個入口":"Escolher uma seção","快速進入":"Acesso rápido",
+  "最新情報":"Novidades","我的收藏":"Meus favoritos","歌曲與卡片":"Músicas e cartas","工具中心":"Centro de ferramentas",
+  "首頁":"Início","歌曲":"Músicas","角色":"Personagens","卡片":"Cartas","活動":"Eventos","工具":"Ferramentas","我的":"Perfil",
+  "歌曲搜尋":"Buscar músicas","篩選":"Filtrar","歌曲功能":"Funções musicais","全部歌曲":"Todas as músicas","收藏歌曲":"Músicas favoritas",
+  "難度分類":"Dificuldade","歌曲資料":"Dados das músicas","歌曲工具":"Ferramentas de músicas","卡片資料":"Dados das cartas","活動計算器":"Calculadora de eventos",
+  "玩家資料":"Dados do jogador","節奏設定":"Configurações de ritmo","設定":"Configurações","語言":"Idioma","顯示設定":"Configurações de exibição",
+  "介面透明度":"Transparência da interface","顯示效果":"Efeitos de exibição","即時預覽":"Prévia ao vivo","較透明":"Mais transparente","平衡":"Equilibrado","較明確":"Mais sólido",
+  "載入":"Carregar","最近使用":"Recentes","功能即將推出":"Esta função estará disponível em breve","正在開啟":"Abrindo","自動（瀏覽器語言）":"Automático (idioma do navegador)"
+},
+"ru":{
+  "玩家工具箱":"Инструменты игрока","回到首頁":"На главную","搜尋":"Поиск","置頂":"Наверх","主選單":"Главное меню",
+  "探索 SEKAI":"Исследовать SEKAI","開啟工具":"Открыть инструменты","選擇一個入口":"Выберите раздел","快速進入":"Быстрый доступ",
+  "最新情報":"Новости","我的收藏":"Мои избранные","歌曲與卡片":"Песни и карты","工具中心":"Центр инструментов",
+  "首頁":"Главная","歌曲":"Песни","角色":"Персонажи","卡片":"Карты","活動":"События","工具":"Инструменты","我的":"Профиль",
+  "歌曲搜尋":"Поиск песен","篩選":"Фильтр","歌曲功能":"Функции песен","全部歌曲":"Все песни","收藏歌曲":"Избранные песни",
+  "難度分類":"Сложность","歌曲資料":"Данные песен","歌曲工具":"Инструменты песен","卡片資料":"Данные карт","活動計算器":"Калькулятор событий",
+  "玩家資料":"Данные игрока","節奏設定":"Настройки ритма","設定":"Настройки","語言":"Язык","顯示設定":"Экран",
+  "介面透明度":"Прозрачность интерфейса","顯示效果":"Эффекты отображения","即時預覽":"Предпросмотр","較透明":"Более прозрачно","平衡":"Баланс","較明確":"Более плотно",
+  "載入":"Загрузить","最近使用":"Недавние","功能即將推出":"Функция скоро появится","正在開啟":"Открывается","自動（瀏覽器語言）":"Авто (язык браузера)"
+},
+"it":{
+  "玩家工具箱":"Strumenti giocatore","回到首頁":"Home","搜尋":"Cerca","置頂":"In alto","主選單":"Menu principale",
+  "探索 SEKAI":"Esplora SEKAI","開啟工具":"Apri strumenti","選擇一個入口":"Scegli una sezione","快速進入":"Accesso rapido",
+  "最新情報":"Novità","我的收藏":"I miei preferiti","歌曲與卡片":"Canzoni e carte","工具中心":"Centro strumenti",
+  "首頁":"Home","歌曲":"Canzoni","角色":"Personaggi","卡片":"Carte","活動":"Eventi","工具":"Strumenti","我的":"Profilo",
+  "歌曲搜尋":"Cerca canzoni","篩選":"Filtra","歌曲功能":"Funzioni musicali","全部歌曲":"Tutte le canzoni","收藏歌曲":"Canzoni preferite",
+  "難度分類":"Difficoltà","歌曲資料":"Dati canzone","歌曲工具":"Strumenti canzoni","卡片資料":"Dati carte","活動計算器":"Calcolatore eventi",
+  "玩家資料":"Dati giocatore","節奏設定":"Impostazioni ritmo","設定":"Impostazioni","語言":"Lingua","顯示設定":"Impostazioni display",
+  "介面透明度":"Trasparenza interfaccia","顯示效果":"Effetti display","即時預覽":"Anteprima live","較透明":"Più trasparente","平衡":"Bilanciato","較明確":"Più opaco",
+  "載入":"Carica","最近使用":"Recenti","功能即將推出":"Funzione in arrivo","正在開啟":"Apertura","自動（瀏覽器語言）":"Automatico (lingua browser)"
+},
+"th":{
+  "玩家工具箱":"เครื่องมือผู้เล่น","回到首頁":"กลับหน้าหลัก","搜尋":"ค้นหา","置頂":"ขึ้นด้านบน","主選單":"เมนูหลัก",
+  "探索 SEKAI":"สำรวจ SEKAI","開啟工具":"เปิดเครื่องมือ","選擇一個入口":"เลือกส่วน","快速進入":"เข้าถึงด่วน",
+  "最新情報":"ข่าวล่าสุด","我的收藏":"รายการโปรด","歌曲與卡片":"เพลงและการ์ด","工具中心":"ศูนย์เครื่องมือ",
+  "首頁":"หน้าหลัก","歌曲":"เพลง","角色":"ตัวละคร","卡片":"การ์ด","活動":"อีเวนต์","工具":"เครื่องมือ","我的":"โปรไฟล์",
+  "歌曲搜尋":"ค้นหาเพลง","篩選":"ตัวกรอง","歌曲功能":"ฟังก์ชันเพลง","全部歌曲":"เพลงทั้งหมด","收藏歌曲":"เพลงโปรด",
+  "難度分類":"ระดับความยาก","歌曲資料":"ข้อมูลเพลง","歌曲工具":"เครื่องมือเพลง","卡片資料":"ข้อมูลการ์ด","活動計算器":"เครื่องมือคำนวณอีเวนต์",
+  "玩家資料":"ข้อมูลผู้เล่น","節奏設定":"ตั้งค่าจังหวะ","設定":"การตั้งค่า","語言":"ภาษา","顯示設定":"การตั้งค่าการแสดงผล",
+  "介面透明度":"ความโปร่งใสของอินเทอร์เฟซ","顯示效果":"เอฟเฟกต์การแสดงผล","即時預覽":"ตัวอย่างแบบเรียลไทม์","較透明":"โปร่งใสมากขึ้น","平衡":"สมดุล","較明確":"ทึบขึ้น",
+  "載入":"โหลด","最近使用":"ล่าสุด","功能即將推出":"ฟังก์ชันนี้กำลังมา","正在開啟":"กำลังเปิด","自動（瀏覽器語言）":"อัตโนมัติ (ภาษาของเบราว์เซอร์)"
+},
+"vi":{
+  "玩家工具箱":"Công cụ người chơi","回到首頁":"Về trang chủ","搜尋":"Tìm kiếm","置頂":"Lên đầu","主選單":"Menu chính",
+  "探索 SEKAI":"Khám phá SEKAI","開啟工具":"Mở công cụ","選擇一個入口":"Chọn mục","快速進入":"Truy cập nhanh",
+  "最新情報":"Tin mới","我的收藏":"Yêu thích của tôi","歌曲與卡片":"Bài hát & thẻ","工具中心":"Trung tâm công cụ",
+  "首頁":"Trang chủ","歌曲":"Bài hát","角色":"Nhân vật","卡片":"Thẻ","活動":"Sự kiện","工具":"Công cụ","我的":"Hồ sơ",
+  "歌曲搜尋":"Tìm bài hát","篩選":"Lọc","歌曲功能":"Chức năng bài hát","全部歌曲":"Tất cả bài hát","收藏歌曲":"Bài hát yêu thích",
+  "難度分類":"Độ khó","歌曲資料":"Dữ liệu bài hát","歌曲工具":"Công cụ bài hát","卡片資料":"Dữ liệu thẻ","活動計算器":"Máy tính sự kiện",
+  "玩家資料":"Dữ liệu người chơi","節奏設定":"Cài đặt nhịp","設定":"Cài đặt","語言":"Ngôn ngữ","顯示設定":"Hiển thị",
+  "介面透明度":"Độ trong suốt giao diện","顯示效果":"Hiệu ứng hiển thị","即時預覽":"Xem trước","較透明":"Trong hơn","平衡":"Cân bằng","較明確":"Đục hơn",
+  "載入":"Tải","最近使用":"Gần đây","功能即將推出":"Tính năng sắp ra mắt","正在開啟":"Đang mở","自動（瀏覽器語言）":"Tự động (ngôn ngữ trình duyệt)"
+}
+};
+
+const extraLanguageAliases={
+  "zh-Hant":"zh-TW","zh-Hans":"zh-CN","pt":"pt-BR","iw":"ar"
+};
+
+const textMemory=new WeakMap();
+const attrMemory=new WeakMap();
+
+function normalizeLocale(locale){
+  if(!locale)return "en";
+  const raw=String(locale).trim();
+  if(extraLanguageAliases[raw])return extraLanguageAliases[raw];
+  const exact=SUPPORTED_LANGUAGES.find(x=>x.toLowerCase()===raw.toLowerCase());
+  if(exact)return exact;
+  const prefix=raw.toLowerCase().split("-")[0];
+  const match=SUPPORTED_LANGUAGES.find(x=>x.toLowerCase()===prefix);
+  if(match)return match;
+  const mapped=Object.entries(extraLanguageAliases).find(([k])=>k.toLowerCase()===raw.toLowerCase());
+  return mapped?mapped[1]:"en";
+}
+function detectBrowserLanguage(){
+  const candidates=[...(navigator.languages||[]),navigator.language||"en"];
+  for(const candidate of candidates){
+    const normalized=normalizeLocale(candidate);
+    if(normalized!=="en" || String(candidate).toLowerCase().startsWith("en"))return normalized;
+  }
+  return "en";
+}
+function activeLanguage(){
+  const saved=localStorage.getItem("sekaiLanguage")||"auto";
+  return saved==="auto" || !saved ? detectBrowserLanguage() : normalizeLocale(saved);
+}
+let currentLanguage=activeLanguage();
+
+function t(source){
+  const pack=langOverrides[currentLanguage]||{};
+  return Object.prototype.hasOwnProperty.call(pack,source)?pack[source]:
+    Object.prototype.hasOwnProperty.call(enText,source)?enText[source]:source;
+}
+function rememberAndTranslate(rootNode=document.body){
+  const walker=document.createTreeWalker(rootNode,NodeFilter.SHOW_TEXT,{
+    acceptNode(node){
+      const p=node.parentElement;
+      if(!p || /^(SCRIPT|STYLE|NOSCRIPT|OPTION)$/.test(p.tagName))return NodeFilter.FILTER_REJECT;
+      return node.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }
+  });
+  const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const node of nodes){
+    let source=textMemory.get(node);
+    if(source==null){
+      source=node.nodeValue.trim();
+      textMemory.set(node,source);
+    }
+    const raw=node.nodeValue;
+    const leading=(raw.match(/^\\s*/)||[""])[0];
+    const trailing=(raw.match(/\\s*$/)||[""])[0];
+    node.nodeValue=leading+t(source)+trailing;
+  }
+  const elements=rootNode.querySelectorAll?.("input,textarea,button,[aria-label],select")||[];
+  elements.forEach(el=>{
+    ["placeholder","aria-label","title"].forEach(attr=>{
+      const value=el.getAttribute(attr);
+      if(value==null)return;
+      let source=attrMemory.get(el)?.[attr];
+      if(source==null){
+        source=value;
+        const record=attrMemory.get(el)||{};
+        record[attr]=source;attrMemory.set(el,record);
+      }
+      el.setAttribute(attr,t(source));
+    });
+  });
+}
+function refreshLanguageSelect(){
+  const select=$("#languageSelect");
+  if(!select)return;
+  const saved=localStorage.getItem("sekaiLanguage")||"auto";
+  select.value=saved;
+  const autoOpt=[...select.options].find(o=>o.value==="auto");
+  if(autoOpt)autoOpt.textContent=t("自動（瀏覽器語言）");
+}
+function applyLanguage(language,save=true){
+  const chosen=language==="auto" ? detectBrowserLanguage() : normalizeLocale(language);
+  currentLanguage=chosen;
+  if(save)localStorage.setItem("sekaiLanguage",language||"auto");
+  document.documentElement.lang=chosen;
+  document.documentElement.dir=chosen==="ar"?"rtl":"ltr";
+  document.title="Project SEKAI｜"+(t("玩家工具箱")||"Player Toolbox");
+  rememberAndTranslate(document.body);
+  refreshLanguageSelect();
+  const input=$("#songSearch");
+  if(input)input.placeholder=t("輸入歌名、歌手或關鍵字");
+  const player=$("#playerId");
+  if(player)player.placeholder=chosen==="zh-TW"?"輸入玩家 ID":t("輸入玩家 ID，這裡只負責玩家相關內容。");
+}
+refreshLanguageSelect();
+applyLanguage(localStorage.getItem("sekaiLanguage")||"auto",false);
+$("#languageSelect")?.addEventListener("change",e=>{
+  localStorage.setItem("sekaiLanguage",e.target.value);
+  applyLanguage(e.target.value,false);
+  showToast(LANGUAGE_LABELS[e.target.value==="auto"?currentLanguage:e.target.value]+" · "+t("設定"));
+});
+
 function showToast(message){
   if(!toast)return;
   toast.textContent=message;
@@ -1218,10 +1579,12 @@ function toggleAccordion(card){
   panel.className="accordion-panel";
   panel.innerHTML=data[2].map((x,i)=>'<button class="accordion-item" data-accordion-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>›</span></button>').join("");
   card.insertAdjacentElement("afterend",panel);
+  rememberAndTranslate(panel);
   card.classList.add("expanded");
   card.setAttribute("aria-expanded","true");
   card.querySelector(".arrow").textContent="⌄";
-  showToast(data[0]+" 已展開");
+  showToast(t(data[0])+" "+t("已展開"));
+}
 
 function toggleHomeAccordion(card){
   const key=card.dataset.homeSheet;
@@ -1244,10 +1607,12 @@ function toggleHomeAccordion(card){
   panel.className="home-accordion-panel";
   panel.innerHTML=data[1].map((x,i)=>'<button class="home-accordion-item" data-home-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>›</span></button>').join("");
   card.insertAdjacentElement("afterend",panel);
+  rememberAndTranslate(panel);
   card.classList.add("home-card-expanded");
   card.setAttribute("aria-expanded","true");
   card.querySelector(".chev").textContent="⌄";
   showToast(data[0]+" 已展開");
+}
 
 const homeActionRoutes={
   "home-songs-0":"songs",
@@ -1267,7 +1632,7 @@ document.addEventListener("click",e=>{
   if(action){
     action.querySelector("span").textContent="✓";
     const label=action.querySelector("strong")?.textContent||"此功能";
-    showToast("「"+label+"」功能即將推出");
+    showToast("「"+label+"」"+t("功能即將推出"));
     setTimeout(()=>{ action.querySelector("span").textContent="›"; },650);
     return;
   }
@@ -1277,7 +1642,7 @@ document.addEventListener("click",e=>{
     homeAction.querySelector("span").textContent="✓";
     const target=homeActionRoutes[key];
     if(target){
-      showToast("正在開啟 "+(homeAction.querySelector("strong")?.textContent||"入口"));
+      showToast(t("正在開啟")+" "+(homeAction.querySelector("strong")?.textContent||t("入口")));
       setTimeout(()=>go(target),140);
     }else{
       const label=homeAction.querySelector("strong")?.textContent||"此功能";
@@ -1294,7 +1659,7 @@ $("#loadPlayer").onclick=()=>{
 $("#songFilter").onclick=()=>{
   const box=$("#songSearch");
   box.focus();
-  showToast("篩選入口已開啟：目前可用關鍵字搜尋");
+  showToast(t("篩選入口已開啟：目前可用關鍵字搜尋"));
 };
 $("#songSearch").oninput=e=>{
   const q=e.target.value.trim().toLowerCase();
