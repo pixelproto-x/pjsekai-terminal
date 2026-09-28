@@ -221,25 +221,27 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 
 
 .bottom-bar{
-  position:fixed;z-index:80;left:50%;bottom:calc(14px + var(--safe-bottom));transform:translateX(-50%);
+  position:fixed;z-index:80;left:50%;bottom:calc(18px + var(--safe-bottom));transform:translateX(-50%);
   width:min(720px,calc(100% - 24px));padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
-  background:rgba(249,249,252,.8);backdrop-filter:blur(25px) saturate(150%);-webkit-backdrop-filter:blur(25px) saturate(150%);
-  border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:0 15px 50px rgba(23,25,36,.14);
-  --tab-index:0;--tab-x:0px;--tab-y:0px;--tab-scale-x:1;--tab-scale-y:1;--tab-rotate:0deg;--tab-duration:.55s;--tab-ease:cubic-bezier(.16,1,.3,1);
-  touch-action:none;user-select:none;overflow:hidden
+  background:rgba(249,249,252,.42);backdrop-filter:blur(12px) saturate(155%);-webkit-backdrop-filter:blur(12px) saturate(155%);
+  border:1px solid rgba(255,255,255,.72);border-radius:26px;box-shadow:0 15px 50px rgba(23,25,36,.14),inset 0 1px 0 rgba(255,255,255,.65);
+  --tab-index:0;--tab-x:0px;--tab-y:0px;--tab-widen:1;--tab-scale-y:1;--tab-rotate:0deg;--tab-duration:.42s;--tab-ease:cubic-bezier(.16,1,.3,1);
+  touch-action:none;user-select:none;overflow:visible;
 }
 .bottom-bar:before{display:none}
 .tab-indicator{
   position:absolute;z-index:0;left:8px;top:50%;
-  height:calc(100% - 16px);width:calc((100% - 32px)/5);
-  border-radius:999px;
+  height:44px;width:calc((100% - 32px)/5);
+  border-radius:46% 54% 51% 49% / 55% 46% 54% 45%;
   background:
-    radial-gradient(circle at 30% 18%,rgba(255,255,255,.16),transparent 34%),
-    linear-gradient(145deg,#20222d 0%,#171923 72%,#10111a 100%);
+    radial-gradient(circle at 28% 20%,rgba(255,255,255,.42),transparent 30%),
+    radial-gradient(circle at 72% 78%,rgba(130,170,255,.10),transparent 45%),
+    linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.09));
+  border:1px solid rgba(255,255,255,.62);
   transform:
     translate3d(var(--tab-x),calc(-50% + var(--tab-y)),0)
     rotate(var(--tab-rotate,0deg))
-    scaleX(var(--tab-scale-x,1))
+    scaleX(var(--tab-widen,1))
     scaleY(var(--tab-scale-y,1));
   transform-origin:center;
   transition:
@@ -247,40 +249,31 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
     border-radius .22s var(--ios-ease),
     box-shadow .22s ease;
   box-shadow:
-    0 8px 20px rgba(27,29,40,.20),
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -2px 5px rgba(0,0,0,.18);
-  pointer-events:none;
+    0 9px 24px rgba(35,42,65,.14),
+    inset 0 1px 0 rgba(255,255,255,.52),
+    inset 0 -1px 0 rgba(100,110,140,.10);
+  pointer-events:auto;
   will-change:transform,border-radius;
-  overflow:hidden;
+  overflow:visible;
 }
 .tab-indicator:before{
-  content:"";
-  position:absolute;
-  left:10%;right:10%;top:7%;
-  height:42%;
-  border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,0));
-  filter:blur(3px);
-  pointer-events:none;
-  opacity:.8;
+  content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.32),transparent 34%,rgba(255,255,255,.05) 70%,rgba(120,150,220,.08));
+  opacity:.9;
 }
 .tab-indicator:after{
-  content:"";
-  position:absolute;inset:1px;border-radius:inherit;
-  border:1px solid rgba(255,255,255,.07);
-  pointer-events:none;
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24),0 0 22px rgba(255,255,255,.14);
 }
 .bottom-bar.is-dragging .tab-indicator{
-  transition:none;
-  box-shadow:
-    0 11px 25px rgba(27,29,40,.23),
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -2px 6px rgba(0,0,0,.20);
+  box-shadow:0 13px 30px rgba(35,42,65,.18),inset 0 1px 0 rgba(255,255,255,.62),0 0 22px rgba(255,255,255,.18);
 }
-.tab{position:relative;z-index:1;border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:color .22s ease,transform .18s var(--tab-ease);touch-action:none}
-.tab .tab-icon{font-size:17px;line-height:1;transition:transform .28s var(--tab-ease)}
-.tab.active{background:transparent;color:#fff}.tab:hover{color:#181a22}.tab.active:hover{color:#fff}.tab.active .tab-icon{transform:scale(1.04)}
+.tab{position:relative;z-index:1;border:0;background:transparent;color:#81848d;border-radius:18px;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;font-weight:800;transition:color .22s ease,transform .28s var(--tab-ease),opacity .22s ease;touch-action:none;--lens-icon:1;--lens-label:1;--lens-alpha:.72}
+.tab .tab-icon{font-size:17px;line-height:1;transition:transform .28s var(--tab-ease),font-weight .18s ease;transform:scale(var(--lens-icon));opacity:var(--lens-alpha);transform-origin:center}
+.tab{opacity:var(--lens-alpha)}
+.tab.active{background:transparent;color:#20232d}.tab:hover{color:#181a22}.tab.active:hover{color:#20232d}.tab.active .tab-icon{font-weight:900}
+.tab.lens-near .tab-icon{font-weight:950}
+.tab.lens-near{color:#20232d}
 
 
 .footer{max-width:1480px;margin:auto;padding:15px 28px 150px;color:#d2d4dd;font-size:10px;text-align:center;text-shadow:0 1px 5px rgba(0,0,0,.25)}
@@ -926,140 +919,121 @@ function clampTabOffset(x){
   const step=getTabStep();
   return Math.max(0,Math.min(step*4,x));
 }
+function getTabMetrics(){
+  const br=bottomBar.getBoundingClientRect();
+  const innerLeft=8, innerRight=8, gap=4;
+  const slot=(br.width-16-gap*4)/5;
+  const baseW=slot;
+  const baseH=44;
+  const headroom=14;
+  const maxX=Math.max(0,br.width-16-baseW);
+  const maxY=18;
+  return {br,slot,baseW,baseH,headroom,maxX,maxY};
+}
+function clampSoft(v,min,max){
+  if(v<min)return min+(v-min)*.18;
+  if(v>max)return max+(v-max)*.18;
+  return v;
+}
+function updateLens(centerX,dragging){
+  const m=getTabMetrics();
+  const slot=m.slot;
+  tabs.forEach((t,i)=>{
+    const center=8+i*(slot+4)+slot/2;
+    const d=Math.abs(centerX-center);
+    const sigma=dragging?slot*.78:slot*.48;
+    const influence=Math.exp(-(d*d)/(2*sigma*sigma));
+    t.style.setProperty("--lens-icon",(1+.22*influence).toFixed(3));
+    t.style.setProperty("--lens-label",(1+.10*influence).toFixed(3));
+    t.style.setProperty("--lens-alpha",(0.72+.28*influence).toFixed(3));
+    t.classList.toggle("lens-near",dragging&&influence>.72);
+  });
+}
+function resetLens(){
+  tabs.forEach(t=>{
+    t.style.removeProperty("--lens-icon");
+    t.style.removeProperty("--lens-label");
+    t.style.removeProperty("--lens-alpha");
+    t.classList.remove("lens-near");
+  });
+}
 function beginTabDrag(e){
   if(!bottomBar||!tabIndicator)return;
   const r=tabIndicator.getBoundingClientRect();
   if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;
-  draggingTab=true;
-  draggingTabMoved=false;
-  draggingPointerId=e.pointerId;
-  draggingStartX=e.clientX;
-  draggingStartY=e.clientY;
+  draggingTab=true;draggingTabMoved=false;draggingPointerId=e.pointerId;
+  draggingStartX=e.clientX;draggingStartY=e.clientY;
   draggingStartOffset=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0;
   draggingStartYOffset=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-y"))||0;
-  draggingLastX=e.clientX;
-  draggingLastY=e.clientY;
-  draggingLastTime=performance.now();
-  draggingVelocityX=0;
-  draggingVelocityY=0;
+  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=performance.now();
+  draggingVelocityX=0;draggingVelocityY=0;
   bottomBar.style.setProperty("--tab-duration","0s");
   bottomBar.classList.add("is-dragging");
   try{bottomBar.setPointerCapture(e.pointerId)}catch(_){}
 }
 function moveTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-
-  const now=performance.now();
-  const dt=Math.max(8,now-draggingLastTime);
+  const now=performance.now(),dt=Math.max(8,now-draggingLastTime);
   const dx=e.clientX-draggingStartX,dy=e.clientY-draggingStartY;
-  const vx=(e.clientX-draggingLastX)/(dt/1000);
-  const vy=(e.clientY-draggingLastY)/(dt/1000);
+  const vx=(e.clientX-draggingLastX)/(dt/1000),vy=(e.clientY-draggingLastY)/(dt/1000);
   draggingVelocityX=draggingVelocityX*.72+vx*.28;
   draggingVelocityY=draggingVelocityY*.72+vy*.28;
-  draggingLastX=e.clientX;
-  draggingLastY=e.clientY;
-  draggingLastTime=now;
-
+  draggingLastX=e.clientX;draggingLastY=e.clientY;draggingLastTime=now;
   if(Math.hypot(dx,dy)>4)draggingTabMoved=true;
 
-  const br=bottomBar.getBoundingClientRect();
-  const baseW=br.width/5-4;
-  const baseH=br.height-16;
-  const maxX=Math.max(0,br.width-16-baseW);
-  const maxY=Math.max(0,br.height-16-baseH);
+  const m=getTabMetrics();
+  const x=clampSoft(draggingStartOffset+dx,0,m.maxX);
+  const y=clampSoft(draggingStartYOffset+dy,-m.maxY,m.maxY);
 
-  const rawX=draggingStartOffset+dx;
-  const rawY=draggingStartYOffset+dy;
-  const x=Math.max(0,Math.min(maxX,rawX));
-  const y=Math.max(0,Math.min(maxY,rawY));
+  const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1100);
+  const horizontalBias=Math.min(1,Math.abs(draggingVelocityX)/(Math.abs(draggingVelocityX)+Math.abs(draggingVelocityY)+1));
+  const dragAmount=Math.min(1,Math.hypot(dx,dy)/(m.slot*1.7));
+  const widen=1+.12*dragAmount+.18*speed*horizontalBias;
+  const verticalSqueeze=Math.max(.88,1-.07*speed*(horizontalBias*.7));
+  const rotate=Math.max(-5,Math.min(5,draggingVelocityX*.006));
 
-  const edgeZone=Math.max(18,Math.min(42,baseW*.24));
-  const leftP=Math.max(0,Math.min(1,(edgeZone-x)/edgeZone));
-  const rightP=Math.max(0,Math.min(1,(edgeZone-(maxX-x))/edgeZone));
-  const topP=Math.max(0,Math.min(1,(edgeZone-y)/edgeZone));
-  const bottomP=Math.max(0,Math.min(1,(edgeZone-(maxY-y))/edgeZone));
-
-  // 液態泡泡：速度決定拉伸，撞到哪一側就壓哪一側。
-  const speed=Math.min(1,Math.hypot(draggingVelocityX,draggingVelocityY)/1200);
-  const velocityStretch=.18*speed;
-  const absVx=Math.abs(draggingVelocityX),absVy=Math.abs(draggingVelocityY);
-  let sx=1,sy=1;
-  if(absVx>absVy){
-    sx+=velocityStretch;
-    sy-=velocityStretch*.42;
-  }else if(absVy>absVx){
-    sy+=velocityStretch;
-    sx-=velocityStretch*.42;
-  }
-
-  const edgeX=Math.max(leftP,rightP);
-  const edgeY=Math.max(topP,bottomP);
-  if(edgeX>0){
-    sx-=.16*edgeX;
-    sy+=.24*edgeX;
-  }
-  if(edgeY>0){
-    sy-=.16*edgeY;
-    sx+=.24*edgeY;
-  }
-
-  // 角落同時受兩個方向擠壓，保持「泡泡」感而不是被切平。
-  if(edgeX>0&&edgeY>0){
-    sx+=.035*edgeX*edgeY;
-    sy+=.035*edgeX*edgeY;
-  }
-
-  const rotate=Math.max(-4,Math.min(4,draggingVelocityX*.008));
-  const radiusX=50-Math.min(18,edgeX*16);
-  const radiusY=50-Math.min(18,edgeY*16);
-  const tl=Math.max(22,radiusX-radiusY*.12);
-  const tr=Math.max(22,radiusX+radiusY*.12);
-  const brad=Math.max(22,radiusX-radiusY*.08);
-  const bl=Math.max(22,radiusX+radiusY*.08);
+  const edgeX=Math.max(0,(24-Math.min(24,Math.min(x,m.maxX-x)))/24);
+  const edgeY=Math.max(0,(18-Math.min(18,Math.min(y+m.maxY,m.maxY-y)))/18);
+  const squeezeX=Math.max(.92,1-.08*edgeX);
+  const swellY=1+.12*edgeX;
+  const scaleY=Math.max(.86,verticalSqueeze*swellY);
 
   bottomBar.style.setProperty("--tab-x",x+"px");
   bottomBar.style.setProperty("--tab-y",y+"px");
-  bottomBar.style.setProperty("--tab-scale-x",sx.toFixed(3));
-  bottomBar.style.setProperty("--tab-scale-y",sy.toFixed(3));
+  bottomBar.style.setProperty("--tab-widen",(widen*squeezeX).toFixed(3));
+  bottomBar.style.setProperty("--tab-scale-y",scaleY.toFixed(3));
   bottomBar.style.setProperty("--tab-rotate",rotate.toFixed(2)+"deg");
+
+  const cx=8+x+m.baseW/2;
+  const slotIndex=Math.max(0,Math.min(4,Math.round((cx-(8+m.slot/2))/(m.slot+4))));
+  tabs.forEach((t,i)=>t.classList.toggle("active",i===slotIndex));
+  const edge=Math.max(edgeX,edgeY);
+  const rX=46-Math.min(10,edgeX*7),rY=54-Math.min(12,edgeY*8);
   tabIndicator.style.borderRadius=
-    tl.toFixed(1)+"% "+tr.toFixed(1)+"% "+brad.toFixed(1)+"% "+bl.toFixed(1)+"% / "+
-    tl.toFixed(1)+"% "+tr.toFixed(1)+"% "+brad.toFixed(1)+"% "+bl.toFixed(1)+"%";
-
-  // 拖曳時只做預覽，不立即切頁；放開才 commit。
-  const center=x+baseW/2;
-  const slot=br.width/5;
-  const index=Math.max(0,Math.min(4,Math.floor(center/slot)));
-  tabs.forEach((t,i)=>t.classList.toggle("active",i===index));
-
+    (rX+4).toFixed(1)+"% "+(rY-2).toFixed(1)+"% "+(rY+1).toFixed(1)+"% "+(rX-2).toFixed(1)+"% / "+
+    (rY+2).toFixed(1)+"% "+(rX-3).toFixed(1)+"% "+(rY-1).toFixed(1)+"% "+(rX+3).toFixed(1)+"%";
+  updateLens(cx,true);
   if(e.cancelable)e.preventDefault();
 }
 function endTabDrag(e){
   if(!draggingTab||e.pointerId!==draggingPointerId)return;
-
-  const br=bottomBar.getBoundingClientRect();
-  const baseW=br.width/5-4;
-  const baseH=br.height-16;
-  const maxX=Math.max(0,br.width-16-baseW);
-  const x=Math.max(0,Math.min(maxX,parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0));
-  const center=x+baseW/2;
-  const slot=br.width/5;
-  const index=Math.max(0,Math.min(4,Math.round((center-slot/2)/slot)));
+  const m=getTabMetrics();
+  const currentX=parseFloat(getComputedStyle(bottomBar).getPropertyValue("--tab-x"))||0;
+  const cx=8+currentX+m.baseW/2;
+  const index=Math.max(0,Math.min(4,Math.round((cx-(8+m.slot/2))/(m.slot+4))));
   const target=tabs[index];
+  const targetX=index*(m.slot+4);
 
-  const targetX=Math.max(0,Math.min(maxX,index*(slot+4)));
   bottomBar.style.setProperty("--tab-x",targetX+"px");
   bottomBar.style.setProperty("--tab-y","0px");
-  bottomBar.style.setProperty("--tab-scale-x","1");
+  bottomBar.style.setProperty("--tab-widen","1");
   bottomBar.style.setProperty("--tab-scale-y","1");
   bottomBar.style.setProperty("--tab-rotate","0deg");
-  bottomBar.style.setProperty("--tab-duration",".58s");
-  tabIndicator.style.borderRadius="999px";
+  bottomBar.style.setProperty("--tab-duration",".46s");
+  tabIndicator.style.borderRadius="46% 54% 51% 49% / 55% 46% 54% 45%";
+  resetLens();
 
-  draggingTab=false;
-  draggingPointerId=null;
-  bottomBar.classList.remove("is-dragging");
-
+  draggingTab=false;draggingPointerId=null;bottomBar.classList.remove("is-dragging");
   if(draggingTabMoved){
     suppressTabClick=true;
     requestAnimationFrame(()=>{suppressTabClick=false});
@@ -1068,6 +1042,7 @@ function endTabDrag(e){
     updateTabMotion(currentRoute);
   }
 }
+
 bottomBar?.addEventListener("pointerdown",beginTabDrag);
 bottomBar?.addEventListener("pointermove",moveTabDrag);
 bottomBar?.addEventListener("pointerup",endTabDrag);
@@ -1085,17 +1060,20 @@ function updateTabMotion(page){
   const bar=document.querySelector(".bottom-bar");
   tabs.forEach((t,i)=>{
     t.classList.toggle("active",t.dataset.go===page);
-    if(t.dataset.go===page){
-      bar?.style.setProperty("--tab-index",String(i));
-      if(bar){
-        const slot=(bar.clientWidth-32)/5;
-        bar.style.setProperty("--tab-x",((slot+4)*i)+"px");
-          bar.style.setProperty("--tab-y","0px");
-          bar.style.setProperty("--tab-scale-x","1");
-          bar.style.setProperty("--tab-scale-y","1");
-      }
+    if(t.dataset.go===page&&bar){
+      const m=getTabMetrics();
+      bar.style.setProperty("--tab-index",String(i));
+      bar.style.setProperty("--tab-x",(i*(m.slot+4))+"px");
+      bar.style.setProperty("--tab-y","0px");
+      bar.style.setProperty("--tab-widen","1");
+      bar.style.setProperty("--tab-scale-y","1");
+      bar.style.setProperty("--tab-rotate","0deg");
+      if(tabIndicator)tabIndicator.style.borderRadius="46% 54% 51% 49% / 55% 46% 54% 45%";
     }
   });
+  const m=getTabMetrics();
+  const activeIndex=Math.max(0,tabs.findIndex(t=>t.dataset.go===page));
+  updateLens(8+activeIndex*(m.slot+4)+m.slot/2,false);
 }
 
 function go(page){
