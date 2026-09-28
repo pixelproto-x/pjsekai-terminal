@@ -1459,7 +1459,7 @@ function saveAITranslationCache(){
 }
 
 function isNonTranslatableToken(source){
-  return /^(?:[\\s\\d.,:;!?%+\\-_/|·•…()]+|https?:\\/\\/\\S+|[♪♫✦›‹⌃⌄✓→←]+)$/.test(source);
+  return /^(?:[\s\d.,:;!?%+\-_/|·•…()]+|https?:\/\/\S+|[♪♫✦›‹⌃⌄✓→←]+)$/.test(source);
 }
 
 async function getAITranslator(targetLanguage){
