@@ -41,10 +41,9 @@ function voicePanel(p){
  loadVoices()
 }
 function voiceUrls(v){
- var out=[],ext=v.externalId;if(!ext||!S.cutinut)return out;
- var c=S.cutinut.find(function(x){return n(x.id)===n(ext)});
- if(!c)return out;
- [c.assetbundleName1,c.assetbundleName2].filter(Boolean).forEach(function(b){out.push(ASSET+"live/voice/cutin/"+encodeURIComponent(b)+"/"+encodeURIComponent(b)+".mp3")});
+ var out=[];
+ if(v.assetName && String(v.characterArchiveVoiceType||"").indexOf("live_cutin")===0){var b=String(v.assetName);out.push(ASSET+"live/voice/cutin/"+encodeURIComponent(b)+"/"+encodeURIComponent(b)+".mp3");}
+ if(!out.length&&v.externalId&&S.cutinut){var c=S.cutinut.find(function(x){return n(x.id)===n(v.externalId)});if(c)[c.assetbundleName1,c.assetbundleName2].filter(Boolean).forEach(function(b){out.push(ASSET+"live/voice/cutin/"+encodeURIComponent(b)+"/"+encodeURIComponent(b)+".mp3")});}
  return out
 }
 function voiceRender(){
