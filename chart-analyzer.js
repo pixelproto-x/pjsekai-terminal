@@ -10,8 +10,8 @@ const COLORS={easy:'var(--cyan)',normal:'var(--green)',hard:'var(--yellow)',expe
 const CACHE_KEY='pjsekai-chart-analyzer-cache-v1';
 const CACHE_TTL=24*60*60*1000;
 const SOURCES={
-  musics:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/master/musics.json',
-  diffs:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/master/musicDifficulties.json',
+  musics:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musics.json',
+  diffs:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musicDifficulties.json',
   apiList:'https://api.sekai.best/api/v1/musics/jp/list'
 };
 
