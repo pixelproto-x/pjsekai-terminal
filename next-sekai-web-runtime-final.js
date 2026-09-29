@@ -396,8 +396,22 @@ function loadNormalized(input){
 }
 function install(){
  const oldInit=E.init,oldImport=E.importChart,oldLoad=E.loadJSON,oldDemo=E.demo;
- E.touchDown=onDown;E.track=(n,p,e)=>{if(p)onMove(e)};E.release=onUp;E.flickAt=(e,p)=>resolveFlick(e,p||N.touchHistory.get(e.pointerId)||{});E.judgeNote=(n)=>{return n?.hit===true};
+ E.touchDown=onDown;E.track=(n,p,e)=>{if(p)onMove(e)};E.release=onUp;
+ E.tapLane=function(lane){
+  const n=candidate(E.mirror?11-lane:lane);if(!n)return false;
+  const i=classify(n);if(i.damage||i.hidden||i.fake||i.anchor)return false;
+  if(i.type==="flick"||i.type==="trace-flick"){
+   const q={n,downX:0,downY:1e3,startTime:E.time(),bestTime:E.time(),bestCorrect:true,wrong:false};
+   const d=deltaFor(n),j=judgeDelta(d,n);if(!j)return false;
+   n.hit=true;n.active=n.duration>0;n.hitAt=E.time();n.capturedPointer=-1;award(j,n,d,{keyboard:true});return true;
+  }
+  if(i.type==="trace"){n.hit=true;n.active=n.duration>0;n.capturedPointer=-1;award("perfect",n,deltaFor(n),{keyboard:true});return true}
+  const d=deltaFor(n),j=judgeDelta(d,n);if(!j)return false;
+  n.hit=true;n.active=n.duration>0;n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=-1;award(j,n,d,{keyboard:true});return true;
+ };E.flickAt=(e,p)=>resolveFlick(e,p||N.touchHistory.get(e.pointerId)||{});E.judgeNote=(n)=>{return n?.hit===true};
  E.isFlick=n=>{const i=classify(n||{});return i.type==="flick"||i.type==="trace-flick"};
+ E.findHead=lane=>candidate(lane,"head");
+ E.windowFor=(n,tail=false)=>winFor(n,tail);E.judgeName=(delta,n,tail=false)=>judgeDelta(delta,n,tail);E.noteLaneAt=(n,t)=>pathLane(n,t);
  E.resetJudgments=reset;E.reset=reset;E.finish=finish;E.render=render;E.loop=function(){if(!this.running)return;processFrame();render();this.raf=requestAnimationFrame(()=>this.loop())};
  E.loadJSON=function(input){loadNormalized(input)};
  E.importChart=function(text,name="chart.json"){try{const t=String(text).trim();if(t.startsWith("{")||t.startsWith("["))loadNormalized(JSON.parse(t));else oldImport.call(this,text,name)}catch(err){console.error(err);alert("譜面格式無法解析："+err.message)}};
