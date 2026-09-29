@@ -105,7 +105,7 @@ function uscToBrowser(usc){
  const objects=usc.objects||[],bpms=objects.filter(o=>o.type==="bpm").map(o=>({beat:num(o.beat),bpm:num(o.bpm,120)})).sort((a,b)=>a.beat-b.beat),metaBase=usc.meta?Object.entries(usc.meta).find(([k])=>/^BPM[0-9A-Z]{2}$/i.test(k)):null,base=bpms[0]?.bpm||(metaBase?num(metaBase[1],120):120);
  const beatSec=beat=>{let sec=0,last=0,bpm=base;for(const x of bpms){if(x.beat>=beat)break;sec+=(x.beat-last)*60/Math.max(.01,bpm);last=x.beat;bpm=x.bpm}return sec+(beat-last)*60/Math.max(.01,bpm)};
  const notes=[],timescales=objects.filter(o=>o.type==="timeScale").map(o=>({time:beatSec(num(o.beat)),speed:num(o.timeScale,1)}));let id=0;
- for(const o of objects){if(o.type==="single"){const type=o.trace?(o.direction?"trace-flick":"trace"):(o.direction?"flick":"tap");notes.push({id:id++,time:beatSec(num(o.beat)),lane:clamp(num(o.lane)+num(o.size,.5)-.5,0,11),width:Math.max(.5,num(o.size,.5)*2),type,critical:!!o.critical,dir:{left:2,up:0,right:3}[o.direction]??0})}else if(o.type==="slide"){const cs=(o.connections||[]).filter(x=>x.lane!=null).sort((a,b)=>a.beat-b.beat);if(cs.length>=2){const b0=num(cs[0].beat),b1=num(cs.at(-1).beat),d=Math.max(.001,beatSec(b1)-beatSec(b0)),path=cs.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:clamp(num(x.lane),0,11)})),end=cs.at(-1),ticks=cs.filter(x=>x.type==="tick").map(x=>beatSec(num(x.beat)));notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(cs[0].size,.5)*2),type:cs[0].trace?"trace":"slide",duration:d,endLane:end.lane,path,critical:!!o.critical,dir:{left:2,up:0,right:3}[end.direction]??0,tickTimes:ticks})}}}
+ for(const o of objects){if(o.type==="single"){const type=o.trace?(o.direction?"trace-flick":"trace"):(o.direction?"flick":"tap");notes.push({id:id++,time:beatSec(num(o.beat)),lane:clamp(num(o.lane)-num(o.size,.5)+6,0,11),width:Math.max(.5,num(o.size,.5)*2),type,critical:!!o.critical,dir:{left:2,up:0,right:3}[o.direction]??0})}else if(o.type==="slide"){const cs=(o.connections||[]).filter(x=>x.lane!=null).sort((a,b)=>a.beat-b.beat);if(cs.length>=2){const b0=num(cs[0].beat),b1=num(cs.at(-1).beat),d=Math.max(.001,beatSec(b1)-beatSec(b0)),path=cs.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:clamp(num(x.lane)-num(x.size,.5)+6,0,11)})),end=cs.at(-1),ticks=cs.filter(x=>x.type==="tick").map(x=>beatSec(num(x.beat)));notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(cs[0].size,.5)*2),type:cs[0].trace?"trace":"slide",duration:d,endLane:end.lane,path,critical:!!o.critical,dir:{left:2,up:0,right:3}[end.direction]??0,tickTimes:ticks})}}}
  return {title:usc.title||"SUS / USC Chart",artist:usc.artist||"",bpm:base,notes,timescales,timescaleGroups:{"0":timescales},offset:num(usc.offset,0)};
 }
 function normalize(input){
@@ -133,5 +133,5 @@ function normalize(input){
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"3.2.0",normalize,normalizeNote,susToUSC,uscToBrowser};
+window.PJSekaiNextSekaiAdapter={version:"3.3.0",normalize,normalizeNote,susToUSC,uscToBrowser};
 })();
