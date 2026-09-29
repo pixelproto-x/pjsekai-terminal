@@ -31,8 +31,7 @@ function makeMount(){
 function readUnit(){return localStorage.getItem(KEY.unit)||"leo"}
 function applyUnit(id,save){
  id=UNIT_THEMES[id]?id:"leo";var c=UNIT_COLORS[id];
- ROOT.style.setProperty("--unit-primary",c[0]);ROOT.style.setProperty("--unit-secondary",c[1]);
- ROOT.dataset.unitTheme=id;
+ ROOT.style.setProperty("--unit-primary",c[0]);ROOT.style.setProperty("--unit-secondary",c[1]);ROOT.style.setProperty("--theme-accent",c[0]);ROOT.style.setProperty("--theme-accent-2",c[1]);ROOT.style.setProperty("--theme-glow",c[0]+"55");ROOT.style.setProperty("--theme-glow-2",c[1]+"44");ROOT.dataset.unitTheme=id;
  var st=$("sscUnitStatus");if(st)st.textContent="目前團體主題："+UNIT_THEMES[id];
  document.querySelectorAll("[data-ssc-unit]").forEach(function(b){b.classList.toggle("active",b.dataset.sscUnit===id)});
  if(save)localStorage.setItem(KEY.unit,id)
@@ -78,5 +77,5 @@ async function loadChanges(){
  }catch(_){box.innerHTML='<div class="ssc-loading">GitHub API 暫時無法讀取。可用上方「完整 Commit 紀錄」開啟 GitHub 查看。</div>'}
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]})}
-makeMount();renderUnit();initDark();applyPerf(localStorage.getItem(KEY.perf)==="1",false);bindData();loadChanges();
+makeMount();renderUnit();initDark();applyPerf(localStorage.getItem(KEY.perf)==="1",false);bindData();loadChanges();document.addEventListener("click",function(e){if(e.target.closest(".theme-choice[data-theme]"))setTimeout(function(){applyUnit(readUnit(),false)},0)});
 })();
