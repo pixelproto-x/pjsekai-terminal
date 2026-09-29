@@ -2383,6 +2383,8 @@ const homeActionRoutes={
   "home-cards-0":"cards",
   "home-events-0":"events",
   "home-tools-0":"tools",
+  "home-tools-2":"tools",
+  "home-tools-4":"songs",
   "home-profile-0":"profile"
 };
 document.addEventListener("click",e=>{
@@ -2402,7 +2404,7 @@ document.addEventListener("click",e=>{
   if(homeAction){
     const key=homeAction.dataset.homeAction;
     homeAction.querySelector("span").textContent="✓";
-    const target=homeActionRoutes[key];
+    const target=homeActionRoutes[key] || (key.startsWith("event-calc-")?"tools":null);
     if(target){
       showToast(t("正在開啟")+" "+(homeAction.querySelector("strong")?.textContent||t("入口")));
       setTimeout(()=>go(target),140);
@@ -2662,7 +2664,16 @@ function startStaminaTimer(){
 function stopStaminaTimer(){clearInterval(scTimer);scTimer=null;localStorage.removeItem("pjsekaiStaminaTimer");$("#scStaminaStatus").textContent="倒數已停止。";renderStaminaTimer();}
 async function requestStaminaNotification(){if(!("Notification" in window)){showToast("此瀏覽器不支援通知");return;}const p=await Notification.requestPermission();showToast(p==="granted"?"已允許體力回滿通知":"通知權限未開啟");}
 function restoreStaminaTimer(){
-  try{const x=JSON.parse(localStorage.getItem("pjsekaiStaminaTimer")||"null");if(!x?.endAt||Date.now()>=x.endAt)return false;scEndAt=x.endAt;clearInterval(scTimer);scTimer=setInterval(()=>{renderStaminaTimer();if(Date.now()>=scEndAt){clearInterval(scTimer);scTimer=null;$("#scStaminaStatus").textContent="體力已達目標。";}},1000);$("#scStaminaStatus").textContent="已從本機資料恢復倒數。";return true;}catch(_){return false;}
+  try{
+    const x=JSON.parse(localStorage.getItem("pjsekaiStaminaTimer")||"null");
+    if(!x?.endAt||Date.now()>=x.endAt){localStorage.removeItem("pjsekaiStaminaTimer");return false;}
+    if($("#scStaminaCurrent")&&x.current!=null)$("#scStaminaCurrent").value=x.current;
+    if($("#scStaminaTarget")&&x.target!=null)$("#scStaminaTarget").value=x.target;
+    if($("#scStaminaMinutes")&&x.minutes!=null)$("#scStaminaMinutes").value=x.minutes;
+    scEndAt=Number(x.endAt);clearInterval(scTimer);
+    scTimer=setInterval(()=>{renderStaminaTimer();if(Date.now()>=scEndAt){clearInterval(scTimer);scTimer=null;$("#scStaminaStatus").textContent="體力已達目標。";localStorage.removeItem("pjsekaiStaminaTimer");}},1000);
+    $("#scStaminaStatus").textContent="已從本機資料恢復倒數。";renderStaminaTimer();return true;
+  }catch(_){return false;}
 }
 function initStrategy(){
   loadStrategyPrefs();calculateEvent();calculateMaterials();renderStaminaTimer();restoreStaminaTimer();
@@ -2677,6 +2688,7 @@ function initStrategy(){
 initStrategy();
 
 function routeForSheetKey(key){
+  if(key==="event-calc"||key==="event-tool")return "tools";
   if(/^song-/.test(key))return "songs";
   if(/^unit-/.test(key))return "characters";
   if(/^card-/.test(key))return "cards";
