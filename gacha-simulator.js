@@ -5,10 +5,10 @@ const APP=window.__PJSEKAI_APP__; if(!APP)return;
 const $=id=>document.getElementById(id);
 const STATIC_GACHA='gacha-data.json';
 const STATIC_CARDS='gacha-cards.json';
-const CACHE='pjsekaiGachaSim:v3';
+const CACHE='pjsekaiGachaSim:v4';
 const LOGKEY='pjsekaiGachaHistory:v2';
 const DEFAULT={region:'jp',gachaId:'',pullCost:300,tenCost:3000,crystals:60000,seals:0,sealTickets:0,sparkGoal:300,gachaBonus:0,history:[],pool:null};
-let state=loadState(), current=null, cardsMap=new Map(), source='pjsk.moe';
+let state=loadState(), current=null, cardsMap=new Map(), source='static';
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function n(v,d=0){const x=Number(v);return Number.isFinite(x)?x:d}
@@ -24,30 +24,24 @@ function activeDate(g){const now=Date.now(),st=ts(g?.startAt||g?.start_at),en=ts
 function loadState(){try{const x=JSON.parse(localStorage.getItem(LOGKEY)||'null');return {...DEFAULT,...(x&&typeof x==='object'?x:{})}}catch(_){return {...DEFAULT}}}
 function persist(){try{localStorage.setItem(LOGKEY,JSON.stringify(state))}catch(_){}}
 async function fetchJson(url){const r=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
-const GACHA_API='https://pjsk.moe/api/gachas';
-const CARD_RAW='https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/cards.json';
 async function loadGachas(){
- const all=[];
- for(let page=1;page<=12;page++){
-  const x=await fetchJson(GACHA_API+'?page='+page+'&limit=100');
-  const items=Array.isArray(x?.gachas)?x.gachas:[];
-  if(!items.length)break;
-  all.push(...items.map(g=>({...g,gachaPickups:Array.isArray(g.pickupCardIds)?g.pickupCardIds.map(id=>({gachaId:g.id,cardId:id})):[]})));
-  if(all.length>=Number(x?.total||all.length)||items.length<100)break;
- }
- if(!all.length)throw new Error('目前無法取得公開卡池資料');
- return all;
+ const x=await fetchJson(STATIC_GACHA+'?v='+Date.now());
+ const items=x?.gachas||x?.data||x;
+ if(!Array.isArray(items)||!items.length)throw new Error('目前沒有可用的靜態卡池資料');
+ return items.map(g=>({...g,gachaPickups:Array.isArray(g.gachaPickups)?g.gachaPickups:(Array.isArray(g.pickupCardIds)?g.pickupCardIds.map(id=>({gachaId:g.id,cardId:id,weight:1})):[])}));
 }
 async function loadGachaDetail(id){
- const x=await fetchJson(GACHA_API+'/'+encodeURIComponent(id));
- return {...x,gachaPickups:Array.isArray(x?.gachaPickups)?x.gachaPickups:(Array.isArray(x?.pickupCardIds)?x.pickupCardIds.map(cid=>({gachaId:x.id,cardId:cid})):[])};
+ const raw=state.pool?.find?.(x=>idOf(x)===String(id))||null;
+ if(!raw)throw new Error('找不到指定卡池');
+ return {...raw,gachaPickups:Array.isArray(raw.gachaPickups)?raw.gachaPickups:[]};
 }
 async function loadCard(id){
  const k=String(id);if(cardsMap.has(k))return cardsMap.get(k);
  try{
   if(!window.__PJ_GACHA_CARDS__){
-   const x=await fetchJson(CARD_RAW);
-   window.__PJ_GACHA_CARDS__=Array.isArray(x)?x:(Array.isArray(x?.cards)?x.cards:[]);
+   const x=await fetchJson(STATIC_CARDS+'?v='+Date.now());
+   const list=Array.isArray(x?.cards)?x.cards:(Array.isArray(x)?x:[]);
+   window.__PJ_GACHA_CARDS__=list;
   }
   const c=window.__PJ_GACHA_CARDS__.find(x=>idOf(x)===k)||null;cardsMap.set(k,c);return c;
  }catch(_){cardsMap.set(k,null);return null}
@@ -144,7 +138,7 @@ function renderGachaOptions(){
 }
 function status(m,ok=false){const x=$('gsStatus');if(x){x.textContent=m;x.className='gacha-status'+(ok?' ok':'')}}
 async function sync(){
- try{status('正在同步卡池…');source='pjsk.moe';state.pool=await loadGachas();persist();renderGachaOptions();if(!state.gachaId){const current=state.pool.find(activeDate);if(current)state.gachaId=idOf(current)}renderGachaOptions();if(state.gachaId)$('gsGacha').value=state.gachaId;await selectGacha();status('已同步 '+fmt(state.pool.length)+' 個卡池',true)}
+ try{status('正在同步卡池…');source='static';state.pool=await loadGachas();persist();renderGachaOptions();if(!state.gachaId){const current=state.pool.find(activeDate);if(current)state.gachaId=idOf(current)}renderGachaOptions();if(state.gachaId)$('gsGacha').value=state.gachaId;await selectGacha();status('已同步 '+fmt(state.pool.length)+' 個卡池',true)}
  catch(e){status('同步失敗：'+(e?.message||'unknown')+'。保留本機模擬。')}
 }
 async function selectGacha(){
