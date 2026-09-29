@@ -58,3 +58,4 @@
 .dojo-api-log strong{color:#c7cedd}
 @media(max-width:900px){.dojo-config-toolbar{grid-template-columns:1fr}.dojo-server-grid{grid-template-columns:1fr}.dojo-team-hint{margin-left:0}}
 @media(max-width:640px){.dojo-setting-grid{grid-template-columns:1fr}.dojo-key-grid{grid-template-columns:repeat(2,1fr)}.dojo-toggle-grid{grid-template-columns:1fr}.dojo-frame-fullscreen{font-size:6px;padding:6px 8px}.dojo-frame-shell{border-radius:10px}}
+.dojo-virtual-key{width:100%;margin-top:6px;border:1px solid rgba(82,207,232,.28);background:linear-gradient(180deg,rgba(82,207,232,.16),rgba(82,207,232,.06));color:#22303a;border-radius:8px;padding:7px 4px;font:900 10px ui-monospace,monospace}.dojo-virtual-key.pressed{transform:translateY(1px);box-shadow:0 0 0 2px rgba(82,207,232,.22),0 0 15px rgba(82,207,232,.22);background:rgba(82,207,232,.28)}.dojo-virtual-hint{margin-top:7px;font-size:6px;color:var(--muted);line-height:1.5}
