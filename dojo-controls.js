@@ -51,7 +51,7 @@ function renderSettings(){
 }
 function render(){
  renderServers();renderSettings();
- const s=ensure(),cur=SERVERS.find(x=>x.id===s.dojo.server)||SERVERS[0];$('dojoServerQuickName').textContent=cur.name;
+ const s=ensure(),cur=SERVERS.find(x=>x.id===s.dojo.server)||SERVERS[0];const quick=$('dojoServerQuickName');if(quick)quick.textContent=cur.name;
 }
 function setServer(id){
  const s=ensure(),x=SERVERS.find(v=>v.id===id);if(!x)return;s.dojo.server=id;save();render();
