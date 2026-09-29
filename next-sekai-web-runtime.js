@@ -340,8 +340,16 @@ function finishResult(){
  E.lastJudge=E.result.ap?"AP":E.result.fc?"FC":"RESULT";showResult();
 }
 function showResult(){
- let p=E.stage?.querySelector(".next-result");if(!p){p=document.createElement("div");p.className="next-result";p.style.cssText="position:absolute;inset:auto 18px 18px auto;z-index:9;padding:12px 14px;border-radius:16px;background:rgba(8,12,27,.86);color:#fff;font-size:11px;backdrop-filter:blur(10px)";E.stage.appendChild(p)}
- const r=E.result;p.innerHTML=`<b>${r.ap?"ALL PERFECT":r.fc?"FULL COMBO":"RESULT"}</b><br>Score ${r.score} · Max Combo ${r.combo} · Accuracy ${r.accuracy}% · Life ${Math.round(r.life)}`;
+ let p=E.stage?.querySelector(".next-result");if(!p){p=document.createElement("div");p.className="next-result";p.style.cssText="position:absolute;inset:auto 18px 18px auto;z-index:9;width:min(360px,calc(100% - 36px));padding:12px 14px;border-radius:16px;background:rgba(8,12,27,.9);color:#fff;font-size:11px;backdrop-filter:blur(10px)";E.stage.appendChild(p)}
+ const r=E.result;
+ p.innerHTML=`<b>${r.ap?"ALL PERFECT":r.fc?"FULL COMBO":"RESULT"}</b><br>Score ${r.score} · Max Combo ${r.combo} · Accuracy ${r.accuracy}% · Life ${Math.round(r.life)}<canvas class="next-progress" width="320" height="72" style="display:block;width:100%;height:72px;margin-top:8px;border-radius:10px;background:rgba(255,255,255,.05)"></canvas><div style="display:flex;gap:6px;margin-top:8px"><button class="next-replay-export" style="flex:1;border:0;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:800">Export Replay</button><button class="next-result-close" style="border:0;border-radius:999px;padding:7px 10px;font-size:10px">Close</button></div>`;
+ const cv=p.querySelector(".next-progress"),g=cv?.getContext("2d");if(g){
+  g.clearRect(0,0,cv.width,cv.height);const a=N.progress||[],mx=Math.max(1,...a.map(x=>x.score||0)),ml=Math.max(1,N.maxLife||E.maxLife||1000),mc=Math.max(1,...a.map(x=>x.combo||0));
+  const draw=(key,max,y0,h)=>{g.beginPath();a.forEach((x,i)=>{const xx=a.length<2?0:i/(a.length-1)*cv.width,yy=y0+h-(x[key]||0)/max*h;i?g.lineTo(xx,yy):g.moveTo(xx,yy)});g.stroke()};
+  g.lineWidth=1.5;g.strokeStyle="#66dff2";draw("score",mx,2,30);g.strokeStyle="#ffe05a";draw("combo",mc,34,16);g.strokeStyle="#69e0ad";draw("life",ml,52,16);
+ }
+ p.querySelector(".next-replay-export")?.addEventListener("click",()=>{const blob=new Blob([JSON.stringify({engine:"Next-SEKAI-Web",version:N.version,score:E.result,replay:N.replay},null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="pjsekai-dojo-replay.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)});
+ p.querySelector(".next-result-close")?.addEventListener("click",()=>p.remove());
 }
 const oldInit=E.init;E.init=function(){oldInit.call(this);addControls();N.finished=false;N.replay=[];N.judgments=[];setTimeout(addControls,0)};
 const oldIsFlick=E.isFlick;
