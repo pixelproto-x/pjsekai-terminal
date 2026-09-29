@@ -30,7 +30,7 @@ function tabs(){
 async function loadVoices(){
  try{
   if(!S.voices){var x=await get(DB+"characterArchiveVoices.json");S.voices=ar(x)}
-  if(!S.tags){var y=await get(DB+"characterArchiveVoiceTags.json");S.tags=ar(y)}
+  if(!S.tags.length){var y=await get(DB+"characterArchiveVoiceTags.json");S.tags=ar(y)}
   if(!S.cutinut){try{S.cutinut=ar(await get(DB+"ingameCutinCharacters.json"))}catch(_){S.cutinut=[]}}
   if($("srVTag"))$("srVTag").innerHTML="<option value=\"\">全部類型</option>"+S.tags.map(function(x){return"<option value=\""+x.id+"\">"+esc(x.name)+"</option>"}).join("");voiceRender();status("已載入 "+S.voices.length.toLocaleString()+" 筆語音索引",true)
  }catch(e){status("語音資料載入失敗");$("srVoiceList").innerHTML='<div class="sr-empty">無法讀取語音 metadata。</div>'}
@@ -48,7 +48,7 @@ function voiceUrls(v){
  return out
 }
 function voiceRender(){
- var rows=(S.voices||[]).filter(function(v){return(!S.char||n(v.gameCharacterId||v.characterId)===n(S.char))&&(!S.vtag||n(v.characterArchiveVoiceTagId)===n(S.vtag))&&(!S.vq||[v.displayPhrase,v.displayPhrase2,v.externalId].join(" ").toLowerCase().indexOf(S.vq.toLowerCase())>=0)}),sp=rows.filter(function(v){return[1,3,4,6].indexOf(n(v.characterArchiveVoiceTagId))>=0}),pl=rows.filter(function(v){return voiceUrls(v).length});
+ var rows=(S.voices||[]).filter(function(v){return(!S.char||n(v.gameCharacterId||v.characterId)===n(S.char))&&(!S.vtag||n(v.characterArchiveVoiceTagId)===n(S.vtag))&&(!S.vq||[v.displayPhrase,v.displayPhrase2,v.assetName,v.characterArchiveVoiceType].join(" ").toLowerCase().indexOf(S.vq.toLowerCase())>=0)}),sp=rows.filter(function(v){return[1,3,4,6].indexOf(n(v.characterArchiveVoiceTagId))>=0}),pl=rows.filter(function(v){return voiceUrls(v).length});
  if($("srVC"))$("srVC").textContent=rows.length.toLocaleString();if($("srVS"))$("srVS").textContent=sp.length.toLocaleString();if($("srVP"))$("srVP").textContent=pl.length.toLocaleString();
  $("srVoiceList").innerHTML=rows.slice(0,500).map(function(v){var u=voiceUrls(v),cn=charName(v.gameCharacterId||v.characterId);return'<article class="sr-voice-row"><div class="sr-avatar">'+esc(cn.slice(0,2))+'</div><div class="sr-voice-copy"><div class="sr-voice-top"><strong>'+esc(cn)+'</strong><span>'+esc(tagName(v.characterArchiveVoiceTagId))+'</span><time>'+esc(v.displayStartAt?new Date(n(v.displayStartAt)).toLocaleDateString("zh-TW"):"")+'</time></div><p>'+esc(v.displayPhrase||v.displayPhrase2||"—")+'</p>'+(v.displayPhrase2?'<small>'+esc(v.displayPhrase2)+'</small>':"")+'</div><div class="sr-voice-actions">'+(u.length?u.map(function(x,i){return'<button class="sr-play" data-sr-audio="'+esc(x)+'" type="button">▶ '+(i+1)+'</button>'}).join(""):'<span class="sr-unplayable">索引</span>')+'</div></article>'}).join("")||'<div class="sr-empty">找不到符合條件的語音。</div>';
  $("srVoiceList").onclick=function(e){var b=e.target.closest("[data-sr-audio]");if(b)audioPlay(b.dataset.srAudio,b)}
