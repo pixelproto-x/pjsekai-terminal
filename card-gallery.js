@@ -44,7 +44,7 @@ async function loadRaw(){
   const [cards,episodes,costumes,rarities,supplies]=await Promise.all(Object.values(urls).map(fetchJson));
   return {cards:Array.isArray(cards)?cards.map(normalizeCard):[],episodes:Array.isArray(episodes)?episodes:[],costumes:Array.isArray(costumes)?costumes:[],rarities:Array.isArray(rarities)?rarities:[],supplies:Array.isArray(supplies)?supplies:[]};
 }
-function load(){
+async function load(){
   const cached=sessionStorage.getItem(CACHE);if(cached){try{data=JSON.parse(cached);source=data._source||'raw';return}catch(_){}}
   data=await loadRaw();source='raw';
   data._source=source;try{sessionStorage.setItem(CACHE,JSON.stringify(data));}catch(_){}
