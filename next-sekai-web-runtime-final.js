@@ -165,6 +165,14 @@ function candidate(lane,mode="head"){
  }
  out.sort((a,b)=>b.score-a.score||a.abs-b.abs);return out[0]?.n||null;
 }
+function tailProxy(n){
+ const type=n.tailType||"slide";
+ return {
+  id:String(n.id)+":tail",time:n.time+(n.duration||0),lane:n.endLane??n.lane,width:n.width,
+  type:type==="trace-flick"?"trace-flick":type==="flick"?"flick":type==="trace"?"trace":"slide",
+  critical:n.tailCritical??n.critical,dir:n.tailDir??0,fake:false
+ };
+}
 function makeTicks(n){
  if(Array.isArray(n.tickTimes)&&n.tickTimes.length)return n.tickTimes.slice().sort((a,b)=>a-b);
  if(!n.duration)return[];
@@ -239,10 +247,10 @@ function onUp(e){
  const p=N.touchHistory.get(e.pointerId),q=N.pending.get(e.pointerId),n=p?.note||q?.n;if(!n)return;
  const i=classify(n);if(i.type==="flick"||i.type==="trace-flick"){resolveFlick(e,p||{});N.pending.delete(e.pointerId);N.touchHistory.delete(e.pointerId);return}
  if(!n.active){N.touchHistory.delete(e.pointerId);return}
- const d=deltaFor(n,true),j=judgeDelta(d,{...n,type:i.type==="trace"?"trace":"slide"},true);
+ const tail=tailProxy(n),d=deltaFor(n,true),j=judgeDelta(d,tail,true);
  if(i.type==="trace"||i.type==="slide"){
-  if(j){n.active=false;n.tailHit=true;award(j,{...n,id:String(n.id)+":tail",time:n.time+(n.duration||0),lane:n.endLane??n.lane,type:"slide",critical:n.critical},d)}
-  else fail(n,"release")
+  if(j){n.active=false;n.tailHit=true;award(j,tail,d,{tail:true,release:true})}
+  else if(d>winFor(tail,true).bad[1]){n.active=false;n.tailHit=true;fail(tail,"release")}
  }
  N.touchHistory.delete(e.pointerId);
 }
@@ -277,7 +285,15 @@ function processFrame(){
   const end=targetTime(n)*MS+winFor(n).bad[1]-N.inputOffset;
   if(!n.hit&&!n.active&&adjustedNow()>end)fail(n);
   if(n.active&&logical>=n.time+(n.duration||0)&&!n.tailHit){
-   n.active=false;n.tailHit=true;award("perfect",{...n,id:String(n.id)+":tail",time:n.time+(n.duration||0),lane:n.endLane??n.lane,type:"slide",critical:n.critical},0,{autoComplete:true})
+   const tail=tailProxy(n),tailLane=E.mirror?11-n.endLane:n.endLane;
+   const held=touches.some(p=>Math.abs(eventLane({clientX:p.x,clientY:p.y})-tailLane)<=Math.max(1.25,(n.width||1)/2+N.noteMargin*6));
+   const tailDelta=adjustedNow()-targetTime(n,true)*MS;
+   const tailJudge=judgeDelta(tailDelta,tail,true);
+   if(held&&tailJudge){
+    n.active=false;n.tailHit=true;award(tailJudge,tail,tailDelta,{tail:true});
+   }else if(tailDelta>winFor(tail,true).bad[1]){
+    n.active=false;n.tailHit=true;fail(tail,"tail");
+   }
   }
  }
  for(const [id,q] of N.pending){
