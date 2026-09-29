@@ -3,7 +3,7 @@ const state={songId:"",difficulty:"Expert",noteSpeed:7,mirror:false,sudden:false
 const root=document.getElementById("root"),view=document.getElementById("view"),hud=document.getElementById("hud"),info=document.getElementById("info"),play=document.getElementById("play"),reset=document.getElementById("reset");
 const app=new PIXI.Application(),stage=new PIXI.Container(),guide=new PIXI.Container(),notesLayer=new PIXI.Container(),fx=new PIXI.Container();
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function geometry(){const w=view.clientWidth||1280,h=view.clientHeight||720;return{w,h,top:h*.12,bottom:h*.86,hit:h*.82,leftTop:w*.18,rightTop:w*.82,leftBottom:w*.02,rightBottom:w*.98}}
+function geometry(){const w=view.clientWidth||1280,h=view.clientHeight||720;return{w,h,top:h*.10,bottom:h*.91,hit:h*.82,leftTop:w*.205,rightTop:w*.795,leftBottom:w*.018,rightBottom:w*.982}}
 function lanePoint(l,y){const g=geometry(),p=clamp((y-g.top)/(g.bottom-g.top),0,1),u=clamp((state.mirror?11-l:l)/11,0,1);return{x:g.leftTop+(g.rightTop-g.leftTop)*u+(g.leftBottom-g.leftTop+(g.rightBottom-g.rightTop-g.leftBottom+g.leftTop)*u)*p,y}}
 function laneX(l,y){return lanePoint(l,y).x}
 function noteY(t){const g=geometry(),travel=.74/(Math.max(.1,state.noteSpeed)/7),d=(t-state.time)*travel;return g.hit-d*g.h*.92}
