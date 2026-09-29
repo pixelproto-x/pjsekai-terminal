@@ -92,7 +92,7 @@ function susToUSC(sus){
   else if(h.length===6&&(h[3]==="3"||h[3]==="9")){const key=h[5]+"-"+h[3],v=streams.get(key)||{type:+h[3],notes:[]};v.notes.push(...rawAt(line,index).map(r=>({tick:r.tick,lane:parseInt(h[4],36),width:parseInt(r.value[1],36),type:parseInt(r.value[0],36)})));streams.set(key,v)}
   else if(h.length===5&&h[3]==="5")for(const r of rawAt(line,index))directionalNotes.push({tick:r.tick,lane:parseInt(h[4],36),width:parseInt(r.value[1],36),type:parseInt(r.value[0],36)});
  });
- const key=n=>n.lane+"-"+n.tick,flick=new Map(),trace=new Set(),critical=new Set(),removeTick=new Set(),removeEnd=new Set();
+ const key=n=>n.lane+"-"+n.tick,flick=new Map(),trace=new Set(),critical=new Set(),removeTick=new Set(),removeEnd=new Set(),easeMods=new Map();
  directionalNotes.forEach(n=>{const k=key(n);if(n.type===1)flick.set(k,"up");else if(n.type===3)flick.set(k,"left");else if(n.type===4)flick.set(k,"right");else if(n.type===2)easeMods.set(k,"in");else if(n.type===5||n.type===6)easeMods.set(k,"out")});
  tapNotes.forEach(n=>{const k=key(n);if(n.type===2)critical.add(k);else if(n.type===5)trace.add(k);else if(n.type===6){trace.add(k);critical.add(k)}else if(n.type===3)removeTick.add(k);else if(n.type===7)removeEnd.add(k);else if(n.type===8){critical.add(k);removeEnd.add(k)}});
  const prevent=new Set();for(const s of streams.values())if(s.type===3)for(const n of s.notes)if([1,2,3,5].includes(n.type))prevent.add(key(n));
