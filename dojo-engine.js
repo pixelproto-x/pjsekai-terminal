@@ -52,7 +52,7 @@ const Engine={
    this.audio.addEventListener("timeupdate",()=>{if(this.sectionLoop&&this.sectionEnd>this.sectionStart&&this.time()>=this.sectionEnd)this.seek(this.sectionStart)});
   }
   const c=this.stage;
-  c.addEventListener("pointerdown",e=>{c.setPointerCapture?.(e.pointerId);const p={x:e.clientX,y:e.clientY,px:e.clientX,py:e.clientY,start:performance.now(),note:null};this.pointers.set(e.pointerId,p);this.touchDown(e,p)});
+  c.addEventListener("pointerdown",e=>{c.setPointerCapture?.(e.pointerId);const p={x:e.clientX,y:e.clientY,downX:e.clientX,downY:e.clientY,px:e.clientX,py:e.clientY,start:performance.now(),note:null};this.pointers.set(e.pointerId,p);this.touchDown(e,p)});
   c.addEventListener("pointermove",e=>{const p=this.pointers.get(e.pointerId);if(!p)return;p.px=p.x;p.py=p.y;p.x=e.clientX;p.y=e.clientY;if(p.note)this.track(p.note,p,e)});
   c.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);if(p){if(p.note)this.release(p.note,p,e);else this.flickAt(e,p);this.pointers.delete(e.pointerId)}});
   c.addEventListener("pointercancel",e=>{const p=this.pointers.get(e.pointerId);if(p?.note)this.failRelease(p.note);this.pointers.delete(e.pointerId)});
@@ -71,10 +71,10 @@ const Engine={
  touchDown(e,p){
   if(e.target!==this.canvas&&e.target.closest(".pjsk-import-box"))return;
   const lane=this.laneFromEvent(e),n=this.findHead(lane);
-  if(n){const dx=0,dy=0;if(this.isFlick(n)&&!this.autoplay)return;if(this.judgeNote(n,lane,dx,dy,p,e))p.note=n}
+  if(n){if(this.isFlick(n)){p.note=n;return}if(this.judgeNote(n,lane,0,0,p,e))p.note=n}
  },
  flickAt(e,p){
-  const dx=e.clientX-p.x,dy=e.clientY-p.y; // retained for keyboard/mouse compatibility
+  const dx=e.clientX-p.downX,dy=e.clientY-p.downY;
   const lane=this.laneFromEvent(e),n=this.findHead(lane);
   if(n)this.judgeNote(n,lane,dx,dy,p,e);
  },
