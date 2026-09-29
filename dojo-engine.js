@@ -155,9 +155,10 @@ let best=null,bestAbs=Infinity;
     ctx.strokeStyle="rgba(255,255,255,.34)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w*.09,h*.84);ctx.lineTo(w*.91,h*.84);ctx.stroke();
     const now=this.currentTime(),travel=.95/(this.speed||1);
     this.effects=this.effects.filter(e=>{e.life-=1/60;return e.life>0;});
-    for(const n of this.notes){if(n.hit)continue;let p=1-(n.time-now)/travel;if(p<0||p>1.08)continue;if(this.sudden&&p<.45)continue;
+    for(const n of this.notes){if(n.hit && !(n.type==="hold" && !n.holdComplete))continue;let anchorTime=(n.type==="hold"&&n.hit)?Math.min(now,n.time):n.time;let p=1-(anchorTime-now)/travel;if(p<0||p>1.08)continue;if(this.sudden&&p<.45)continue;
       const q=this.project(this.mirror?11-n.lane:n.lane,p,w,h),size=q.w*(n.critical?1.05:.9);
       if(n.type==="hold"&&n.duration){const tailP=1-(n.time+n.duration-now)/travel,qt=this.project(this.mirror?11-(n.endLane??n.lane):n.endLane??n.lane,tailP,w,h);ctx.strokeStyle=n.critical?"#ffd84d":"#55d7ef";ctx.lineWidth=Math.max(5,size*.65);ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(qt.x,qt.y);ctx.stroke();
+        if(n.hit&&!n.holdComplete){ctx.globalAlpha=.65;ctx.fillStyle=n.critical?"#ffd84d":"#55d7ef";ctx.beginPath();ctx.arc(qt.x,qt.y,Math.max(4,size*.42),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
         if(n.type==="trace"||n.type==="trace-flick"){ctx.globalAlpha=.35;ctx.lineWidth=Math.max(2,size*.28);ctx.strokeStyle=n.critical?"#ffe36b":"#74f0c4";ctx.beginPath();ctx.arc(q.x,q.y,size*1.2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}}
 
       ctx.save();ctx.translate(q.x,q.y);if(n.type==="flick")ctx.rotate(n.reverse?Math.PI:0);ctx.shadowBlur=14;ctx.shadowColor=n.critical?"#ffd84d":"#5ee7ff";ctx.fillStyle=n.critical?"#ffd84d":n.type==="trace"?"#70e7c0":"#eafaff";ctx.beginPath();ctx.roundRect(-size*.7,-size*.7,size*1.4,size*1.4,Math.max(3,size*.28));ctx.fill();ctx.strokeStyle=n.critical?"#fff0a8":"#fff";ctx.lineWidth=1.5;ctx.stroke();if(n.type==="flick"){ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(0,-size*1.2);ctx.lineTo(size*.45,-size*.35);ctx.lineTo(-size*.45,-size*.35);ctx.closePath();ctx.fill();}ctx.restore();
