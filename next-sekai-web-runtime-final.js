@@ -330,12 +330,51 @@ function showResult(){
  p.querySelector(".next-result-close")?.addEventListener("click",()=>p.remove());
 }
 function addControls(){
- const box=E.stage?.querySelector(".pjsk-import-box");if(!box||box.querySelector(".next-unified-controls"))return;
- const d=document.createElement("div");d.className="next-unified-controls";d.style.cssText="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:6px;margin-top:8px";
- d.innerHTML='<label>Score<select data-nx="score"><option value="weighted-combo">Weighted Combo</option><option value="weighted-flat">Weighted Flat</option><option value="unweighted-combo">Unweighted Combo</option><option value="unweighted-flat">Unweighted Flat</option></select></label><label>Life<input data-nx="life" type="number" min="1" max="9999" step="1"></label><label>Haptic<select data-nx="haptic"><option value="disabled">Off</option><option value="miss">Miss</option><option value="miss-good">Miss + Good</option></select></label><label>Effect Speed<input data-nx="effect" type="number" min=".25" max="4" step=".05"></label><label>Guide<select data-nx="guide"><option value="0.5">Low</option><option value="1">Normal</option><option value="2">High</option></select></label><label>Fake<select data-nx="fake"><option value="false">Show</option><option value="true">Hide</option></select></label><label>Timescale<select data-nx="ts"><option value="false">On</option><option value="true">Off</option></select></label><label>Alt Curve<select data-nx="curve"><option value="false">Off</option><option value="true">On</option></select></label>';
+ const box=E.stage?.querySelector(".pjsk-import-box");
+ if(!box||box.querySelector(".next-unified-controls"))return;
+ const d=document.createElement("div");
+ d.className="next-unified-controls";
+ d.style.cssText="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:6px;margin-top:8px";
+ d.innerHTML=[
+  '<label>Score<select data-nx="score"><option value="weighted-combo">Weighted Combo</option><option value="weighted-flat">Weighted Flat</option><option value="unweighted-combo">Unweighted Combo</option><option value="unweighted-flat">Unweighted Flat</option></select></label>',
+  '<label>Life<input data-nx="life" type="number" min="1" max="9999" step="1"></label>',
+  '<label>Haptic<select data-nx="haptic"><option value="disabled">Off</option><option value="miss">Miss</option><option value="miss-good">Miss + Good</option></select></label>',
+  '<label>Effect Speed<input data-nx="effect" type="number" min=".25" max="4" step=".05"></label>',
+  '<label>Guide<select data-nx="guide"><option value="0.5">Low</option><option value="1">Normal</option><option value="2">High</option></select></label>',
+  '<label>Fake<select data-nx="fake"><option value="false">Show</option><option value="true">Hide</option></select></label>',
+  '<label>Timescale<select data-nx="ts"><option value="false">On</option><option value="true">Off</option></select></label>',
+  '<label>Alt Curve<select data-nx="curve"><option value="false">Off</option><option value="true">On</option></select></label>'
+ ].join("");
  box.appendChild(d);
- const sync=()=>{for(const [k,v] of Object.entries({score:N.scoreMode,life:N.initialLife,haptic:N.haptic,effect:N.effectAnimationSpeed,guide:N.guideQuality,fake:String(N.disableFakeNotes),ts:String(N.disableTimescale),curve:String(N.alternativeCurve)})){const el=d.querySelector('[data-nx="'+k+'"]');if(el)el.value=String(v)}};
- d.querySelectorAll("[data-nx]").forEach(el=>el.addEventListener("change",()=>{const k=el.dataset.nx;if(k==="score")N.scoreMode=el.value;if(k==="life"){N.initialLife=Math.max(1,+el.value||1000);N.maxLife=N.initialLife;E.life=N.initialLife}if(k==="haptic")N.haptic=el.value;if(k==="effect")N.effectAnimationSpeed=clamp(+el.value||1,.25,4);if(k==="guide")N.guideQuality=+el.value;if(k==="fake")N.disableFakeNotes=el.value==="true";if(k==="ts")N.disableTimescale=el.value==="true";if(k==="curve")N.alternativeCurve=el.value==="true";localStorage.setItem("pjsekai-next-options",JSON.stringify({scoreMode:N.scoreMode,initialLife:N.initialLife,haptic:N.haptic,effectAnimationSpeed:N.effectAnimationSpeed,guideQuality:N.guideQuality,disableFakeNotes:N.disableFakeNotes,disableTimescale:N.disableTimescale,alternativeCurve:N.alternativeCurve});reset();sync()}));sync();
+ const save=()=>localStorage.setItem("pjsekai-next-options",JSON.stringify({
+  scoreMode:N.scoreMode,initialLife:N.initialLife,haptic:N.haptic,effectAnimationSpeed:N.effectAnimationSpeed,
+  guideQuality:N.guideQuality,disableFakeNotes:N.disableFakeNotes,disableTimescale:N.disableTimescale,alternativeCurve:N.alternativeCurve
+ }));
+ const sync=()=>{
+  const values={score:N.scoreMode,life:N.initialLife,haptic:N.haptic,effect:N.effectAnimationSpeed,guide:N.guideQuality,
+   fake:String(N.disableFakeNotes),ts:String(N.disableTimescale),curve:String(N.alternativeCurve)};
+  for(const [key,value] of Object.entries(values)){
+   const el=d.querySelector("[data-nx="+JSON.stringify(key)+"]");
+   if(el)el.value=String(value);
+  }
+ };
+ d.querySelectorAll("[data-nx]").forEach(el=>{
+  el.addEventListener("change",()=>{
+   const k=el.dataset.nx;
+   if(k==="score")N.scoreMode=el.value;
+   else if(k==="life"){N.initialLife=Math.max(1,+el.value||1000);N.maxLife=N.initialLife;E.life=N.initialLife}
+   else if(k==="haptic")N.haptic=el.value;
+   else if(k==="effect")N.effectAnimationSpeed=clamp(+el.value||1,.25,4);
+   else if(k==="guide")N.guideQuality=+el.value;
+   else if(k==="fake")N.disableFakeNotes=el.value==="true";
+   else if(k==="ts")N.disableTimescale=el.value==="true";
+   else if(k==="curve")N.alternativeCurve=el.value==="true";
+   save();
+   reset();
+   sync();
+  });
+ });
+ sync();
 }
 function reset(){
  E.running=false;cancelAnimationFrame(E.raf);E.clockPaused=E.time?.()||0;E.score=0;E.combo=0;E.maxCombo=0;E.life=N.initialLife;E.maxLife=N.maxLife;E.counts={perfect:0,great:0,good:0,bad:0,miss:0};E.effects=[];E.judgeSamples=[];E.lastJudge="READY";N.replay=[];N.judgments=[];N.progress=[];N.pending.clear();N.finished=false;
