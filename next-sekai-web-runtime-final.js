@@ -22,7 +22,7 @@ const WINDOW={
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"],release:[610,"triangle"]};
 const N=E.nextSekai||{};
 Object.assign(N,{
- version:"8.0.0",
+ version:"8.1.0",
  scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,
  initialLife:Number(N.initialLife)||1000,maxLife:Number(N.maxLife)||1000,
  inputOffset:Number(N.inputOffset)||0,
@@ -153,6 +153,17 @@ function laneDistance(n,lane){
  const nl=E.mirror?11-n.lane:n.lane,width=Math.max(.5,Number(n.width)||1)+N.noteMargin*12;
  return Math.abs(nl-lane)<=width/2+N.touchLeniency;
 }
+function tailCandidate(lane){
+ const out=[],now=adjustedNow();
+ for(const n of E.notes||[]){
+  if(!n.active||n.tailHit||n.missed)continue;
+  const tail=tailProxy(n),d=deltaFor(n,true),w=winFor(tail,true);
+  const targetLane=E.mirror?11-(n.endLane??n.lane):(n.endLane??n.lane);
+  if(d<w.bad[0]||d>w.bad[1]||Math.abs(targetLane-lane)>Math.max(1.25,(n.width||1)/2+N.noteMargin*6))continue;
+  out.push({n,d,score:-Math.abs(targetLane-lane)-Math.abs(d)/Math.max(1,w.bad[1]-w.bad[0])*.25});
+ }
+ out.sort((a,b)=>b.score-a.score);return out[0]||null;
+}
 function candidate(lane,mode="head"){
  const now=adjustedNow(),out=[];
  for(const n of E.notes||[]){
@@ -223,7 +234,8 @@ function onDown(e){
  e.preventDefault?.();
  const p={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,downX:e.clientX,downY:e.clientY,downT:performance.now(),lastT:performance.now(),speed:0,angle:0,started:true,ended:false,note:null};
  N.touchHistory.set(e.pointerId,p);
- const lane=eventLane(e),n=candidate(lane);if(!n)return;
+ const lane=eventLane(e);const tc=tailCandidate(lane);if(tc){const tail=tailProxy(tc.n),td=deltaFor(tc.n,true),tj=judgeDelta(td,tail,true);if(tj){tc.n.active=false;tc.n.tailHit=true;award(tj,tail,td,{tail:true,extraTouch:true});return}}
+ const n=candidate(lane);if(!n)return;
  const i=classify(n);
  if(i.damage||i.type==="hidden-damage"){if(laneDistance(n,lane))hitDamage(n);return}
  if(i.type==="flick"||i.type==="trace-flick"){p.note=n;N.pending.set(e.pointerId,{n,downX:e.clientX,downY:e.clientY,startTime:E.time(),bestTime:Infinity,bestCorrect:false,lastTime:E.time(),wrong:false});return}
@@ -259,8 +271,9 @@ function processFrame(){
  for(const n of E.notes||[]){
   const i=classify(n);if(i.fake||i.anchor||n.missed)continue;
   if((i.damage||i.type==="hidden-damage")&&!n.damageResolved){
+   const lead=i.type==="hidden-damage"?1/(2*Math.max(.1,E.bpm||120)):0;
    const d=logical-n.time,w=winFor(n),touched=touches.some(p=>laneDistance(n,eventLane({clientX:p.x,clientY:p.y})));
-   if(touched&&d>=w.perfect[0]/MS&&d<=w.bad[1]/MS)hitDamage(n);else if(d>w.bad[1]/MS)completeDamage(n);
+   if(touched&&logical>=n.time-lead&&d<=w.bad[1]/MS)hitDamage(n);else if(d>w.bad[1]/MS)completeDamage(n);
    continue;
   }
   if((i.type==="trace"||i.type==="trace-flick")&&!n.hit){
