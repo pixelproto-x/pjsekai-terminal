@@ -9,11 +9,11 @@ const B36=s=>parseInt(String(s),36), RAD=Math.PI/180;
 const Engine={
  canvas:null,ctx:null,stage:null,audio:null,raf:0,running:false,
  speed:1,offset:0,mirror:false,reverse:false,sudden:false,autoplay:false,
- bpm:120,chartName:"Web Dojo",duration:90,ticksPerBeat:480,notes:[],slides:[],
+ bpm:120,chartName:"Web Dojo",duration:90,ticksPerBeat:480,notes:[],slides:[],timescaleEvents:[],
  score:0,combo:0,maxCombo:0,counts:{perfect:0,great:0,good:0,bad:0,miss:0},
  effects:[],pointers:new Map(),judgeSamples:[],lastJudge:"READY",lastTime:0,
  audioCtx:null,master:null,loaded:false,sectionStart:0,sectionEnd:0,sectionLoop:false,
- windows:{perfect:45,great:90,good:140,bad:200,trace:120},judge:{perfect:0,great:0,good:0,bad:0,miss:0},result:null,guideQuality:2,noteMargin:1,alternativeCurve:false,disableTimescale:false,skin:"sekai",nextOptions:{guideQuality:2,noteMargin:1,alternativeCurve:false,disableTimescale:false},
+ windows:{perfect:41.667,great:83.333,good:108.333,bad:125,trace:83.333,flickPerfect:41.667,flickGreatLate:125,flickGoodLate:133.333,flickBadLate:141.667,slideEndPerfect:58.333,slideEndGreatLate:133.333,slideEndGoodLate:141.667},judge:{perfect:0,great:0,good:0,bad:0,miss:0},result:null,guideQuality:2,noteMargin:1,alternativeCurve:false,disableTimescale:false,skin:"sekai",nextOptions:{guideQuality:2,noteMargin:1,alternativeCurve:false,disableTimescale:false},
  init(){
   this.stage=$("#dojoStage"); if(!this.stage)return;
   this.stage.innerHTML="";
@@ -99,17 +99,17 @@ const Engine={
   for(const n of this.notes){if(n.hit||n.missed||n.fake||n.damage||n.judgedTicks>0&&n.isTick)continue;if(n.lane!==lane)continue;const d=Math.abs(n.time*1000-now);if(d<bd&&d<=this.windows.bad+65){best=n;bd=d}}
   return best;
  },
- judgeName(delta){const a=Math.abs(delta);return a<=this.windows.perfect?"perfect":a<=this.windows.great?"great":a<=this.windows.good?"good":a<=this.windows.bad?"bad":null},
+ windowFor(n){const t=String(n.type||"tap");if(t.includes("trace-flick")||t.includes("flick"))return{perfect:this.windows.flickPerfect,great:this.windows.flickGreatLate,good:this.windows.flickGoodLate,bad:this.windows.flickBadLate};if(t.includes("trace"))return{perfect:this.windows.trace,great:this.windows.trace,good:this.windows.trace,bad:this.windows.trace};if(t==="slide"||t.includes("hold")||t.includes("tail"))return{perfect:this.windows.slideEndPerfect,great:this.windows.slideEndGreatLate,good:this.windows.slideEndGoodLate,bad:this.windows.bad};return this.windows},\n judgeName(delta,n){const w=this.windowFor(n||{}),a=Math.abs(delta);return a<=w.perfect?"perfect":a<=w.great?"great":a<=w.good?"good":a<=w.bad?"bad":null},
  judgeNote(n,lane,dx,dy,p,e){
   if(n.damage){n.hit=true;this.combo=0;this.counts.miss++;this.lastJudge="DAMAGE";this.sfx("miss");return true}
 
-  const delta=n.time*1000-(this.time()*1000+this.offset),j=this.judgeName(delta);if(!j)return false;
+  const delta=(this.time()*1000+this.offset)-n.time*1000,j=this.judgeName(delta,n);if(!j)return false;
   if(this.isFlick(n)&&!this.expectedDirection(n,dx,dy))return false;
   if(n.type==="slide"&&n.path?.length>1)n.headHit=true;
   n.hit=true;n.active=["hold","slide","trace","trace-flick"].includes(n.type);n.hitAt=this.time();n.holdUntil=n.time+n.duration;
   this.award(j,n);if(p)p.note=n;return true;
  },
- award(j,n){this.counts[j]++;this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);const mult=n.critical?1.1:1;this.score+=Math.round(({perfect:1000,great:800,good:500,bad:100}[j]||0)*mult);this.lastJudge=j.toUpperCase();this.judgeSamples.push(n.time*1000-(this.time()*1000+this.offset));this.effects.push({lane:n.lane,kind:j,t:.0,life:.45});this.sfx(j)},
+ award(j,n){this.counts[j]++;this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);const mult=n.critical?1.1:1;this.score+=Math.round(({perfect:1000,great:800,good:500,bad:100}[j]||0)*mult);this.lastJudge=j.toUpperCase();this.judgeSamples.push((this.time()*1000+this.offset)-n.time*1000);this.effects.push({lane:n.lane,kind:j,critical:n.critical,life:.45,max:.45,spawn:performance.now()/1000,seed:Math.random()*6.28});this.effects.push({lane:n.lane,kind:"slot",critical:n.critical,life:.35,max:.35,spawn:performance.now()/1000});this.effects.push({lane:n.lane,kind:"lane",critical:n.critical,life:.5,max:.5,spawn:performance.now()/1000});this.sfx(j)},
  track(n,p,e){
   if(!n.active)return;
   const pos=this.pointerLane(e),target=this.slideLaneAt(n,this.time());
@@ -117,9 +117,9 @@ const Engine={
   if(n.type==="slide"||n.type==="trace"||n.type==="trace-flick"){n.progress=clamp((this.time()-n.time)/Math.max(.001,n.duration),0,1);if(dist<=1.35){if(n.type.startsWith("trace"))this.tickTrace(n);}}
  },
  pointerLane(e){return this.laneFromEvent(e)},
- slideLaneAt(n,t){const f=clamp((t-n.time)/Math.max(.001,n.duration),0,1);const pts=n.path||[{t:0,l:n.lane},{t:1,l:n.endLane??n.lane}];if(pts.length===1)return pts[0].l;let a=pts[0],b=pts[pts.length-1];for(let i=1;i<pts.length;i++){if(f<=pts[i].t){b=pts[i];a=pts[i-1];break}}const u=(f-a.t)/Math.max(.0001,b.t-a.t);return a.l+(b.l-a.l)*this.ease(u)},
- ease(t){return t*t*(3-2*t)},
- tickTrace(n){const tick=Math.floor((this.time()-n.time)/.125);if(tick>n.judgedTicks){n.judgedTicks=tick;this.score+=100;this.sfx("tick");this.effects.push({lane:this.slideLaneAt(n,this.time()),kind:"trace",life:.18})}},
+ slideLaneAt(n,t){const f=clamp((t-n.time)/Math.max(.001,n.duration),0,1);const pts=n.path||[{t:0,l:n.lane},{t:1,l:n.endLane??n.lane}];if(pts.length===1)return pts[0].l;let a=pts[0],b=pts[pts.length-1];for(let i=1;i<pts.length;i++){if(f<=pts[i].t){b=pts[i];a=pts[i-1];break}}const u=(f-a.t)/Math.max(.0001,b.t-a.t);return a.l+(b.l-a.l)*this.ease(u,n.ease||"smooth")},
+ ease(t,kind="smooth"){t=clamp(t,0,1);const k=String(kind||"smooth").toLowerCase();if(k==="linear"||k==="none")return t;if(k.includes("inout"))return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;if(k.includes("in")&&k.includes("quad"))return t*t;if(k.includes("out")&&k.includes("quad"))return 1-(1-t)*(1-t);if(k.includes("in")&&k.includes("cubic"))return t*t*t;if(k.includes("out")&&k.includes("cubic"))return 1-Math.pow(1-t,3);if(k.includes("in")&&k.includes("quart"))return t*t*t*t;if(k.includes("out")&&k.includes("quart"))return 1-Math.pow(1-t,4);if(k.includes("sine"))return(1-Math.cos(Math.PI*t))/2;return t*t*(3-2*t)},
+ tickTrace(n){const tick=Math.floor((this.time()-n.time)/.125);if(tick>n.judgedTicks){n.judgedTicks=tick;this.score+=100;this.sfx("tick");this.effects.push({lane:this.slideLaneAt(n,this.time()),kind:"trace",life:.28,max:.28,spawn:performance.now()/1000,seed:Math.random()*6.28})}},
  release(n,p,e){
   if(n.type==="hold"||n.type==="slide"||n.type.startsWith("trace")){
     const remain=(n.holdUntil-this.time())*1000;
@@ -128,7 +128,7 @@ const Engine={
 
   if(!n.active)return;
   const remain=(n.holdUntil-this.time())*1000;
-  if(remain<=this.windows.trace||this.time()>n.holdUntil){n.active=false;n.tailHit=true;this.score+=300;this.sfx("tick");this.effects.push({lane:n.endLane??n.lane,kind:"tail",life:.35})}
+  if(remain<=this.windows.trace||this.time()>n.holdUntil){n.active=false;n.tailHit=true;this.score+=300;this.sfx("tick");this.effects.push({lane:n.endLane??n.lane,kind:"slot",life:.4,max:.4,spawn:performance.now()/1000})}
   else this.failRelease(n);
  },
  failRelease(n){n.active=false;this.combo=0;this.counts.bad++;this.lastJudge="MISS";this.sfx("miss")},
@@ -136,7 +136,7 @@ const Engine={
   const now=this.time()*1000+this.offset;
   for(const n of this.notes){
    if(n.hit||n.missed)continue;
-   if(now-n.time*1000>this.windows.bad){n.missed=true;this.combo=0;this.counts.miss++;this.lastJudge="MISS";this.effects.push({lane:n.lane,kind:"miss",life:.45});}
+   if(now-n.time*1000>this.windows.bad){n.missed=true;this.combo=0;this.counts.miss++;this.lastJudge="MISS";this.effects.push({lane:n.lane,kind:"miss",life:.45,max:.45,spawn:performance.now()/1000});}
   }
  },
  loop(){if(!this.running)return;this.updateMisses();if(this.autoplay)this.autoPlay();this.render();this.raf=requestAnimationFrame(()=>this.loop())},
@@ -147,8 +147,8 @@ const Engine={
   if(!this.ctx)return;const ctx=this.ctx,r=this.canvas.getBoundingClientRect(),w=r.width,h=r.height;ctx.clearRect(0,0,w,h);
   const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#050713");bg.addColorStop(.6,"#0c1730");bg.addColorStop(1,"#101b39");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
   this.drawStage(ctx,w,h);
-  const now=this.time(),travel=.95/this.speed;
-  for(const n of this.notes){if(n.missed)continue;const f=1-(n.time-now)/travel;if(f<-.04||f>1.1)continue;if(this.sudden&&f<.48&&!n.active)continue;this.drawNote(ctx,n,f,w,h)}
+  const now=this.time();
+  for(const n of this.notes){if(n.missed)continue;const f=1-this.scrollDistance(now,n.time)/.95;if(f<-.04||f>1.1)continue;if(this.sudden&&f<.48&&!n.active)continue;this.drawNote(ctx,n,f,w,h)}
   this.drawEffects(ctx,w,h);this.updateHud();
  },
  drawStage(ctx,w,h){
@@ -175,16 +175,13 @@ const Engine={
   ctx.fillStyle=n.critical?"#fff0a0":"#8cecff";for(let i=1;i<draw.length-1;i+=8){ctx.beginPath();ctx.arc(draw[i].x,draw[i].y,Math.max(2,draw[i].size*.13),0,Math.PI*2);ctx.fill()}ctx.restore();
  },
  samplePath(pts,u){if(pts.length===1)return pts[0].l;let i=Math.min(pts.length-2,Math.floor(u*(pts.length-1))),a=pts[i],b=pts[i+1],f=u*(pts.length-1)-i;return a.l+(b.l-a.l)*this.ease(f)},
- drawEffects(ctx,w,h){
-  // original engine uses distinct lane/slot/trace particles; canvas equivalents are generated here.
-for(const e of this.effects){e.life-=.016;if(e.life<=0)continue;const x=w*(.08+(e.lane+.5)/12*.84);ctx.save();ctx.globalAlpha=e.life/.45;ctx.textAlign="center";ctx.font="900 15px sans-serif";ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe45e":e.kind==="good"?"#63d9ff":e.kind==="miss"?"#ff6680":"#72e7ae";ctx.fillText(String(e.kind).toUpperCase(),x,h*.79-(.45-e.life)*60);ctx.restore()}this.effects=this.effects.filter(e=>e.life>0)},
- updateHud(){const c=$("#pjskCombo"),s=$("#pjskScore"),j=$("#pjskJudge");if(c)c.textContent=this.combo;if(s)s.textContent=String(Math.round(this.score)).padStart(7,"0");if(j)j.textContent=this.lastJudge},
+ scrollSpeedAt(t){const ev=this.timescaleEvents||[];if(!ev.length)return 1;let i=-1;for(let k=0;k<ev.length;k++){if(t>=ev[k].time)i=k;else break}if(i<0)return 1;const a=ev[i],b=ev[i+1];if(!b)return a.speed;const u=clamp((t-a.time)/Math.max(.0001,b.time-a.time),0,1);return a.speed+(b.speed-a.speed)*this.ease(u,a.ease||"linear")},\n scrollDistance(a,b){if(Math.abs(b-a)<.000001)return 0;const dir=b>=a?1:-1,lo=Math.min(a,b),hi=Math.max(a,b),cuts=[lo];for(const e of this.timescaleEvents||[])if(e.time>lo&&e.time<hi)cuts.push(e.time);cuts.push(hi);let total=0;for(let i=0;i<cuts.length-1;i++){const x=cuts[i],y=cuts[i+1],steps=Math.max(2,Math.ceil((y-x)*30)),dt=(y-x)/steps;for(let j=0;j<steps;j++){const p=x+(j+.5)*dt;total+=this.scrollSpeedAt(p)*dt}}return total*dir*this.speed},\ndrawEffects(ctx,w,h){const now=performance.now()/1000;for(const e of this.effects){if(!e.spawn)e.spawn=now;if(!e.max)e.max=e.life||.45;const age=now-e.spawn;e.life=e.max-age;if(e.life<=0)continue;const x=w*(.08+(e.lane+.5)/12*.84),y=h*.82-(e.y||0),p=clamp(age/e.max,0,1);ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=Math.max(0,1-p);const base=e.critical?"#fff1a0":e.kind==="miss"?"#ff5577":e.kind==="great"?"#ffe45e":e.kind==="good"?"#63d9ff":e.kind==="flick"?"#ffbf55":"#7de9ff";ctx.strokeStyle=base;ctx.fillStyle=base;ctx.lineWidth=2+4*(1-p);if(e.kind==="slot"){ctx.beginPath();ctx.arc(x,y,18+34*p,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(x,y,8+14*p,0,Math.PI*2);ctx.fill()}else if(e.kind==="lane"){ctx.globalAlpha*=.65;ctx.fillRect(x-5,y-90*p,10,90*p)}else if(e.kind==="trace"){for(let i=0;i<8;i++){const a=i*Math.PI/4+(e.seed||0);ctx.beginPath();ctx.arc(x+Math.cos(a)*(10+35*p),y+Math.sin(a)*(10+35*p),2.5,0,Math.PI*2);ctx.fill()}}else{ctx.beginPath();ctx.arc(x,y,10+42*p,0,Math.PI*2);ctx.stroke()}ctx.restore()}this.effects=this.effects.filter(e=>e.life>0)}, updateHud(){const c=$("#pjskCombo"),s=$("#pjskScore"),j=$("#pjskJudge");if(c)c.textContent=this.combo;if(s)s.textContent=String(Math.round(this.score)).padStart(7,"0");if(j)j.textContent=this.lastJudge},
  demo(){this.notes=[];this.slides=[];let t=1,id=0;for(let i=0;i<260;i++){const l=(i*5+i%3)%12;let type=i%29===0?"trace-flick":i%23===0?"slide":i%19===0?"hold":i%13===0?"flick":i%17===0?"trace":"tap";const d=type==="hold"?.62:type.includes("slide")?1.05:type.startsWith("trace")?.9:0;const path=d?[{t:0,l},{t:.32,l:(l+(i%5)-2+12)%12},{t:.7,l:(l+(i%7)-3+12)%12},{t:1,l:(l+(i%2?3:-3)+12)%12}]:[{t:0,l}];this.notes.push({id:id++,time:t,lane:l,type,duration:d,endLane:path[path.length-1].l,path,critical:i%7===0,dir:i%8});t+=i%11===0?.24:i%7===0?.3:.46}this.duration=t+2;this.chartName="Web Dojo Demo";},
  importChart(text,name="chart.sus"){try{const trimmed=text.trim();if(trimmed[0]==="{"||trimmed[0]==="["){const data=JSON.parse(trimmed);this.loadJSON(data);this.chartName=data.title||name;return}this.loadSUS(trimmed);this.chartName=name;this.reset();this.render()}catch(e){console.error(e);alert("譜面格式無法解析："+e.message)}},
  loadJSON(input){
   let normalized=null;
   try{normalized=window.PJSekaiNextSekaiAdapter?.normalize(input)||null}catch(err){console.warn("Next SEKAI adapter fallback:",err)}
-  const data=normalized||{title:"Imported JSON",bpm:120,notes:Array.isArray(input)?input:(input?.notes||[])};\n  const normalizedTime=!!normalized;
+  const data=normalized||{title:"Imported JSON",bpm:120,notes:Array.isArray(input)?input:(input?.notes||[]),timescales:[]};\n  const normalizedTime=!!normalized;\n  this.timescaleEvents=(data.timescales||[]).map(e=>({time:+e.time||0,speed:clamp(+e.speed||1,.05,8),nextSpeed:Number.isFinite(+e.nextSpeed)?clamp(+e.nextSpeed,.05,8):null,ease:String(e.ease||"linear").toLowerCase(),transition:e.transition||"timescale"})).sort((a,b)=>a.time-b.time);
   this.notes=[];let id=0;
   for(const x of data.notes||[]){
    const n={id:id++,time:normalizedTime?(+x.time||0):(+x.time/1000||+x.time||0),lane:clamp(+x.lane||0,0,11),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,fake:!!x.fake,damage:!!x.damage,guideColor:+x.guideColor||0,timescaleGroup:+x.timescaleGroup||0,speed:+x.speed||1,ease:x.ease||"smooth",path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};
