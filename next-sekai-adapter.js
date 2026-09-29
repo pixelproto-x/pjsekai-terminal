@@ -133,52 +133,5 @@ function normalize(input){
   }
  };
 }
-function susToChart(sus){
- const lines=String(sus).replace(/\r/g,"").split("\n").map(s=>s.trim()).filter(s=>s.startsWith("#"));
- const meta=new Map(),records=[],measureChanges=[];
- for(const line of lines){
-  const isLine=line.includes(":"),idx=line.indexOf(isLine?":":" ");
-  if(idx<0)continue;
-  const left=line.slice(1,idx).trim(),right=line.slice(idx+1).trim();
-  if(isLine)records.push([left,right]);else if(left==="MEASUREBS")measureChanges.unshift([records.length,num(right,0)]);else meta.set(left,right);
- }
- const req=meta.get("REQUEST")||"",mt=req.match(/ticks_per_beat\s+(\d+)/i),tpb=mt?num(mt[1],480):480;
- const offset=-num(meta.get("WAVEOFFSET"),0);
- const bars=[];for(let i=0;i<records.length;i++){const [h,d]=records[i];if(h.length===5&&h.endsWith("02")){const m=num(h.slice(0,3),0)+(measureChanges.find(([q])=>q<=i)?.[1]||0);bars.push({measure:m,length:num(d,4)})}}
- bars.sort((a,b)=>a.measure-b.measure);if(!bars.length)bars.push({measure:0,length:4});
- let ticks=0;const barMap=bars.map((b,i)=>{if(i){const p=bars[i-1];ticks+=(b.measure-p.measure)*p.length*tpb}return{measure:b.measure,ticksPerMeasure:b.length*tpb,ticks}}).reverse();
- const toTick=(m,p,q)=>{const b=barMap.find(x=>m>=x.measure);if(!b)throw Error("Unexpected missing bar");return b.ticks+(m-b.measure)*b.ticksPerMeasure+p*b.ticksPerMeasure/q};
- const bpms=new Map(),bpmChanges=[],timeScaleChanges=[],tapNotes=[],directional=[],streams=new Map();
- const pairNotes=(h,d)=>{const measure=num(h.slice(0,3),0)+(measureChanges.find(([q])=>q<=records.indexOf([h,d]))?.[1]||0);const lan=parseInt(h[4],36);const vals=String(d).match(/.{2}/g)||[];return vals.map((v,i)=>v!=="00"?{tick:toTick(measure,i,vals.length),lane:lan,width:parseInt(v[1],36)||1,type:parseInt(v[0],36)||0}:null).filter(Boolean)};
- for(let ri=0;ri<records.length;ri++){
-  const [h,d]=records[ri];
-  if(h.length===5&&h.startsWith("TIL")){if(/^"/.test(d)&&/"$/.test(d)){for(const seg of d.slice(1,-1).split(",").map(x=>x.trim()).filter(Boolean)){const [lm,rest]=seg.split("'");const [mk,sc]=String(rest).split(":");if(Number.isFinite(+lm)&&Number.isFinite(+mk)&&Number.isFinite(+sc))timeScaleChanges.push({tick:toTick(+lm,0,1)+num(mk),timeScale:num(sc,1)})} }continue}
-  if(h.length===5&&h.startsWith("BPM")){bpms.set(h.slice(3),num(d,0));continue}
-  if(h.length===5&&h.endsWith("08")){for(const n of pairNotes(h,d))bpmChanges.push({tick:n.tick,bpm:bpms.get(d.slice(0,2))??bpms.get(d)??0}) ;continue}
-  if(h.length===5&&h[3]==="1"){tapNotes.push(...pairNotes(h,d));continue}
-  if(h.length===5&&h[3]==="5"){directional.push(...pairNotes(h,d));continue}
-  if(h.length===6&&(h[3]==="3"||h[3]==="9")){const key=h[5]+"-"+h[3],arr=streams.get(key)||{type:+h[3],notes:[]};arr.notes.push(...pairNotes(h,d));streams.set(key,arr);continue}
- }
- const keyFor=n=>n.lane+"-"+n.tick, flick=new Map(),trace=new Set(),critical=new Set(),tickRemove=new Set(),removeSE=new Set(),ease=new Map();
- for(const n of directional){if(n.type===1)flick.set(keyFor(n),"up");else if(n.type===3)flick.set(keyFor(n),"left");else if(n.type===4)flick.set(keyFor(n),"right");else if(n.type===2)ease.set(keyFor(n),"in");else if(n.type===5||n.type===6)ease.set(keyFor(n),"out")}
- for(const n of tapNotes){if(n.type===2)critical.add(keyFor(n));else if(n.type===5)trace.add(keyFor(n));else if(n.type===6){trace.add(keyFor(n));critical.add(keyFor(n))}else if(n.type===3)tickRemove.add(keyFor(n));else if(n.type===7)removeSE.add(keyFor(n));else if(n.type===8){critical.add(keyFor(n));removeSE.add(keyFor(n))}}
- const prevent=new Set();for(const st of streams.values()){if(st.type!==3)continue;for(const n of st.notes)if([1,2,3,5].includes(n.type))prevent.add(keyFor(n))}
- const notes=[],usedSingles=new Set(),slideByKey=new Map();
- const baseBpm=bpms.values().next().value||120;
- for(const n of tapNotes){if(n.lane<=1||n.lane>=14||![1,2,5,6].includes(n.type))continue;const k=keyFor(n);if(prevent.has(k)||usedSingles.has(k))continue;usedSingles.add(k);notes.push({time:n.tick/tpb,lane:Math.max(0,Math.min(11,n.lane-2)),width:Math.max(1,n.width),type:trace.has(k)?"trace":"tap",critical:critical.has(k),dir:["up","down","left","right"].indexOf(flick.get(k))>=0?({"up":0,"left":2,"right":3}[flick.get(k)]??0):0,speed:1,metadata:{susTick:n.tick,susLane:n.lane}});if(flick.has(k))notes.at(-1).type=trace.has(k)?"trace-flick":"flick"}
- for(const st of streams.values()){
-  const arr=st.notes.slice().sort((a,b)=>a.tick-b.tick);let cur=null;
-  for(const n of arr){if(!cur)cur={type:st.type,notes:[]};cur.notes.push(n);if(n.type===2){const key=keyFor(cur.notes[0]),first=cur.notes.find(x=>x.type===1||x.type===2);if(first){const last=cur.notes[cur.notes.length-1],startBeat=first.tick/tpb,endBeat=last.tick/tpb,dur=Math.max(.001,endBeat-startBeat),path=cur.notes.map(x=>({t:(x.tick-first.tick)/Math.max(1,last.tick-first.tick),l:Math.max(0,Math.min(11,x.lane-2)),ease:ease.get(keyFor(x))||"linear"})),ticks=cur.notes.filter(x=>x.type===3&&!tickRemove.has(keyFor(x))).map(x=>x.tick/tpb);
-      const startKey=keyFor(first),endKey=keyFor(last),active=st.type===3;
-      const slide={time:startBeat,lane:Math.max(0,Math.min(11,first.lane-2)),width:Math.max(1,first.width),type:"slide",duration:dur,endLane:path.at(-1).l, path,critical:critical.has(startKey),headTrace:trace.has(startKey),tailTrace:trace.has(endKey),tailType:trace.has(endKey)?"trace":flick.has(endKey)?(trace.has(endKey)?"trace-flick":"flick"):"slide",tailCritical:critical.has(endKey),tailDir:{"up":0,"left":2,"right":3}[flick.get(endKey)]??0,tickTimes:ticks,activeSlide:active,metadata:{susType:st.type}};notes.push(slide);slideByKey.set(startKey,slide)}
-    }
-    cur=null}
-  }
- }
- const tempo=(b)=>{const changes=(bpmChanges.length?[...bpmChanges]:[]).sort((a,c)=>a.tick-c.tick);let last=baseBpm,prev=0,time=0;for(const x of changes){if(x.tick> b*tpb)break;time+=(x.tick-prev)/tpb*60/last;prev=x.tick;last=x.bpm||last}return time+(b*tpb-prev)/tpb*60/last};
- const ts=timeScaleChanges.sort((a,b)=>a.tick-b.tick).map(x=>({time:tempo(x.tick/tpb),speed:x.timeScale,ease:"linear",transition:"scroll"}));
- notes.sort((a,b)=>a.time-b.time);
- return {title:String(meta.get("TITLE")||"Imported SUS"),artist:String(meta.get("ARTIST")||""),bpm:baseBpm,notes:notes.map((n,i)=>({...n,id:i,time:tempo(n.time),duration:n.duration?Math.max(.001,tempo(n.time+n.duration)-tempo(n.time)):0,tickTimes:(n.tickTimes||[]).map(tempo)})),timescales:ts,timescaleGroups:{"0":ts},options:{guideQuality:2,noteMargin:0,alternativeCurve:false,disableTimescale:false,downFlick:true,effectAnimationSpeed:1,markerAnimation:true,scoreMode:"weighted-combo",initialLife:1000}};
-}
-window.PJSekaiNextSekaiAdapter={version:"3.1.0",normalize,normalizeNote};
+window.PJSekaiNextSekaiAdapter={version:"3.2.0",normalize,normalizeNote,susToUSC,uscToBrowser};
 })();
