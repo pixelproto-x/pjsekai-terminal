@@ -15,12 +15,12 @@ const RANKS=[100,500,1000,5000,10000,50000,100000];
 const DEFAULT={
  region:'tw',eventId:'',target:100000,current:0,bonus:250,basePt:500,mode:'measured',
  selfScore:250000,otherScore:1000000,musicRate:100,energyPerRun:5,runSeconds:110,overheadSeconds:20,
- liveBonus:10,largeDrinks:0,smallDrinks:0,crystals:0,warningMinutes:30,notifyEnabled:false,
+ liveBonus:10,largeDrinks:0,smallDrinks:0,crystals:0,musicRate:100,warningMinutes:30,notifyEnabled:false,
  leaderSkill:120,memberSkills:[100,100,100,100,100],pureExtra:25,mixedExtra:125,
  inventory:[],event:null,lastBorder:null
 };
 let state=load();
-let eventTimer=null,notifyTicker=null;
+let eventTimer=null,notifyTicker=null,lastNotifyAt=0;
 
 function load(){
   try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return {...DEFAULT,...(x&&typeof x==='object'?x:{})};}catch(_){return {...DEFAULT};}
@@ -58,7 +58,7 @@ function mount(){
         </div>
         <div class="event-pro-actions"><button class="event-pro-btn primary" id="ecpLoadLive">↻ 同步目前活動</button><button class="event-pro-btn" id="ecpLoadList">☷ 載入歷史活動</button><button class="event-pro-btn" id="ecpOpenApi">↗ API 說明</button></div>
         <div class="event-pro-status" id="ecpEventStatus">尚未同步。</div>
-        <div class="event-pro-source">資料端點：<code>api.hisekai.org/tw/event/live/border</code>、<code>/tw/event/list</code>；官方 FAQ 目前說明 Live Bonus 每 30 分鐘回復 1、時間回復上限 25。 citeturn223815view0turn769939search1</div>
+        <div class="event-pro-source">資料端點：<code>api.hisekai.org/tw/event/live/border</code>、<code>/tw/event/list</code>；Live Bonus 目前依官方 FAQ 以每 30 分鐘自然回復 1 點，時間回復庫存上限 25。</div>
       </section>
 
       <section class="event-pro-card span-4">
@@ -157,7 +157,6 @@ function mount(){
           <div class="event-pro-field"><label>隊員2</label><input data-ecp-skill="1" type="number" min="0"></div>
           <div class="event-pro-field"><label>隊員3</label><input data-ecp-skill="2" type="number" min="0"></div>
           <div class="event-pro-field"><label>隊員4</label><input data-ecp-skill="3" type="number" min="0"></div>
-          <div class="event-pro-field"><label>隊員5（若有）</label><input data-ecp-skill="4" type="number" min="0"></div>
         </div>
         <div class="event-pro-metrics">
           <div class="event-pro-metric"><small>有效 Skill</small><strong id="ecpEffectiveSkill">—</strong></div>
@@ -177,7 +176,7 @@ function mount(){
         <div class="event-pro-actions"><button class="event-pro-btn primary" id="ecpLoadBorder">⌕ 查 Border</button></div>
         <div id="ecpBorderResult" class="event-pro-status">尚未查詢。</div>
         <div id="ecpBorderList" class="event-pro-status" style="margin-top:8px">—</div>
-        <div class="event-pro-source">HiSekai 文件目前列出：<code>/tw/event/live/border</code> 查當期、<code>/tw/event/[event_id]/border</code> 查特定歷史活動。 citeturn223815view0turn848099view0</div>
+        <div class="event-pro-source">HiSekai：<code>/tw/event/live/border</code> 查當期，<code>/tw/event/[event_id]/border</code> 查特定歷史活動。</div>
       </section>
 
       <section class="event-pro-card span-12">
@@ -222,7 +221,7 @@ function readInputs(){
   state.energyPerRun=Math.max(0,Math.min(10,num($('#ecpEnergyPerRun')?.value)));state.runSeconds=Math.max(1,num($('#ecpRunSeconds')?.value));state.overheadSeconds=Math.max(0,num($('#ecpOverhead')?.value));
   state.liveBonus=Math.max(0,Math.min(25,num($('#ecpLiveBonus')?.value)));state.warningMinutes=Math.max(1,num($('#ecpWarning')?.value));state.notifyEnabled=$('#ecpNotify')?.value==='on';
   state.largeDrinks=Math.max(0,num($('#ecpLarge')?.value));state.smallDrinks=Math.max(0,num($('#ecpSmall')?.value));state.crystals=Math.max(0,num($('#ecpCrystals')?.value));state.leaderSkill=Math.max(0,num($('#ecpLeaderSkill')?.value));
-  state.memberSkills=[0,1,2,3,4].map(i=>Math.max(0,num(document.querySelector('[data-ecp-skill="'+i+'"]')?.value)));
+  state.memberSkills=[0,1,2,3].map(i=>Math.max(0,num(document.querySelector('[data-ecp-skill="'+i+'"]')?.value)));
   persist();renderAll();
 }
 function renderBoostTable(){
@@ -292,19 +291,28 @@ function calcResources(c){
   $('#ecpResourceBreakdown').textContent='現有火 '+fmt(state.liveBonus)+' + 自然回復 '+fmt(natural)+' + 大火罐 '+fmt(large)+'罐 + 小火罐 '+fmt(small)+'罐，最後還需 '+fmt(crystals)+' 水晶。'+(enough?'　現有水晶足夠。':'　現有水晶不足，差 '+fmt(crystals-state.crystals)+' 顆。');
   return {need,natural,large,small,crystals,enough};
 }
+function checkNotify(){
+  if(!state.notifyEnabled||!('Notification'in window)||Notification.permission!=='granted')return;
+  const missing=Math.max(0,ENERGY_CAP-state.liveBonus);const minutes=missing*ENERGY_RATE_MIN;
+  if(missing<=0){lastNotifyAt=0;return;}
+  if(minutes<=state.warningMinutes&&Date.now()-lastNotifyAt>15*60*1000){
+    new Notification('Project SEKAI Live Bonus 即將溢出',{body:'剩餘約 '+timeHuman(minutes*60000)+'，目前 '+state.liveBonus+'/25。'});lastNotifyAt=Date.now();
+  }
+}
+function ensureNotifyTicker(){
+  if(notifyTicker)return;notifyTicker=setInterval(checkNotify,30000);
+}
 function overflowInfo(){
   const missing=Math.max(0,ENERGY_CAP-state.liveBonus);const ms=missing*ENERGY_RATE_MIN*60000;
   $('#ecpOverflowTime').textContent=missing<=0?'已經 25/25':timeHuman(ms);
-  if(state.notifyEnabled&&missing>0&&missing*ENERGY_RATE_MIN<=state.warningMinutes){
-    $('#ecpNotifyStatus').textContent='已進入提醒區間：距滿溢約 '+timeHuman(ms)+'。';
-    if('Notification'in window&&Notification.permission==='granted'){
-      if(!notifyTicker)notifyTicker=setInterval(()=>{if(state.notifyEnabled){const m=Math.max(0,ENERGY_CAP-state.liveBonus)*ENERGY_RATE_MIN;if(m<=state.warningMinutes)new Notification('Project SEKAI Live Bonus 即將溢出',{body:'剩餘約 '+timeHuman(m*60000)+'，目前 '+state.liveBonus+'/25。'});}},60000);
-    }
-  }else $('#ecpNotifyStatus').textContent=state.notifyEnabled?'通知已開啟，尚未進入提醒區間。':'通知目前關閉。';
+  if(state.notifyEnabled){ensureNotifyTicker();checkNotify();}
+  if(!state.notifyEnabled)$('#ecpNotifyStatus').textContent='通知目前關閉。';
+  else if(missing>0&&missing*ENERGY_RATE_MIN<=state.warningMinutes)$('#ecpNotifyStatus').textContent='已進入提醒區間：距滿溢約 '+timeHuman(ms)+'。';
+  else $('#ecpNotifyStatus').textContent='通知已開啟，尚未進入提醒區間。';
 }
 async function requestNotify(){
   if(!('Notification'in window)){toast('此瀏覽器不支援通知');return}
-  const p=await Notification.requestPermission();state.notifyEnabled=p==='granted';setVal('ecpNotify',state.notifyEnabled?'on':'off');persist();toast(p==='granted'?'已開啟活動溢出通知':'通知權限未開啟');renderAll();
+  const p=await Notification.requestPermission();state.notifyEnabled=p==='granted';setVal('ecpNotify',state.notifyEnabled?'on':'off');persist();if(p==='granted')ensureNotifyTicker();toast(p==='granted'?'已開啟活動溢出通知':'通知權限未開啟');renderAll();
 }
 function cardValue(c){return {bonus:num(c.bonus),talent:num(c.talent),character:String(c.character||'').trim(),attr:String(c.attr||'').trim()}}
 function optimizedCards(filter){
@@ -354,8 +362,8 @@ function drawRadar(){
   $('#ecpBestBonus').textContent=fmt((best.length?teamScore(best):b).bonus)+'%';$('#ecpBestTalent').textContent=fmt((best.length?teamScore(best):b).talent);
 }
 function calcSkill(){
-  const all=[state.leaderSkill,...state.memberSkills].filter(v=>Number.isFinite(v));const effective=(all[0]||0)+state.memberSkills.reduce((s,v)=>s+v*.2,0);const member=state.memberSkills.reduce((s,v)=>s+v*.2,0);const delta=member-state.memberSkills.reduce((s,v)=>s+v,0)*.2;
-  $('#ecpEffectiveSkill').textContent=effective.toFixed(1)+'%';$('#ecpMemberContribution').textContent='+'+member.toFixed(1)+'%';$('#ecpSkillDelta').textContent=delta.toFixed(1)+'%';$('#ecpSkillProxy').textContent=((1+effective/100)).toFixed(3)+'×';
+  const members=state.memberSkills.slice(0,4).map(v=>Number(v)||0);const leader=Number(state.leaderSkill)||0;const member=members.reduce((s,v)=>s+v*.2,0);const effective=leader+member;const delta=member-members.reduce((s,v)=>s+v,0);
+  $('#ecpEffectiveSkill').textContent=effective.toFixed(1)+'%';$('#ecpMemberContribution').textContent='+'+member.toFixed(1)+'%';$('#ecpSkillDelta').textContent=delta.toFixed(1)+'%';$('#ecpSkillProxy').textContent=(1+effective/100).toFixed(3)+'×';
 }
 function renderSummary(c,res){
   const end=state.event?.closed_at?new Date(state.event.closed_at).toLocaleString('zh-TW'):'未同步';const border=state.lastBorder?.find?.(x=>x.rank===1000);$('#ecpSummary').innerHTML='目標 '+fmt(state.target)+' Pt；目前 '+fmt(state.current)+' Pt；每場 '+fmt(c.pt)+' Pt；'+fmt(c.runs)+' 場；Pt/hr '+fmt(c.ptHr)+'；總需求 '+fmt(res.need)+' 火；自然回復預估 '+fmt(res.natural)+'；需水晶 '+fmt(res.crystals)+'；活動結束 '+esc(end)+(border?'；T1000 目前資料 '+fmt(border.score)+' Pt':'')+'。';
@@ -390,7 +398,7 @@ function start(){
     persist();
   }
   setVal('ecpBasePt',state.basePt);setVal('ecpMusicRate',state.musicRate||100);syncInputs();renderInventory();renderAll();
-  if(state.notifyEnabled)requestNotify();
+  if(state.notifyEnabled&&'Notification'in window&&Notification.permission==='granted')ensureNotifyTicker();
 }
 window.EventRushPro={reload:()=>{state=load();mount();start()}};
 mount();start();
