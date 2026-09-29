@@ -936,38 +936,109 @@ body[data-sekai-theme] .theme-choice.active{
   </section>
 
   <section class="page" data-page="songs">
-    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">DOJO</div><h1 class="page-title">音遊實戰工具</h1><p class="page-subtitle">歌曲資料庫、譜面密度分析、練習室、AP Offset 與 Note Speed 換算。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
-    <div id="chartAnalyzerMount"></div>
-    <div class="dojo-hero">
-      <div class="dojo-panel dark"><div class="dojo-kicker">SONG DATABASE</div><div class="dojo-title">歌曲資料庫</div><p class="dojo-copy">依歌名、歌手、屬性、難度與 BPM 搜尋。資料目前以本地資料庫運作，之後可直接擴充 JSON。</p><div class="dojo-search-row"><input id="dojoSongSearch" class="search-input" placeholder="搜尋歌名 / 歌手 / 關鍵字" autocomplete="off"><button id="dojoClearSearch" class="data-action" type="button">清除</button></div><div class="dojo-filter-row"><select id="dojoAttrFilter" class="dojo-select"><option value="">全部屬性</option><option value="Cool">Cool</option><option value="Cute">Cute</option><option value="Pure">Pure</option><option value="Happy">Happy</option><option value="Mysterious">Mysterious</option></select><select id="dojoDifficultyFilter" class="dojo-select"><option value="">全部難度</option><option value="Easy">Easy</option><option value="Normal">Normal</option><option value="Hard">Hard</option><option value="Expert">Expert</option><option value="Master">Master</option><option value="Append">Append</option></select><input id="dojoBpmFilter" class="dojo-number" type="number" min="1" placeholder="BPM ≥"></div><div id="dojoSongList" class="dojo-song-list"></div></div>
-      <div class="dojo-panel"><div class="dojo-kicker">SELECTED SONG</div><div class="dojo-title" id="dojoSelectedTitle">尚未選擇歌曲</div><p class="dojo-copy" id="dojoSelectedMeta">從左側選一首歌曲開始分析。</p><div class="dojo-stat-grid"><div class="dojo-stat"><small>BPM</small><strong id="dojoSelectedBpm">—</strong></div><div class="dojo-stat"><small>難度</small><strong id="dojoSelectedDifficulty">—</strong></div><div class="dojo-stat"><small>Notes</small><strong id="dojoSelectedNotes">—</strong></div><div class="dojo-stat"><small>NPS</small><strong id="dojoSelectedNps">—</strong></div></div><div class="dojo-difficulty" id="dojoDifficultyButtons"></div><div class="dojo-action-row"><button class="primary-btn" id="dojoAnalyzeBtn" type="button">分析譜面</button><button class="secondary-btn" id="dojoOpenPracticeBtn" type="button">開啟練習室</button></div></div>
+  <div class="page-head">
+    <div>
+      <div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div>
+      <div class="kicker">DOJO</div>
+      <h1 class="page-title">音遊實戰工具</h1>
+      <p class="page-subtitle">選歌曲 → 選難度 → 開始練習。其他調整都放到進階設定，不會再把主要操作塞滿整頁。</p>
     </div>
-    <div class="dojo-tools-grid">
-      <div class="dojo-tool-card"><h3>譜面 NPS 分析</h3><p>輸入 Note 時間點後自動計算 Note Density、高密度段落、休息段落與熱點圖。</p><div class="dojo-chart" id="dojoDensityChart"><div class="dojo-chart-empty">選擇歌曲後按「分析譜面」</div></div><div class="dojo-stat-grid"><div class="dojo-stat"><small>平均 NPS</small><strong id="dojoAvgNps">—</strong></div><div class="dojo-stat"><small>最高 NPS</small><strong id="dojoPeakNps">—</strong></div><div class="dojo-stat"><small>高密度段</small><strong id="dojoDenseRange">—</strong></div><div class="dojo-stat"><small>休息段</small><strong id="dojoRestRange">—</strong></div></div><textarea id="dojoNoteTimes" class="dojo-textarea dojo-note-input" placeholder="可貼入秒數，例如：0,0.25,0.5,0.75,1.02,1.25……"></textarea><div class="dojo-help">也可以輸入 JSON 陣列，例如 [0,0.25,0.5,0.75]。本地分析不會上傳譜面資料。</div></div>
-      <div id="dojoSonolusFrame" class="dojo-tool-card dojo-core-card" style="grid-column:1/-1">
-  <div class="dojo-config-shell">
-    <div class="dojo-config-toolbar">
-      <section class="dojo-config-card">
-        <div class="dojo-config-kicker">SONOLUS SERVER ENVIRONMENT</div>
-        <h3>譜面伺服器環境</h3>
-        <p class="dojo-config-desc">一鍵選擇常用 Sonolus 伺服器。Project SEKAI 官方譜面可用 Sekai Viewer；Next SEKAI / UntitledCharts 提供社群譜面。Bestdori 兩個環境也保留作為快捷入口。</p>
-        <div class="dojo-server-grid" id="dojoServerGrid"></div>
-        <div class="dojo-selected-server"><strong id="dojoSelectedServerName">Sekai Viewer</strong><span id="dojoSelectedServerUrl">https://sonolus.sekai.best/</span></div>
-        <div class="dojo-server-actions">
-          <button class="dojo-control-btn primary" id="dojoOpenServerBtn" type="button">以 Sonolus 開啟</button>
-          <button class="dojo-control-btn" id="dojoOpenServerWebBtn" type="button">開啟伺服器網頁</button>
-          <button class="dojo-control-btn" id="dojoCopyServerBtn" type="button">複製伺服器網址</button>
+    <button class="back-btn" data-go="home">‹ 首頁</button>
+  </div>
+
+  <div id="chartAnalyzerMount"></div>
+
+  <section class="dojo-clean-intro" aria-label="Dojo 使用方式">
+    <div class="dojo-step"><b>1</b><span><strong>選歌曲</strong><small>搜尋歌曲後點一下</small></span></div>
+    <div class="dojo-step"><b>2</b><span><strong>選難度</strong><small>Easy～Append</small></span></div>
+    <div class="dojo-step active"><b>3</b><span><strong>開始練習</strong><small>進入下方 Sonolus</small></span></div>
+  </section>
+
+  <section class="dojo-play-card">
+    <div class="dojo-play-head">
+      <div>
+        <div class="dojo-kicker">STEP 1 · SONG</div>
+        <h2>選擇歌曲</h2>
+        <p>直接搜尋名稱或歌手，也可以用屬性、難度與 BPM 篩選。</p>
+      </div>
+      <span class="dojo-count" id="dojoSongCount">—</span>
+    </div>
+    <div class="dojo-song-toolbar">
+      <input id="dojoSongSearch" class="dojo-main-search" placeholder="搜尋歌名 / 歌手" autocomplete="off" aria-label="搜尋歌曲">
+      <button id="dojoClearSearch" class="dojo-simple-btn" type="button">清除</button>
+    </div>
+    <div class="dojo-filter-row dojo-clean-filters">
+      <select id="dojoAttrFilter" class="dojo-select" aria-label="屬性">
+        <option value="">全部屬性</option><option value="Cool">Cool</option><option value="Cute">Cute</option><option value="Pure">Pure</option><option value="Happy">Happy</option><option value="Mysterious">Mysterious</option>
+      </select>
+      <select id="dojoDifficultyFilter" class="dojo-select" aria-label="難度">
+        <option value="">全部難度</option><option value="Easy">Easy</option><option value="Normal">Normal</option><option value="Hard">Hard</option><option value="Expert">Expert</option><option value="Master">Master</option><option value="Append">Append</option>
+      </select>
+      <input id="dojoBpmFilter" class="dojo-number" type="number" min="1" placeholder="BPM ≥" aria-label="最低 BPM">
+    </div>
+    <div id="dojoSongList" class="dojo-song-list dojo-song-list-clean"></div>
+  </section>
+
+  <section class="dojo-selected-clean">
+    <div class="dojo-selected-main">
+      <div class="dojo-kicker">STEP 2 · DIFFICULTY</div>
+      <h2 id="dojoSelectedTitle">尚未選擇歌曲</h2>
+      <p id="dojoSelectedMeta">從上方選一首歌曲開始。</p>
+      <div class="dojo-selected-stats">
+        <div><small>BPM</small><strong id="dojoSelectedBpm">—</strong></div>
+        <div><small>Notes</small><strong id="dojoSelectedNotes">—</strong></div>
+        <div><small>NPS</small><strong id="dojoSelectedNps">—</strong></div>
+      </div>
+      <div class="dojo-difficulty dojo-difficulty-clean" id="dojoDifficultyButtons"></div>
+    </div>
+    <div class="dojo-selected-action">
+      <div class="dojo-kicker">STEP 3 · PLAY</div>
+      <strong>準備好了嗎？</strong>
+      <p>選好難度後，按下面按鈕進入練習區。</p>
+      <button class="dojo-play-btn" id="dojoOpenPracticeBtn" type="button">▶ 進入練習區</button>
+      <button class="dojo-secondary-btn" id="dojoAnalyzeBtn" type="button">分析這首譜面</button>
+    </div>
+  </section>
+
+  <section class="dojo-practice-clean" id="dojoSonolusFrame">
+    <div class="dojo-practice-head">
+      <div>
+        <div class="dojo-kicker">PRACTICE ROOM</div>
+        <h2>音遊實戰特訓房</h2>
+        <p>這裡使用 Sonolus Web。歌曲與譜面由 Sonolus 伺服器提供，不在本頁重寫遊戲引擎。</p>
+      </div>
+      <button class="dojo-simple-btn" id="dojoOpenServerWebBtn" type="button">開啟 Sonolus</button>
+    </div>
+    <div class="dojo-practice-note">
+      <span>ⓘ</span>
+      <span>目前網頁版會先開啟 Sonolus Web。要真正進入可玩的譜面，請在 Sonolus 裡選擇對應伺服器與 LEVEL；本頁的歌曲選擇主要用來查資料與分析。</span>
+    </div>
+    <div class="dojo-frame-shell" id="dojoFrameShellInner">
+      <iframe id="dojoSonolusIframe" src="https://sonolus.com/web/" allow="autoplay; fullscreen" title="Sonolus Web" loading="eager"></iframe>
+      <button class="dojo-frame-fullscreen" id="dojoFullscreenBtn" type="button">⛶ 全螢幕</button>
+    </div>
+    <div class="dojo-api-log" id="dojoApiLog"><strong>BRIDGE</strong> 初始化中……</div>
+  </section>
+
+  <details class="dojo-extra">
+    <summary>進階設定 <span>Note Speed、Offset、按鍵、鏡像</span></summary>
+    <div class="dojo-extra-body">
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>Sonolus 伺服器</h3><p>一般使用者不需要改這裡。需要其他譜面來源時再選。</p></div></div>
+        <div class="dojo-server-select-row">
+          <select id="dojoServerSelect" class="dojo-select" aria-label="Sonolus 伺服器"></select>
+          <button class="dojo-control-btn primary" id="dojoOpenServerBtn" type="button">在 Sonolus 開啟</button>
+          <button class="dojo-control-btn light-btn" id="dojoCopyServerBtn" type="button">複製網址</button>
         </div>
+        <div class="dojo-selected-server"><strong id="dojoSelectedServerName">Sekai Viewer</strong><span id="dojoSelectedServerUrl">https://sonolus.sekai.best/</span></div>
       </section>
-      <section class="dojo-config-card light">
-        <div class="dojo-config-kicker">ENGINE SETTINGS</div>
-        <h3>實戰控制設定</h3>
-        <p class="dojo-config-desc">設定保存在本機。真正套用至 iframe 必須由外部 Sonolus Web 引擎回覆相容 bridge ACK；沒有 ACK 時不會假稱已套用。</p>
-        <div class="dojo-setting-grid">
+
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>遊玩設定</h3><p>只有需要校準手感時再調。設定會保存在這台裝置。</p></div><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設</button></div>
+        <div class="dojo-setting-grid dojo-setting-grid-clean">
           <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
-          <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>音訊延遲補償</small></div>
-          <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定延遲補償</small></div>
-          <div class="dojo-setting"><label><span>快速重設</span><b>LOCAL</b></label><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設值</button></div>
+          <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>聲音晚到/太早時調整</small></div>
+          <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定看起來偏早/偏晚時調整</small></div>
         </div>
         <div class="dojo-toggle-grid">
           <button class="dojo-toggle-control" id="dojoToggle_mirror" type="button" aria-pressed="false"><span>Mirror 鏡像</span><i></i></button>
@@ -975,43 +1046,56 @@ body[data-sekai-theme] .theme-choice.active{
           <button class="dojo-toggle-control" id="dojoToggle_hidden" type="button" aria-pressed="false"><span>Hidden 消失</span><i></i></button>
         </div>
       </section>
+
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>鍵盤按鍵</h3><p>預設 D / F / J / K。可以改成你習慣的四鍵配置。</p></div></div>
+        <div class="dojo-key-grid">
+          <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
+          <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
+          <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
+          <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
+        </div>
+        <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新傳送設定</button></div>
+        <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>等待 Sonolus Web 回覆。</span></div></div>
+      </section>
     </div>
+  </details>
 
-    <section class="dojo-config-card light">
-      <div class="dojo-config-kicker">INPUT CONFIGURATION</div>
-      <h3>虛擬按鍵 / 鍵盤 Key Mapping</h3>
-      <p class="dojo-config-desc">4 鍵預設 D / F / J / K，可直接修改並保存。這組映射會作為 bridge 設定送出；跨來源 iframe 不會被強制攔截鍵盤事件。</p>
-      <div class="dojo-key-grid">
-        <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D" aria-label="Lane 1 key"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
-        <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F" aria-label="Lane 2 key"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
-        <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J" aria-label="Lane 3 key"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
-        <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K" aria-label="Lane 4 key"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
-      </div>
-      <div class="dojo-virtual-hint">點擊虛擬鍵只做本頁映射測試與視覺回饋；不攔截 Sonolus iframe 的原生輸入。</div>
-      <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新傳送設定</button></div>
-      <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>Sonolus Web iframe 尚未回覆橋接確認。</span></div></div>
-    </section>
+  <details class="dojo-extra">
+    <summary>其他工具 <span>NPS 分析、Offset 校準、Speed 換算</span></summary>
+    <div class="dojo-extra-body">
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>譜面 NPS 分析</h3><p>沒有譜面時間資料也沒關係，選好歌曲時會先用目前資料估算。</p></div></div>
+        <div class="dojo-chart" id="dojoDensityChart"><div class="dojo-chart-empty">按「分析這首譜面」</div></div>
+        <div class="dojo-selected-stats dojo-tools-stats">
+          <div><small>平均 NPS</small><strong id="dojoAvgNps">—</strong></div>
+          <div><small>最高 NPS</small><strong id="dojoPeakNps">—</strong></div>
+          <div><small>高密度段</small><strong id="dojoDenseRange">—</strong></div>
+          <div><small>休息段</small><strong id="dojoRestRange">—</strong></div>
+        </div>
+        <textarea id="dojoNoteTimes" class="dojo-textarea dojo-note-input" placeholder="可貼入秒數，例如 0, 0.25, 0.5, 0.75……"></textarea>
+        <div class="dojo-help">只在你要自訂 Note 時間分析時使用。</div>
+      </section>
 
-    <section class="dojo-config-card" id="dojoFrameShell">
-      <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <div><div class="dojo-config-kicker">DOJO · SONOLUS WEB</div><h3>音遊實戰特訓房</h3><p class="dojo-config-desc">外部 Sonolus Web 引擎。此頁不重寫音遊物理、3D 軌道、Note 判定或渲染核心。</p></div>
-        <span class="dojo-server-badge">16:9 · RWD</span>
-      </div>
-      <div class="dojo-frame-shell" id="dojoFrameShellInner">
-        <iframe id="dojoSonolusIframe" src="https://sonolus.com/web/" class="w-full h-full border-none block" allow="autoplay; fullscreen" title="Sonolus Web" loading="eager"></iframe>
-        <span class="dojo-frame-corner tl"></span><span class="dojo-frame-corner br"></span><span class="dojo-frame-corner-label">PJSEKAI DOJO</span>
-        <button class="dojo-frame-fullscreen" id="dojoFullscreenBtn" type="button">⛶ 全螢幕</button>
-      </div>
-      <div class="dojo-api-log" id="dojoApiLog"><strong>BRIDGE</strong> 初始化中……</div>
-    </section>
-  </div>
-</div>
-<div class="dojo-tool-card"><h3>AP Offset 敲擊校準</h3><p>按照節拍點擊，計算你的平均偏移、中位數與 Timing 分布，並給出可解釋的建議值。</p><div class="dojo-control-row"><label>BPM</label><input id="dojoCalBpm" class="dojo-number" type="number" min="30" max="300" value="120"><button class="primary-btn" id="dojoCalStart" type="button">開始校準</button><button class="secondary-btn" id="dojoCalReset" type="button">重置</button></div><div class="dojo-action-row"><button id="dojoTapBtn" class="data-action" type="button" disabled> TAP － 依節拍點擊 </button></div><div class="dojo-offset-result"><div class="dojo-stat"><small>平均偏移</small><strong id="dojoOffsetMean">—</strong></div><div class="dojo-stat"><small>中位數</small><strong id="dojoOffsetMedian">—</strong></div><div class="dojo-stat"><small>建議 Offset</small><strong id="dojoOffsetSuggest">—</strong></div></div><div class="dojo-chart" id="dojoOffsetChart"><div class="dojo-chart-empty">尚無 Timing 資料</div></div></div>
-      <div class="dojo-tool-card"><h3>Note Speed 換算器</h3><p>用螢幕尺寸與比例換算「相近的垂直像素速度」。這是幾何估算，不是官方速度對照表。</p><div class="dojo-filter-row"><input id="dojoRefW" class="dojo-number" type="number" value="1080" min="1"><input id="dojoRefH" class="dojo-number" type="number" value="1920" min="1"><input id="dojoBaseSpeed" class="dojo-number" type="number" value="10" min=".1" step=".1"><input id="dojoTargetW" class="dojo-number" type="number" value="1179" min="1"><input id="dojoTargetH" class="dojo-number" type="number" value="2556" min="1"></div><div class="dojo-stat-grid"><div class="dojo-stat"><small>參考比例</small><strong id="dojoRefRatio">9:16</strong></div><div class="dojo-stat"><small>目標比例</small><strong id="dojoTargetRatio">—</strong></div><div class="dojo-stat"><small>換算 Speed</small><strong id="dojoSpeedResult">—</strong></div><div class="dojo-stat"><small>垂直倍率</small><strong id="dojoHeightFactor">—</strong></div></div><div class="dojo-action-row"><button class="primary-btn" id="dojoSpeedCalc" type="button">重新換算</button></div></div>
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>AP Offset 校準</h3><p>跟著節拍點 TAP，最後給你平均值、中位數與建議 Offset。</p></div></div>
+        <div class="dojo-control-row"><label>BPM</label><input id="dojoCalBpm" class="dojo-number" type="number" min="30" max="300" value="120"><button class="primary-btn" id="dojoCalStart" type="button">開始校準</button><button class="secondary-btn" id="dojoCalReset" type="button">重置</button></div>
+        <div class="dojo-action-row"><button id="dojoTapBtn" class="data-action" type="button" disabled>TAP</button></div>
+        <div class="dojo-offset-result"><div class="dojo-stat"><small>平均偏移</small><strong id="dojoOffsetMean">—</strong></div><div class="dojo-stat"><small>中位數</small><strong id="dojoOffsetMedian">—</strong></div><div class="dojo-stat"><small>建議 Offset</small><strong id="dojoOffsetSuggest">—</strong></div></div>
+        <div class="dojo-chart" id="dojoOffsetChart"><div class="dojo-chart-empty">尚無 Timing 資料</div></div>
+      </section>
+
+      <section class="dojo-extra-card">
+        <div class="dojo-extra-head"><div><h3>Note Speed 換算</h3><p>只做螢幕比例的幾何換算，不代表官方 Speed 對照。</p></div></div>
+        <div class="dojo-speed-fields"><input id="dojoRefW" class="dojo-number" type="number" value="1080" min="1" placeholder="參考寬"><input id="dojoRefH" class="dojo-number" type="number" value="1920" min="1" placeholder="參考高"><input id="dojoBaseSpeed" class="dojo-number" type="number" value="10" min=".1" step=".1" placeholder="基準 Speed"><input id="dojoTargetW" class="dojo-number" type="number" value="1179" min="1" placeholder="目標寬"><input id="dojoTargetH" class="dojo-number" type="number" value="2556" min="1" placeholder="目標高"></div>
+        <div class="dojo-selected-stats dojo-tools-stats"><div><small>參考比例</small><strong id="dojoRefRatio">9:16</strong></div><div><small>目標比例</small><strong id="dojoTargetRatio">—</strong></div><div><small>換算 Speed</small><strong id="dojoSpeedResult">—</strong></div><div><small>垂直倍率</small><strong id="dojoHeightFactor">—</strong></div></div>
+        <div class="dojo-action-row"><button class="primary-btn" id="dojoSpeedCalc" type="button">重新換算</button></div>
+      </section>
     </div>
-  </section>
+  </details>
+</section>
 
-  <section class="page" data-page="characters">
+<section class="page" data-page="characters">
     <div class="page-head">
       <div><div class="sekai-chip"><span class="chip-dot"></span>CHARACTER</div><div class="kicker">CHARACTER DIRECTORY</div><h1 class="page-title">角色</h1><p class="page-subtitle">先選團體，再進入成員與角色相關內容。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
