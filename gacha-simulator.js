@@ -3,12 +3,12 @@
 'use strict';
 const APP=window.__PJSEKAI_APP__; if(!APP)return;
 const $=id=>document.getElementById(id);
-const STATIC_GACHA='gacha-data.json';
-const STATIC_CARDS='gacha-cards.json';
-const CACHE='pjsekaiGachaSim:v4';
+const STATIC_GACHA='https://cdn.jsdelivr.net/gh/Sekai-World/sekai-master-db-diff@main/gachas.json';
+const STATIC_CARDS='https://cdn.jsdelivr.net/gh/Sekai-World/sekai-master-db-diff@main/cards.json';
+const CACHE='pjsekaiGachaSim:v5';
 const LOGKEY='pjsekaiGachaHistory:v2';
 const DEFAULT={region:'jp',gachaId:'',pullCost:300,tenCost:3000,crystals:60000,seals:0,sealTickets:0,sparkGoal:300,gachaBonus:0,history:[],pool:null};
-let state=loadState(), current=null, cardsMap=new Map(), source='static';
+let state=loadState(), current=null, cardsMap=new Map(), source='Sekai-World CDN';
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function n(v,d=0){const x=Number(v);return Number.isFinite(x)?x:d}
