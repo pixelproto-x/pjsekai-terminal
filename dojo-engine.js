@@ -162,29 +162,54 @@ const Engine={
  importChart(text,name="chart.sus"){try{const trimmed=text.trim();if(trimmed[0]==="{"||trimmed[0]==="["){const data=JSON.parse(trimmed);this.loadJSON(Array.isArray(data)?data:data.notes||[]);this.chartName=data.title||name;return}this.loadSUS(trimmed);this.chartName=name;this.reset();this.render()}catch(e){console.error(e);alert("譜面格式無法解析："+e.message)}},
  loadJSON(arr){this.notes=[];let id=0;for(const x of arr){const n={id:id++,time:+x.time/1000||+x.time||0,lane:clamp(+x.lane||0,0,11),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};if(n.path?.length)n.endLane=n.path[n.path.length-1].l;this.notes.push(n)}this.duration=Math.max(1,...this.notes.map(n=>n.time+n.duration))+2;this.reset();this.render()},
  loadSUS(text){
-  const lines=text.replace(/\r/g,"").split("\n"),bpmMap={},measures={},raw=[],attrs={};let tpb=this.ticksPerBeat,title="",artist="",currentAttr=null;
-  for(const line0 of lines){const line=line0.trim();if(!line.startsWith("#"))continue;
-   let m=line.match(/^#TITLE\s+"([^"]*)"/i);if(m){title=m[1];continue}m=line.match(/^#ARTIST\s+"([^"]*)"/i);if(m){artist=m[1];continue}
+  const lines=text.replace(/\r/g,"").split("\n"),bpmMap={},measures={},raw=[];let tpb=this.ticksPerBeat,title="",artist="";
+  for(const line0 of lines){
+   const line=line0.trim();if(!line.startsWith("#"))continue;
+   let m=line.match(/^#TITLE\s+"([^"]*)"/i);if(m){title=m[1];continue}
+   m=line.match(/^#ARTIST\s+"([^"]*)"/i);if(m){artist=m[1];continue}
    m=line.match(/^#REQUEST\s+"?ticks_per_beat\s+(\d+)/i);if(m){tpb=+m[1];continue}
    m=line.match(/^#BPM([0-9A-Z]{2}):\s*([\d.+-]+)/);if(m){bpmMap[m[1]]=+m[2];continue}
    m=line.match(/^#(\d{3})02:\s*([\d.]+)/);if(m){measures[+m[1]]=+m[2];continue}
-   m=line.match(/^#(\d{3})([0-9A-Z])([0-9A-Z])([0-9A-Z]):\s*([0-9A-Za-z]+)/i);if(!m)continue;
-   raw.push({measure:+m[1],type:m[2].toUpperCase(),x:B36(m[3]),y:B36(m[4]),key:m[5].toUpperCase(),data:m[5]});
+   m=line.match(/^#(\d{3})([0-9A-Z])([0-9A-Z])([0-9A-Z]{0,2}):\s*([0-9A-Za-z]+)/i);
+   if(!m)continue;
+   raw.push({measure:+m[1],type:m[2].toUpperCase(),x:B36(m[3]),channel:m[4].toUpperCase(),data:m[5].toUpperCase()});
   }
-  const measureBeats=n=>measures[n]??4;let cur=0,starts=[];const max=Math.max(0,...raw.map(x=>x.measure));for(let i=0;i<=max;i++){starts[i]=cur;cur+=measureBeats(i)*60/this.bpm} 
-  const bpmKeys=Object.keys(bpmMap);if(bpmKeys.length)this.bpm=bpmMap[bpmKeys[0]]||120;
+  this.ticksPerBeat=tpb;
+  const firstBpm=Object.keys(bpmMap)[0];this.bpm=firstBpm?(bpmMap[firstBpm]||120):120;
+  const max=Math.max(0,...raw.map(x=>x.measure)),starts=[];let cursor=0;
+  for(let i=0;i<=max;i++){starts[i]=cursor;cursor+=measureBeats(i)*60/this.bpm}
+  const measureBeats=n=>measures[n]??4;
+  const events=[];
+  for(const r of raw){
+   const pairs=Math.max(1,Math.floor(r.data.length/2));
+   for(let i=0;i<pairs;i++){
+    const pair=r.data.slice(i*2,i*2+2);if(pair==="00"||pair.length<2)continue;
+    const frac=pairs===1?0:i/(pairs-1),time=starts[r.measure]+frac*measureBeats(r.measure)*60/this.bpm;
+    const lane=clamp(r.x,0,11),value=B36(pair[1]);
+    if(r.type==="8"){continue}
+    if(r.type==="1"||r.type==="2"||r.type==="3"||r.type==="5"||r.type==="6"){
+      if(r.type==="3"){events.push({kind:"slide",channel:r.channel,time,lane,critical:false,value});continue}
+      const type=r.type==="5"?"trace":r.type==="6"?"trace":r.type==="3"?"slide":r.type==="1"?"tap":"tap";
+      events.push({kind:type,time,lane,critical:r.type==="2"||r.type==="6",value,channel:r.channel});
+    } else if(r.type==="4"){events.push({kind:"skill",time,lane,value,channel:r.channel})}
+    else if(r.type==="5"){events.push({kind:"trace",time,lane,value,channel:r.channel})}
+   }
+  }
   const notes=[],groups=new Map();let id=0;
-  for(const r of raw){const div=r.data.length,beat=r.data.indexOf(r.data[r.y]);const frac=div?beat/div:0;const time=starts[r.measure]+frac*measureBeats(r.measure)*60/this.bpm;const x=clamp(r.x,0,11);
-   const ch=r.type,cell=r.data; if(ch==="1"||ch==="2"||ch==="3"||ch==="5"||ch==="6"){let type=ch==="3"?"flick":ch==="5"?"trace":ch==="6"?"trace":"tap";let critical=ch==="2"||ch==="6";const n={id:id++,time,lane:x,type,duration:0,endLane:x,path:[{t:0,l:x}],critical,dir:0};notes.push(n)}
-   else if(ch==="3"){groups.set(r.key,groups.get(r.key)||[])}
-   if(ch==="3")groups.get(r.key).push({time,lane:x});
+  for(const e of events){
+   if(e.kind==="slide"){if(!groups.has(e.channel))groups.set(e.channel,[]);groups.get(e.channel).push(e);continue}
+   if(e.kind==="skill")continue;
+   notes.push({id:id++,time:e.time,lane:e.lane,type:e.kind,duration:0,endLane:e.lane,path:[{t:0,l:e.lane}],critical:!!e.critical,dir:0});
   }
-  // Build slides from repeated channel identifiers where possible.
-  const byKey=new Map();for(const r of raw.filter(z=>z.type==="3")){if(!byKey.has(r.key))byKey.set(r.key,[]);byKey.get(r.key).push(r)}
-  for(const [key,rs] of byKey){rs.sort((a,b)=>a.measure-b.measure||a.x-b.x);if(rs.length<2)continue;const first=rs[0],last=rs[rs.length-1];const time0=starts[first.measure],time1=starts[last.measure],path=rs.map((r,i)=>({t:i/(rs.length-1),l:clamp(r.x,0,11)}));const n={id:id++,time:time0,lane:first.x,type:"slide",duration:Math.max(.05,time1-time0),endLane:last.x,path,critical:false,dir:0};notes.push(n)}
+  for(const rs of groups.values()){
+   rs.sort((a,b)=>a.time-b.time);
+   if(rs.length<2)continue;
+   const first=rs[0],last=rs[rs.length-1],duration=Math.max(.03,last.time-first.time);
+   const path=rs.map((p,i)=>({t:rs.length===1?0:i/(rs.length-1),l:p.lane}));
+   notes.push({id:id++,time:first.time,lane:first.lane,type:"slide",duration,endLane:last.lane,path,critical:!!first.critical,dir:0});
+  }
   notes.sort((a,b)=>a.time-b.time);this.notes=notes;this.chartName=title||"Imported SUS";this.duration=Math.max(1,...notes.map(n=>n.time+n.duration))+2;this.reset();this.render();
- },
- exportJSON(){const data={title:this.chartName,bpm:this.bpm,notes:this.notes.map(n=>({time:Math.round(n.time*1000),lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical,dir:n.dir,path:n.path}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+ } exportJSON(){const data={title:this.chartName,bpm:this.bpm,notes:this.notes.map(n=>({time:Math.round(n.time*1000),lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical,dir:n.dir,path:n.path}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 };
 window.PJSekaiWebDojo=Engine;
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",()=>Engine.init());else Engine.init();
