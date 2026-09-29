@@ -54,7 +54,7 @@ const Engine={
   const c=this.stage;
   c.addEventListener("pointerdown",e=>{c.setPointerCapture?.(e.pointerId);const p={x:e.clientX,y:e.clientY,downX:e.clientX,downY:e.clientY,px:e.clientX,py:e.clientY,start:performance.now(),note:null};this.pointers.set(e.pointerId,p);this.touchDown(e,p)});
   c.addEventListener("pointermove",e=>{const p=this.pointers.get(e.pointerId);if(!p)return;p.px=p.x;p.py=p.y;p.x=e.clientX;p.y=e.clientY;if(p.note)this.track(p.note,p,e)});
-  c.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);if(p){if(p.note)this.release(p.note,p,e);else this.flickAt(e,p);this.pointers.delete(e.pointerId)}});
+  c.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);if(p){if(p.note&&this.isFlick(p.note)){this.judgeNote(p.note,this.laneFromEvent(e),e.clientX-p.downX,e.clientY-p.downY,p,e)}else if(p.note)this.release(p.note,p,e);else this.flickAt(e,p);this.pointers.delete(e.pointerId)}});
   c.addEventListener("pointercancel",e=>{const p=this.pointers.get(e.pointerId);if(p?.note)this.failRelease(p.note);this.pointers.delete(e.pointerId)});
   addEventListener("keydown",e=>{if(e.repeat)return;const map={a:0,s:1,d:2,f:3,j:8,k:9,l:10,";":11};if(map[e.key.toLowerCase()]!=null)this.tapLane(map[e.key.toLowerCase()],e.key.toLowerCase());if(e.key===" ")this.toggle();if(e.key.toLowerCase()==="r")this.stop()});
  },
