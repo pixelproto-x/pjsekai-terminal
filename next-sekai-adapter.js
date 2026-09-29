@@ -67,9 +67,9 @@ function normalize(input){
    guideQuality:num(root?.options?.guideQuality,2),
    noteMargin:num(root?.options?.noteMargin,1),
    alternativeCurve:!!root?.options?.alternativeCurve,
-   disableTimescale:!!root?.options?.disableTimescale
+   disableTimescale:!!root?.options?.disableTimescale,\n   downFlick:root?.options?.downFlick!==false,\n   effectAnimationSpeed:num(root?.options?.effectAnimationSpeed,1),\n   markerAnimation:root?.options?.markerAnimation!==false,\n   scoreMode:String(root?.options?.scoreMode??"weighted-combo"),\n   initialLife:num(root?.options?.initialLife,1000)
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"1.0.0",normalize,normalizeNote};
+window.PJSekaiNextSekaiAdapter={version:"1.1.0",normalize,normalizeNote};
 })();
