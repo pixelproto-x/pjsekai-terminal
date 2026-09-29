@@ -123,7 +123,7 @@ function uscToBrowser(usc){
   const first=visible[0],last=visible[visible.length-1];
   const b0=num(first.beat),b1=num(last.beat),duration=Math.max(.001,beatSec(b1)-beatSec(b0));
   const path=visible.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:browserLane(x.lane,x.size)}));
-  const ticks=cs.filter(x=>x.type==="tick"||x.type==="hidden").map(x=>beatSec(num(x.beat)));
+  const explicitTicks=cs.filter(x=>x.type==="tick"||x.type==="hidden").map(x=>num(x.beat));const ticksBeats=[...explicitTicks];if(o.active){for(let tb=Math.ceil((b0+1e-6)/.5)*.5;tb<b1-1e-6;tb+=.5)ticksBeats.push(tb)}const ticks=[...new Set(ticksBeats.map(x=>x.toFixed(9)))].map(Number).sort((x,y)=>x-y).map(beatSec);
   const headType=first.type==="start"?(first.trace?"trace":"slide"):"slide";
   const tailType=last.type==="end"?(last.direction?(last.trace?"trace-flick":"flick"):(last.trace?"trace":"slide")):"slide";
   notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(first.size,.5)*2),type:headType==="trace"?"trace":"slide",
@@ -158,5 +158,5 @@ function normalize(input){
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"3.4.0",normalize,normalizeNote,susToUSC,uscToBrowser};
+window.PJSekaiNextSekaiAdapter={version:"3.5.0",normalize,normalizeNote,susToUSC,uscToBrowser};
 })();
