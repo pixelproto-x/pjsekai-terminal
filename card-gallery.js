@@ -49,7 +49,7 @@ async function loadApi(){
   const all=[];for(let p=1;p<=80;p++){const url=API+'/cards/jp/list?page='+p+'&page_size=100&spoiler=false&sort_by=releaseAt&sort_order=desc';const x=await fetchJson(url);const items=x?.items||x?.data?.items||x?.cards||x?.data||[];if(!Array.isArray(items)||!items.length)break;all.push(...items.map(normalizeCard));const pg=x?.pagination||x?.meta?.pagination||{};if(pg.hasNext===false||(pg.has_next===false)||items.length<100)break;}if(!all.length)throw new Error('API returned no cards');return {cards:all,episodes:[],costumes:[],rarities:[],supplies:[]};}
 async function load(){
   const cached=sessionStorage.getItem(CACHE);if(cached){try{data=JSON.parse(cached);source=data._source||'raw';return}catch(_){}}
-  try{data=await loadApi();source='api'}catch(_){data=await loadRaw();source='raw'}
+  data=await loadRaw();source='raw';
   data._source=source;try{sessionStorage.setItem(CACHE,JSON.stringify(data));}catch(_){}
 }
 function renderFilters(){
