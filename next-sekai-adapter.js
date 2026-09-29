@@ -32,11 +32,11 @@ function normalizeNote(x,i){
  const k=kind(x);
  const end=lane(pick(x,"endLane","tailLane","toLane")??l);
  return {
-  id:i,time:t,lane:l,type:k,duration:d,endLane:end,
-  critical:!!pick(x,"critical","isCritical","crit"),
+  id:i,time:t,lane:l,type:k,kind:pick(x,"kind","noteKind","archetype","type")||k,duration:d,endLane:end,
+  critical:!!pick(x,"critical","isCritical","crit")||/^crit_/i.test(String(pick(x,"kind","noteKind")||"")),
   fake:k==="fake"||!!pick(x,"fake","isFake"),
   damage:k==="damage"||!!pick(x,"damage","isDamage"),
-  dir:num(pick(x,"direction","flickDirection","dir"),0),
+  dir:num(pick(x,"direction","flickDirection","dir"),0),head:!!pick(x,"head","isHead"),tail:!!pick(x,"tail","isTail"),
   guideColor:num(pick(x,"guideColor","color"),0),
   timescaleGroup:num(pick(x,"timescaleGroup","timescale"),0),
   speed:num(pick(x,"speed","noteSpeed","speedMultiplier"),1),
