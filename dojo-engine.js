@@ -200,8 +200,7 @@ drawEffects(ctx,w,h){const now=performance.now()/1000;for(const e of this.effect
   this.duration=Math.max(1,...this.notes.map(n=>n.time+n.duration))+2;this.reset();this.render()
  },
  loadSUS(text){
-  const lines=text.replace(/\r/g,"").split("
-"),bpmMap={},measures={},raw=[];let tpb=this.ticksPerBeat,title="",artist="";
+  const lines=text.replace(/\r/g,"").split("\n"),bpmMap={},measures={},raw=[];let tpb=this.ticksPerBeat,title="",artist="";
   for(const line0 of lines){
    const line=line0.trim();if(!line.startsWith("#"))continue;
    let m=line.match(/^#TITLE\s+"([^"]*)"/i);if(m){title=m[1];continue}
@@ -248,7 +247,7 @@ drawEffects(ctx,w,h){const now=performance.now()/1000;for(const e of this.effect
    notes.push({id:id++,time:first.time,lane:first.lane,type:"slide",duration,endLane:last.lane,path,critical:!!first.critical,dir:0});
   }
   notes.sort((a,b)=>a.time-b.time);this.notes=notes;this.chartName=title||"Imported SUS";this.duration=Math.max(1,...notes.map(n=>n.time+n.duration))+2;this.reset();this.render();
- } exportJSON(){const data={title:this.chartName,bpm:this.bpm,notes:this.notes.map(n=>({time:Math.round(n.time*1000),lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical,dir:n.dir,path:n.path}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+ }, exportJSON(){const data={title:this.chartName,bpm:this.bpm,notes:this.notes.map(n=>({time:Math.round(n.time*1000),lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical,dir:n.dir,path:n.path}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 };
 window.PJSekaiWebDojo=Engine;
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",()=>Engine.init());else Engine.init();
