@@ -813,7 +813,7 @@ body[data-sekai-theme] .theme-choice.active{
 
 .dojo-sonolus-frame{clip-path:polygon(1.6% 0,98.9% 0,100% 1.8%,98.5% 100%,1.2% 100%,0 98.4%,0 1.8%);background:#020617}.dojo-sonolus-frame iframe{min-width:100%;min-height:100%}@media(max-width:900px){.dojo-sonolus-frame{border-radius:16px!important}}</style>
 <link rel="stylesheet" href="my-sekai.css">
-<link rel="stylesheet" href="dojo-controls.css">
+<link rel="stylesheet" href="dojo-controls.css">\n<link rel="stylesheet" href="dojo-player.css">
 <link rel="stylesheet" href="event-calc.css">
 <link rel="stylesheet" href="card-gallery.css">
 <link rel="stylesheet" href="gacha-simulator.css">
@@ -1000,66 +1000,70 @@ body[data-sekai-theme] .theme-choice.active{
     </div>
   </section>
 
-  <section class="dojo-practice-clean" id="dojoSonolusFrame">
-    <div class="dojo-practice-head">
-      <div>
-        <div class="dojo-kicker">PRACTICE ROOM</div>
-        <h2>音遊實戰特訓房</h2>
-        <p>這裡使用 Sonolus Web。歌曲與譜面由 Sonolus 伺服器提供，不在本頁重寫遊戲引擎。</p>
+  <section class="dojo-game-card" id="dojoGameCard">
+  <div class="dojo-game-head">
+    <div class="dojo-game-title">
+      <img class="dojo-game-cover" id="dojoGameCover" alt="">
+      <div><h2 id="dojoGameSongTitle">Tell Your World</h2><p id="dojoGameSongMeta">官方音源 · Expert</p></div>
+    </div>
+    <div class="dojo-game-head-actions">
+      <span id="dojoGameStatus">LOAD</span>
+      <button id="dojoGameResetBtn" type="button">↻ 重設</button>
+    </div>
+  </div>
+  <div class="dojo-game-stage-wrap" id="dojoGameStageWrap">
+    <canvas class="dojo-game-canvas" id="dojoGameCanvas" aria-label="Project SEKAI Dojo 遊戲畫面"></canvas>
+    <div class="dojo-game-hud" aria-hidden="true">
+      <div class="dojo-hud-top">
+        <div class="dojo-hud-song"><strong id="dojoHudSongTitle">Tell Your World</strong><span id="dojoHudSongMeta">Expert</span></div>
+        <div class="dojo-hud-score" id="dojoGameScore">0000000</div>
       </div>
-      <button class="dojo-simple-btn" id="dojoOpenServerWebBtn" type="button">開啟 Sonolus</button>
+      <div class="dojo-hud-combo"><strong id="dojoGameCombo">0</strong><span>COMBO</span></div>
+      <div class="dojo-judge-text" id="dojoJudgeText"></div>
     </div>
-    <div class="dojo-practice-note">
-      <span>ⓘ</span>
-      <span>目前網頁版會先開啟 Sonolus Web。要真正進入可玩的譜面，請在 Sonolus 裡選擇對應伺服器與 LEVEL；本頁的歌曲選擇主要用來查資料與分析。</span>
+    <div class="dojo-input-pad" aria-label="四鍵觸控區">
+      <div class="dojo-input-zone" data-dojo-lane-zone="0"><span>D</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="1"><span>F</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="2"><span>J</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="3"><span>K</span></div>
     </div>
-    <div class="dojo-frame-shell" id="dojoFrameShellInner">
-      <iframe id="dojoSonolusIframe" src="https://sonolus.com/web/" allow="autoplay; fullscreen" title="Sonolus Web" loading="eager"></iframe>
-      <button class="dojo-frame-fullscreen" id="dojoFullscreenBtn" type="button">⛶ 全螢幕</button>
-    </div>
-    <div class="dojo-api-log" id="dojoApiLog"><strong>BRIDGE</strong> 初始化中……</div>
-  </section>
+    <div class="dojo-game-loading" id="dojoGameLoading"><div><strong>正在準備譜面</strong><span>載入歌曲與譜面資料…</span></div></div>
+  </div>
+  <div class="dojo-game-progress"><span id="dojoGameProgressBar"></span></div>
+  <div class="dojo-game-controls">
+    <button class="primary" id="dojoOpenPracticeBtn" type="button">▶ 開始打歌</button>
+    <button id="dojoGameFullscreenBtn" type="button">⛶ 全螢幕</button>
+  </div>
+  <div class="dojo-game-message" id="dojoGameMessage">選好歌曲與難度後，按「開始打歌」即可直接遊玩。</div>
+</section>
 
-  <details class="dojo-extra">
-    <summary>進階設定 <span>Note Speed、Offset、按鍵、鏡像</span></summary>
-    <div class="dojo-extra-body">
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>Sonolus 伺服器</h3><p>一般使用者不需要改這裡。需要其他譜面來源時再選。</p></div></div>
-        <div class="dojo-server-select-row">
-          <select id="dojoServerSelect" class="dojo-select" aria-label="Sonolus 伺服器"></select>
-          <button class="dojo-control-btn primary" id="dojoOpenServerBtn" type="button">在 Sonolus 開啟</button>
-          <button class="dojo-control-btn light-btn" id="dojoCopyServerBtn" type="button">複製網址</button>
-        </div>
-        <div class="dojo-selected-server"><strong id="dojoSelectedServerName">Sekai Viewer</strong><span id="dojoSelectedServerUrl">https://sonolus.sekai.best/</span></div>
-      </section>
-
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>遊玩設定</h3><p>只有需要校準手感時再調。設定會保存在這台裝置。</p></div><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設</button></div>
-        <div class="dojo-setting-grid dojo-setting-grid-clean">
-          <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
-          <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>聲音晚到/太早時調整</small></div>
-          <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定看起來偏早/偏晚時調整</small></div>
-        </div>
-        <div class="dojo-toggle-grid">
-          <button class="dojo-toggle-control" id="dojoToggle_mirror" type="button" aria-pressed="false"><span>Mirror 鏡像</span><i></i></button>
-          <button class="dojo-toggle-control" id="dojoToggle_sudden" type="button" aria-pressed="false"><span>Sudden 隱藏區</span><i></i></button>
-          <button class="dojo-toggle-control" id="dojoToggle_hidden" type="button" aria-pressed="false"><span>Hidden 消失</span><i></i></button>
-        </div>
-      </section>
-
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>鍵盤按鍵</h3><p>預設 D / F / J / K。可以改成你習慣的四鍵配置。</p></div></div>
-        <div class="dojo-key-grid">
-          <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
-          <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
-          <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
-          <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
-        </div>
-        <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新傳送設定</button></div>
-        <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>等待 Sonolus Web 回覆。</span></div></div>
-      </section>
-    </div>
-  </details>
+<details class="dojo-extra">
+  <summary>進階設定 <span>速度、Offset、按鍵</span></summary>
+  <div class="dojo-extra-body">
+    <section class="dojo-extra-card">
+      <div class="dojo-extra-head"><div><h3>遊玩設定</h3><p>一般不用改。只在需要校準手感時使用。</p></div><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設</button></div>
+      <div class="dojo-setting-grid dojo-setting-grid-clean">
+        <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
+        <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>聲音偏早/偏晚時調整</small></div>
+        <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定偏早/偏晚時調整</small></div>
+      </div>
+      <div class="dojo-toggle-grid">
+        <button class="dojo-toggle-control" id="dojoToggle_mirror" type="button" aria-pressed="false"><span>Mirror 鏡像</span><i></i></button>
+        <button class="dojo-toggle-control" id="dojoToggle_sudden" type="button" aria-pressed="false"><span>Sudden 隱藏區</span><i></i></button>
+        <button class="dojo-toggle-control" id="dojoToggle_hidden" type="button" aria-pressed="false"><span>Hidden 消失</span><i></i></button>
+      </div>
+    </section>
+    <section class="dojo-extra-card">
+      <div class="dojo-extra-head"><div><h3>鍵盤按鍵</h3><p>預設 D / F / J / K。觸控與鍵盤都可以玩。</p></div></div>
+      <div class="dojo-key-grid">
+        <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
+        <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
+        <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
+        <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
+      </div>
+    </section>
+  </div>
+</details>
 
   <details class="dojo-extra">
     <summary>其他工具 <span>NPS 分析、Offset 校準、Speed 換算</span></summary>
@@ -3340,7 +3344,7 @@ window.__PJSEKAI_APP__ = {
 
 </script>
 <script src="my-sekai.js" defer></script>
-<script src="dojo-controls.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js" defer></script>\n<script src="dojo-player.js" defer></script>
 <script src="event-calc.js" defer></script>
 <script src="card-gallery.js?v=20260929-fix1" defer></script>
 <script src="gacha-simulator.js?v=20260929-fix2" defer></script>
