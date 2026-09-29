@@ -1,0 +1,60 @@
+/* Dojo controls - Sonolus wrapper */
+.dojo-config-shell{display:grid;gap:12px}
+.dojo-config-toolbar{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:10px}
+.dojo-config-card{border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px;background:linear-gradient(145deg,rgba(16,19,31,.96),rgba(24,28,45,.93));color:#fff;box-shadow:0 16px 40px rgba(0,0,0,.16)}
+.dojo-config-card.light{background:rgba(255,255,255,.78);color:var(--ink);border-color:var(--line)}
+.dojo-config-kicker{font-size:7px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#8e95aa}
+.dojo-config-card h3{font-size:14px;margin:4px 0 3px;font-weight:950}
+.dojo-config-desc{font-size:8px;line-height:1.55;color:#9da4b7;margin:0}
+.dojo-config-card.light .dojo-config-desc{color:var(--muted)}
+.dojo-server-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.dojo-server-option{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);color:#e9edf6;border-radius:13px;padding:10px;text-align:left;transition:.18s;min-width:0}
+.dojo-server-option:hover{transform:translateY(-1px);background:rgba(255,255,255,.075)}
+.dojo-server-option.active{border-color:#52cfe8;box-shadow:0 0 0 1px rgba(82,207,232,.2),0 0 20px rgba(82,207,232,.12);background:rgba(82,207,232,.08)}
+.dojo-server-option strong{display:block;font-size:9px}
+.dojo-server-option span{display:block;font-size:6px;color:#98a0b2;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dojo-server-badge{display:inline-block;margin-top:6px;padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.06);font-size:5px;font-weight:900;letter-spacing:.08em}
+.dojo-server-actions,.dojo-config-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.dojo-control-btn{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.065);color:#fff;border-radius:11px;padding:9px 11px;font-size:8px;font-weight:900}
+.dojo-control-btn:hover{background:rgba(255,255,255,.11)}
+.dojo-control-btn.primary{background:#52cfe8;color:#0b1118;border-color:#52cfe8}
+.dojo-control-btn.warn{background:rgba(255,196,82,.11);border-color:rgba(255,196,82,.3);color:#ffe6ae}
+.dojo-control-btn.light-btn{background:#fff;color:#282c36;border-color:var(--line)}
+.dojo-selected-server{margin-top:10px;padding:9px 10px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(0,0,0,.14);font-size:7px;color:#aeb5c5}
+.dojo-selected-server strong{display:block;color:#fff;font-size:9px;margin-bottom:2px}
+.dojo-setting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.dojo-setting{border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.64);padding:10px}
+.dojo-setting label{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:7px;font-weight:900;color:#626774}
+.dojo-setting input[type=range]{width:100%;margin-top:8px;accent-color:#52cfe8}
+.dojo-setting input[type=number],.dojo-setting select{width:100%;margin-top:7px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px 8px;font-size:8px;outline:none;color:var(--ink)}
+.dojo-setting small{font-size:6px;color:var(--muted);display:block;line-height:1.5;margin-top:4px}
+.dojo-toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.dojo-toggle-control{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px;font-weight:850}
+.dojo-toggle-control i{width:28px;height:16px;border-radius:999px;background:#d8dbe3;position:relative;transition:.18s;flex:none}
+.dojo-toggle-control i:after{content:"";position:absolute;top:3px;left:3px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.18s}
+.dojo-toggle-control.active i{background:#52cfe8}.dojo-toggle-control.active i:after{left:15px}
+.dojo-key-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:9px}
+.dojo-key-slot{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px}
+.dojo-key-slot label{display:block;font-size:6px;font-weight:900;color:var(--muted);margin-bottom:4px}
+.dojo-key-slot input{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px;text-align:center;font-size:9px;font-weight:950;text-transform:uppercase;outline:none}
+.dojo-key-slot input:focus{outline:2px solid rgba(82,207,232,.25)}
+.dojo-bridge-status{display:flex;align-items:center;gap:7px;margin-top:9px;padding:8px 9px;border-radius:10px;background:rgba(82,207,232,.06);border:1px solid rgba(82,207,232,.13);font-size:7px;color:#7a8498}
+.dojo-bridge-dot{width:7px;height:7px;border-radius:50%;background:#aeb5c4;box-shadow:0 0 0 3px rgba(174,181,196,.12);flex:none}
+.dojo-bridge-status.loaded .dojo-bridge-dot{background:#ffd34f;box-shadow:0 0 0 3px rgba(255,211,79,.12)}
+.dojo-bridge-status.ack .dojo-bridge-dot{background:#61c795;box-shadow:0 0 0 3px rgba(97,199,149,.18),0 0 12px rgba(97,199,149,.55)}
+.dojo-bridge-status strong{display:block;color:#555b68;font-size:8px}
+.dojo-bridge-status span{display:block;margin-top:2px}
+.dojo-frame-shell{position:relative;width:100%;max-width:1180px;margin:0 auto;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:2px solid #06b6d4;background:#070a12;box-shadow:0 0 20px rgba(6,182,212,.6),0 16px 50px rgba(0,0,0,.22)}
+.dojo-frame-shell:before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid rgba(255,255,255,.14);z-index:3}
+.dojo-frame-shell:after{content:"";position:absolute;left:0;top:0;width:110px;height:7px;transform:skewX(-22deg);transform-origin:left top;background:rgba(34,211,238,.88);box-shadow:0 0 15px rgba(34,211,238,.35);z-index:3}
+.dojo-frame-corner{position:absolute;width:30px;height:30px;pointer-events:none;z-index:4}
+.dojo-frame-corner.tl{left:0;bottom:0;border-left:2px solid rgba(103,232,249,.8);border-bottom:2px solid rgba(103,232,249,.8)}
+.dojo-frame-corner.br{right:0;top:0;border-right:2px solid rgba(232,121,249,.8);border-top:2px solid rgba(232,121,249,.8)}
+.dojo-frame-corner-label{position:absolute;left:11px;bottom:9px;color:rgba(255,255,255,.4);font:900 6px ui-monospace,monospace;letter-spacing:.16em;z-index:4;pointer-events:none}
+.dojo-frame-fullscreen{position:absolute;right:10px;top:9px;z-index:5;border:1px solid rgba(255,255,255,.18);background:rgba(6,9,16,.7);backdrop-filter:blur(8px);color:#fff;border-radius:9px;padding:7px 9px;font-size:7px;font-weight:900}
+.dojo-frame-fullscreen:hover{background:rgba(6,9,16,.88)}
+.dojo-frame-shell iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.dojo-api-log{margin-top:8px;padding:8px;border-radius:9px;background:#0f131f;color:#8e98ad;font:6px/1.6 ui-monospace,monospace;min-height:28px}
+.dojo-api-log strong{color:#c7cedd}
+@media(max-width:900px){.dojo-config-toolbar{grid-template-columns:1fr}.dojo-server-grid{grid-template-columns:1fr}.dojo-team-hint{margin-left:0}}
+@media(max-width:640px){.dojo-setting-grid{grid-template-columns:1fr}.dojo-key-grid{grid-template-columns:repeat(2,1fr)}.dojo-toggle-grid{grid-template-columns:1fr}.dojo-frame-fullscreen{font-size:6px;padding:6px 8px}.dojo-frame-shell{border-radius:10px}}
