@@ -3,7 +3,8 @@
 'use strict';
 const APP=window.__PJSEKAI_APP__; if(!APP)return;
 const $=id=>document.getElementById(id);
-const API='https://api.sekai.best/api/v1';
+const STATIC_GACHA='gacha-data.json';
+const STATIC_CARDS='gacha-cards.json';
 const CACHE='pjsekaiGachaSim:v2';
 const LOGKEY='pjsekaiGachaHistory:v2';
 const DEFAULT={region:'jp',gachaId:'',pullCost:300,tenCost:3000,crystals:60000,seals:0,sealTickets:0,sparkGoal:300,gachaBonus:0,history:[],pool:null};
@@ -23,26 +24,27 @@ function loadState(){try{const x=JSON.parse(localStorage.getItem(LOGKEY)||'null'
 function persist(){try{localStorage.setItem(LOGKEY,JSON.stringify(state))}catch(_){}}
 async function fetchJson(url){const r=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function loadGachas(){
- const items=[];
- for(let page=1;page<=100;page++){
-  const x=await fetchJson(API+'/gachas/'+state.region+'/list?page='+page+'&page_size=100&spoiler=false&sort_by=startAt&sort_order=desc');
-  const a=x?.items||x?.data?.items||[]; if(!Array.isArray(a)||!a.length)break; items.push(...a);
-  const p=x?.pagination||{}; if(p.has_next===false||a.length<100)break;
- }
- if(!items.length)throw new Error('沒有取得卡池清單');
+ const x=await fetchJson(STATIC_GACHA+'?v='+Date.now());
+ const items=x?.gachas||x?.data||x;
+ if(!Array.isArray(items)||!items.length)throw new Error('沒有取得部署的卡池資料');
  return items;
 }
 async function loadGachaDetail(id){
- const x=await fetchJson(API+'/gachas/'+state.region+'/'+encodeURIComponent(id));
- return x?.data||x?.gacha||x;
+ return (state.pool||[]).find(x=>idOf(x)===String(id))||null;
 }
 async function loadCard(id){
  const k=String(id);if(cardsMap.has(k))return cardsMap.get(k);
- try{const x=await fetchJson(API+'/cards/'+state.region+'/'+encodeURIComponent(k));const c=x?.card||x?.data?.card||x?.data||x;cardsMap.set(k,c);return c}catch(_){cardsMap.set(k,null);return null}
+ try{
+  if(!window.__PJ_GACHA_CARDS__){
+   const x=await fetchJson(STATIC_CARDS+'?v='+Date.now());
+   window.__PJ_GACHA_CARDS__=Array.isArray(x?.cards)?x.cards:(Array.isArray(x)?x:[]);
+  }
+  const c=window.__PJ_GACHA_CARDS__.find(x=>idOf(x)===k)||null;cardsMap.set(k,c);return c;
+ }catch(_){cardsMap.set(k,null);return null}
 }
 async function enrichPool(g){
  const ids=new Set([...(g?.gachaPickups||[]).map(x=>idOf(x)).filter(Boolean),...(g?.gachaDetails||[]).map(x=>idOf(x)).filter(Boolean)]);
- const arr=[];for(const id of ids){const c=await loadCard(id);if(c)arr.push(c)}return arr;
+ const out=[];for(const id of ids){const c=await loadCard(id);if(c)out.push(c)}return out;
 }
 function selectedGacha(){
  const raw=state.pool?.find?.(x=>idOf(x)===String(state.gachaId));return raw||null;
@@ -63,7 +65,7 @@ function mount(host){
    <div class="gacha-status" id="gsStatus">尚未同步。</div>
   </section>
   <div class="gacha-grid">
-   <section class="gacha-card span-12"><h3>61–64｜卡池同步與切換</h3><p>最新池會依 startAt 排序；歷史復刻、Fes、生日／紀念池皆可切換。詳細頁提供該池實際提供割合時，模擬器優先使用 API 數值。</p><div id="gsCurrentStatus" class="gacha-status">選擇一個卡池查看詳細資料。</div><div class="gacha-source">資料來源：Sekai master API 的 gachas list/detail。官方 FAQ 說明 birthday / anniversary 是特殊 rarity 與技能，Fes 類型的部分池 ★4 提供割合可達 6%。 citeturn457407search0</div></section>
+   <section class="gacha-card span-12"><h3>61–64｜卡池同步與切換</h3><p>最新池會依 startAt 排序；歷史復刻、Fes、生日／紀念池皆可切換。詳細頁提供該池實際提供割合時，模擬器優先使用 API 數值。</p><div id="gsCurrentStatus" class="gacha-status">選擇一個卡池查看詳細資料。</div><div class="gacha-source">資料來源：部署時由 Sekai-World master DB 產生的靜態卡池資料；每次 GitHub Pages 部署會重新生成。官方 FAQ 說明 birthday / anniversary 是特殊 rarity 與技能，Fes 類型的部分池 ★4 提供割合可達 6%。 citeturn457407search0</div></section>
    <section class="gacha-card">
     <h3>65–70｜1 抽／10 連＋官方式確定枠</h3><p>通常 10 連的第 10 格在前 9 格完全沒有 ★3 以上時進行「★3 以上」再抽；不把它誤寫成 ★4 保底。</p>
     <div class="gacha-actions"><button class="gacha-btn primary" id="gsSingle">✦ 1 Pull</button><button class="gacha-btn primary" id="gsTen">✦ 10 Pulls</button></div>
