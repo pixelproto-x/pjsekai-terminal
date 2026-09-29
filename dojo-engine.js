@@ -200,53 +200,67 @@ drawEffects(ctx,w,h){const now=performance.now()/1000;for(const e of this.effect
   this.duration=Math.max(1,...this.notes.map(n=>n.time+n.duration))+2;this.reset();this.render()
  },
  loadSUS(text){
-  const lines=text.replace(/\r/g,"").split("\n"),bpmMap={},measures={},raw=[];let tpb=this.ticksPerBeat,title="",artist="";
+  const lines=String(text).replace(/\r/g,"").split("\n"),bpmMap={},measureLen={},raw=[],bpmChanges=[],speedDefs={},activeSpeed=null;
+  let tpb=this.ticksPerBeat||480,title="",artist="",baseBpm=120;
+  const b36=s=>parseInt(String(s),36);
   for(const line0 of lines){
    const line=line0.trim();if(!line.startsWith("#"))continue;
    let m=line.match(/^#TITLE\s+"([^"]*)"/i);if(m){title=m[1];continue}
    m=line.match(/^#ARTIST\s+"([^"]*)"/i);if(m){artist=m[1];continue}
    m=line.match(/^#REQUEST\s+"?ticks_per_beat\s+(\d+)/i);if(m){tpb=+m[1];continue}
-   m=line.match(/^#BPM([0-9A-Z]{2}):\s*([\d.+-]+)/);if(m){bpmMap[m[1]]=+m[2];continue}
-   m=line.match(/^#(\d{3})02:\s*([\d.]+)/);if(m){measures[+m[1]]=+m[2];continue}
-   m=line.match(/^#(\d{3})([0-9A-Z])([0-9A-Z])([0-9A-Z]{0,2}):\s*([0-9A-Za-z]+)/i);
-   if(!m)continue;
-   raw.push({measure:+m[1],type:m[2].toUpperCase(),x:B36(m[3]),channel:m[4].toUpperCase(),data:m[5].toUpperCase()});
+   m=line.match(/^#BASEBPM\s+([\d.+-]+)/i);if(m){baseBpm=+m[1];continue}
+   m=line.match(/^#BPM([0-9A-Z]{2}):\s*([\d.+-]+)/i);if(m){bpmMap[m[1].toUpperCase()]=+m[2];continue}
+   m=line.match(/^#(\d{3})08:\s*([0-9A-Z]{2})/i);if(m){bpmChanges.push({measure:+m[1],ref:m[2].toUpperCase()});continue}
+   m=line.match(/^#(\d{3})02:\s*([\d.]+)/i);if(m){measureLen[+m[1]]=+m[2];continue}
+   m=line.match(/^#(?:TIL|HISPEED)([0-9A-Z]{2}):\s*"([^"]*)"/i);if(m){speedDefs[m[1].toUpperCase()]=m[2];continue}
+   m=line.match(/^#HISPEED\s+([0-9A-Z]{2})/i);if(m){activeSpeed=m[1].toUpperCase();continue}
+   if(/^#NOSPEED/i.test(line)){activeSpeed=null;continue}
+   m=line.match(/^#(\d{3})([0-9A-Z])([0-9A-Z])([0-9A-Z])?:\s*([0-9A-Za-z]+)/i);
+   if(m)raw.push({measure:+m[1],type:m[2].toUpperCase(),lane:b36(m[3]),channel:(m[4]||"0").toUpperCase(),data:m[5].toUpperCase(),speed:activeSpeed});
   }
   this.ticksPerBeat=tpb;
-  const firstBpm=Object.keys(bpmMap)[0];this.bpm=firstBpm?(bpmMap[firstBpm]||120):120;
-  const measureBeats=n=>measures[n]??4;
-  const max=Math.max(0,...raw.map(x=>x.measure)),starts=[];let cursor=0;
-  for(let i=0;i<=max;i++){starts[i]=cursor;cursor+=measureBeats(i)*60/this.bpm}
-  const events=[];
+  const firstKey=Object.keys(bpmMap)[0];this.bpm=baseBpm||(+bpmMap[firstKey]||120);
+  const maxMeasure=Math.max(0,...raw.map(x=>x.measure),...bpmChanges.map(x=>x.measure));
+  const starts=[],bpms=[];
+  let cursor=0,currentBpm=this.bpm;
+  const changes=new Map(bpmChanges.map(x=>[x.measure,+bpmMap[x.ref]||currentBpm]));
+  for(let m=0;m<=maxMeasure;m++){
+   if(changes.has(m))currentBpm=changes.get(m);
+   bpms[m]=currentBpm;starts[m]=cursor;cursor+=(measureLen[m]??4)*60/currentBpm;
+  }
+  const measureTime=(m,frac)=>starts[m]+frac*(measureLen[m]??4)*60/(bpms[m]||this.bpm);
+  const dirByLaneTime=new Map(), events=[], slides=new Map(), guides=new Map();
   for(const r of raw){
    const pairs=Math.max(1,Math.floor(r.data.length/2));
    for(let i=0;i<pairs;i++){
     const pair=r.data.slice(i*2,i*2+2);if(pair==="00"||pair.length<2)continue;
-    const frac=pairs===1?0:i/(pairs-1),time=starts[r.measure]+frac*measureBeats(r.measure)*60/this.bpm;
-    const lane=clamp(r.x,0,11),value=B36(pair[1]);
-    if(r.type==="8"){continue}
-    if(r.type==="1"||r.type==="2"||r.type==="3"||r.type==="5"||r.type==="6"){
-      if(r.type==="3"){events.push({kind:"slide",channel:r.channel,time,lane,critical:false,value});continue}
-      const type=r.type==="5"?"trace":r.type==="6"?"trace":r.type==="3"?"slide":r.type==="1"?"tap":"tap";
-      events.push({kind:type,time,lane,critical:r.type==="2"||r.type==="6",value,channel:r.channel});
-    } else if(r.type==="4"){events.push({kind:"skill",time,lane,value,channel:r.channel})}
-    else if(r.type==="5"){events.push({kind:"trace",time,lane,value,channel:r.channel})}
+    const frac=pairs===1?0:i/(pairs-1),time=measureTime(r.measure,frac),lane=C(r.lane,0,11),v=b36(pair[1]);
+    const key=lane+"@"+time.toFixed(6);
+    if(r.type==="5"){dirByLaneTime.set(key,v);continue}
+    if(r.type==="3"){const arr=slides.get(r.channel)||[];arr.push({time,lane,width:v});slides.set(r.channel,arr);continue}
+    if(r.type==="9"){const arr=guides.get(r.channel)||[];arr.push({time,lane,width:v});guides.set(r.channel,arr);continue}
+    if(r.type==="4")continue;
+    if(r.type==="1"||r.type==="2"||r.type==="3"||r.type==="5"||r.type==="6"||r.type==="7"||r.type==="8"){
+      const critical=r.type==="2"||r.type==="6"||r.type==="8";
+      const type=r.type==="1"||r.type==="2"?"tap":r.type==="3"?"slide":r.type==="5"||r.type==="6"?"trace":"tap";
+      if(type!=="slide")events.push({time,lane,type,critical,dir:dirByLaneTime.get(key)??0,width:v});
+    }
    }
   }
-  const notes=[],groups=new Map();let id=0;
-  for(const e of events){
-   if(e.kind==="slide"){if(!groups.has(e.channel))groups.set(e.channel,[]);groups.get(e.channel).push(e);continue}
-   if(e.kind==="skill")continue;
-   notes.push({id:id++,time:e.time,lane:e.lane,type:e.kind,duration:0,endLane:e.lane,path:[{t:0,l:e.lane}],critical:!!e.critical,dir:0});
+  const notes=[];let id=0;
+  for(const e of events)notes.push({id:id++,time:e.time,lane:e.lane,type:e.type,duration:0,endLane:e.lane,path:[{t:0,l:e.lane}],critical:e.critical,dir:e.dir});
+  for(const arr of slides.values()){
+   arr.sort((a,b)=>a.time-b.time);if(arr.length<2)continue;
+   const first=arr[0],last=arr[arr.length-1],duration=Math.max(.001,last.time-first.time);
+   notes.push({id:id++,time:first.time,lane:first.lane,type:"slide",duration,endLane:last.lane,path:arr.map((p,i)=>({t:(p.time-first.time)/duration,l:p.lane})),critical:false,dir:0});
   }
-  for(const rs of groups.values()){
-   rs.sort((a,b)=>a.time-b.time);
-   if(rs.length<2)continue;
-   const first=rs[0],last=rs[rs.length-1],duration=Math.max(.03,last.time-first.time);
-   const path=rs.map((p,i)=>({t:rs.length===1?0:i/(rs.length-1),l:p.lane}));
-   notes.push({id:id++,time:first.time,lane:first.lane,type:"slide",duration,endLane:last.lane,path,critical:!!first.critical,dir:0});
+  notes.sort((a,b)=>a.time-b.time);
+  this.notes=notes;this.chartName=title||"Imported SUS";this.artist=artist;this.duration=Math.max(1,...notes.map(n=>n.time+n.duration))+2;
+  this.timescaleEvents=[];
+  for(let m=0;m<=maxMeasure;m++){
+   const b=bpms[m]||this.bpm;if(m===0||Math.abs(b-(bpms[m-1]||b))>.0001)this.timescaleEvents.push({time:starts[m],speed:b/this.bpm,nextSpeed:null,ease:"linear",transition:"scroll"});
   }
-  notes.sort((a,b)=>a.time-b.time);this.notes=notes;this.chartName=title||"Imported SUS";this.duration=Math.max(1,...notes.map(n=>n.time+n.duration))+2;this.reset();this.render();
+  this.reset();this.render();
  }, exportJSON(){const data={title:this.chartName,bpm:this.bpm,notes:this.notes.map(n=>({time:Math.round(n.time*1000),lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical,dir:n.dir,path:n.path}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 };
 window.PJSekaiWebDojo=Engine;
