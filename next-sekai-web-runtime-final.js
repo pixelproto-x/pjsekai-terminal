@@ -207,14 +207,15 @@ function touchState(e){
 }
 function onDown(e){
  if(e.target!==E.canvas&&!e.target.closest?.(".pjsk-import-box"))return;
+ e.preventDefault?.();
  const p={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,downX:e.clientX,downY:e.clientY,downT:performance.now(),lastT:performance.now(),speed:0,angle:0,started:true,ended:false,note:null};
  N.touchHistory.set(e.pointerId,p);
  const lane=eventLane(e),n=candidate(lane);if(!n)return;
  const i=classify(n);
  if(i.damage||i.type==="hidden-damage"){if(laneDistance(n,lane))hitDamage(n);return}
- if(i.type==="flick"||i.type==="trace-flick"){N.pending.set(e.pointerId,{n,downX:e.clientX,downY:e.clientY,startTime:E.time(),bestTime:Infinity,bestCorrect:false,lastTime:E.time(),wrong:false});return}
- if(i.type==="trace"){n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.capturedPointer=e.pointerId;n.holdUntil=n.time+(n.duration||0);return}
- const d=deltaFor(n),j=judgeDelta(d,n);if(j){n.hit=true;n.active=n.duration>0||i.type==="slide";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d)}
+ if(i.type==="flick"||i.type==="trace-flick"){p.note=n;N.pending.set(e.pointerId,{n,downX:e.clientX,downY:e.clientY,startTime:E.time(),bestTime:Infinity,bestCorrect:false,lastTime:E.time(),wrong:false});return}
+ if(i.type==="trace"){p.note=n;n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.capturedPointer=e.pointerId;n.holdUntil=n.time+(n.duration||0);return}
+ const d=deltaFor(n),j=judgeDelta(d,n);if(j){p.note=n;n.hit=true;n.active=n.duration>0||i.type==="slide";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d)}
 }
 function onMove(e){
  const p=N.touchHistory.get(e.pointerId);if(!p)return;
@@ -337,7 +338,7 @@ function addControls(){
  d.querySelectorAll("[data-nx]").forEach(el=>el.addEventListener("change",()=>{const k=el.dataset.nx;if(k==="score")N.scoreMode=el.value;if(k==="life"){N.initialLife=Math.max(1,+el.value||1000);N.maxLife=N.initialLife;E.life=N.initialLife}if(k==="haptic")N.haptic=el.value;if(k==="effect")N.effectAnimationSpeed=clamp(+el.value||1,.25,4);if(k==="guide")N.guideQuality=+el.value;if(k==="fake")N.disableFakeNotes=el.value==="true";if(k==="ts")N.disableTimescale=el.value==="true";if(k==="curve")N.alternativeCurve=el.value==="true";localStorage.setItem("pjsekai-next-options",JSON.stringify({scoreMode:N.scoreMode,initialLife:N.initialLife,haptic:N.haptic,effectAnimationSpeed:N.effectAnimationSpeed,guideQuality:N.guideQuality,disableFakeNotes:N.disableFakeNotes,disableTimescale:N.disableTimescale,alternativeCurve:N.alternativeCurve});reset();sync()}));sync();
 }
 function reset(){
- E.running=false;cancelAnimationFrame(E.raf);E.score=0;E.combo=0;E.maxCombo=0;E.life=N.initialLife;E.maxLife=N.maxLife;E.counts={perfect:0,great:0,good:0,bad:0,miss:0};E.effects=[];E.judgeSamples=[];E.lastJudge="READY";N.replay=[];N.judgments=[];N.progress=[];N.pending.clear();N.finished=false;
+ E.running=false;cancelAnimationFrame(E.raf);E.clockPaused=E.time?.()||0;E.score=0;E.combo=0;E.maxCombo=0;E.life=N.initialLife;E.maxLife=N.maxLife;E.counts={perfect:0,great:0,good:0,bad:0,miss:0};E.effects=[];E.judgeSamples=[];E.lastJudge="READY";N.replay=[];N.judgments=[];N.progress=[];N.pending.clear();N.finished=false;
  for(const n of E.notes||[]){n.hit=false;n.missed=false;n.active=false;n.tailHit=false;n.damageResolved=false;n.tickIndex=0;n.tickTimes=makeTicks(n);n.traceArmed=false;n.traceWrongSeen=false}
  E.render?.();
 }
@@ -363,10 +364,10 @@ function install(){
  const stage=E.stage;
  if(stage&&!stage._nextUnifiedInput){
   stage._nextUnifiedInput=true;stage.style.touchAction="none";
-  stage.addEventListener("pointerdown",e=>{try{stage.setPointerCapture?.(e.pointerId)}catch{};onDown(e)},true);
-  stage.addEventListener("pointermove",onMove,true);
-  stage.addEventListener("pointerup",onUp,true);
-  stage.addEventListener("pointercancel",e=>{N.pending.delete(e.pointerId);N.touchHistory.delete(e.pointerId)},true);
+  stage.addEventListener("pointerdown",e=>{e.stopImmediatePropagation();try{stage.setPointerCapture?.(e.pointerId)}catch{};onDown(e)},true);
+  stage.addEventListener("pointermove",e=>{e.stopImmediatePropagation();onMove(e)},true);
+  stage.addEventListener("pointerup",e=>{e.stopImmediatePropagation();onUp(e)},true);
+  stage.addEventListener("pointercancel",e=>{e.stopImmediatePropagation();N.pending.delete(e.pointerId);N.touchHistory.delete(e.pointerId)},true);
  }
  addControls();
 }
