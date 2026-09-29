@@ -92,7 +92,7 @@ function normalizeMusic(x,diffRows=[]){
     unit:String(x.unit??x.unitName??''),
     categories:Array.isArray(x.categories)?x.categories.join(' / '):String(x.categories??x.category??''),
     releaseAt:String(x.releaseAt??x.releasedAt??x.releaseDate??x.publishedAt??''),
-    duration:num(x.duration??x.musicTime??x.length,0),
+    duration:(()=>{const raw=num(x.duration??x.musicTime??x.length,0);return raw>1000&&raw<3600000?raw/1000:raw;})(),
     bpm:num(x.bpm??x.musicBpm??x.bpmMin,0),
     bpmMax:num(x.bpmMax??x.maxBpm??x.bpm,0),
     assetbundleName:String(x.assetbundleName??x.assetBundleName??''),
@@ -145,6 +145,15 @@ async function loadSongs(){
   }catch(_){}
   try{
     if(apiSongs.length){
+      let diffRows=[];
+      try{ const rawDiffs=await fetchJson(SOURCES.diffs); diffRows=arr(rawDiffs); }catch(_){}
+      if(diffRows.length){
+        const grouped=new Map();
+        diffRows.forEach(d=>{const id=num(d?.musicId??d?.id,0);if(!id)return;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(d);});
+        const normalized=apiSongs.map(x=>normalizeMusic(x,grouped.get(num(x.id,0))||[])).filter(Boolean);
+        writeCache(normalized);
+        return normalized;
+      }
       const normalized=apiSongs.map(x=>normalizeMusic(x,[])).filter(Boolean);
       writeCache(normalized);
       return normalized;
