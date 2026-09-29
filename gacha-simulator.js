@@ -5,7 +5,7 @@ const APP=window.__PJSEKAI_APP__; if(!APP)return;
 const $=id=>document.getElementById(id);
 const STATIC_GACHA='gacha-data.json';
 const STATIC_CARDS='gacha-cards.json';
-const CACHE='pjsekaiGachaSim:v2';
+const CACHE='pjsekaiGachaSim:v3';
 const LOGKEY='pjsekaiGachaHistory:v2';
 const DEFAULT={region:'jp',gachaId:'',pullCost:300,tenCost:3000,crystals:60000,seals:0,sealTickets:0,sparkGoal:300,gachaBonus:0,history:[],pool:null};
 let state=loadState(), current=null, cardsMap=new Map(), source='pjsk.moe';
@@ -19,7 +19,8 @@ function bundle(c){return c?.assetbundleName||c?.assetBundleName||''}
 function art(c,tr=false){const b=bundle(c);return b?'https://storage.sekai.best/sekai-jp-assets/thumbnail/chara/'+encodeURIComponent(b)+'_'+(tr?'after_training':'normal')+'.webp':''}
 function kind(g){const s=(String(g?.gachaType||'')+' '+String(g?.name||'')+' '+String(g?.summary||'')).toLowerCase();if(s.includes('fes')||s.includes('festival'))return 'fes';if(s.includes('birthday')||s.includes('anniversary'))return 'birthday';if(s.includes('rerun')||s.includes('復刻'))return 'rerun';return 'normal'}
 function ratesFor(g){const rs=Array.isArray(g?.gachaCardRarityRates)?g.gachaCardRarityRates:[];const by={};rs.forEach(x=>{const k=String(x?.cardRarityType||'').toLowerCase();if(k)by[k]=n(x.rate)});const four=by.rarity_4??by.rarity4??(kind(g)==='fes'?6:3);const three=by.rarity_3??by.rarity3??8.5;return {four,three,two:Math.max(0,100-four-three)}}
-function activeDate(g){const now=Date.now();const st=Date.parse(g?.startAt||g?.start_at||'');const en=Date.parse(g?.endAt||g?.end_at||'');return (!st||st<=now)&&(!en||en>=now)}
+function ts(v){if(v===null||v===undefined||v==='')return 0;if(typeof v==='number'){return v<10000000000?v*1000:v}const s=String(v).trim();if(/^\d+$/.test(s)){const n=Number(s);return n<10000000000?n*1000:n}const p=Date.parse(s);return Number.isFinite(p)?p:0}
+function activeDate(g){const now=Date.now(),st=ts(g?.startAt||g?.start_at),en=ts(g?.endAt||g?.end_at);return (!st||st<=now)&&(!en||en>=now)}
 function loadState(){try{const x=JSON.parse(localStorage.getItem(LOGKEY)||'null');return {...DEFAULT,...(x&&typeof x==='object'?x:{})}}catch(_){return {...DEFAULT}}}
 function persist(){try{localStorage.setItem(LOGKEY,JSON.stringify(state))}catch(_){}}
 async function fetchJson(url){const r=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
@@ -138,7 +139,7 @@ function renderGachaOptions(){
  const sel=$('gsGacha');if(!sel||!Array.isArray(state.pool))return;
  const wanted=$('gsType')?.value||'all';
  const arr=state.pool.filter(g=>wanted==='all'||kind(g)===wanted);
- sel.innerHTML='<option value="">選擇卡池</option>'+arr.slice().sort((a,b)=>Date.parse(b.startAt||'')-Date.parse(a.startAt||'')).map(g=>'<option value="'+esc(idOf(g))+'">'+esc(g.name||('Gacha #'+idOf(g)))+'</option>').join('');
+ sel.innerHTML='<option value="">選擇卡池</option>'+arr.slice().sort((a,b)=>ts(b.startAt)-ts(a.startAt)).map(g=>'<option value="'+esc(idOf(g))+'">'+esc(g.name||('Gacha #'+idOf(g)))+'</option>').join('');
  if(state.gachaId)sel.value=state.gachaId;
 }
 function status(m,ok=false){const x=$('gsStatus');if(x){x.textContent=m;x.className='gacha-status'+(ok?' ok':'')}}
@@ -200,7 +201,7 @@ function resetAll(){state={...DEFAULT,history:[]};persist();current=null;cardsMa
 function syncInputs(){$('gsCrystals').value=state.crystals;$('gsSeals').value=state.seals;$('gsTicketInput').value=state.sealTickets}
 async function start(){
  const host=$('gachaSimulatorMount');if(!host)return;mount(host);syncInputs();renderGachaOptions();renderAll();
- try{state.pool=await loadGachas();source='api';persist();renderGachaOptions();if(!state.gachaId){const currentG=state.pool.find(activeDate);if(currentG)state.gachaId=idOf(currentG)}renderGachaOptions();if(state.gachaId){$('gsGacha').value=state.gachaId;await selectGacha()}else{status('已同步卡池，但目前沒有進行中的池。',true)}}catch(_){status('初次同步失敗，可按「同步最新卡池」重試。')}
+ try{state.pool=await loadGachas();source='pjsk.moe';persist();renderGachaOptions();if(!state.gachaId){const currentG=state.pool.find(activeDate);if(currentG)state.gachaId=idOf(currentG)}renderGachaOptions();if(state.gachaId){$('gsGacha').value=state.gachaId;await selectGacha()}else{status('已同步卡池，但目前沒有進行中的池。',true)}}catch(_){status('初次同步失敗，可按「同步最新卡池」重試。')}
 }
 document.addEventListener('click',e=>{const trigger=e.target.closest('[data-gacha-scroll]');if(trigger){e.preventDefault();$('gachaSimulatorMount')?.scrollIntoView({behavior:'smooth',block:'start'});}});
 start();
