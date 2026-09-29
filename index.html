@@ -811,6 +811,7 @@ body[data-sekai-theme] .theme-choice.active{
 
 
 .dojo-sonolus-frame{clip-path:polygon(1.6% 0,98.9% 0,100% 1.8%,98.5% 100%,1.2% 100%,0 98.4%,0 1.8%);background:#020617}.dojo-sonolus-frame iframe{min-width:100%;min-height:100%}@media(max-width:900px){.dojo-sonolus-frame{border-radius:16px!important}}</style>
+<link rel="stylesheet" href="my-sekai.css">
 </head>
 <body>
 <div class="top-accent"></div>
@@ -1187,30 +1188,166 @@ body[data-sekai-theme] .theme-choice.active{
   </section>
 
   <section class="page" data-page="profile">
-    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>MY SEKAI</div><div class="kicker">MY SEKAI</div><h1 class="page-title">我的</h1><p class="page-subtitle">玩家資料、隊伍、通關紀錄、Character Rank、Snapshot 與分享功能集中在這裡。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
-    <div class="app-card card-dark" style="width:100%;margin-bottom:13px;display:block;padding:18px;min-height:0">
-      <div class="settings-row-head"><div><strong>玩家資料來源</strong><span>Player ID 可由公開 Profile API 讀取，也可以完全離線手動填寫。</span></div><span class="badge" id="profileModeBadge">LOCAL</span></div>
-      <div class="profile-mode-row"><button class="profile-mode active" id="profileApiModeBtn" type="button">API 讀取</button><button class="profile-mode" id="profileLocalModeBtn" type="button">本地手動</button></div>
-      <div id="profileApiPanel"><div class="form" style="display:flex;gap:8px;margin-top:11px;align-items:flex-end"><div class="field-group"><label class="field-label light" for="playerId">Player ID</label><input id="playerId" class="search-input" inputmode="numeric" autocomplete="off" style="background:#11131d;color:#fff;border-color:#ffffff18" placeholder="輸入台灣區 Player ID"></div><button id="loadPlayer" class="primary-btn" type="button">讀取</button></div></div>
-      <div id="profileLocalPanel" hidden>
-        <div class="profile-input-grid"><div class="profile-field"><label for="manualProfileName">玩家名稱</label><input id="manualProfileName" maxlength="80" placeholder="玩家名稱"></div><div class="profile-field"><label for="manualProfileId">Player ID</label><input id="manualProfileId" inputmode="numeric" maxlength="32" placeholder="可不填"></div><div class="profile-field"><label for="manualProfileRank">Rank</label><input id="manualProfileRank" inputmode="numeric" maxlength="6" placeholder="例如：250"></div><div class="profile-field"><label for="manualProfileTheme">世界主題</label><select id="manualProfileTheme"><option value="classroom">教室</option><option value="stage">舞台</option><option value="street">街頭</option><option value="wonderland">奇幻</option><option value="empty">無人</option><option value="virtual">虛擬</option></select></div></div>
-        <div class="profile-field" style="margin-top:9px"><label for="manualProfileBio">個人簡介</label><textarea id="manualProfileBio" maxlength="240" placeholder="寫一段自介……"></textarea></div><div class="profile-actions"><button id="saveManualProfile" class="primary-btn" type="button">儲存本地玩家資料</button></div>
+  <div class="page-head">
+    <div>
+      <div class="sekai-chip"><span class="chip-dot"></span>MY SEKAI</div>
+      <div class="kicker">PLAYER DASHBOARD</div>
+      <h1 class="page-title">My SEKAI</h1>
+      <p class="page-subtitle">玩家資料、稱號、5 人主推隊伍、Character Rank、Player Rank、打歌統計與 16:9 玩家名片。</p>
+    </div>
+    <button class="back-btn" data-go="home">‹ 首頁</button>
+  </div>
+
+  <div class="msk-grid msk-grid-hero">
+    <section class="msk-card msk-identity-card">
+      <div class="msk-card-kicker">PLAYER ID · CACHE</div>
+      <div class="msk-card-head">
+        <div><h2>玩家資料</h2><p>公開 Profile API + LocalStorage 快取。API 失敗仍可離線使用。</p></div>
+        <span class="msk-status-pill" id="mskProfileSource">LOCAL</span>
       </div>
-      <div class="profile-status" id="profileStatus">本地模式：資料只保存在這台裝置。</div>
+      <div class="msk-form-grid">
+        <label>Player ID<input id="mskPlayerId" inputmode="numeric" maxlength="32" placeholder="輸入台灣區 Player ID"></label>
+        <label>玩家名稱<input id="mskPlayerName" maxlength="80" placeholder="玩家名稱"></label>
+        <label class="msk-span-2">簽名檔<input id="mskSignature" maxlength="120" placeholder="例如：今日也要 AP 五首"></label>
+        <label>自訂遊戲稱號<input id="mskTitle" maxlength="60" placeholder="例如：Master Player"></label>
+        <label>稱號副標<input id="mskTitleSub" maxlength="60" placeholder="例如：Vivid BAD SQUAD"></label>
+      </div>
+      <div class="msk-actions">
+        <button class="msk-primary" id="mskLoadPlayer" type="button">從 API 讀取</button>
+        <button class="msk-secondary" id="mskSaveIdentity" type="button">儲存本機資料</button>
+      </div>
+      <div class="msk-note" id="mskProfileStatus">尚未讀取玩家資料。</div>
+    </section>
+
+    <section class="msk-card msk-preview-card">
+      <div class="msk-card-kicker">LIVE PROFILE</div>
+      <div class="msk-player-mini" id="mskMiniCard">
+        <div class="msk-mini-glow"></div>
+        <div class="msk-mini-top"><span id="mskMiniTitle">PLAYER</span><span id="mskMiniRank">RANK —</span></div>
+        <strong id="mskMiniName">Player</strong>
+        <span id="mskMiniSignature">還沒有簽名。</span>
+        <div class="msk-mini-meta"><span id="mskMiniId">ID 未設定</span><span id="mskMiniPower">TALENT 0</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="msk-card">
+    <div class="msk-card-head">
+      <div><div class="msk-card-kicker">5 MEMBER MAIN TEAM</div><h2>5 人主推隊伍</h2><p>輸入每張卡目前顯示的 Talent；系統會自動加入 Character Rank 個人加成並加總。</p></div>
+      <div class="msk-total-box"><small>TEAM TALENT</small><strong id="mskTeamTalent">0</strong></div>
     </div>
-    <div class="profile-card" id="playerCard">
-      <div class="profile-card-head"><div style="display:flex;gap:12px;align-items:center;min-width:0"><div class="profile-avatar" id="playerAvatar">P</div><div><div class="profile-name" id="profileDisplayName">Player</div><div class="profile-idline">ID · <span id="profileDisplayId">未設定</span></div></div></div><div class="profile-rank-badge">RANK <span id="profileDisplayRank">—</span></div></div>
-      <div class="profile-bio" id="profileDisplayBio">還沒有玩家簡介。可以從上方 API 讀取，或切到本地手動模式建立自己的名片。</div>
-      <div class="profile-meta-row"><span class="profile-meta-pill" id="profileSourcePill">LOCAL · 離線</span><span class="profile-meta-pill" id="profilePowerPill">綜合力 —</span><span class="profile-meta-pill" id="profileThemePill">主題：虛擬</span></div>
-      <div class="profile-tools"><button id="copyProfileShareBtn" type="button">⧉ 一鍵分享</button><button id="exportPlayerCardBtn" type="button">▣ 匯出 16:9 名片</button><button id="saveSnapshotBtn" type="button">◷ 建立 Snapshot</button></div>
-      <div class="profile-share-row"><input id="profileShareLink" readonly aria-label="玩家分享連結" placeholder="建立後會顯示玩家分享連結"></div>
+    <div class="msk-team-toolbar">
+      <label>目標屬性<select id="mskTargetAttr"><option value="">不指定</option><option>Cute</option><option>Cool</option><option>Pure</option><option>Happy</option><option>Mysterious</option></select></label>
+      <label>目標團體<select id="mskTargetUnit"><option value="">不指定</option><option>Leo/need</option><option>MORE MORE JUMP!</option><option>Vivid BAD SQUAD</option><option>Wonderlands×Showtime</option><option>25時、ナイトコードで。</option><option>Virtual Singer</option></select></label>
+      <span class="msk-team-hint">Talent 模型：卡面 Talent × (1 + CR 加成) × (1 + 額外 Bonus%)</span>
     </div>
-    <div class="profile-section"><div class="profile-section-head"><div><h2>5 人出賽隊伍</h2><p>Master Rank 0–5 · Skill Level 1–10 · 綜合力</p></div><div class="profile-total-power"><span>TEAM POWER</span><strong id="teamPowerTotal">0</strong></div></div><div class="profile-team-grid" id="profileTeamGrid"></div><div class="profile-actions"><button class="secondary-btn" id="saveTeamEditsBtn" type="button">儲存隊伍數值</button></div></div>
-    <div class="profile-section"><div class="profile-section-head"><div><h2>通關統計</h2><p>Expert / Master / Append，可直接本地修改。</p></div></div><table class="stat-table"><thead><tr><th>難度</th><th>FC</th><th>AP</th><th>Clear</th></tr></thead><tbody><tr><th>Expert</th><td><input data-clear-stat="expertFC" inputmode="numeric"></td><td><input data-clear-stat="expertAP" inputmode="numeric"></td><td><input data-clear-stat="expertClear" inputmode="numeric"></td></tr><tr><th>Master</th><td><input data-clear-stat="masterFC" inputmode="numeric"></td><td><input data-clear-stat="masterAP" inputmode="numeric"></td><td><input data-clear-stat="masterClear" inputmode="numeric"></td></tr><tr><th>Append</th><td><input data-clear-stat="appendFC" inputmode="numeric"></td><td><input data-clear-stat="appendAP" inputmode="numeric"></td><td><input data-clear-stat="appendClear" inputmode="numeric"></td></tr></tbody></table><div class="profile-actions"><button class="secondary-btn" id="saveClearStatsBtn" type="button">儲存通關統計</button></div></div>
-    <div class="profile-section"><div class="profile-section-head"><div><h2>26 角色 Character Rank</h2><p>可手動校正；系統自動挑出 Top 3 本命推角。</p></div></div><div class="character-grid" id="characterRankGrid"></div><div class="top3-grid" id="top3Grid"></div></div>
-    <div class="profile-section"><div class="profile-section-head"><div><h2>歷史 Snapshot</h2><p>保存玩家狀態，供年度回顧分析。</p></div></div><div class="snapshot-list" id="snapshotList"></div></div>
-    <div class="profile-section"><div class="profile-section-head"><div><h2>年度回顧</h2><p>比較本年度第一筆與最後一筆 Snapshot。</p></div></div><div class="review-card" id="annualReview"></div></div>
+    <div class="msk-team-grid" id="mskTeamGrid"></div>
+    <div class="msk-lights-grid" id="mskBonusLights"></div>
   </section>
+
+  <div class="msk-grid">
+    <section class="msk-card">
+      <div class="msk-card-head"><div><div class="msk-card-kicker">CHARACTER RANK</div><h2>26 角色 CR 進度總表</h2><p>Rank 1～135。每位角色可直接校正；Rank ≤ 50 的個人 Talent bonus 也會同步套入隊伍計算。</p></div><span class="msk-status-pill" id="mskCrSummary">平均 CR 0.0</span></div>
+      <div class="msk-cr-summary"><div><strong id="mskCrTotal">0</strong><span>總 Rank</span></div><div><strong id="mskCrMax">0</strong><span>最高 Rank</span></div><div><strong id="mskCrAt50">0</strong><span>≥50 人數</span></div></div>
+      <div class="msk-character-grid" id="mskCharacterGrid"></div>
+    </section>
+
+    <section class="msk-card">
+      <div class="msk-card-kicker">CR MISSION TRACKER</div>
+      <div class="msk-card-head"><div><h2>單一角色 CR 任務</h2><p>任務完成勾選與備註均存在本機。</p></div></div>
+      <label class="msk-select-wide">目前角色<select id="mskCrCharacter"></select></label>
+      <div class="msk-mission-list" id="mskCrMissions"></div>
+    </section>
+  </div>
+
+  <section class="msk-card">
+    <div class="msk-card-head"><div><div class="msk-card-kicker">CR RESOURCE ESTIMATOR</div><h2>CR 升級資源消耗預估</h2><p>角色 Rank 的資源機制會隨遊戲版本變化；這裡把實際成本做成可校正模型，並分開顯示角色 Rank 與卡片培養資源。</p></div></div>
+    <div class="msk-resource-grid">
+      <label>目前 CR<input id="mskCrCurrent" type="number" min="1" max="135" value="1"></label>
+      <label>目標 CR<input id="mskCrTarget" type="number" min="1" max="135" value="10"></label>
+      <label>每 Rank 小瓶<input id="mskVialPerRank" type="number" min="0" step="1" value="1"></label>
+      <label>每 Rank 碎片<input id="mskFragPerRank" type="number" min="0" step="1" value="0"></label>
+      <label>每 Rank 純結晶<input id="mskGemPerRank" type="number" min="0" step="1" value="0"></label>
+      <label>現有小瓶<input id="mskVialOwn" type="number" min="0" step="1" value="0"></label>
+      <label>現有碎片<input id="mskFragOwn" type="number" min="0" step="1" value="0"></label>
+      <label>現有純結晶<input id="mskGemOwn" type="number" min="0" step="1" value="0"></label>
+    </div>
+    <div class="msk-result-grid" id="mskCrResourceResult"></div>
+  </section>
+
+  <div class="msk-grid">
+    <section class="msk-card">
+      <div class="msk-card-kicker">PLAYER RANK EXP</div>
+      <div class="msk-card-head"><div><h2>Player Rank 經驗值試算</h2><p>輸入目前 Rank、距下一級的 EXP 與你實測的單場 EXP，就能估算到目標 Rank 還要幾場。</p></div></div>
+      <div class="msk-rank-calc-grid">
+        <label>目前 Rank<input id="mskRankCurrent" type="number" min="1" max="700" value="1"></label>
+        <label>目前本級 EXP<input id="mskRankCurrentExp" type="number" min="0" value="0"></label>
+        <label>目標 Rank<input id="mskRankTarget" type="number" min="1" max="700" value="50"></label>
+        <label>每級需求 EXP<input id="mskRankExpPerLevel" type="number" min="1" value="1000"></label>
+        <label>單場實測 EXP<input id="mskRankLiveExp" type="number" min="1" value="960"></label>
+      </div>
+      <div class="msk-result-grid" id="mskRankResult"></div>
+      <div class="msk-mini-table" id="mskRankMilestones"></div>
+      <div class="msk-note">單場 EXP 不是固定值；Score Rank、Live Bonus 等因素都會影響獲得量，因此此計算器把「每級需求」與「單場實測 EXP」公開給你校正，而不是假裝硬編一個永遠正確的官方公式。</div>
+    </section>
+
+    <section class="msk-card">
+      <div class="msk-card-kicker">LIVE RECORD</div>
+      <div class="msk-card-head"><div><h2>打歌與通關統計</h2><p>總打歌數與 Clear 可選自動或手動；FC / AP 依難度自動統計。</p></div></div>
+      <div class="msk-stat-mode">
+        <label>總打歌數<select id="mskPlayCountMode"><option value="auto">自動＝各難度 Play 加總</option><option value="manual">手動</option></select></label>
+        <label>Clear 總量<select id="mskClearCountMode"><option value="auto">自動＝各難度 Clear 加總</option><option value="manual">手動</option></select></label>
+        <label>手動打歌數<input id="mskManualPlays" type="number" min="0" value="0"></label>
+        <label>手動 Clear<input id="mskManualClear" type="number" min="0" value="0"></label>
+      </div>
+      <div class="msk-stat-headline">
+        <div><small>總打歌</small><strong id="mskTotalPlays">0</strong></div>
+        <div><small>Clear</small><strong id="mskTotalClear">0</strong></div>
+        <div><small>Full Combo</small><strong id="mskTotalFc">0</strong></div>
+        <div><small>All Perfect</small><strong id="mskTotalAp">0</strong></div>
+      </div>
+      <div class="msk-table-wrap"><table class="msk-stat-table"><thead><tr><th>難度</th><th>Play</th><th>Clear</th><th>FC</th><th>AP</th></tr></thead><tbody id="mskStatsTable"></tbody></table></div>
+    </section>
+  </div>
+
+  <section class="msk-card">
+    <div class="msk-card-head"><div><div class="msk-card-kicker">STATISTICS VISUAL</div><h2>FC / AP / 難度通關佔比</h2><p>圖表直接從上方本機統計資料產生。</p></div></div>
+    <div class="msk-chart-grid">
+      <div><h3>FC 數量</h3><div id="mskFcChart" class="msk-bar-chart"></div></div>
+      <div><h3>AP 數量</h3><div id="mskApChart" class="msk-bar-chart"></div></div>
+      <div class="msk-pie-panel"><h3>Clear 難度佔比</h3><div class="msk-pie-row"><div class="msk-pie" id="mskDifficultyPie"></div><div id="mskPieLegend" class="msk-pie-legend"></div></div></div>
+    </div>
+  </section>
+
+  <section class="msk-card">
+    <div class="msk-card-head"><div><div class="msk-card-kicker">PROFILE CARD EXPORT</div><h2>玩家名片</h2><p>自訂背景圖片，並匯出高解析 16:9 PNG。</p></div><span class="msk-status-pill">1600 × 900</span></div>
+    <div class="msk-card-editor">
+      <div class="msk-form-grid">
+        <label>背景風格<select id="mskCardBgMode"><option value="gradient">SEKAI Gradient</option><option value="midnight">Midnight</option><option value="neon">Neon Grid</option><option value="custom">自訂圖片</option></select></label>
+        <label>自訂背景圖片<input id="mskCardBgInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      </div>
+      <div class="msk-card-preview" id="mskCardPreview">
+        <div class="msk-card-overlay"></div>
+        <div class="msk-card-copy">
+          <span>PROJECT SEKAI · MY SEKAI</span>
+          <strong id="mskCardName">Player</strong>
+          <b id="mskCardTitle">PLAYER</b>
+          <p id="mskCardSignature">還沒有簽名。</p>
+          <div><span id="mskCardId">ID 未設定</span><span id="mskCardTalent">TEAM 0</span></div>
+        </div>
+      </div>
+      <div class="msk-actions"><button class="msk-primary" id="mskExportCard" type="button">匯出 16:9 PNG</button><button class="msk-secondary" id="mskClearCardBg" type="button">清除自訂背景</button></div>
+    </div>
+  </section>
+
+  <div class="msk-legacy-sink" aria-hidden="true">
+    <span id="profileModeBadge">LOCAL</span><button id="profileApiModeBtn"></button><button id="profileLocalModeBtn"></button>
+    <div id="profileApiPanel"></div><input id="playerId"><button id="loadPlayer"></button><div id="profileLocalPanel"></div>
+    <input id="manualProfileName"><input id="manualProfileId"><input id="manualProfileRank"><select id="manualProfileTheme"></select><textarea id="manualProfileBio"></textarea>
+    <button id="saveManualProfile"></button><span id="profileStatus"></span><div id="playerCard"></div><span id="playerAvatar"></span><span id="profileDisplayName"></span><span id="profileDisplayId"></span><span id="profileDisplayRank"></span><span id="profileDisplayBio"></span><span id="profileSourcePill"></span><span id="profilePowerPill"></span><span id="profileThemePill"></span><button id="copyProfileShareBtn"></button><button id="exportPlayerCardBtn"></button><button id="saveSnapshotBtn"></button><input id="profileShareLink"><span id="teamPowerTotal"></span><div id="profileTeamGrid"></div><button id="saveTeamEditsBtn"></button><button id="saveClearStatsBtn"></button><div id="characterRankGrid"></div><div id="top3Grid"></div><div id="snapshotList"></div><div id="annualReview"></div>
+    <input data-clear-stat="legacy-0"><input data-clear-stat="legacy-1"><input data-clear-stat="legacy-2"><input data-clear-stat="legacy-3"><input data-clear-stat="legacy-4"><input data-clear-stat="legacy-5"><input data-clear-stat="legacy-6"><input data-clear-stat="legacy-7"><input data-clear-stat="legacy-8">
+  </div>
+</section>
 </main>
 </div>
 
@@ -3025,12 +3162,25 @@ window.addEventListener("hashchange",initRoute);
 initRoute();
 syncBottomBarIndicator();
 
+
+window.__PJSEKAI_APP__ = {
+  getState(){ return appState; },
+  save(){ return saveAppState(); },
+  update(mutator, silent=false){
+    try{
+      const draft=normalizeAppState(appState);
+      mutator(draft);
+      appState=normalizeAppState(draft);
+      const ok=saveAppState();
+      if(!silent) renderProfile();
+      return ok;
+    }catch(_){ return false; }
+  },
+  toast(message){ if(typeof showToast==="function") showToast(message); },
+  profileApiBase: PROFILE_API_BASE
+};
+
 </script>
-
-
-
-
-
-
+<script src="my-sekai.js" defer></script>
 </body>
 </html>
