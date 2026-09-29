@@ -29,7 +29,6 @@ const state={
 };
 
 state.audio.preload='auto';
-state.audio.crossOrigin='anonymous';
 state.audio.addEventListener('ended',()=>finishGame());
 state.audio.addEventListener('error',()=>showGameError('歌曲音訊無法載入，但仍可使用靜音譜面練習。'));
 state.audio.addEventListener('canplay',()=>{const m=$('dojoGameMessage');if(m&&state.running)m.textContent='遊玩中 · 觸控下方區域或使用 D / F / J / K';});
@@ -272,6 +271,8 @@ function renderHeader(prep){
   const title=$('dojoGameSongTitle'),meta=$('dojoGameSongMeta'),cover=$('dojoGameCover');
   if(title)title.textContent=prep.music.title;
   if(meta)meta.textContent=(prep.vocal?.caption||'官方音源')+' · '+DIFF_LABEL[prep.difficulty];
+  if($('dojoHudSongTitle'))$('dojoHudSongTitle').textContent=prep.music.title;
+  if($('dojoHudSongMeta'))$('dojoHudSongMeta').textContent=DIFF_LABEL[prep.difficulty];
   if(cover){cover.src=prep.jacket||'';cover.alt=prep.music.title;}
 }
 
@@ -552,6 +553,12 @@ function schedulePrepare(){
 }
 async function boot(){
   if(!$('dojoGameCanvas'))return;
+  window.__PJSEKAI_DOJO__={
+    state,
+    getAudio:()=>state.audio,
+    getPrepared:()=>state.prepared,
+    getNotes:()=>state.notes.slice(),
+  };
   bindInputs();bindControls();
   try{
     await initPixi();
