@@ -11,12 +11,48 @@ function buildScene(){app.stage.addChild(stage,guide,notesLayer,fx);window.addEv
 function layout(){const g=geometry();stage.removeChildren();guide.removeChildren();const bg=new PIXI.Graphics();bg.rect(0,0,g.w,g.h).fill({color:0x050713});stage.addChild(bg);const lane=new PIXI.Graphics();lane.moveTo(g.leftTop,g.top).lineTo(g.rightTop,g.top).lineTo(g.rightBottom,g.bottom).lineTo(g.leftBottom,g.bottom).closePath().fill({color:0x10182f,alpha:.98}).stroke({color:0x7181c5,width:2,alpha:.56});stage.addChild(lane);for(let i=0;i<=12;i++){const t=i/12,x1=g.leftTop+(g.rightTop-g.leftTop)*t,x2=g.leftBottom+(g.rightBottom-g.leftBottom)*t;const l=new PIXI.Graphics();l.moveTo(x1,g.top).lineTo(x2,g.bottom).stroke({color:0x8092c8,width:i%3===0?1.6:1,alpha:i%3===0?.38:.17});guide.addChild(l)}for(const p of [.18,.34,.52,.70]){const y=g.top+(g.bottom-g.top)*p,lw=g.leftTop+(g.leftBottom-g.leftTop)*p,rw=g.rightTop+(g.rightBottom-g.rightTop)*p;const d=new PIXI.Graphics();d.moveTo(lw,y).lineTo(rw,y).stroke({color:0x7181c5,width:p<.4?1:1.4,alpha:.16});guide.addChild(d)}const vanish=new PIXI.Graphics();vanish.circle((g.leftTop+g.rightTop)/2,g.top,Math.max(18,g.w*.018)).fill({color:0x74ecff,alpha:.045}).stroke({color:0x74ecff,width:1,alpha:.12});guide.addChild(vanish);const hit=new PIXI.Graphics();hit.moveTo(g.leftBottom,g.hit).lineTo(g.rightBottom,g.hit).stroke({color:0x74ecff,width:4,alpha:.95});const hitGlow=new PIXI.Graphics();hitGlow.moveTo(g.leftBottom,g.hit).lineTo(g.rightBottom,g.hit).stroke({color:0x74ecff,width:14,alpha:.06});guide.addChild(hitGlow,hit)}
 function seeded(){let r=7;for(const c of String(state.songId)+"|"+state.difficulty)r=(r*1664525+c.charCodeAt(0)+1013904223)>>>0;return()=>((r=(r*1664525+1013904223)>>>0)/4294967296)}
 function difficultyDensity(){return{Easy:52,Normal:82,Hard:118,Expert:170,Master:214,Append:268}[state.difficulty]||170}
-function buildNotes(){const rnd=seeded(),n=difficultyDensity(),beat=60/(state.bpm||120);state.notes=[];let t=1;for(let i=0;i<n;i++){const lane=Math.floor(rnd()*12),f=rnd()<.13,hold=rnd()<.17?beat*(1+rnd()*4):0,critical=rnd()<.1;state.notes.push({id:i,lane,time:t,duration:hold,type:f?"flick":hold?"hold":"tap",critical,hit:false,miss:false,held:false,holdOk:false});t+=beat*(rnd()<.76?.5:1)}state.time=0;state.score=0;state.combo=0;state.maxCombo=0;state.judgements={perfect:0,great:0,good:0,bad:0,miss:0};state.particles=[];info.textContent=state.songId+" · "+state.difficulty;renderHud()}
+function buildNotes(){
+ const rnd=seeded(),n=difficultyDensity(),beat=60/(state.bpm||120);state.notes=[];let t=1;
+ for(let i=0;i<n;i++){
+  const lane=Math.floor(rnd()*12),r=rnd(),critical=rnd()<.1;let type="tap",duration=0,endLane=lane,path=null;
+  if(r<.14)type="flick";
+  else if(r<.31){type="hold";duration=beat*(1+rnd()*4)}
+  else if(r<.46){type="slide";duration=beat*(1.5+rnd()*3);endLane=Math.floor(rnd()*12);const midLane=clamp(Math.floor((lane+endLane)/2)+(rnd()<.5?-1:1),0,11);path=[{t:0,l:lane},{t:.45,l:midLane},{t:1,l:endLane}]}
+  state.notes.push({id:i,lane,time:t,duration,type,endLane,path,critical,hit:false,miss:false,held:false,holdOk:false,slideProgress:0});
+  t+=beat*(rnd()<.76?.5:1)
+ }
+ state.time=0;state.score=0;state.combo=0;state.maxCombo=0;state.judgements={perfect:0,great:0,good:0,bad:0,miss:0};state.particles=[];info.textContent=state.songId+" · "+state.difficulty;renderHud()
+}
+
 function grade(delta){const a=Math.abs(delta);if(a<=41.667)return"perfect";if(a<=83.333)return"great";if(a<=108.333)return"good";if(a<=125)return"bad";return null}
 function addFx(x,y,kind){const g=new PIXI.Graphics();g.circle(0,0,kind==="perfect"?20:15).fill({color:kind==="perfect"?0xffe35f:0x6fe7ff,alpha:.3}).stroke({color:0xffffff,width:2,alpha:.9});g.x=x;g.y=y;fx.addChild(g);state.particles.push({g,t:0,d:.24})}
 function renderHud(){hud.textContent="COMBO "+state.combo+"   SCORE "+String(Math.round(state.score)).padStart(7,"0")}
 function drawHold(n,y,x,w){if(!n.duration)return;const ey=noteY(n.time+n.duration),ex=laneX(n.lane,ey),g=new PIXI.Graphics();g.moveTo(x,y).lineTo(ex,ey).stroke({color:n.holdOk?0x9bffcf:0x63e8a9,width:Math.max(8,w*.72),alpha:.94});notesLayer.addChild(g)}
-function drawNote(n){const y=noteY(n.time),g=geometry();if(y<-120||y>g.h+120)return;const x=laneX(n.lane,y),w=Math.max(18,Math.min(78,g.w/12*.9));if(n.duration)drawHold(n,y,x,w);if(state.sudden&&y<g.h*.55)return;const alpha=state.hidden?(.12+clamp((y-g.h*.42)/(g.hit-g.h*.42),0,1)*.35):1;const color=n.critical?0xffef9b:n.type==="flick"?0xffa066:0xf4fbff;const q=new PIXI.Graphics();q.roundRect(-w*.72,-Math.max(8,w*.17),w*1.44,Math.max(16,w*.34),6).fill({color,alpha}).stroke({color:n.critical?0xffffff:0x96dbff,width:n.critical?2:1,alpha:.95});q.x=x;q.y=y;notesLayer.addChild(q);if(n.type==="flick"){const a=new PIXI.Graphics();a.moveTo(-8,6).lineTo(0,-10).lineTo(8,6).lineTo(0,1).closePath().fill({color:0xffffff,alpha});a.x=x;a.y=y;notesLayer.addChild(a)}if(n.critical){const z=new PIXI.Graphics();z.circle(x,y,w*.17).fill({color:0xffffff,alpha:.3});notesLayer.addChild(z)}}
+function noteScale(y){const g=geometry(),p=clamp((y-g.top)/(g.bottom-g.top),0,1);return .28+.92*p}
+function laneAt(n,t){
+ if(!n.path?.length)return n.lane;const p=clamp((t-n.time)/Math.max(.001,n.duration),0,1);let i=0;
+ while(i<n.path.length-1&&p>n.path[i+1].t)i++;
+ const a=n.path[i],b=n.path[Math.min(i+1,n.path.length-1)],u=clamp((p-a.t)/Math.max(.001,b.t-a.t),0,1);return a.l+(b.l-a.l)*u
+}
+function drawHold(n,y,x,w){
+ if(!n.duration)return;const pts=[],steps=n.type==="slide"?16:3;
+ for(let i=0;i<=steps;i++){const p=i/steps,tt=n.time+n.duration*p,yy=noteY(tt),xx=laneX(laneAt(n,tt),yy);pts.push([xx,yy])}
+ const g=new PIXI.Graphics();g.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)g.lineTo(pts[i][0],pts[i][1]);
+ g.stroke({color:n.type==="slide"?0x66d8ff:(n.holdOk?0x9bffcf:0x63e8a9),width:Math.max(6,w*.72),alpha:.94});notesLayer.addChild(g);
+ if(n.type==="slide"){const edge=new PIXI.Graphics();edge.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)edge.lineTo(pts[i][0],pts[i][1]);edge.stroke({color:0xffffff,width:Math.max(1.5,w*.12),alpha:.5});notesLayer.addChild(edge)}
+}
+function drawNote(n){
+ const y=noteY(n.time),g=geometry();if(y<-120||y>g.h+120)return;
+ const x=laneX(laneAt(n,n.time),y),s=noteScale(y),w=Math.max(10,Math.min(78,g.w/12*.9)*s),h=Math.max(10,w*.34);
+ if(n.duration)drawHold(n,y,x,w);if(state.sudden&&y<g.h*.55)return;
+ const alpha=state.hidden?(.12+clamp((y-g.h*.42)/(g.hit-g.h*.42),0,1)*.35):1;
+ const color=n.critical?0xffef9b:n.type==="flick"?0xffa066:n.type==="slide"?0x74dfff:0xf4fbff;
+ const q=new PIXI.Graphics();q.roundRect(-w*.72,-h*.5,w*1.44,h,Math.max(3,h*.28)).fill({color,alpha}).stroke({color:n.critical?0xffffff:n.type==="slide"?0x8fe8ff:0x96dbff,width:Math.max(1,s*(n.critical?2:1)),alpha:.95});q.x=x;q.y=y;notesLayer.addChild(q);
+ if(n.type==="flick"){const a=new PIXI.Graphics();a.moveTo(-w*.20,h*.20).lineTo(0,-h*.62).lineTo(w*.20,h*.20).lineTo(0,h*.02).closePath().fill({color:0xffffff,alpha});a.x=x;a.y=y;notesLayer.addChild(a)}
+ if(n.type==="slide"){const c=new PIXI.Graphics();c.circle(0,0,Math.max(2,w*.11)).fill({color:0xffffff,alpha:.28});c.x=x;c.y=y;notesLayer.addChild(c)}
+ if(n.critical){const z=new PIXI.Graphics();z.circle(0,0,Math.max(3,w*.17)).fill({color:0xffffff,alpha:.3});z.x=x;z.y=y;notesLayer.addChild(z)}
+}
+
 function nearest(x,y){let best=null,score=Infinity;for(const n of state.notes){if(n.hit||n.miss)continue;const ny=noteY(n.time),nx=laneX(n.lane,ny),d=Math.hypot(nx-x,ny-y),window=state.noteSpeed>9?72:84;if(d<window&&d<score){score=d;best=n}}return best}
 function hit(x,y){const n=nearest(x,y);if(!n)return;const delta=(state.time-n.time)*1000;if(Math.abs(delta)>142)return;const j=grade(delta);if(!j){n.miss=true;state.combo=0;state.judgements.miss++;renderHud();return}n.hit=true;n.held=n.duration>0;n.holdOk=false;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);state.judgements[j]++;state.score+=(n.critical?20:10)*({perfect:1,great:.7,good:.45,bad:0}[j]||0);addFx(x,y,j);renderHud()}
 function updateHold(){for(const n of state.notes){if(!n.hit||!n.duration||!n.held)continue;const end=n.time+n.duration,delta=(state.time-end)*1000;if(delta>=-72&&delta<=120)n.holdOk=true;if(delta>120){n.held=false;if(n.holdOk){state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);state.score+=6;addFx(laneX(n.lane,noteY(end)),geometry().hit,"release")}else{state.combo=0;state.judgements.miss++}}}}
