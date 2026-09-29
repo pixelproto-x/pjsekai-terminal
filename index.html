@@ -2421,17 +2421,23 @@ document.addEventListener("click",e=>{
 });
 
 
-$("#songFilter").onclick=()=>{
-  const box=$("#songSearch");
-  box.focus();
-  showToast(t("篩選入口已開啟：目前可用關鍵字搜尋"));
-};
-$("#songSearch").oninput=e=>{
-  const q=e.target.value.trim().toLowerCase();
-  document.querySelectorAll('[data-page="songs"] .catalog-card').forEach(card=>{
-    card.style.opacity=!q || card.innerText.toLowerCase().includes(q) ? "1" : ".3";
-  });
-};
+const songFilterBtn=$("#songFilter");
+if(songFilterBtn){
+  songFilterBtn.onclick=()=>{
+    const box=$("#songSearch");
+    if(box)box.focus();
+    showToast(t("篩選入口已開啟：目前可用關鍵字搜尋"));
+  };
+}
+const songSearchInput=$("#songSearch");
+if(songSearchInput){
+  songSearchInput.oninput=e=>{
+    const q=e.target.value.trim().toLowerCase();
+    document.querySelectorAll('[data-page="songs"] .catalog-card').forEach(card=>{
+      card.style.opacity=!q || card.innerText.toLowerCase().includes(q) ? "1" : ".3";
+    });
+  };
+}
 
 function escapeHtml(value){
   return String(value??"").replace(/[&<>"']/g,ch=>({
