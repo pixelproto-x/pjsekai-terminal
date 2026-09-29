@@ -299,11 +299,13 @@ function laneGeom(){
   return {w,h,topY:h*.13,hitY:h*.89,topL:w*.285,topR:w*.715,bottomL:w*.055,bottomR:w*.945};
 }
 function laneX(index,progress,g){
-  const t=clamp(progress,0,1),top=g.topL+(g.topR-g.topL)*(index+.5)/12,bottom=g.bottomL+(g.bottomR-g.bottomL)*(index+.5)/12;
+  const mirror=!!appState().dojo.mirror,index2=mirror?11-index:index;
+  const t=clamp(progress,0,1),top=g.topL+(g.topR-g.topL)*(index2+.5)/12,bottom=g.bottomL+(g.bottomR-g.bottomL)*(index2+.5)/12;
   return top+(bottom-top)*t;
 }
 function laneEdge(index,progress,g){
-  const t=clamp(progress,0,1),top=g.topL+(g.topR-g.topL)*index/12,bottom=g.bottomL+(g.bottomR-g.bottomL)*index/12;
+  const mirror=!!appState().dojo.mirror,index2=mirror?12-index:index;
+  const t=clamp(progress,0,1),top=g.topL+(g.topR-g.topL)*index2/12,bottom=g.bottomL+(g.bottomR-g.bottomL)*index2/12;
   return top+(bottom-top)*t;
 }
 function drawScene(now){
@@ -319,6 +321,7 @@ function drawScene(now){
   const z=state.noteLayer;
   z.removeChildren();
   const lead=state.leadTime;
+  const settings=appState().dojo;
   for(const note of state.notes){
     const primaryDelta=note.hit-now;
     const tailDelta=note.kind==='hold'?note.end-now:null;
@@ -335,10 +338,14 @@ function drawScene(now){
       continue;
     }
     if(primaryDelta<-JUDGE.bad||primaryDelta>lead)continue;
-    const p=1-clamp(primaryDelta/lead,0,1),x=laneX(note.lane,p,g),y=g.topY+(1-p)*(g.hitY-g.topY);
+    const p=1-clamp(primaryDelta/lead,0,1);
+    if(settings.sudden&&p<.28)continue;
+    const x=laneX(note.lane,p,g),y=g.topY+(1-p)*(g.hitY-g.topY);
     const wh=Math.max(10,(g.bottomR-g.bottomL)/12*note.width*.72),gg=new PIXI.Graphics();
     const col=note.flick?0xff6f91:(note.critical?0xffd34f:0x58d6ef);
-    roundNote(gg,x,y,wh,col);
+    const noteAlpha=settings.hidden?clamp(p/.8,.18,1):1;
+    gg.roundRect(x-wh/2,y-6,wh,12,5).fill({color:col,alpha:.96*noteAlpha});
+    gg.roundRect(x-wh/2,y-3,wh,3,2).fill({color:0xffffff,alpha:.28*noteAlpha});
     z.addChild(gg);
   }
 }
@@ -364,14 +371,16 @@ function drawEffects(){
 }
 function frame(){
   if(!state.app)return;
-  const audioNow=state.audio.currentTime||0;
+  const s=appState().dojo;
+  const audioNow=(state.audio.currentTime||0)+(num(s.visualOffset,0)-num(s.audioOffset,0))/1000;
   if(state.running)processNotes(audioNow);
   drawScene(audioNow);drawEffects();updateHud(audioNow);
 }
 function updateHud(now){
   const pre=state.prepared,total=state.notes.length;
   const first=state.notes.find(n=>!n.judged);
-  const progress=pre&&pre.songDuration?clamp((now-state.startSeek)/pre.songDuration,0,1):0;
+  const duration=Number.isFinite(state.audio.duration)&&state.audio.duration>0?state.audio.duration:1;
+  const progress=state.startSeek>=0?clamp((state.audio.currentTime-state.startSeek)/Math.max(duration-state.startSeek,.1),0,1):0;
   const bar=$('dojoGameProgressBar');if(bar)bar.style.width=(progress*100).toFixed(2)+'%';
   const score=$('dojoGameScore');if(score)score.textContent=String(Math.round(state.score)).padStart(7,'0');
   const combo=$('dojoGameCombo');if(combo)combo.textContent=state.combo>0?String(state.combo):'0';
@@ -480,8 +489,12 @@ async function startGame(){
     state.starting=true;
     const btn=$('dojoOpenPracticeBtn');if(btn){btn.disabled=true;btn.classList.add('loading');btn.textContent='載入中…';}
     const pre=await prepareSelection();await initPixi();
-    state.audio.pause();state.audio.src=pre.audioUrl||'';state.audio.load();
-    const lead=1.8;state.startSeek=Math.max(0,(Number(pre.music.fillerSec)||0)-lead);
+    if(!pre.audioUrl)throw new Error('找不到這首歌的官方音源');
+    state.audio.pause();state.audio.src=pre.audioUrl;state.audio.load();
+    const lead=1.8;
+    state.startSeek=Math.max(0,(Number(pre.music.fillerSec)||0)-lead);
+    const speed=clamp(num(appState().dojo.speed,10),1,12);
+    state.leadTime=clamp(3.3-(speed-1)*0.15,1.2,3.3);
     await state.audio.play().catch(e=>{throw new Error('瀏覽器拒絕播放音訊，請再按一次「開始打歌」');});
     state.audio.currentTime=state.startSeek;
     state.notes=pre.notes.map(n=>({...n,judged:false,started:false}));
@@ -505,7 +518,7 @@ function finishGame(){
   showGameReady('完成！最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
 }
 function bindControls(){
-  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>state.prepared&&!state.running&&state.audio.src?togglePause():startGame());
+  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>state.finished?startGame():(state.prepared&&!state.running&&state.audio.src?togglePause():startGame()));
   $('dojoAnalyzeBtn')?.addEventListener('click',()=>window.setTimeout(()=>{},0));
   $('dojoGameFullscreenBtn')?.addEventListener('click',async()=>{
     const el=$('dojoGameStageWrap');if(!el)return;
