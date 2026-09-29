@@ -30,11 +30,16 @@ function info(n){
  let type=String(n.type||"tap").toLowerCase();
  if(/DAMAGE/.test(raw)||n.damage)type="damage";
  else if(/FAKE/.test(raw)||n.fake)type="fake";
- else if(type==="trace-flick")type="trace-flick";
+ else if(/TRACE[_-]?FLICK/.test(raw))type="trace-flick";
+ else if(/FLICK/.test(raw))type="flick";
+ else if(/TRACE/.test(raw))type="trace";
+ else if(/HOLD/.test(raw))type="hold";
+ else if(/RELEASE|_HEAD_|_TAIL_/.test(raw))type="slide";
+ else if(type.includes("trace-flick"))type="trace-flick";
  else if(type.includes("trace"))type="trace";
  else if(type.includes("flick"))type="flick";
  else if(type.includes("hold"))type="hold";
- else if(type.includes("slide")||type.includes("release")||/_TAIL_/.test(raw)||/_HEAD_/.test(raw)&&n.duration>0)type="slide";
+ else if(type.includes("slide")||type.includes("release"))type="slide";
  return {raw,type,critical:/^CRIT_/.test(raw)||!!n.critical,fake:!!n.fake||/^FAKE/.test(raw)||N.disableFakeNotes,damage:!!n.damage||/DAMAGE/.test(raw),hidden:!!n.hidden||/^HIDE_/.test(raw),head:/_HEAD_/.test(raw),tail:/_TAIL_/.test(raw),anchor:raw==="ANCHOR"};
 }
 function win(n,tail=false){
@@ -188,7 +193,7 @@ function captureFlick(e,p){
 }
 function releasePointer(e,p){
  const n=p?.nextSekaiNote||N.pending.get(e.pointerId)?.n;if(!n)return;
- const i=info(n);if(i.type==="flick"||i.type==="trace-flick"){captureFlick(e,p);N.pending.delete(e.pointerId);return}
+ const i=info(n);if(!n.active&&(i.type==="flick"||i.type==="trace-flick")){captureFlick(e,p);N.pending.delete(e.pointerId);return}
  if(!n.active)return;
  const tailTime=n.time+(n.duration||0),logical=E.reverse?E.duration-tailTime:tailTime,delta=(E.reverse?E.duration-E.time():E.time())*MS+N.inputOffset-logical*MS;
  const j=judge(delta,n,true);
@@ -201,7 +206,7 @@ function processActive(){
  const logical=E.reverse?E.duration-E.time():E.time(),touches=[...E.pointers.entries()];
  for(const n of E.notes||[]){
   const i=info(n);if(i.fake||i.hidden||i.anchor||n.missed)continue;
-  if((i.type==="trace"||i.type==="trace-flick")&&n.traceArmed&&!n.hit){
+  if((i.type==="trace"||i.type==="trace-flick")&&(n.traceArmed||[...N.pending.values()].some(q=>q.n===n))&&!n.hit){
    const targetLane=noteLaneAt(n,n.time),target=(E.mirror?11-targetLane:targetLane),inside=touches.some(([pid,p])=>Math.abs(E.laneFromEvent({clientX:p.x,clientY:p.y})-target)<=Math.max(1.25,(n.width||1)/2+N.noteMargin*6));
    const dt=(logical+N.inputOffset/MS)-n.time;
    if(inside&&dt>=-W.trace.p[1]/MS&&dt<=W.trace.p[1]/MS){n.hit=true;n.active=n.duration>0;n.capturedPointer=n.tracePointer??-1;const good=i.type==="trace"||touches.some(([pid,p])=>flickOK(n,p.x-(p.downX||p.x),p.y-(p.downY||p.y)));award(i.type==="trace-flick"&&!good?"great":"perfect",n,(logical*MS+N.inputOffset)-n.time*MS,{wrongWay:i.type==="trace-flick"&&!good});}
@@ -339,6 +344,8 @@ function showResult(){
  const r=E.result;p.innerHTML=`<b>${r.ap?"ALL PERFECT":r.fc?"FULL COMBO":"RESULT"}</b><br>Score ${r.score} · Max Combo ${r.combo} · Accuracy ${r.accuracy}% · Life ${Math.round(r.life)}`;
 }
 const oldInit=E.init;E.init=function(){oldInit.call(this);addControls();N.finished=false;N.replay=[];N.judgments=[];setTimeout(addControls,0)};
+const oldIsFlick=E.isFlick;
+E.isFlick=function(n){const i=info(n);return !n?.active&&(i.type==="flick"||i.type==="trace-flick")};
 const oldLoadJSON=E.loadJSON;E.loadJSON=function(input){oldLoadJSON.call(this,input);const a=window.PJSekaiNextSekaiAdapter?.normalize(input);if(a){E.timescaleGroups=a.timescaleGroups;E.nextOptions=a.options||E.nextOptions;N.guideQuality=E.nextOptions.guideQuality??N.guideQuality;N.noteMargin=E.nextOptions.noteMargin??N.noteMargin;N.alternativeCurve=!!E.nextOptions.alternativeCurve;N.disableTimescale=!!E.nextOptions.disableTimescale;N.disableFakeNotes=!!E.nextOptions.disableFakeNotes;N.effectAnimationSpeed=E.nextOptions.effectAnimationSpeed??N.effectAnimationSpeed;N.downFlick=E.nextOptions.downFlick!==false;N.scoreMode=E.nextOptions.scoreMode||N.scoreMode;N.initialLife=E.nextOptions.initialLife||N.initialLife;N.maxLife=N.initialLife}N.finished=false;N.replay=[];N.judgments=[];for(const n of E.notes||[]){n.tickTimes=makeTicks(n);n.tickIndex=0;n.missed=false;n.hit=false;n.active=false}};
 const oldReset=E.resetJudgments;E.resetJudgments=function(render=true){oldReset.call(this,render);N.finished=false;N.replay=[];N.judgments=[];N.progress=[];E.life=N.initialLife||1000;E.maxLife=N.maxLife||E.life;for(const n of E.notes||[]){n.tickTimes=makeTicks(n);n.tickIndex=0;n.missed=false;n.hit=false;n.active=false;n.damageResolved=false}};
 E.findHead=function(lane){return findCandidate(lane,adjustedNow(),"head")};
@@ -346,7 +353,16 @@ E.judgeNote=function(n,lane,dx,dy,p,e){if(!n||n.hit||n.missed)return false;const
 E.touchDown=function(e,p){capturePointer(e,p);};
 E.flickAt=function(e,p){captureFlick(e,p)};
 E.release=function(n,p,e){if(n)releasePointer(e||{},p||{})};
-E.track=function(n,p,e){if(!n?.active)return;const lane=E.laneFromEvent(e),target=E.reverse?11-noteLaneAt(n,E.time()):noteLaneAt(n,E.time());n.progress=clamp((E.time()-n.time)/Math.max(.001,n.duration||1),0,1);if(Math.abs(lane-target)>Math.max(1.25,(n.width||1)/2+N.noteMargin*6))n.offPath=true;else n.offPath=false};
+E.track=function(n,p,e){
+ if(!n)return;
+ const lane=E.laneFromEvent(e),targetLane=noteLaneAt(n,E.reverse?E.duration-E.time():E.time()),target=E.reverse?11-targetLane:targetLane;
+ if(n.active){n.progress=clamp(((E.reverse?E.duration-E.time():E.time())-n.time)/Math.max(.001,n.duration||1),0,1);n.offPath=Math.abs(lane-target)>Math.max(1.25,(n.width||1)/2+N.noteMargin*6);return}
+ const i=info(n);if(i.type!=="trace-flick"||n.hit)return;
+ const q=N.pending.get(e.pointerId);if(!q)return;
+ q.correct=flickOK(n,e.clientX-(q.downX??p?.downX??e.clientX),e.clientY-(q.downY??p?.downY??e.clientY));
+ q.lastLane=lane;
+ if(q.correct)q.bestTime=E.time();
+};
 const oldLoop=E.loop;E.loop=function(){if(!this.running)return;processActive();const logical=E.reverse?E.duration-E.time():E.time();N.progress.push({time:E.time(),combo:E.combo,score:E.score,life:E.life});if(N.progress.length>2400)N.progress.shift();if(logical>=E.duration-.01&&!N.finished)finishResult();drawEffects(E.ctx,E.canvas.getBoundingClientRect().width,E.canvas.getBoundingClientRect().height);render();this.raf=requestAnimationFrame(()=>this.loop())};
 E.timescaleEventsFor=eventsFor;E.scrollSpeedAt=function(t){return speedAt(this.timescaleEvents||[],t)};E.scrollDistance=function(a,b){return integrate(this.timescaleEvents||[],a,b)*this.speed};
 E.visualProgress=visualProgress;E.approach=approach;
