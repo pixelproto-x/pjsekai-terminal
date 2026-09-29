@@ -813,6 +813,7 @@ body[data-sekai-theme] .theme-choice.active{
 .dojo-sonolus-frame{clip-path:polygon(1.6% 0,98.9% 0,100% 1.8%,98.5% 100%,1.2% 100%,0 98.4%,0 1.8%);background:#020617}.dojo-sonolus-frame iframe{min-width:100%;min-height:100%}@media(max-width:900px){.dojo-sonolus-frame{border-radius:16px!important}}</style>
 <link rel="stylesheet" href="my-sekai.css">
 <link rel="stylesheet" href="dojo-controls.css">
+<link rel="stylesheet" href="event-calc.css">
 </head>
 <body>
 <div class="top-accent"></div>
@@ -1047,6 +1048,7 @@ body[data-sekai-theme] .theme-choice.active{
 
   <section class="page" data-page="tools">
     <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>STRATEGY CALC</div><div class="kicker">GAME TOOLS</div><h1 class="page-title">戰略精算器</h1><p class="page-subtitle">活動衝榜、角色培養素材逆推與體力回復倒數。全部在瀏覽器本機計算。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
+    <div id="eventCalcProMount"></div>
     <div class="strategy-grid">
       <section class="strategy-card">
         <div class="strategy-head"><div><h2>活動衝榜精算</h2><p>用目前進度、目標點數、加成與每場基礎點數估算所需場數。</p></div><span class="badge">EVENT</span></div>
@@ -3245,5 +3247,6 @@ window.__PJSEKAI_APP__ = {
 </script>
 <script src="my-sekai.js" defer></script>
 <script src="dojo-controls.js" defer></script>
+<script src="event-calc.js" defer></script>
 </body>
 </html>
