@@ -122,6 +122,12 @@ function renderRankCalc(){
  $('mskRankResult').innerHTML=[['目標級距',levels],['剩餘 EXP',need],['預估場數',lives],['校正後單場 EXP',live]].map(x=>'<div class="msk-result"><small>'+x[0]+'</small><strong>'+fmt(x[1])+'</strong></div>').join('');
  $('mskRankMilestones').innerHTML=PLAYER_MILESTONES.map(x=>'<div><small>Rank '+x[0]+'</small><strong>'+esc(x[1])+'</strong></div>').join('');
 }
+function renderStatsVisualOnly(){
+ const s=ensure(),p=s.profile;const autoPlays=DIFFS.reduce((a,d)=>a+n(p.stats[d].plays),0),autoClear=DIFFS.reduce((a,d)=>a+n(p.stats[d].clear),0);
+ const totalPlays=p.totalPlaysMode==='auto'?autoPlays:n(p.manualPlays),totalClear=p.clearCountMode==='auto'?autoClear:n(p.manualClear);
+ const fc=DIFFS.reduce((a,d)=>a+n(p.stats[d].fc),0),ap=DIFFS.reduce((a,d)=>a+n(p.stats[d].ap),0);
+ $('mskTotalPlays').textContent=fmt(totalPlays);$('mskTotalClear').textContent=fmt(totalClear);$('mskTotalFc').textContent=fmt(fc);$('mskTotalAp').textContent=fmt(ap);renderCharts();
+}
 function renderStats(){
  const s=ensure(),p=s.profile;const playMode=p.totalPlaysMode,clearMode=p.clearCountMode;
  $('mskPlayCountMode').value=playMode;$('mskClearCountMode').value=clearMode;$('mskManualPlays').value=p.manualPlays||0;$('mskManualClear').value=p.manualClear||0;
@@ -176,18 +182,48 @@ async function loadPlayer(){
   save();renderAll();$('mskProfileStatus').textContent='API 讀取成功 · 已保存快取。';bridge.toast('玩家資料已載入');
  }catch(e){const s=ensure();s.profile.playerId=id;s.profile.source='local';save();$('mskProfileStatus').textContent='API 讀取失敗，已保留本地資料。';bridge.toast('API 無法讀取，已保留本機模式');}
 }
+function refreshTeamDerived(cardIndex){
+ const s=ensure(),x=s.team[cardIndex];const card=document.querySelector('[data-msk-team="'+cardIndex+'"]');if(!card)return;
+ const char=x.characterName||'';const badge=card.querySelector('.msk-slot-badge');if(badge)badge.textContent='CR '+n(s.profile.characterRanks[char]);
+ const finalTalent=Math.round(Math.max(0,n(x.talent??x.power))*(1+calcCrBonus(s.profile.characterRanks[char]))*(1+Math.max(0,n(x.bonusPct))/100));
+ const out=card.querySelector('.msk-slot-talent strong');if(out)out.textContent=fmt(finalTalent);
+ $('mskTeamTalent').textContent=fmt(Math.round(teamTalent(s)));renderBonusLights();renderIdentity();renderCardPreview();
+}
 function updateTeamField(el){
- const card=el.closest('[data-msk-team]');if(!card)return;const i=n(card.dataset.mskTeam);const s=ensure(),x=s.team[i],field=el.dataset.teamField;if(!x||!field)return;x[field]=field==='characterName'||field==='cardName'||field==='attribute'||field==='unit'?String(el.value):n(el.value);if(field==='characterName'&&!x.unit)x.unit=UNIT_MAP[x.characterName]||'';if(field==='talent')x.power=x.talent;s.team[i]=x;s.profile.teamTargets=s.profile.teamTargets||{attr:'',unit:''};scheduleSave();renderTeam();
+ const card=el.closest('[data-msk-team]');if(!card)return;const i=n(card.dataset.mskTeam);const s=ensure(),x=s.team[i],field=el.dataset.teamField;if(!x||!field)return;
+ x[field]=field==='characterName'||field==='cardName'||field==='attribute'||field==='unit'?String(el.value):n(el.value);
+ if(field==='characterName'){x.unit=UNIT_MAP[x.characterName]||'';const unitSelect=card.querySelector('[data-team-field="unit"]');if(unitSelect)unitSelect.value=x.unit;}
+ if(field==='talent')x.power=x.talent;s.team[i]=x;s.profile.teamTargets=s.profile.teamTargets||{attr:'',unit:''};scheduleSave();refreshTeamDerived(i);
+}
+function updateCrSummaryOnly(){
+ const s=ensure(),p=s.profile,vals=CHARACTERS.map(c=>n(p.characterRanks[c])),total=vals.reduce((a,b)=>a+b,0);
+ $('mskCrTotal').textContent=fmt(total);$('mskCrMax').textContent=fmt(Math.max(...vals));$('mskCrAt50').textContent=fmt(vals.filter(x=>x>=50).length);$('mskCrSummary').textContent='平均 CR '+(total/CHARACTERS.length).toFixed(1);
 }
 function updateCr(el){
- const s=ensure(),p=s.profile,c=el.dataset.crCharacter;if(!c)return;p.characterRanks[c]=Math.max(0,Math.min(CR_MAX,n(el.value)));scheduleSave();renderCrGrid();renderTeam();
+ const s=ensure(),p=s.profile,c=el.dataset.crCharacter;if(!c)return;p.characterRanks[c]=Math.max(0,Math.min(CR_MAX,n(el.value)));
+ const item=el.closest('.msk-character');const fill=item?.querySelector('.msk-progress i');if(fill)fill.style.width=Math.min(100,n(el.value)/CR_MAX*100)+'%';
+ updateCrSummaryOnly();scheduleSave();refreshTeamForCharacter(c);
+}
+function refreshTeamForCharacter(char){
+ const s=ensure();s.team.forEach((x,i)=>{if(x.characterName===char)refreshTeamDerived(i)});$('mskTeamTalent').textContent=fmt(Math.round(teamTalent(s)));renderBonusLights();renderIdentity();renderCardPreview();
 }
 function updateCrTask(el){
  const s=ensure(),p=s.profile,i=n(el.dataset.crDone??el.dataset.crNote),rows=p.crTasks[p.crSelected];if(!rows)return;if(el.dataset.crDone!=null)rows[i].done=!!el.checked;else rows[i].note=String(el.value||'').slice(0,300);scheduleSave();
 }
-function updateResource(id,value){const s=ensure();s.profile.crResource[id]=Math.max(0,n(value));scheduleSave();renderCrResource();}
-function updateRankCalc(id,value){const s=ensure();s.profile.rankCalc[id]=Math.max(0,n(value));scheduleSave();renderRankCalc();}
-function updateStat(d,f,value){const s=ensure();s.profile.stats[d][f]=Math.max(0,n(value));scheduleSave();renderStats();}
+function renderCrResourceResult(){
+ const s=ensure(),r=s.profile.crResource;const steps=Math.max(0,Math.min(CR_MAX,n(r.target))-Math.max(1,Math.min(CR_MAX,n(r.current,1))));
+ const needV=steps*n(r.vialPerRank),needF=steps*n(r.fragPerRank),needG=steps*n(r.gemPerRank);
+ const out=[['CR 級距',steps],['小瓶需求',needV],['碎片需求',needF],['純結晶需求',needG],['小瓶缺口',Math.max(0,needV-n(r.vialOwn))],['碎片缺口',Math.max(0,needF-n(r.fragOwn))],['純結晶缺口',Math.max(0,needG-n(r.gemOwn))]];
+ $('mskCrResourceResult').innerHTML=out.map(x=>'<div class="msk-result"><small>'+x[0]+'</small><strong>'+fmt(x[1])+'</strong></div>').join('');
+}
+function updateResource(id,value){const s=ensure();s.profile.crResource[id]=Math.max(0,n(value));scheduleSave();renderCrResourceResult();}
+function renderRankResult(){
+ const s=ensure(),r=s.profile.rankCalc;const cur=Math.max(1,Math.min(700,n(r.current,1))),target=Math.max(cur,Math.min(700,n(r.target,cur))),exp=Math.max(0,n(r.currentExp)),per=Math.max(1,n(r.expPerLevel,1000)),live=Math.max(1,n(r.liveExp,960));
+ const levels=Math.max(0,target-cur),need=Math.max(0,levels*per-exp),lives=Math.ceil(need/live);
+ $('mskRankResult').innerHTML=[['目標級距',levels],['剩餘 EXP',need],['預估場數',lives],['校正後單場 EXP',live]].map(x=>'<div class="msk-result"><small>'+x[0]+'</small><strong>'+fmt(x[1])+'</strong></div>').join('');
+}
+function updateRankCalc(id,value){const s=ensure();s.profile.rankCalc[id]=Math.max(0,n(value));scheduleSave();renderRankResult();}
+function updateStat(d,f,value){const s=ensure();s.profile.stats[d][f]=Math.max(0,n(value));scheduleSave();renderStatsVisualOnly();}
 function fileToDataURL(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onload=()=>{const maxW=1280,maxH=720,scale=Math.min(maxW/img.width,maxH/img.height,1),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);let out=c.toDataURL('image/jpeg',.78);if(out.length>900000)out=c.toDataURL('image/jpeg',.62);resolve(out)};img.onerror=reject;img.src=reader.result}}); 
 }
@@ -209,7 +245,7 @@ function bind(){
  $('mskTargetAttr').addEventListener('change',e=>{ensure().profile.teamTargets.attr=e.target.value;scheduleSave();renderBonusLights()});
  $('mskTargetUnit').addEventListener('change',e=>{ensure().profile.teamTargets.unit=e.target.value;scheduleSave();renderBonusLights()});
  $('mskTeamGrid').addEventListener('change',e=>{if(e.target.matches('[data-team-field]'))updateTeamField(e.target)});
- $('mskTeamGrid').addEventListener('input',e=>{if(e.target.matches('[data-team-field]'))updateTeamField(e.target)});
+ $('mskTeamGrid').addEventListener('input',e=>{if(e.target.matches('[data-team-field]')&&['talent','bonusPct','masterRank','skillLevel','cardName'].includes(e.target.dataset.teamField))updateTeamField(e.target)});
  $('mskCrCharacter').addEventListener('change',e=>{ensure().profile.crSelected=e.target.value;scheduleSave();renderCrTasks();renderCrResource()});
  $('mskCharacterGrid').addEventListener('input',e=>{if(e.target.matches('[data-cr-character]'))updateCr(e.target)});
  $('mskCrMissions').addEventListener('change',e=>{if(e.target.matches('[data-cr-done]'))updateCrTask(e.target)});
@@ -217,11 +253,10 @@ function bind(){
  ['current','target','vialPerRank','fragPerRank','gemPerRank','vialOwn','fragOwn','gemOwn'].forEach(k=>{const id={current:'mskCrCurrent',target:'mskCrTarget',vialPerRank:'mskVialPerRank',fragPerRank:'mskFragPerRank',gemPerRank:'mskGemPerRank',vialOwn:'mskVialOwn',fragOwn:'mskFragOwn',gemOwn:'mskGemOwn'}[k];$(id).addEventListener('input',e=>updateResource(k,e.target.value))});
  ['current','currentExp','target','expPerLevel','liveExp'].forEach(k=>{const id={current:'mskRankCurrent',currentExp:'mskRankCurrentExp',target:'mskRankTarget',expPerLevel:'mskRankExpPerLevel',liveExp:'mskRankLiveExp'}[k];$(id).addEventListener('input',e=>updateRankCalc(k,e.target.value))});
  $('mskPlayCountMode').addEventListener('change',e=>{ensure().profile.totalPlaysMode=e.target.value;scheduleSave();renderStats()});$('mskClearCountMode').addEventListener('change',e=>{ensure().profile.clearCountMode=e.target.value;scheduleSave();renderStats()});$('mskManualPlays').addEventListener('input',e=>{ensure().profile.manualPlays=n(e.target.value);scheduleSave();renderStats()});$('mskManualClear').addEventListener('input',e=>{ensure().profile.manualClear=n(e.target.value);scheduleSave();renderStats()});
- $('mskStatsTable').addEventListener('input',e=>{const d=e.target.dataset.stat,f=e.target.dataset.statField;if(d&&f)updateStat(d,f,e.target.value)});
+ $('mskStatsTable').addEventListener('change',e=>{const d=e.target.dataset.stat,f=e.target.dataset.statField;if(d&&f)updateStat(d,f,e.target.value)});
  $('mskCardBgMode').addEventListener('change',e=>{ensure().profile.cardBgMode=e.target.value;scheduleSave();renderCardPreview()});$('mskCardBgInput').addEventListener('change',e=>{const file=e.target.files?.[0];if(file)saveCardBg(file)});
  $('mskExportCard').onclick=exportCard;$('mskClearCardBg').onclick=()=>{const p=ensure().profile;p.cardBackground='';p.cardBgMode='gradient';save();renderCardPreview();bridge.toast('已清除自訂背景')};
- document.addEventListener('click',e=>{if(e.target.closest('.page[data-page="profile"]')){renderIdentity();renderCrGrid();renderStats();renderCardPreview();}});
-}
+ }
 function renderAll(){ensure();renderIdentity();renderTeam();renderCrGrid();renderCrTasks();renderCrResource();renderRankCalc();renderStats();renderCardPreview();}
 bind();renderAll();
 })();
