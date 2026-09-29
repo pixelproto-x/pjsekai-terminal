@@ -2597,7 +2597,7 @@ function initDojo(){
   $("#dojoClearSearch")?.addEventListener("click",()=>{$("#dojoSongSearch").value="";$("#dojoAttrFilter").value="";$("#dojoDifficultyFilter").value="";$("#dojoBpmFilter").value="";renderDojoSongs();});
   $("#dojoSongList")?.addEventListener("click",e=>{const x=e.target.closest("[data-dojo-song]");if(x)selectDojoSong(x.dataset.dojoSong);});
   $("#dojoDifficultyButtons")?.addEventListener("click",e=>{const x=e.target.closest("[data-dojo-diff]");if(x){dojoState.difficulty=x.dataset.dojoDiff;renderDojoDifficulty();renderDojoSections();renderDojoTrack();dojoAnalyze();}});
-  $("#dojoAnalyzeBtn")?.addEventListener("click",dojoAnalyze);$("#dojoOpenPracticeBtn")?.addEventListener("click",()=>$("#dojoStage")?.scrollIntoView({behavior:"smooth",block:"center"}));
+  $("#dojoAnalyzeBtn")?.addEventListener("click",dojoAnalyze);$("#dojoOpenPracticeBtn")?.addEventListener("click",()=>$("#dojoCoreFrame")?.scrollIntoView({behavior:"smooth",block:"center"}));
   $("#dojoPracticePlay")?.addEventListener("click",()=>dojoState.playing?stopPractice():startPractice());$("#dojoPracticeStop")?.addEventListener("click",stopPractice);
   ["dojoSpeed","dojoMirror","dojoReverse","dojoSudden"].forEach(id=>$("#"+id)?.addEventListener("input",()=>{updatePracticeVisual();if($("#dojoAudio").src)$("#dojoAudio").playbackRate=num($("#dojoSpeed").value,1);}));
   $("#dojoAudioFile")?.addEventListener("change",e=>{const file=e.target.files?.[0];if(!file)return;if(dojoState.audioUrl)URL.revokeObjectURL(dojoState.audioUrl);dojoState.audioUrl=URL.createObjectURL(file);$("#dojoAudio").src=dojoState.audioUrl;$("#dojoAudioName").textContent=file.name;});
