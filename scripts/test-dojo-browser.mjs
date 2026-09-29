@@ -12,7 +12,11 @@ await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeo
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
 await page.waitForSelector('#dojoGameCanvas', { state: 'visible', timeout: 30000 });
-await page.waitForTimeout(2500);
+await page.waitForFunction(() => {
+  const p = window.__PJSEKAI_DOJO__;
+  return !!p?.state?.prepared && Array.isArray(p.state.prepared.notes) && p.state.prepared.notes.length > 0;
+}, null, { timeout: 45000 });
+await page.waitForTimeout(250);
 
 const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
