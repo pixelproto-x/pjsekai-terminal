@@ -39,6 +39,8 @@ function normalizeNote(x,i){
   timescaleGroup:num(pick(x,"timescaleGroup","timescaleGroupId","timescale"),0),
   speed:Math.max(.05,num(pick(x,"speed","noteSpeed","speedMultiplier"),1)),
   ease:String(pick(x,"ease","easing","connectorEase")??"linear"),
+  tickTimes:Array.isArray(pick(x,"tickTimes","ticks"))?pick(x,"tickTimes","ticks").map(v=>typeof v==="object"?sec(pick(v,"time","targetTime")):sec(v)).filter(Number.isFinite):[],
+  timescaleEvents:Array.isArray(x.timescaleEvents)?x.timescaleEvents.map(eventOf).sort((a,b)=>a.time-b.time):[],
   head:!!pick(x,"head","isHead"),tail:!!pick(x,"tail","isTail"),metadata:x
  };
 }
@@ -86,5 +88,5 @@ function normalize(input){
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"2.1.0",normalize,normalizeNote};
+window.PJSekaiNextSekaiAdapter={version:"2.2.0",normalize,normalizeNote};
 })();
