@@ -24,7 +24,7 @@ const DIR={UP_OMNI:[0,-1],DOWN_OMNI:[0,1],UP_LEFT:[-.707,-.707],UP_RIGHT:[.707,-
 const GUIDE=["#61d7f0","#68e0ac","#ffe04e","#ff8b77","#c38dff","#ff77b9","#6da8ff","#ffffff"];
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"]};
 const N=E.nextSekai||(E.nextSekai={});
-Object.assign(N,{version:"5.1.0",scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,initialLife:N.initialLife||1000,maxLife:N.maxLife||1000,inputOffset:Number(N.inputOffset)||0,effectAnimationSpeed:Number(N.effectAnimationSpeed)||1,haptic:N.haptic||"disabled",sfxEnabled:true,noteEffectEnabled:true,laneEffectEnabled:true,slotEffectEnabled:true,disableFakeNotes:false,disableTimescale:false,downFlick:true,guideQuality:2,noteMargin:0,alternativeCurve:false,replay:[],progress:[],judgments:[],pending:new Map(),touches:new Map(),finished:false});
+Object.assign(N,{version:"6.0.0",scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,initialLife:N.initialLife||1000,maxLife:N.maxLife||1000,inputOffset:Number(N.inputOffset)||0,edgeTouchCorrection:true,flickSpeedThreshold:2,touchLeniency:1,effectAnimationSpeed:Number(N.effectAnimationSpeed)||1,haptic:N.haptic||"disabled",sfxEnabled:true,noteEffectEnabled:true,laneEffectEnabled:true,slotEffectEnabled:true,disableFakeNotes:false,disableTimescale:false,downFlick:true,guideQuality:2,noteMargin:0,alternativeCurve:false,replay:[],progress:[],judgments:[],pending:new Map(),touches:new Map(),finished:false});
 function info(n){
  const raw=String(n.kind||n.noteKind||n.type||"tap").toUpperCase().replace(/[ -]/g,"_");
  let type=String(n.type||"tap").toLowerCase();
@@ -101,9 +101,9 @@ function flickAngle(n,dx,dy){
 }
 function flickOK(n,dx,dy){
  const a=flickAngle(n,dx,dy);if(a<0)return false;
- const [wx,wy]=directionVector(n.dir),want=Math.atan2(wy,wx);
- let diff=Math.abs(Math.atan2(Math.sin(a-want),Math.cos(a-want)));
- return diff<=75*RAD;
+ const dir=Number(n.dir)||0;if(dir===0)return true;if(dir===1)return N.downFlick!==false;
+ const [wx,wy]=directionVector(dir),want=Math.atan2(wy,wx),diff=Math.abs(Math.atan2(Math.sin(a-want),Math.cos(a-want)));
+ return diff<=Math.PI/2;
 }
 function noteLaneAt(n,t){
  const d=Math.max(.000001,n.duration||0),f=clamp((t-n.time)/d,0,1),pts=n.path?.length?n.path:[{t:0,l:n.lane},{t:1,l:n.endLane??n.lane}];
@@ -156,36 +156,29 @@ function findCandidate(lane,now,mode="head"){
  for(const n of E.notes||[]){
   const i=info(n);if(n.hit||n.missed||i.fake||i.anchor||i.damage||i.hidden)continue;
   if(mode==="tail"&&!n.active)continue;
-  const t=mode==="tail"?n.time+(n.duration||0):n.time;
-  const logical=E.reverse?E.duration-t:t,delta=now-logical*MS;
-  const w=win(n,mode==="tail");
-  if(delta<w.bad[0]||delta>w.bad[1])continue;
+  const target=mode==="tail"?n.time+(n.duration||0):n.time;
+  const logical=E.reverse?E.duration-target:target,delta=now-logical*MS,w=win(n,mode==="tail");
+  if(delta<w.bad[0]-N.inputOffset||delta>w.bad[1]-N.inputOffset)continue;
   const nl=E.mirror?11-n.lane:n.lane,width=Math.max(.5,Number(n.width)||1)+N.noteMargin*12;
-  if(Math.abs(nl-lane)>width/2+1.25)continue;
-  out.push({n,abs:Math.abs(delta),delta});
+  const hdist=Math.abs(nl-lane);if(hdist>width/2+N.touchLeniency)continue;
+  const score=-hdist-(Math.abs(delta)/Math.max(1,w.bad[1]-w.bad[0]))*.25;
+  out.push({n,score,abs:Math.abs(delta)});
  }
- out.sort((a,b)=>a.abs-b.abs);return out[0]?.n||null;
+ out.sort((x,y)=>y.score-x.score||x.abs-y.abs);return out[0]?.n||null;
 }
 function capturePointer(e,p){
- const lane=E.laneFromEvent(e),now=adjustedNow(),n=findCandidate(lane,now);
- if(!n)return;
+ const lane=E.laneFromEvent(e),now=adjustedNow(),n=findCandidate(lane,now);if(!n)return;
  p.nextSekaiNote=n;p.note=n;p.nextSekaiDownX=e.clientX;p.nextSekaiDownY=e.clientY;p.nextSekaiStart=performance.now();
  const i=info(n);
- if(i.type==="flick"){N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1,downX:e.clientX,downY:e.clientY});return}
- if(i.type==="trace-flick"){
-  N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1,downX:e.clientX,downY:e.clientY,trace:true});return
-}
- if(i.type==="trace"){
-  n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.holdUntil=n.time+(n.duration||0);return
-}
- if(i.type==="damage"){damage(n);return}
- const d=deltaFor(n),j=judge(d,n);
- if(j){n.hit=true;n.active=n.duration>0||i.type==="hold"||i.type==="slide"||i.type==="trace"||i.type==="trace-flick";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d);return}
+ if(i.type==="flick"||i.type==="trace-flick"){N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1,downX:e.clientX,downY:e.clientY,startTime:E.time(),bestTime:1e9,bestCorrect:false});return}
+ if(i.type==="trace"){n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.capturedPointer=e.pointerId;n.holdUntil=n.time+(n.duration||0);if(Math.abs(deltaFor(n))<=F(5))n.hit=true;return}
+ if(i.type==="damage"||i.hidden&&/DAMAGE/.test(i.raw)){damage(n);return}
+ const d=deltaFor(n),j=judge(d,n);if(j){n.hit=true;n.active=n.duration>0||i.type==="hold"||i.type==="slide";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d)}
 }
 function captureFlick(e,p){
  const q=N.pending.get(e.pointerId),n=q?.n||findCandidate(E.laneFromEvent(e),adjustedNow(),"head");if(!n)return false;
- const dx=e.clientX-(q?.downX??p?.downX??e.clientX),dy=e.clientY-(q?.downY??p?.downY??e.clientY);
- const d=deltaFor(n),w=win(n);if(d<w.bad[0]-N.inputOffset||d>w.bad[1]-N.inputOffset)return false;
+ const dx=e.clientX-(q?.downX??p?.downX??e.clientX),dy=e.clientY-(q?.downY??p?.downY??e.clientY),elapsed=Math.max(.001,(performance.now()-(p?.start||performance.now()))/1000),velocity=Math.hypot(dx,dy)/elapsed;
+ if(velocity<N.flickSpeedThreshold)return false; const d=deltaFor(n),w=win(n);if(d<w.bad[0]-N.inputOffset||d>w.bad[1]-N.inputOffset)return false;
  if(flickOK(n,dx,dy)){
   const j=judge(d,n);if(j){n.hit=true;n.active=n.duration>0;n.hitAt=E.time();n.capturedPointer=e.pointerId;N.pending.delete(e.pointerId);award(j,n,d);return true}
  }else if(q){q.wrong=true;if(q.wrongTime<0)q.wrongTime=E.time()}
