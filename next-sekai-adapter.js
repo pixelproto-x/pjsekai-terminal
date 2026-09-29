@@ -109,14 +109,18 @@ function uscToBrowser(usc){
  return {title:"SUS / USC Chart",artist:"",bpm:base,notes,timescales,timescaleGroups:{"0":timescales}};
 }
 function normalize(input){
- const root=typeof input==="string"?JSON.parse(input):obj(input),src=collect(root);
- const notes=src.map(normalizeNote).filter(n=>Number.isFinite(n.time)).sort((a,b)=>a.time-b.time);
+ if(typeof input==="string"){
+  try{const root=JSON.parse(input);return root?.objects?uscToBrowser(root):normalize(root)}
+  catch(err){return uscToBrowser(susToUSC(input))}
+ }
+ if(Array.isArray(input))return{title:"Chart",artist:"",bpm:120,notes:input.map(normalizeNote),timescales:[],timescaleGroups:{"0":[]},options:{}};
+ const root=obj(input),src=collect(root),notes=src.map(normalizeNote).filter(n=>Number.isFinite(n.time)).sort((x,y)=>x.time-y.time);
  const raw=pick(root,"timescales","timescaleEvents","scrollEvents","timescaleGroups")??root.options?.timescales;
- const timescaleGroups=groupsFrom(raw),timescales=timescaleGroups["0"]||[];
- const opt=obj(root.options);
- return {
+ const timescaleGroups=groupsFrom(raw),timescales=timescaleGroups["0"]||[],opt=obj(root.options);
+ return{
   title:String(pick(root,"title","name","songName")??"Next SEKAI Chart"),
-  artist:String(pick(root,"artist","composer","author")??""),bpm:Math.max(.1,num(pick(root,"bpm","BPM","baseBpm","tempo"),120)),
+  artist:String(pick(root,"artist","composer","author")??""),
+  bpm:Math.max(.1,num(pick(root,"bpm","BPM","baseBpm","tempo"),120)),
   notes,timescales,timescaleGroups,
   options:{
    guideQuality:num(opt.guideQuality,2),noteMargin:num(opt.noteMargin,0),alternativeCurve:!!opt.alternativeCurve,
