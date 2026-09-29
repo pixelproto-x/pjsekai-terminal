@@ -55,7 +55,9 @@ function collect(root){
 function normalize(input){
  const root=typeof input==="string"?JSON.parse(input):input;
  const src=collect(root);
- const notes=src.map(normalizeNote).filter(n=>Number.isFinite(n.time)).sort((a,b)=>a.time-b.time);\n const rawTs=pick(root,"timescales","timescaleGroups","scrollEvents")||root?.options?.timescales||[];\n const timescales=Array.isArray(rawTs)?rawTs.map((e,i)=>({time:time(pick(e,"time","targetTime","startTime","sec")),speed:num(pick(e,"speed","timescale","value"),1),nextSpeed:num(pick(e,"nextSpeed","endSpeed"),NaN),ease:String(pick(e,"ease","easing")??"linear").toLowerCase(),transition:String(pick(e,"transition","transitionStyle")??"timescale").toLowerCase()})).filter(e=>Number.isFinite(e.time)).sort((a,b)=>a.time-b.time):[];
+ const notes=src.map(normalizeNote).filter(n=>Number.isFinite(n.time)).sort((a,b)=>a.time-b.time);
+ const rawTs=pick(root,"timescales","timescaleGroups","scrollEvents")||root?.options?.timescales||[];
+ const timescales=Array.isArray(rawTs)?rawTs.map((e,i)=>({time:time(pick(e,"time","targetTime","startTime","sec")),speed:num(pick(e,"speed","timescale","value"),1),nextSpeed:num(pick(e,"nextSpeed","endSpeed"),NaN),ease:String(pick(e,"ease","easing")??"linear").toLowerCase(),transition:String(pick(e,"transition","transitionStyle")??"timescale").toLowerCase()})).filter(e=>Number.isFinite(e.time)).sort((a,b)=>a.time-b.time):[];
  const bpm=num(pick(root,"bpm","BPM","baseBpm"),120);
  return {
   title:String(pick(root,"title","name","songName")??"Next SEKAI Chart"),
