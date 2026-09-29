@@ -102,10 +102,35 @@ function susToUSC(sus){
  return {offset,ticksPerBeat:tpb,objects,meta,title:String(meta.get("TITLE")||"").replace(/^"|"$/g,""),artist:String(meta.get("ARTIST")||"").replace(/^"|"$/g,"")};
 }
 function uscToBrowser(usc){
- const objects=usc.objects||[],bpms=objects.filter(o=>o.type==="bpm").map(o=>({beat:num(o.beat),bpm:num(o.bpm,120)})).sort((a,b)=>a.beat-b.beat),metaBase=usc.meta?Object.entries(usc.meta).find(([k])=>/^BPM[0-9A-Z]{2}$/i.test(k)):null,base=bpms[0]?.bpm||(metaBase?num(metaBase[1],120):120);
- const beatSec=beat=>{let sec=0,last=0,bpm=base;for(const x of bpms){if(x.beat>=beat)break;sec+=(x.beat-last)*60/Math.max(.01,bpm);last=x.beat;bpm=x.bpm}return sec+(beat-last)*60/Math.max(.01,bpm)};
+ const objects=usc.objects||[];
+ const bpms=objects.filter(o=>o.type==="bpm").map(o=>({beat:num(o.beat),bpm:num(o.bpm,120)})).sort((a,b)=>a.beat-b.beat);
+ const base=bpms[0]?.bpm||120;
+ const beatSec=beat=>{let s=0,last=0,bpm=base;for(const x of bpms){if(x.beat>=beat)break;s+=(x.beat-last)*60/Math.max(.01,bpm);last=x.beat;bpm=x.bpm||bpm}return s+(beat-last)*60/Math.max(.01,bpm)};
  const notes=[],timescales=objects.filter(o=>o.type==="timeScale").map(o=>({time:beatSec(num(o.beat)),speed:num(o.timeScale,1)}));let id=0;
- for(const o of objects){if(o.type==="single"){const type=o.trace?(o.direction?"trace-flick":"trace"):(o.direction?"flick":"tap");notes.push({id:id++,time:beatSec(num(o.beat)),lane:clamp(num(o.lane)-num(o.size,.5)+6,0,11),width:Math.max(.5,num(o.size,.5)*2),type,critical:!!o.critical,dir:{left:2,up:0,right:3}[o.direction]??0})}else if(o.type==="slide"){const cs=(o.connections||[]).filter(x=>x.lane!=null).sort((a,b)=>a.beat-b.beat);if(cs.length>=2){const b0=num(cs[0].beat),b1=num(cs.at(-1).beat),d=Math.max(.001,beatSec(b1)-beatSec(b0)),path=cs.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:clamp(num(x.lane)-num(x.size,.5)+6,0,11)})),end=cs.at(-1),ticks=cs.filter(x=>x.type==="tick").map(x=>beatSec(num(x.beat)));notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(cs[0].size,.5)*2),type:cs[0].trace?"trace":"slide",duration:d,endLane:end.lane,path,critical:!!o.critical,dir:{left:2,up:0,right:3}[end.direction]??0,tickTimes:ticks})}}}
+ const convertDir=v=>({left:2,up:0,right:3}[v]??0);
+ const browserLane=(lane,size)=>clamp(num(lane)-num(size,.5)+6,0,11);
+ for(const o of objects){
+  if(o.type==="single"){
+   const type=o.trace?(o.direction?"trace-flick":"trace"):(o.direction?"flick":"tap");
+   notes.push({id:id++,time:beatSec(num(o.beat)),lane:browserLane(o.lane,o.size),width:Math.max(.5,num(o.size,.5)*2),type,critical:!!o.critical,dir:convertDir(o.direction)});
+   continue;
+  }
+  if(o.type!=="slide")continue;
+  const cs=(o.connections||[]).slice().sort((x,y)=>num(x.beat)-num(y.beat));
+  if(cs.length<2)continue;
+  const visible=cs.filter(x=>x.lane!=null);
+  if(visible.length<2)continue;
+  const first=visible[0],last=visible[visible.length-1];
+  const b0=num(first.beat),b1=num(last.beat),duration=Math.max(.001,beatSec(b1)-beatSec(b0));
+  const path=visible.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:browserLane(x.lane,x.size)}));
+  const ticks=cs.filter(x=>x.type==="tick"||x.type==="hidden").map(x=>beatSec(num(x.beat)));
+  const headType=first.type==="start"?(first.trace?"trace":"slide"):"slide";
+  const tailType=last.type==="end"?(last.direction?(last.trace?"trace-flick":"flick"):(last.trace?"trace":"slide")):"slide";
+  notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(first.size,.5)*2),type:headType==="trace"?"trace":"slide",
+   duration,endLane:path[path.length-1].l,path,critical:!!o.critical,
+   headTrace:!!first.trace,headCritical:!!first.critical,tailType,tailTrace:!!last.trace,tailCritical:!!last.critical,
+   tailDir:convertDir(last.direction),tickTimes:ticks,activeSlide:!!o.active,metadata:{usc:true}});
+ }
  return {title:usc.title||"SUS / USC Chart",artist:usc.artist||"",bpm:base,notes,timescales,timescaleGroups:{"0":timescales},offset:num(usc.offset,0)};
 }
 function normalize(input){
@@ -133,5 +158,5 @@ function normalize(input){
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"3.3.0",normalize,normalizeNote,susToUSC,uscToBrowser};
+window.PJSekaiNextSekaiAdapter={version:"3.4.0",normalize,normalizeNote,susToUSC,uscToBrowser};
 })();
