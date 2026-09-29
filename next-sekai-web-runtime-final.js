@@ -22,7 +22,7 @@ const WINDOW={
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"],release:[610,"triangle"]};
 const N=E.nextSekai||{};
 Object.assign(N,{
- version:"8.1.0",
+ version:"9.0.0",
  scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,
  initialLife:Number(N.initialLife)||1000,maxLife:Number(N.maxLife)||1000,
  inputOffset:Number(N.inputOffset)||0,
@@ -240,15 +240,23 @@ function onDown(e){
  if(i.damage||i.type==="hidden-damage"){if(laneDistance(n,lane))hitDamage(n);return}
  if(i.type==="flick"||i.type==="trace-flick"){p.note=n;N.pending.set(e.pointerId,{n,downX:e.clientX,downY:e.clientY,startTime:E.time(),bestTime:Infinity,bestCorrect:false,lastTime:E.time(),wrong:false});return}
  if(i.type==="trace"){p.note=n;n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.capturedPointer=e.pointerId;n.holdUntil=n.time+(n.duration||0);return}
- const d=deltaFor(n),j=judgeDelta(d,n);if(j){p.note=n;n.hit=true;n.active=n.duration>0||i.type==="slide";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d)}
+ const d=deltaFor(n),j=judgeDelta(d,n);
+ if(j){p.note=n;n.hit=true;n.active=n.duration>0||i.type==="slide";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d)}
+ else {const w=winFor(n);if(d>=w.bad[0]&&d<=w.bad[1]){p.note=n;N.pending.set(e.pointerId,{n,mode:"head",downX:e.clientX,downY:e.clientY,bestTime:E.time(),bestDelta:d,bestAbs:Math.abs(d),ended:false})}}
 }
 function onMove(e){
  const p=N.touchHistory.get(e.pointerId);if(!p)return;
- const oldX=p.x,oldY=p.y,oldT=p.lastT;p.lastX=oldX;p.lastY=oldY;p.x=e.clientX;p.y=e.clientY;p.lastT=performance.now();const dt=Math.max(.001,(p.lastT-oldT)/1000);p.speed=Math.hypot(p.x-oldX,p.y-oldY)/dt;p.angle=Math.atan2(p.y-oldY,p.x-oldX);
- const q=N.pending.get(e.pointerId);if(q){q.lastLane=eventLane(e);q.lastSpeed=p.speed;q.lastTime=E.time();if(flickMatches(q.n,e.clientX-q.downX,e.clientY-q.downY)){q.bestCorrect=true;q.bestTime=E.time()}}
+ const oldX=p.x,oldY=p.y,oldT=p.lastT;p.lastX=oldX;p.lastY=oldY;p.x=e.clientX;p.y=e.clientY;p.lastT=performance.now();
+ const dt=Math.max(.001,(p.lastT-oldT)/1000);p.speed=Math.hypot(p.x-oldX,p.y-oldY)/dt;p.angle=Math.atan2(p.y-oldY,p.x-oldX);
+ const q=N.pending.get(e.pointerId);
+ if(q){
+  q.lastLane=eventLane(e);q.lastSpeed=p.speed;q.lastTime=E.time();
+  const d=deltaFor(q.n);
+  if(q.mode==="head"&&!classify(q.n).type.includes("flick")&&laneDistance(q.n,q.lastLane)&&Math.abs(d)<(q.bestAbs??Infinity)){q.bestAbs=Math.abs(d);q.bestDelta=d;q.bestTime=E.time()}
+  if((classify(q.n).type==="flick"||classify(q.n).type==="trace-flick")&&flickMatches(q.n,e.clientX-q.downX,e.clientY-q.downY)){q.bestCorrect=true;q.bestTime=E.time();q.bestDelta=d}
+ }
  if(p.note?.active||p.note?.traceArmed){const n=p.note,target=E.mirror?11-pathLane(n,E.time()):pathLane(n,E.time());n.offPath=Math.abs(eventLane(e)-target)>Math.max(1.25,(n.width||1)/2+N.noteMargin*6)}
-}
-function resolveFlick(e,p){
+}function resolveFlick(e,p){
  const q=N.pending.get(e.pointerId);if(!q)return false;const n=q.n,dx=e.clientX-q.downX,dy=e.clientY-q.downY;
  const elapsed=Math.max(.001,(performance.now()-p.downT)/1000),speed=Math.hypot(dx,dy)/elapsed;if(speed/Math.max(1,(E.canvas?.clientWidth||E.canvas?.width||720)/12)<N.flickSpeedThreshold)return false;
  const d=deltaFor(n),w=winFor(n);if(d<w.bad[0]||d>w.bad[1])return false;
@@ -258,7 +266,10 @@ function resolveFlick(e,p){
 function onUp(e){
  const p=N.touchHistory.get(e.pointerId),q=N.pending.get(e.pointerId),n=p?.note||q?.n;if(!n)return;
  const i=classify(n);if(i.type==="flick"||i.type==="trace-flick"){resolveFlick(e,p||{});N.pending.delete(e.pointerId);N.touchHistory.delete(e.pointerId);return}
- if(!n.active){N.touchHistory.delete(e.pointerId);return}
+ if(!n.active){
+  if(q?.mode==="head"&&!n.hit){q.ended=true;N.touchHistory.delete(e.pointerId);return}
+  N.touchHistory.delete(e.pointerId);return
+ }
  const tail=tailProxy(n),d=deltaFor(n,true),j=judgeDelta(d,tail,true);
  if(i.type==="trace"||i.type==="slide"){
   if(j){n.active=false;n.tailHit=true;award(j,tail,d,{tail:true,release:true})}
@@ -266,7 +277,20 @@ function onUp(e){
  }
  N.touchHistory.delete(e.pointerId);
 }
+function processPendingHeads(){
+ const logical=E.reverse?E.duration-E.time():E.time();
+ for(const [id,q] of N.pending){
+  if(q.mode!=="head"||!q.n||q.n.hit||q.n.missed)continue;
+  const n=q.n,i=classify(n),w=winFor(n),threshold=targetTime(n)+w.perfect[1]/MS;
+  if(logical<threshold)continue;
+  const d=q.bestDelta??deltaFor(n),j=judgeDelta(d,n);
+  if(j){n.hit=true;n.active=n.duration>0||i.type==="slide";n.hitAt=q.bestTime??E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=id;award(j,n,d,{delayed:true})}
+  else if(deltaFor(n)>w.bad[1])fail(n,"delayed");
+  N.pending.delete(id);
+ }
+}
 function processFrame(){
+ processPendingHeads();
  const logical=E.reverse?E.duration-E.time():E.time(),touches=[...N.touchHistory.values()];
  for(const n of E.notes||[]){
   const i=classify(n);if(i.fake||i.anchor||n.missed)continue;
