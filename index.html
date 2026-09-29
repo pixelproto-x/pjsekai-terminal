@@ -2990,10 +2990,7 @@ function applyTeamShareFromHash(){
 $(".theme-choice") && document.addEventListener("click",e=>{
   const choice=e.target.closest(".theme-choice[data-theme]");
   if(!choice)return;
-  applySekaiT<script src="./next-sekai-adapter.js?v=20260929-next2"></script>
-<script src="./dojo-engine.js?v=20260929-engine2"></script>
-<script src="./dojo-parity-runtime.js?v=20260929-parity1"></script><script src="./dojo-nextsekai-parity.js?v=20260929-parity1"></script><script src="./next-sekai-web-runtime.js?v=20260929-runtime6"></script>
-heme(choice.dataset.theme);
+  applySekaiTheme(choice.dataset.theme);
   showToast("主題已切換："+SEKAI_THEMES[choice.dataset.theme].label);
 });
 
@@ -3040,6 +3037,12 @@ window.addEventListener("hashchange",initRoute);
 initRoute();
 syncBottomBarIndicator();
 </script>
+
+
+
+
+
+
 <script src="./next-sekai-adapter.js?v=20260929-next2"></script>
 <script src="./dojo-engine.js?v=20260929-engine2"></script>
 <script src="./dojo-parity-runtime.js?v=20260929-parity1"></script>
