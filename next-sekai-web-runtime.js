@@ -153,7 +153,7 @@ function findCandidate(lane,now,mode="head"){
   if(mode==="tail"&&!n.active)continue;
   const t=mode==="tail"?n.time+(n.duration||0):n.time;
   const logical=E.reverse?E.duration-t:t,delta=now-logical*MS;
-  const w=win(n,mode==="tail"),lo=w.bad[0]-N.inputOffset,hi=w.bad[1]-N.inputOffset;
+  const w=win(n,mode==="tail");
   if(delta<w.bad[0]||delta>w.bad[1])continue;
   const nl=E.mirror?11-n.lane:n.lane,width=Math.max(.5,Number(n.width)||1)+N.noteMargin*12;
   if(Math.abs(nl-lane)>width/2+1.25)continue;
@@ -166,7 +166,13 @@ function capturePointer(e,p){
  if(!n)return;
  p.nextSekaiNote=n;p.note=n;p.nextSekaiDownX=e.clientX;p.nextSekaiDownY=e.clientY;p.nextSekaiStart=performance.now();
  const i=info(n);
- if(i.type==="flick"||i.type==="trace-flick"){N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1});return}
+ if(i.type==="flick"){N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1,downX:e.clientX,downY:e.clientY});return}
+ if(i.type==="trace-flick"){
+  N.pending.set(e.pointerId,{n,wrong:false,wrongTime:-1,downX:e.clientX,downY:e.clientY,trace:true});return
+}
+ if(i.type==="trace"){
+  n.traceArmed=true;n.tracePointer=e.pointerId;n.active=true;n.holdUntil=n.time+(n.duration||0);return
+}
  if(i.type==="damage"){damage(n);return}
  const d=deltaFor(n),j=judge(d,n);
  if(j){n.hit=true;n.active=n.duration>0||i.type==="hold"||i.type==="slide"||i.type==="trace"||i.type==="trace-flick";n.hitAt=E.time();n.holdUntil=n.time+(n.duration||0);n.capturedPointer=e.pointerId;award(j,n,d);return}
@@ -195,6 +201,11 @@ function processActive(){
  const logical=E.reverse?E.duration-E.time():E.time(),touches=[...E.pointers.entries()];
  for(const n of E.notes||[]){
   const i=info(n);if(i.fake||i.hidden||i.anchor||n.missed)continue;
+  if((i.type==="trace"||i.type==="trace-flick")&&n.traceArmed&&!n.hit){
+   const targetLane=noteLaneAt(n,n.time),target=(E.mirror?11-targetLane:targetLane),inside=touches.some(([pid,p])=>Math.abs(E.laneFromEvent({clientX:p.x,clientY:p.y})-target)<=Math.max(1.25,(n.width||1)/2+N.noteMargin*6));
+   const dt=(logical+N.inputOffset/MS)-n.time;
+   if(inside&&dt>=-W.trace.p[1]/MS&&dt<=W.trace.p[1]/MS){n.hit=true;n.active=n.duration>0;n.capturedPointer=n.tracePointer??-1;const good=i.type==="trace"||touches.some(([pid,p])=>flickOK(n,p.x-(p.downX||p.x),p.y-(p.downY||p.y)));award(i.type==="trace-flick"&&!good?"great":"perfect",n,(logical*MS+N.inputOffset)-n.time*MS,{wrongWay:i.type==="trace-flick"&&!good});}
+  }
   if(i.damage&&!n.damageResolved){
    const delta=logical*MS+N.inputOffset-n.time*MS,w=win(n);
    if(delta>w.p[0]&&delta<=w.bad[1]){let touched=false;for(const [,p] of touches){const lane=E.laneFromEvent({clientX:p.x,clientY:p.y});if(Math.abs((E.mirror?11-n.lane:n.lane)-lane)<=1.25){touched=true;break}}if(touched)damage(n);else if(delta>=w.bad[1])completeDamage(n)}
