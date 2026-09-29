@@ -6,7 +6,6 @@ if(!APP)return;
 const $=id=>document.getElementById(id);
 const RAW='https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/';
 const ASSET='https://storage.sekai.best/sekai-jp-assets/';
-const API='https://api.sekai.best/api/v1';
 const CACHE='pjsekaiCardGallery:v2';
 const PAGE=24;
 const MASTER_BONUS={rarity_1:150,rarity_2:300,rarity_3:450,rarity_birthday:540,rarity_4:600,rarity_5:600};
@@ -45,9 +44,7 @@ async function loadRaw(){
   const [cards,episodes,costumes,rarities,supplies]=await Promise.all(Object.values(urls).map(fetchJson));
   return {cards:Array.isArray(cards)?cards.map(normalizeCard):[],episodes:Array.isArray(episodes)?episodes:[],costumes:Array.isArray(costumes)?costumes:[],rarities:Array.isArray(rarities)?rarities:[],supplies:Array.isArray(supplies)?supplies:[]};
 }
-async function loadApi(){
-  const all=[];for(let p=1;p<=80;p++){const url=API+'/cards/jp/list?page='+p+'&page_size=100&spoiler=false&sort_by=releaseAt&sort_order=desc';const x=await fetchJson(url);const items=x?.items||x?.data?.items||x?.cards||x?.data||[];if(!Array.isArray(items)||!items.length)break;all.push(...items.map(normalizeCard));const pg=x?.pagination||x?.meta?.pagination||{};if(pg.hasNext===false||(pg.has_next===false)||items.length<100)break;}if(!all.length)throw new Error('API returned no cards');return {cards:all,episodes:[],costumes:[],rarities:[],supplies:[]};}
-async function load(){
+function load(){
   const cached=sessionStorage.getItem(CACHE);if(cached){try{data=JSON.parse(cached);source=data._source||'raw';return}catch(_){}}
   data=await loadRaw();source='raw';
   data._source=source;try{sessionStorage.setItem(CACHE,JSON.stringify(data));}catch(_){}
@@ -70,7 +67,7 @@ function renderCards(){
   filtered=data.cards.filter(matches);
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE));page=Math.min(page,pages);
   const box=$('cgpGrid');const slice=filtered.slice((page-1)*PAGE,page*PAGE);
-  $('cgpCount').textContent=fmt(filtered.length)+' 張';$('cgpSource').textContent=source==='api'?'Master API':'Sekai-World master DB fallback';
+  $('cgpCount').textContent=fmt(filtered.length)+' 張';$('cgpSource').textContent='Sekai-World master DB';
   $('cgpPageInfo').textContent=page+' / '+pages;
   box.innerHTML=slice.length?slice.map(c=>'<article class="card-gallery-card" data-card-id="'+esc(idOf(c))+'"><img class="card-gallery-art" loading="lazy" src="'+esc(cardArt(c,false,'small'))+'" onerror="this.src=\''+esc(cardArt(c,false,'full'))+'\';this.onerror=null" alt="'+esc(titleOf(c))+'"><div class="card-gallery-card-body"><div class="card-gallery-card-title">'+esc(titleOf(c))+'</div><div class="card-gallery-meta"><span class="card-gallery-pill star">'+esc(rarityStars(c.cardRarityType)+' '+rarityLabel(c.cardRarityType))+'</span><span class="card-gallery-pill">'+esc(attrLabel(c.attr))+'</span><span class="card-gallery-pill">'+esc(unitLabel(c.unit))+'</span></div><div class="card-gallery-card-foot"><span>#'+esc(idOf(c))+'</span><span>'+esc(date(c.releaseAt))+'</span></div></div></article>').join(''):'<div class="card-gallery-empty">沒有符合條件的卡牌。清除部分篩選後再試。</div>';
 }
