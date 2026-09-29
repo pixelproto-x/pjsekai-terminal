@@ -9,7 +9,7 @@ const Engine={
   notes:[],audio:null,canvas:null,ctx:null,raf:0,running:false,startOffset:0,offset:0,
   speed:1,mirror:false,reverse:false,sudden:false,score:0,combo:0,maxCombo:0,
   counts:{perfect:0,great:0,good:0,bad:0,miss:0},active:new Map(),effects:[],pointers:new Map(),lastTime:-1,
-  laneCount:12,judgment:{perfect:45,great:90,good:140,bad:200},lastHit:null,
+  laneCount:12,judgment:{perfect:45,great:90,good:140,bad:200},flickMinDistance:18,lastHit:null,
   chartName:"Web Dojo Chart",chartBpm:120,duration:60,loaded:false,
   audioCtx:null,sfxGain:null,
   init(){
@@ -50,7 +50,7 @@ const Engine={
     $("#dojoSudden")?.addEventListener("change",e=>{this.sudden=e.target.checked;this.render();});
   },
   bindInput(stage){
-    const input=e=>{
+    const input=(e,dx=0,dy=0)=>{
 
       const r=this.canvas.getBoundingClientRect();
       let x=e.clientX-r.left;
@@ -58,11 +58,11 @@ const Engine={
       const lane=clamp(Math.floor(x/r.width*this.laneCount),0,this.laneCount-1);
       const y=e.clientY-r.top;
       if(y<r.height*.68)return;
-      this.hit(lane,e.type==="pointerdown"?"tap":"release",performance.now());
+      this.hit(lane,e.type==="pointerdown"?"tap":"release",dx,dy);
     };
     stage.addEventListener("pointerdown",e=>{stage.setPointerCapture?.(e.pointerId);this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,t:performance.now()});input(e);},{passive:true});
     stage.addEventListener("pointermove",e=>{if(!this.pointers.has(e.pointerId))return;this.pointers.get(e.pointerId).x=e.clientX;this.pointers.get(e.pointerId).y=e.clientY;},{passive:true});
-    stage.addEventListener("pointerup",e=>{input(e);this.pointers.delete(e.pointerId);},{passive:true});
+    stage.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);const dx=p?e.clientX-p.x:0,dy=p?e.clientY-p.y:0;input(e,dx,dy);this.pointers.delete(e.pointerId);},{passive:true});
     stage.addEventListener("pointercancel",e=>{this.pointers.delete(e.pointerId);input(e);},{passive:true});
     stage.addEventListener("pointercancel",e=>input(e),{passive:true});
     addEventListener("keydown",e=>{
@@ -101,9 +101,13 @@ const Engine={
   },
   currentTime(){return this.audio?.currentTime||0;},
   judgeWindow(ms){const a=Math.abs(ms);if(a<=this.judgment.perfect)return"perfect";if(a<=this.judgment.great)return"great";if(a<=this.judgment.good)return"good";if(a<=this.judgment.bad)return"bad";return null;},
-  hit(lane,type){const t=this.currentTime()*1000;let best=null,bestAbs=Infinity;
+  hit(lane,type,dx=0,dy=0){
+    const t=this.currentTime()*1000;
+    const flick=Math.abs(dx)+Math.abs(dy)>=this.flickMinDistance;
+let best=null,bestAbs=Infinity;
     for(const n of this.notes){if(n.hit||n.lane!==lane)continue;const d=(n.time*1000-t)-this.offset;if(Math.abs(d)<bestAbs&&Math.abs(d)<=this.judgment.bad+40){best=n;bestAbs=Math.abs(d);}}
     if(!best){this.playSfx("miss");return;}
+    if((best.type==="flick"||best.type==="trace-flick")&&!flick){return;}
     const j=this.judgeWindow(bestAbs);if(!j){this.playSfx("miss");return;}
     best.hit=true;best.judgment=j;this.counts[j]++;
     if(best.type==="hold"&&best.duration){best.holdUntil=best.time+best.duration;}
@@ -132,7 +136,9 @@ const Engine={
     this.effects=this.effects.filter(e=>{e.life-=1/60;return e.life>0;});
     for(const n of this.notes){if(n.hit)continue;let p=1-(n.time-now)/travel;if(p<0||p>1.08)continue;if(this.sudden&&p<.45)continue;
       const q=this.project(this.mirror?11-n.lane:n.lane,p,w,h),size=q.w*(n.critical?1.05:.9);
-      if(n.type==="hold"&&n.duration){const tailP=1-(n.time+n.duration-now)/travel,qt=this.project(this.mirror?11-(n.endLane??n.lane):n.endLane??n.lane,tailP,w,h);ctx.strokeStyle=n.critical?"#ffd84d":"#55d7ef";ctx.lineWidth=Math.max(5,size*.65);ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(qt.x,qt.y);ctx.stroke();}
+      if(n.type==="hold"&&n.duration){const tailP=1-(n.time+n.duration-now)/travel,qt=this.project(this.mirror?11-(n.endLane??n.lane):n.endLane??n.lane,tailP,w,h);ctx.strokeStyle=n.critical?"#ffd84d":"#55d7ef";ctx.lineWidth=Math.max(5,size*.65);ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(qt.x,qt.y);ctx.stroke();
+        if(n.type==="trace"||n.type==="trace-flick"){ctx.globalAlpha=.35;ctx.lineWidth=Math.max(2,size*.28);ctx.strokeStyle=n.critical?"#ffe36b":"#74f0c4";ctx.beginPath();ctx.arc(q.x,q.y,size*1.2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}}
+
       ctx.save();ctx.translate(q.x,q.y);if(n.type==="flick")ctx.rotate(n.reverse?Math.PI:0);ctx.shadowBlur=14;ctx.shadowColor=n.critical?"#ffd84d":"#5ee7ff";ctx.fillStyle=n.critical?"#ffd84d":n.type==="trace"?"#70e7c0":"#eafaff";ctx.beginPath();ctx.roundRect(-size*.7,-size*.7,size*1.4,size*1.4,Math.max(3,size*.28));ctx.fill();ctx.strokeStyle=n.critical?"#fff0a8":"#fff";ctx.lineWidth=1.5;ctx.stroke();if(n.type==="flick"){ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(0,-size*1.2);ctx.lineTo(size*.45,-size*.35);ctx.lineTo(-size*.45,-size*.35);ctx.closePath();ctx.fill();}ctx.restore();
     }
     for(const e of this.effects){const life=1-e.life/e.max;const x=w*(.14+e.lane/12*.72),y=h*.79-life*34;ctx.save();ctx.globalAlpha=Math.max(0,1-life);ctx.translate(x,y);ctx.scale(1+life*.7,1+life*.7);ctx.font="900 15px sans-serif";ctx.textAlign="center";ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe76b":e.kind==="good"?"#7ee7ff":e.kind==="miss"?"#ff6b8a":"#fff";ctx.shadowBlur=14;ctx.shadowColor=ctx.fillStyle;ctx.fillText(String(e.kind).toUpperCase(),0,0);ctx.restore();}
