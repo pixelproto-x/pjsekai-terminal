@@ -22,7 +22,7 @@ const WINDOW={
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"],release:[610,"triangle"]};
 const N=E.nextSekai||{};
 Object.assign(N,{
- version:"7.0.0",
+ version:"7.1.0",
  scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,
  initialLife:Number(N.initialLife)||1000,maxLife:Number(N.maxLife)||1000,
  inputOffset:Number(N.inputOffset)||0,
@@ -97,8 +97,13 @@ function record(j,n,delta,extra={}){
 }
 function playSfx(kind,n){
  if(!N.sfxEnabled||!E.ensureAudio)return;E.ensureAudio();const a=E.audioCtx;if(!a)return;
- try{const i=classify(n||{}),spec=kind==="perfect"&&i.critical?SFX.critical:kind==="flick"?SFX.flick:kind==="trace"?SFX.trace:kind==="tick"?SFX.tick:kind==="great"?SFX.great:kind==="good"?SFX.good:kind==="miss"?SFX.miss:kind==="release"?SFX.release:SFX.tap;
-  const o=a.createOscillator(),g=a.createGain(),t=a.currentTime;o.type=spec[1];o.frequency.setValueAtTime(spec[0],t);o.frequency.exponentialRampToValueAtTime(spec[0]*.72,t+.08);g.gain.setValueAtTime(.045,t);g.gain.exponentialRampToValueAtTime(.0001,t+.11);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.12)}catch{}
+ try{
+  const i=classify(n||{}),t=a.currentTime,master=a.createGain();master.gain.setValueAtTime(.0001,t);master.gain.exponentialRampToValueAtTime(.055,t+.004);master.gain.exponentialRampToValueAtTime(.0001,t+.14);master.connect(a.destination);
+  const spec=kind==="perfect"&&i.critical?SFX.critical:kind==="flick"?SFX.flick:kind==="trace"?SFX.trace:kind==="tick"?SFX.tick:kind==="great"?SFX.great:kind==="good"?SFX.good:kind==="miss"?SFX.miss:kind==="release"?SFX.release:SFX.tap;
+  const tones=kind==="perfect"&&i.critical?[spec[0],spec[0]*1.5]:kind==="flick"?[spec[0],spec[0]*.82]:[spec[0]];
+  tones.forEach((freq,j)=>{const o=a.createOscillator(),g=a.createGain(),tt=t+j*.012;o.type=spec[1];o.frequency.setValueAtTime(freq,tt);o.frequency.exponentialRampToValueAtTime(Math.max(70,freq*.7),tt+.09);g.gain.setValueAtTime(j?0.55:1,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+.1);o.connect(g).connect(master);o.start(tt);o.stop(tt+.11)});
+  if(kind==="flick"){const o=a.createOscillator(),g=a.createGain();o.type="sine";o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(1500,t+.08);g.gain.setValueAtTime(.02,t);g.gain.exponentialRampToValueAtTime(.0001,t+.1);o.connect(g).connect(master);o.start(t);o.stop(t+.11)}
+ }catch{}
 }
 function haptic(j){
  if(!navigator.vibrate||N.haptic==="disabled")return;
@@ -225,7 +230,7 @@ function onMove(e){
 }
 function resolveFlick(e,p){
  const q=N.pending.get(e.pointerId);if(!q)return false;const n=q.n,dx=e.clientX-q.downX,dy=e.clientY-q.downY;
- const elapsed=Math.max(.001,(performance.now()-p.downT)/1000),speed=Math.hypot(dx,dy)/elapsed;if(speed<N.flickSpeedThreshold)return false;
+ const elapsed=Math.max(.001,(performance.now()-p.downT)/1000),speed=Math.hypot(dx,dy)/elapsed;if(speed/Math.max(1,(E.canvas?.clientWidth||E.canvas?.width||720)/12)<N.flickSpeedThreshold)return false;
  const d=deltaFor(n),w=winFor(n);if(d<w.bad[0]||d>w.bad[1])return false;
  const correct=flickMatches(n,dx,dy);if(correct||q.bestCorrect){const j=judgeDelta(d,n);if(j){n.hit=true;n.active=n.duration>0;n.hitAt=E.time();n.capturedPointer=e.pointerId;award(q.bestCorrect&&!correct?"great":j,n,d,{wrongWay:q.bestCorrect&&!correct});return true}}
  q.wrong=true;if(q.bestTime===Infinity)q.bestTime=E.time();return false;
@@ -280,7 +285,7 @@ function processFrame(){
   if(q.wrong&&d>=w.perfect[0]&&d<=w.perfect[1]&&!q.bestCorrect){const j=judgeDelta(d,q.n);if(j)award(j==="perfect"?"great":j,q.n,d,{wrongWay:true});q.n.hit=true;N.pending.delete(id)}
   else if(d>w.bad[1]){fail(q.n,"flick");N.pending.delete(id)}
  }
- N.progress.push({time:E.time(),score:E.score,combo:E.combo,life:E.life});if(N.progress.length>3600)N.progress.shift();
+ N.progress.push({time:E.time(),score:E.score,combo:E.combo,life:E.life});if(N.progress.length>12000)N.progress.shift();
  if(E.time()>=E.duration-.01&&!N.finished)finish();
 }
 function drawParticles(ctx,w,h){
@@ -334,7 +339,7 @@ function addControls(){
  if(!box||box.querySelector(".next-unified-controls"))return;
  const d=document.createElement("div");
  d.className="next-unified-controls";
- d.style.cssText="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:6px;margin-top:8px";
+ d.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:8px";
  d.innerHTML=[
   '<label>Score<select data-nx="score"><option value="weighted-combo">Weighted Combo</option><option value="weighted-flat">Weighted Flat</option><option value="unweighted-combo">Unweighted Combo</option><option value="unweighted-flat">Unweighted Flat</option></select></label>',
   '<label>Life<input data-nx="life" type="number" min="1" max="9999" step="1"></label>',
