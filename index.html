@@ -814,6 +814,7 @@ body[data-sekai-theme] .theme-choice.active{
 <link rel="stylesheet" href="my-sekai.css">
 <link rel="stylesheet" href="dojo-controls.css">
 <link rel="stylesheet" href="event-calc.css">
+<link rel="stylesheet" href="card-gallery.css">
 </head>
 <body>
 <div class="top-accent"></div>
@@ -1023,8 +1024,8 @@ body[data-sekai-theme] .theme-choice.active{
       <div><div class="sekai-chip"><span class="chip-dot"></span>SEKAI ARCHIVE</div><div class="kicker">CARD ARCHIVE</div><h1 class="page-title">卡片</h1><p class="page-subtitle">卡片不直接全部塞在首頁，進入卡片專區後再選功能。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
+    <div id="cardGalleryMount"></div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-sheet="card-all"><span class="tiny-icon" style="background:var(--violet)">▣</span><span class="arrow">⌃</span><h3>全部卡片</h3><p>完整卡片瀏覽與搜尋。</p></button>
       <button class="catalog-card" data-sheet="card-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">⌃</span><h3>我的收藏</h3><p>集中你保存的卡片。</p></button>
       <button class="catalog-card" data-sheet="card-trained"><span class="tiny-icon" style="background:var(--cyan)">★</span><span class="arrow">⌃</span><h3>特訓狀態</h3><p>查看卡片進度相關入口。</p></button>
       <button class="catalog-card" data-sheet="card-unit"><span class="tiny-icon" style="background:var(--orange)">◎</span><span class="arrow">⌃</span><h3>團體分類</h3><p>依角色團體快速瀏覽。</p></button>
@@ -3248,5 +3249,6 @@ window.__PJSEKAI_APP__ = {
 <script src="my-sekai.js" defer></script>
 <script src="dojo-controls.js" defer></script>
 <script src="event-calc.js" defer></script>
+<script src="card-gallery.js" defer></script>
 </body>
 </html>
