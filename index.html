@@ -809,6 +809,10 @@ body[data-sekai-theme] .theme-choice.active{
 .strategy-link{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:rgba(255,255,255,.76);border-radius:999px;padding:8px 11px;font-size:8px;font-weight:850}
 @media(max-width:900px){.strategy-grid{grid-template-columns:1fr}.strategy-result-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.strategy-fields,.strategy-fields.three{grid-template-columns:1fr}.strategy-result-grid{grid-template-columns:repeat(2,1fr)}.material-row{grid-template-columns:1.3fr repeat(3,1fr);gap:4px}}
 
+
+/* ===== Web Dojo PJSK engine surface ===== */
+.pjsk-engine-stage{position:relative!important;height:420px!important;min-height:300px!important;background:#070910!important;border:1px solid rgba(255,255,255,.12)!important;overflow:hidden!important;touch-action:none!important;user-select:none!important}
+.pjsk-engine-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.pjsk-hud{position:absolute;inset:12px 14px auto;display:flex;justify-content:space-between;pointer-events:none;color:#fff;text-shadow:0 2px 8px #000;z-index:3}.pjsk-hud>div{text-align:center;min-width:76px}.pjsk-hud b{display:block;font:900 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace}.pjsk-hud span{display:block;font-size:6px;letter-spacing:.18em;opacity:.72;margin-top:4px}.pjsk-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:2}.pjsk-ready{font:900 24px/1 sans-serif;letter-spacing:.22em;color:rgba(255,255,255,.12);transform:translateY(40px)}.pjsk-touch-hint{position:absolute;bottom:8px;right:10px;font:800 7px/1 ui-monospace,monospace;letter-spacing:.15em;color:rgba(255,255,255,.22)}.pjsk-import-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px;padding:10px 11px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.58);font-size:8px}.pjsk-import-box>div{display:flex;flex-direction:column;gap:2px;margin-right:auto}.pjsk-import-box>div b{font-size:10px}.pjsk-import-box>div span{color:var(--muted)}.pjsk-import-box button,.pjsk-file-btn{border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.86);padding:7px 10px;font-size:8px;font-weight:800;cursor:pointer}.pjsk-file-btn input{display:none}@media(max-width:640px){.pjsk-engine-stage{height:330px!important}.pjsk-hud b{font-size:16px}.pjsk-import-box>div{width:100%}.pjsk-import-box button,.pjsk-file-btn{flex:1;text-align:center}}
 </style>
 </head>
 <body>
@@ -2986,7 +2990,8 @@ function applyTeamShareFromHash(){
 $(".theme-choice") && document.addEventListener("click",e=>{
   const choice=e.target.closest(".theme-choice[data-theme]");
   if(!choice)return;
-  applySekaiTheme(choice.dataset.theme);
+  applySekaiT<script src="./dojo-engine.js?v=20260929-engine1"></script>
+heme(choice.dataset.theme);
   showToast("主題已切換："+SEKAI_THEMES[choice.dataset.theme].label);
 });
 
