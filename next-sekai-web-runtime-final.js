@@ -22,7 +22,7 @@ const WINDOW={
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"],release:[610,"triangle"]};
 const N=E.nextSekai||{};
 Object.assign(N,{
- version:"9.0.0",
+ version:"9.1.0",
  scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,
  initialLife:Number(N.initialLife)||1000,maxLife:Number(N.maxLife)||1000,
  inputOffset:Number(N.inputOffset)||0,
@@ -354,7 +354,7 @@ function drawParticles(ctx,w,h){
 function render(){
  const ctx=E.ctx,r=E.canvas?.getBoundingClientRect();if(!ctx||!r)return;const w=r.width,h=r.height,now=E.time();
  ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#050713");bg.addColorStop(.6,"#0c1730");bg.addColorStop(1,"#111c3a");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);E.drawStage(ctx,w,h);
- for(const n of E.notes||[]){const i=classify(n);if(n.missed||i.fake||i.hidden)continue;const f=visualProgress(n,now);if(f<-.05||f>1.12)continue;if(E.sudden&&f<.48&&!n.active)continue;drawPath(n,w,h,now);drawNote(n,f,w,h)}
+ for(const n of E.notes||[]){const i=classify(n);if(n.missed||i.fake||i.hidden)continue;const f=visualProgress(n,now);if(f<-.05||f>1.12)continue;if((E.sudden||N.hidden)&&f<.48&&!n.active)continue;drawPath(n,w,h,now);drawNote(n,f,w,h)}
  drawParticles(ctx,w,h);E.updateHud?.();updateHud();
 }
 function drawPath(n,w,h,now){
