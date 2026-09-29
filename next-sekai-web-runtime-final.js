@@ -22,7 +22,7 @@ const WINDOW={
 const SFX={tap:[640,"triangle"],critical:[920,"sine"],flick:[1180,"square"],trace:[780,"sine"],tick:[760,"triangle"],great:[690,"sine"],good:[540,"triangle"],miss:[180,"sawtooth"],release:[610,"triangle"]};
 const N=E.nextSekai||{};
 Object.assign(N,{
- version:"7.1.0",
+ version:"8.0.0",
  scoreMode:N.scoreMode||MODE.WEIGHTED_COMBO,
  initialLife:Number(N.initialLife)||1000,maxLife:Number(N.maxLife)||1000,
  inputOffset:Number(N.inputOffset)||0,
@@ -414,7 +414,7 @@ function install(){
  E.windowFor=(n,tail=false)=>winFor(n,tail);E.judgeName=(delta,n,tail=false)=>judgeDelta(delta,n,tail);E.noteLaneAt=(n,t)=>pathLane(n,t);
  E.resetJudgments=reset;E.reset=reset;E.finish=finish;E.render=render;E.loop=function(){if(!this.running)return;processFrame();render();this.raf=requestAnimationFrame(()=>this.loop())};
  E.loadJSON=function(input){loadNormalized(input)};
- E.importChart=function(text,name="chart.json"){try{const t=String(text).trim();if(t.startsWith("{")||t.startsWith("["))loadNormalized(JSON.parse(t));else oldImport.call(this,text,name)}catch(err){console.error(err);alert("譜面格式無法解析："+err.message)}};
+ E.importChart=function(text,name="chart.json"){try{const t=String(text).trim();loadNormalized(t);E.chartName=name||E.chartName}catch(err){console.error(err);alert("譜面格式無法解析："+err.message)}};
  E.demo=function(){oldDemo.call(this);for(const n of E.notes||[])n.tickTimes=makeTicks(n);reset()};
  E.init=function(){oldInit.call(this);addControls()};
  const audio=E.audio;
