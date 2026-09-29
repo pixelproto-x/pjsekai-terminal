@@ -9,7 +9,7 @@ const Engine={
   notes:[],audio:null,canvas:null,ctx:null,raf:0,running:false,startOffset:0,offset:0,
   speed:1,mirror:false,reverse:false,sudden:false,score:0,combo:0,maxCombo:0,
   counts:{perfect:0,great:0,good:0,bad:0,miss:0},active:new Map(),effects:[],pointers:new Map(),lastTime:-1,
-  laneCount:12,judgment:{perfect:45,great:90,good:140,bad:200},flickMinDistance:18,lastHit:null,
+  laneCount:12,judgment:{perfect:45,great:90,good:140,bad:200},flickMinDistance:18,holdGraceMs:90,lastHit:null,
   chartName:"Web Dojo Chart",chartBpm:120,duration:60,loaded:false,
   audioCtx:null,sfxGain:null,
   init(){
@@ -27,7 +27,7 @@ const Engine={
     overlay.innerHTML='<div class="pjsk-ready" id="pjskReady">READY</div><div class="pjsk-touch-hint">12-LANE PRACTICE</div>';
     stage.appendChild(overlay);
     this.resize();addEventListener("resize",()=>this.resize());
-    this.bindInput(stage);this.bindControls();this.bindAudio();
+    this.bindInput(stage);this.bindControls();this.bindAudio();this.bindHoldLoop();
     this.makeDemoChart();
     this.render();
   },
@@ -38,6 +38,16 @@ const Engine={
     this.audio?.addEventListener("seeked",()=>{this.active.clear();this.combo=0;this.lastHit=null;this.render();});
     this.audio?.addEventListener("ratechange",()=>{this.speed=this.audio.playbackRate||1;});
     this.audio?.addEventListener("loadedmetadata",()=>{this.duration=this.audio.duration||this.duration;});
+  },
+  bindHoldLoop(){
+    setInterval(()=>{
+      const t=this.currentTime();
+      for(const n of this.notes){
+        if(n.hit && n.type==="hold" && n.holdUntil && !n.holdComplete){
+          if(t>=n.holdUntil){n.holdComplete=true;this.playSfx("tap");this.effects.push({x:n.lane/12+.04,y:.84,kind:"perfect",life:.3,max:.3,lane:n.lane});}
+        }
+      }
+    },16);
   },
   bindControls(){
     const file=$("#dojoAudioFile");
@@ -58,12 +68,15 @@ const Engine={
       const lane=clamp(Math.floor(x/r.width*this.laneCount),0,this.laneCount-1);
       const y=e.clientY-r.top;
       if(y<r.height*.68)return;
-      this.hit(lane,e.type==="pointerdown"?"tap":"release",dx,dy);
+      const result=this.hit(lane,e.type==="pointerdown"?"tap":"release",dx,dy,e);
+      if(result?.type==="hold"&&e.type==="pointerdown")this.pointers.set(e.pointerId,{...(this.pointers.get(e.pointerId)||{}),holdNote:result});
     };
     stage.addEventListener("pointerdown",e=>{stage.setPointerCapture?.(e.pointerId);this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,t:performance.now()});input(e);},{passive:true});
     stage.addEventListener("pointermove",e=>{if(!this.pointers.has(e.pointerId))return;this.pointers.get(e.pointerId).x=e.clientX;this.pointers.get(e.pointerId).y=e.clientY;},{passive:true});
-    stage.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);const dx=p?e.clientX-p.x:0,dy=p?e.clientY-p.y:0;input(e,dx,dy);this.pointers.delete(e.pointerId);},{passive:true});
-    stage.addEventListener("pointercancel",e=>{this.pointers.delete(e.pointerId);input(e);},{passive:true});
+    stage.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);const dx=p?e.clientX-p.x:0,dy=p?e.clientY-p.y:0;
+      if(p?.holdNote){this.releaseHold(p.holdNote,performance.now());}
+      input(e,dx,dy);this.pointers.delete(e.pointerId);},{passive:true});
+    stage.addEventListener("pointercancel",e=>{const p=this.pointers.get(e.pointerId);if(p?.holdNote)this.releaseHold(p.holdNote,performance.now());this.pointers.delete(e.pointerId);input(e);},{passive:true});
     stage.addEventListener("pointercancel",e=>input(e),{passive:true});
     addEventListener("keydown",e=>{
       if(e.repeat)return;
@@ -101,18 +114,26 @@ const Engine={
   },
   currentTime(){return this.audio?.currentTime||0;},
   judgeWindow(ms){const a=Math.abs(ms);if(a<=this.judgment.perfect)return"perfect";if(a<=this.judgment.great)return"great";if(a<=this.judgment.good)return"good";if(a<=this.judgment.bad)return"bad";return null;},
-  hit(lane,type,dx=0,dy=0){
+  hit(lane,type,dx=0,dy=0,event=null){
     const t=this.currentTime()*1000;
     const flick=Math.abs(dx)+Math.abs(dy)>=this.flickMinDistance;
 let best=null,bestAbs=Infinity;
     for(const n of this.notes){if(n.hit||n.lane!==lane)continue;const d=(n.time*1000-t)-this.offset;if(Math.abs(d)<bestAbs&&Math.abs(d)<=this.judgment.bad+40){best=n;bestAbs=Math.abs(d);}}
     if(!best){this.playSfx("miss");return;}
     if((best.type==="flick"||best.type==="trace-flick")&&!flick){return;}
+    if(type==="tap"&&best.type==="hold"&&event?.type==="pointerdown")best.pointerId=event.pointerId;
     const j=this.judgeWindow(bestAbs);if(!j){this.playSfx("miss");return;}
     best.hit=true;best.judgment=j;this.counts[j]++;
     if(best.type==="hold"&&best.duration){best.holdUntil=best.time+best.duration;}
     this.effects.push({x:lane,y:.84,kind:j,life:0.42,max:.42,lane,critical:!!best.critical});this.combo=j==="miss"?0:this.combo+1;this.maxCombo=Math.max(this.maxCombo,this.combo);
-    this.score+=j==="perfect"?1000:j==="great"?800:j==="good"?500:100;this.lastHit=j.toUpperCase();this.playSfx(best.type==="flick"?"flick":"tap");this.render();
+    this.score+=j==="perfect"?1000:j==="great"?800:j==="good"?500:100;this.lastHit=j.toUpperCase();this.playSfx(best.type==="flick"?"flick":"tap");this.render();return best;
+  },
+  releaseHold(n,now){
+    if(!n||n.holdComplete)return;
+    const t=this.currentTime();
+    const remaining=Math.max(0,(n.holdUntil||n.time+n.duration)-t)*1000;
+    if(remaining<=this.holdGraceMs){n.holdComplete=true;this.playSfx("tap");this.effects.push({x:n.lane/12+.04,y:.84,kind:"perfect",life:.3,max:.3,lane:n.lane});}
+    else{n.holdComplete=true;n.judgment="bad";this.combo=0;this.counts.bad++;this.lastHit="BAD";this.playSfx("miss");}
   },
   updateMisses(t){
     for(const n of this.notes){if(n.hit)continue;if((t-n.time)*1000-this.offset>this.judgment.bad){n.hit=true;n.judgment="miss";this.counts.miss++;this.combo=0;this.lastHit="MISS";this.effects.push({x:n.lane/12+.04,y:.84,kind:"miss",life:0.5,max:.5,lane:n.lane});}}
