@@ -286,6 +286,11 @@ async function initPixi(){
   const stage=new PIXI.Container(),lane=new PIXI.Graphics(),notes=new PIXI.Container(),fx=new PIXI.Container();
   app.stage.addChild(stage);stage.addChild(lane);stage.addChild(notes);stage.addChild(fx);
   state.app=app;state.stage=stage;state.laneLayer=lane;state.noteLayer=notes;state.effectLayer=fx;
+  const ro=window.ResizeObserver?new ResizeObserver(()=>{
+    const w=wrap.clientWidth,h=wrap.clientHeight;
+    if(w&&h)app.renderer.resize(w,h);
+  }):null;
+  ro?.observe(wrap);
   app.ticker.add(()=>frame());
 }
 
