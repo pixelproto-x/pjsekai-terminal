@@ -172,7 +172,7 @@ function renderPickups(){
  const box=$('gsPickups');if(!box)return;const picks=current?.pickupCards||[];if(!picks.length){box.innerHTML='<div class="gacha-empty">此卡池沒有取得 pickup 卡詳細資料。</div>';return}box.innerHTML=picks.map(c=>'<div class="gacha-pickup"><img loading="lazy" src="'+esc(art(c,false))+'" alt="'+esc(c.prefix||c.name||idOf(c))+'"><div>'+esc(c.prefix||c.name||('#'+idOf(c)))+'</div></div>').join('');
 }
 function renderStats(){
- const hist=state.history||[], total=hist.reduce((s,r)=>s+(Array.isArray(r.results)?r.results.length:0),0), f=hist.reduce((s,r)=>s+(r.results||[]).filter(x=>x.rarity===4).length,0), t=hist.reduce((s,r)=>s+(r.results||[]).filter(x=>x.rarity===3).length,0), spend=hist.reduce((s,r)=>s+n(r.cost),0);
+ const allHist=state.history||[], poolId=String(current?.id||''), hist=poolId?allHist.filter(r=>String(r.gachaId)===poolId):allHist, total=hist.reduce((s,r)=>s+(Array.isArray(r.results)?r.results.length:0),0), f=hist.reduce((s,r)=>s+(r.results||[]).filter(x=>x.rarity===4).length,0), t=hist.reduce((s,r)=>s+(r.results||[]).filter(x=>x.rarity===3).length,0), spend=hist.reduce((s,r)=>s+n(r.cost),0);
  const rt=total?f/total*100:0, theory=ratesFor(current||{}).four;
  $('gsCost').textContent=fmt(hist[0]?.cost||0);$('gsTotalPulls').textContent=fmt(total);$('gsFourCount').textContent=fmt(f);$('gsThreeCount').textContent=fmt(t);$('gsSpend').textContent=fmt(spend);$('gsCrystalLeft').textContent=fmt(state.crystals);$('gsSealTotal').textContent=fmt(state.seals);$('gsTicketTotal').textContent=fmt(state.sealTickets);$('gsLuckPulls').textContent=fmt(total);$('gsLuckRate').textContent=rt.toFixed(2)+'%';$('gsTheoryRate').textContent=theory.toFixed(2)+'%';$('gsDonut').style.background='conic-gradient(#9179f5 0 '+Math.max(theory,.001)+'%,#52cfe8 '+Math.max(theory,.001)+'% '+Math.max(theory+8.5,.001)+'%,#ffd34f '+Math.max(theory+8.5,.001)+'% 100%)';
  const spark=Math.min(300,total+(state.sealTickets*10));$('gsSparkLabel').textContent=fmt(Math.min(300,total))+' / 300';$('gsSparkBar').style.width=Math.min(100,total/300*100)+'%';$('gsSealInput').value=state.seals;$('gsTicketInput').value=state.sealTickets;$('gsTicketValue').value=fmt(state.sealTickets*10);
@@ -191,5 +191,6 @@ async function start(){
  const host=$('gachaSimulatorMount');if(!host)return;mount(host);syncInputs();renderGachaOptions();renderAll();
  try{state.pool=await loadGachas();source='api';persist();renderGachaOptions();if(!state.gachaId){const currentG=state.pool.find(activeDate);if(currentG)state.gachaId=idOf(currentG)}renderGachaOptions();if(state.gachaId){$('gsGacha').value=state.gachaId;await selectGacha()}else{status('已同步卡池，但目前沒有進行中的池。',true)}}catch(_){status('初次同步失敗，可按「同步最新卡池」重試。')}
 }
+document.addEventListener('click',e=>{const trigger=e.target.closest('[data-gacha-scroll]');if(trigger){e.preventDefault();$('gachaSimulatorMount')?.scrollIntoView({behavior:'smooth',block:'start'});}});
 start();
 })();
