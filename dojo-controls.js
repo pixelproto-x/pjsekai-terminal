@@ -22,7 +22,7 @@ function ensure(){
  s.dojo.server=SERVERS.some(x=>x.id===s.dojo.server)?s.dojo.server:'sekai-best';return s;
 }
 function save(){try{B.save()}catch(_){}}
-function getConfig(){const s=ensure();return{version:1,server:s.dojo.server,speed:s.dojo.speed,mirror:!!s.dojo.mirror,sudden:!!s.dojo.sudden,hidden:!!s.dojo.hidden,audioOffset:n(s.dojo.audioOffset),visualOffset:n(s.dojo.visualOffset),keys:s.dojo.keys.slice(0,4),song:s.dojo.selectedSong||'',difficulty:s.dojo.selectedDifficulty||'Expert'}}
+function getConfig(){const s=ensure();const song=$('dojoSelectedTitle')?.textContent?.trim()||s.dojo.selectedSong||'';const difficulty=$('dojoSelectedDifficulty')?.textContent?.trim()||s.dojo.selectedDifficulty||'Expert';s.dojo.selectedSong=song==='尚未選擇歌曲'?'':song;s.dojo.selectedDifficulty=difficulty||'Expert';return{version:1,server:s.dojo.server,speed:s.dojo.speed,mirror:!!s.dojo.mirror,sudden:!!s.dojo.sudden,hidden:!!s.dojo.hidden,audioOffset:n(s.dojo.audioOffset),visualOffset:n(s.dojo.visualOffset),keys:s.dojo.keys.slice(0,4),song:s.dojo.selectedSong,difficulty:s.dojo.selectedDifficulty}}
 function status(mode,text){
  const el=$('dojoBridgeStatus');if(!el)return;el.className='dojo-bridge-status '+mode;el.querySelector('strong').textContent=mode==='ack'?'引擎橋接已回應':mode==='loaded'?'iframe 已載入':'等待引擎橋接';
  el.querySelector('span').textContent=text;
@@ -47,7 +47,7 @@ function renderSettings(){
  $('dojoSpeedRange').value=d.speed;$('dojoSpeedValue').textContent=Number(d.speed).toFixed(1);
  $('dojoAudioOffset').value=d.audioOffset;$('dojoVisualOffset').value=d.visualOffset;
  ['mirror','sudden','hidden'].forEach(k=>{const el=$('dojoToggle_'+k);el.classList.toggle('active',!!d[k]);el.setAttribute('aria-pressed',String(!!d[k]))});
- const keys=d.keys.slice(0,4);document.querySelectorAll('[data-dojo-key]').forEach((el,i)=>el.value=keys[i]||'');
+ const keys=d.keys.slice(0,4);document.querySelectorAll('[data-dojo-key]').forEach((el,i)=>el.value=keys[i]||'');document.querySelectorAll('[data-virtual-lane]').forEach((el,i)=>el.textContent=keys[i]||DEFAULT_KEYS[i]);
 }
 function render(){
  renderServers();renderSettings();
@@ -75,10 +75,11 @@ function bind(){
  $('dojoSpeedRange')?.addEventListener('input',e=>{ensure().dojo.speed=Math.max(1,Math.min(12,n(e.target.value,10)));$('dojoSpeedValue').textContent=Number(e.target.value).toFixed(1);save();sendConfig('note-speed')});
  [['audioOffset','dojoAudioOffset'],['visualOffset','dojoVisualOffset']].forEach(([k,id])=>$(id)?.addEventListener('input',e=>{ensure().dojo[k]=n(e.target.value);save();sendConfig(k)}));
  ['mirror','sudden','hidden'].forEach(k=>$('dojoToggle_'+k)?.addEventListener('click',()=>{const s=ensure();s.dojo[k]=!s.dojo[k];save();renderSettings();sendConfig(k)}));
- document.querySelectorAll('[data-dojo-key]').forEach(el=>el.addEventListener('input',e=>{const i=n(e.target.dataset.dojoKey);const s=ensure();let v=String(e.target.value||'').trim().slice(0,2).toUpperCase();if(!v)v=DEFAULT_KEYS[i];s.dojo.keys[i]=v;save();}));
+ document.querySelectorAll('[data-dojo-key]').forEach(el=>el.addEventListener('input',e=>{const i=n(e.target.dataset.dojoKey);const s=ensure();let v=String(e.target.value||'').trim().slice(0,2).toUpperCase();if(!v)v=DEFAULT_KEYS[i];s.dojo.keys[i]=v;const vk=document.querySelector('[data-virtual-lane="'+i+'"]');if(vk)vk.textContent=v;save();sendConfig('key-map')}));
+ document.querySelectorAll('[data-virtual-lane]').forEach(btn=>btn.addEventListener('click',()=>{const i=n(btn.dataset.virtualLane),s=ensure();btn.classList.add('pressed');setTimeout(()=>btn.classList.remove('pressed'),120);sendConfig('virtual-key-'+i)}));
  $('dojoResetSettingsBtn')?.addEventListener('click',()=>{const s=ensure();s.dojo={...s.dojo,...DEFAULTS,keys:DEFAULT_KEYS.slice()};save();render();sendConfig('reset')});
  $('dojoBridgeRetryBtn')?.addEventListener('click',()=>sendConfig('manual-retry'));
- $('dojoFullscreenBtn')?.addEventListener('click',async()=>{const x=$('dojoFrameShell');try{if(!document.fullscreenElement)await x.requestFullscreen();else await document.exitFullscreen()}catch(_){B.toast('此瀏覽器不允許全螢幕')}});
+ $('dojoFullscreenBtn')?.addEventListener('click',async()=>{const x=$('dojoFrameShellInner');try{if(!document.fullscreenElement)await x.requestFullscreen();else await document.exitFullscreen()}catch(_){B.toast('此瀏覽器不允許全螢幕')}});
  $('dojoSonolusIframe')?.addEventListener('load',()=>{status('loaded','Sonolus Web iframe 已載入。正在等待引擎端橋接回 ACK。');sendConfig('iframe-load')});
  window.addEventListener('message',e=>{
    if(e.origin!=='https://sonolus.com')return;
