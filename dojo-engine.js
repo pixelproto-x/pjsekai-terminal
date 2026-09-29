@@ -13,7 +13,7 @@ const Engine={
  score:0,combo:0,maxCombo:0,counts:{perfect:0,great:0,good:0,bad:0,miss:0},
  effects:[],pointers:new Map(),judgeSamples:[],lastJudge:"READY",lastTime:0,
  audioCtx:null,master:null,loaded:false,sectionStart:0,sectionEnd:0,sectionLoop:false,
- windows:{perfect:45,great:90,good:140,bad:200,trace:120},
+ windows:{perfect:45,great:90,good:140,bad:200,trace:120},judge:{perfect:0,great:0,good:0,bad:0,miss:0},result:null,guideQuality:2,noteMargin:1,alternativeCurve:false,disableTimescale:false,skin:"sekai",
  init(){
   this.stage=$("#dojoStage"); if(!this.stage)return;
   this.stage.innerHTML="";
@@ -63,7 +63,16 @@ const Engine={
  seek(t){if(this.audio)this.audio.currentTime=clamp(t,0,this.duration)},
  toggle(){if(!this.audio)return;if(this.audio.paused)this.audio.play().catch(()=>{});else this.audio.pause()},
  stop(){if(!this.audio)return;this.audio.pause();this.seek(0);this.reset()},
- reset(){this.resetJudgments(true);this.render()},
+ reset(){this.resetJudgments(true);this.result=null;this.render()},
+ evaluateResult(){
+  const total=this.notes.filter(n=>!n.fake&&!n.damage).length;
+  const judged=this.counts.perfect+this.counts.great+this.counts.good+this.counts.bad+this.counts.miss;
+  const acc=judged?((this.counts.perfect+this.counts.great*.8+this.counts.good*.5+this.counts.bad*.1)/judged)*100:0;
+  const ap=this.counts.great+this.counts.good+this.counts.bad+this.counts.miss===0;
+  return {total,score:Math.round(this.score),combo:this.maxCombo,counts:{...this.counts},accuracy:+acc.toFixed(3),ap,fc:this.counts.miss===0};
+ },
+ finish(){this.running=false;cancelAnimationFrame(this.raf);this.result=this.evaluateResult();this.lastJudge=this.result.ap?"AP":this.result.fc?"FC":"RESULT";this.render()},
+
  resetJudgments(render=true){for(const n of this.notes){n.hit=false;n.missed=false;n.active=false;n.progress=0;n.judgedTicks=0;n.tailHit=false}this.combo=0;this.score=0;this.maxCombo=0;this.counts={perfect:0,great:0,good:0,bad:0,miss:0};this.effects=[];this.judgeSamples=[];this.lastJudge="READY";if(render)this.render()},
  ensureAudio(){try{if(!this.audioCtx)this.audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(this.audioCtx.state==="suspended")this.audioCtx.resume()}catch{}},
  sfx(kind){this.ensureAudio();if(!this.audioCtx)return;const o=this.audioCtx.createOscillator(),g=this.audioCtx.createGain(),now=this.audioCtx.currentTime;const f=kind==="perfect"?880:kind==="great"?660:kind==="good"?520:kind==="flick"?1040:kind==="tick"?760:kind==="miss"?170:600;o.type=kind==="flick"?"square":"triangle";o.frequency.setValueAtTime(f,now);o.frequency.exponentialRampToValueAtTime(f*.72,now+.055);g.gain.setValueAtTime(.035,now);g.gain.exponentialRampToValueAtTime(.0001,now+.09);o.connect(g).connect(this.audioCtx.destination);o.start(now);o.stop(now+.095)},
@@ -92,8 +101,11 @@ const Engine={
  },
  judgeName(delta){const a=Math.abs(delta);return a<=this.windows.perfect?"perfect":a<=this.windows.great?"great":a<=this.windows.good?"good":a<=this.windows.bad?"bad":null},
  judgeNote(n,lane,dx,dy,p,e){
+  if(n.damage){n.hit=true;this.combo=0;this.counts.miss++;this.lastJudge="DAMAGE";this.sfx("miss");return true}
+
   const delta=n.time*1000-(this.time()*1000+this.offset),j=this.judgeName(delta);if(!j)return false;
   if(this.isFlick(n)&&!this.expectedDirection(n,dx,dy))return false;
+  if(n.type==="slide"&&n.path?.length>1)n.headHit=true;
   n.hit=true;n.active=["hold","slide","trace","trace-flick"].includes(n.type);n.hitAt=this.time();n.holdUntil=n.time+n.duration;
   this.award(j,n);if(p)p.note=n;return true;
  },
@@ -109,6 +121,11 @@ const Engine={
  ease(t){return t*t*(3-2*t)},
  tickTrace(n){const tick=Math.floor((this.time()-n.time)/.125);if(tick>n.judgedTicks){n.judgedTicks=tick;this.score+=100;this.sfx("tick");this.effects.push({lane:this.slideLaneAt(n,this.time()),kind:"trace",life:.18})}},
  release(n,p,e){
+  if(n.type==="hold"||n.type==="slide"||n.type.startsWith("trace")){
+    const remain=(n.holdUntil-this.time())*1000;
+    if(remain>this.windows.trace){this.failRelease(n);return}
+  }
+
   if(!n.active)return;
   const remain=(n.holdUntil-this.time())*1000;
   if(remain<=this.windows.trace||this.time()>n.holdUntil){n.active=false;n.tailHit=true;this.score+=300;this.sfx("tick");this.effects.push({lane:n.endLane??n.lane,kind:"tail",life:.35})}
@@ -141,6 +158,8 @@ const Engine={
   ctx.fillStyle="rgba(120,220,255,.08)";ctx.fillRect(w*.08,h*.84,w*.84,h*.06);ctx.restore();
  },
  drawNote(ctx,n,f,w,h){
+  if(n.fake)return;
+
   const p=this.project(this.mirror?11-n.lane:n.lane,f,w,h);const critical=n.critical;
   if(n.duration>0||n.type.startsWith("slide")||n.type.startsWith("trace"))this.drawPath(ctx,n,w,h);
   ctx.save();ctx.translate(p.x,p.y);ctx.shadowBlur=critical?22:13;ctx.shadowColor=critical?"#ffe05a":n.type.startsWith("trace")?"#69e6a9":n.type.includes("flick")?"#ffbd4a":"#58dcff";
@@ -156,7 +175,9 @@ const Engine={
   ctx.fillStyle=n.critical?"#fff0a0":"#8cecff";for(let i=1;i<draw.length-1;i+=8){ctx.beginPath();ctx.arc(draw[i].x,draw[i].y,Math.max(2,draw[i].size*.13),0,Math.PI*2);ctx.fill()}ctx.restore();
  },
  samplePath(pts,u){if(pts.length===1)return pts[0].l;let i=Math.min(pts.length-2,Math.floor(u*(pts.length-1))),a=pts[i],b=pts[i+1],f=u*(pts.length-1)-i;return a.l+(b.l-a.l)*this.ease(f)},
- drawEffects(ctx,w,h){for(const e of this.effects){e.life-=.016;if(e.life<=0)continue;const x=w*(.08+(e.lane+.5)/12*.84);ctx.save();ctx.globalAlpha=e.life/.45;ctx.textAlign="center";ctx.font="900 15px sans-serif";ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe45e":e.kind==="good"?"#63d9ff":e.kind==="miss"?"#ff6680":"#72e7ae";ctx.fillText(String(e.kind).toUpperCase(),x,h*.79-(.45-e.life)*60);ctx.restore()}this.effects=this.effects.filter(e=>e.life>0)},
+ drawEffects(ctx,w,h){
+  // original engine uses distinct lane/slot/trace particles; canvas equivalents are generated here.
+for(const e of this.effects){e.life-=.016;if(e.life<=0)continue;const x=w*(.08+(e.lane+.5)/12*.84);ctx.save();ctx.globalAlpha=e.life/.45;ctx.textAlign="center";ctx.font="900 15px sans-serif";ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe45e":e.kind==="good"?"#63d9ff":e.kind==="miss"?"#ff6680":"#72e7ae";ctx.fillText(String(e.kind).toUpperCase(),x,h*.79-(.45-e.life)*60);ctx.restore()}this.effects=this.effects.filter(e=>e.life>0)},
  updateHud(){const c=$("#pjskCombo"),s=$("#pjskScore"),j=$("#pjskJudge");if(c)c.textContent=this.combo;if(s)s.textContent=String(Math.round(this.score)).padStart(7,"0");if(j)j.textContent=this.lastJudge},
  demo(){this.notes=[];this.slides=[];let t=1,id=0;for(let i=0;i<260;i++){const l=(i*5+i%3)%12;let type=i%29===0?"trace-flick":i%23===0?"slide":i%19===0?"hold":i%13===0?"flick":i%17===0?"trace":"tap";const d=type==="hold"?.62:type.includes("slide")?1.05:type.startsWith("trace")?.9:0;const path=d?[{t:0,l},{t:.32,l:(l+(i%5)-2+12)%12},{t:.7,l:(l+(i%7)-3+12)%12},{t:1,l:(l+(i%2?3:-3)+12)%12}]:[{t:0,l}];this.notes.push({id:id++,time:t,lane:l,type,duration:d,endLane:path[path.length-1].l,path,critical:i%7===0,dir:i%8});t+=i%11===0?.24:i%7===0?.3:.46}this.duration=t+2;this.chartName="Web Dojo Demo";},
  importChart(text,name="chart.sus"){try{const trimmed=text.trim();if(trimmed[0]==="{"||trimmed[0]==="["){const data=JSON.parse(trimmed);this.loadJSON(Array.isArray(data)?data:data.notes||[]);this.chartName=data.title||name;return}this.loadSUS(trimmed);this.chartName=name;this.reset();this.render()}catch(e){console.error(e);alert("譜面格式無法解析："+e.message)}},
