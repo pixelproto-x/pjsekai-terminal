@@ -1,180 +1,37 @@
-/* Project SEKAI Web Dojo Engine — gameplay renderer / timing / touch foundation
- * Inspired by the public architecture of Next-SEKAI. No official game assets are bundled.
- */
+/* COMPLETE WEB DOJO ENGINE V2 */
 (()=>{"use strict";
-const $=s=>document.querySelector(s);
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const Engine={
-  notes:[],audio:null,canvas:null,ctx:null,raf:0,running:false,startOffset:0,offset:0,
-  speed:1,mirror:false,reverse:false,sudden:false,score:0,combo:0,maxCombo:0,
-  counts:{perfect:0,great:0,good:0,bad:0,miss:0},active:new Map(),effects:[],pointers:new Map(),lastTime:-1,
-  laneCount:12,judgment:{perfect:45,great:90,good:140,bad:200},flickMinDistance:18,holdGraceMs:90,lastHit:null,
-  chartName:"Web Dojo Chart",chartBpm:120,duration:60,loaded:false,
-  audioCtx:null,sfxGain:null,
-  init(){
-    const stage=$("#dojoStage"); if(!stage)return;
-    this.audio=$("#dojoAudio");
-    this.canvas=document.createElement("canvas"); this.canvas.className="pjsk-engine-canvas";
-    this.ctx=this.canvas.getContext("2d",{alpha:false});
-    stage.innerHTML="";
-    stage.classList.add("pjsk-engine-stage");
-    stage.appendChild(this.canvas);
-    const hud=document.createElement("div");hud.className="pjsk-hud";
-    hud.innerHTML='<div><b id="pjskCombo">0</b><span>COMBO</span></div><div><b id="pjskScore">0000000</b><span>SCORE</span></div><div><b id="pjskJudge">—</b><span>JUDGMENT</span></div>';
-    stage.appendChild(hud);
-    const overlay=document.createElement("div");overlay.className="pjsk-overlay";
-    overlay.innerHTML='<div class="pjsk-ready" id="pjskReady">READY</div><div class="pjsk-touch-hint">12-LANE PRACTICE</div>';
-    stage.appendChild(overlay);
-    this.resize();addEventListener("resize",()=>this.resize());
-    this.bindInput(stage);this.bindControls();this.bindAudio();this.bindHoldLoop();
-    this.makeDemoChart();
-    this.render();
-  },
-  resize(){if(!this.canvas)return;const r=this.canvas.getBoundingClientRect(),d=devicePixelRatio||1;this.canvas.width=Math.max(1,Math.floor(r.width*d));this.canvas.height=Math.max(1,Math.floor(r.height*d));this.ctx.setTransform(d,0,0,d,0,0);},
-  bindAudio(){
-    this.audio?.addEventListener("play",()=>{this.running=true;this.lastTime=-1;cancelAnimationFrame(this.raf);this.loop();});
-    this.audio?.addEventListener("pause",()=>{this.running=false;cancelAnimationFrame(this.raf);this.render();});
-    this.audio?.addEventListener("seeked",()=>{this.active.clear();this.combo=0;this.lastHit=null;this.render();});
-    this.audio?.addEventListener("ratechange",()=>{this.speed=this.audio.playbackRate||1;});
-    this.audio?.addEventListener("loadedmetadata",()=>{this.duration=this.audio.duration||this.duration;});
-  },
-  bindHoldLoop(){
-    setInterval(()=>{
-      const t=this.currentTime();
-      for(const n of this.notes){
-        if(n.hit && n.type==="hold" && n.holdUntil && !n.holdComplete){
-          if(t>=n.holdUntil){n.holdComplete=true;this.playSfx("tap");this.effects.push({x:n.lane/12+.04,y:.84,kind:"perfect",life:.3,max:.3,lane:n.lane});}
-        }
-      }
-    },16);
-  },
-  bindControls(){
-    const file=$("#dojoAudioFile");
-    file?.addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;this.loadAudio(f);});
-    $("#dojoPracticePlay")?.addEventListener("click",()=>this.togglePlay());
-    $("#dojoPracticeStop")?.addEventListener("click",()=>this.stop());
-    $("#dojoSpeed")?.addEventListener("input",e=>{this.speed=+e.target.value||1;if(this.audio)this.audio.playbackRate=this.speed;});
-    $("#dojoMirror")?.addEventListener("change",e=>{this.mirror=e.target.checked;this.render();});
-    $("#dojoReverse")?.addEventListener("change",e=>{this.reverse=e.target.checked;this.render();});
-    $("#dojoSudden")?.addEventListener("change",e=>{this.sudden=e.target.checked;this.render();});
-  },
-  bindInput(stage){
-    const input=(e,dx=0,dy=0)=>{
-
-      const r=this.canvas.getBoundingClientRect();
-      let x=e.clientX-r.left;
-      if(this.mirror)x=r.width-x;
-      const lane=clamp(Math.floor(x/r.width*this.laneCount),0,this.laneCount-1);
-      const y=e.clientY-r.top;
-      if(y<r.height*.68)return;
-      const result=this.hit(lane,e.type==="pointerdown"?"tap":"release",dx,dy,e);
-      if(result?.type==="hold"&&e.type==="pointerdown")this.pointers.set(e.pointerId,{...(this.pointers.get(e.pointerId)||{}),holdNote:result});
-    };
-    stage.addEventListener("pointerdown",e=>{stage.setPointerCapture?.(e.pointerId);this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,t:performance.now()});input(e);},{passive:true});
-    stage.addEventListener("pointermove",e=>{if(!this.pointers.has(e.pointerId))return;this.pointers.get(e.pointerId).x=e.clientX;this.pointers.get(e.pointerId).y=e.clientY;},{passive:true});
-    stage.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);const dx=p?e.clientX-p.x:0,dy=p?e.clientY-p.y:0;
-      if(p?.holdNote){this.releaseHold(p.holdNote,performance.now());}
-      input(e,dx,dy);this.pointers.delete(e.pointerId);},{passive:true});
-    stage.addEventListener("pointercancel",e=>{const p=this.pointers.get(e.pointerId);if(p?.holdNote)this.releaseHold(p.holdNote,performance.now());this.pointers.delete(e.pointerId);input(e);},{passive:true});
-    stage.addEventListener("pointercancel",e=>input(e),{passive:true});
-    addEventListener("keydown",e=>{
-      if(e.repeat)return;
-      const map={"d":2,"f":3,"j":8,"k":9,"a":1,"s":2,"l":10,";":11};
-      if(map[e.key.toLowerCase()]!=null)this.hit(map[e.key.toLowerCase()],"tap",performance.now());
-      if(e.key===" "){e.preventDefault();this.togglePlay();}
-    });
-  },
-  loadAudio(file){if(this.audio._objectUrl)URL.revokeObjectURL(this.audio._objectUrl);const u=URL.createObjectURL(file);this.audio._objectUrl=u;this.audio.src=u;this.audio.load();$("#dojoAudioName").textContent=file.name;},
-  togglePlay(){if(!this.audio)return;if(this.audio.paused){this.audio.play().catch(()=>{});}else this.audio.pause();},
-  stop(){if(!this.audio)return;this.audio.pause();this.audio.currentTime=0;this.active.clear();this.combo=0;this.score=0;this.counts={perfect:0,great:0,good:0,bad:0,miss:0};this.render();},
-  makeDemoChart(){
-    const arr=[];let t=1.2;for(let i=0;i<180;i++){const lane=(i*5+i%3)%12;const type=i%17===0?"flick":i%9===0?"hold":i%5===0?"trace":"tap";const dur=type==="hold"?.55:0;arr.push({id:i,time:t,lane,type,duration:dur,endLane:(lane+(i%7===0?2:0))%12,critical:i%13===0,hit:false});t+=i%11===0?.22:i%7===0?.32:.48;}this.notes=arr;this.duration=Math.max(this.duration,t+2);this.loaded=true;},
-  parseSUS(text){
-    const out=[];const lines=String(text).split(/\r?\n/);let bpm=120;
-    for(const line of lines){const l=line.trim();if(!l||l[0]==="#")continue;
-      const bm=l.match(/^BPM[\s:]*(\d+(?:\.\d+)?)/i);if(bm)bpm=+bm[1];
-      // common SUS note form: #mmmcc: lane data, with comma-separated 4-char objects
-      const m=l.match(/^#(\d{3})(\d{2}):(.+)$/);if(!m)continue;
-      const measure=+m[1],channel=+m[2],data=m[3].trim().split(/[;,:]/)[0];
-      if(!/^(1[0-9]|2[0-9]|3[0-9]|4[0-9])$/.test(String(channel)))continue;
-      const step=4/Math.max(1,data.length/2);for(let i=0;i<data.length;i+=2){const token=data.slice(i,i+2);if(token==="00")continue;
-        const lane=(parseInt(token,16)||0)%12;const beat=measure*4+(i/2)*step;out.push({id:out.length,time:beat*60/bpm,lane,type:"tap",duration:0,critical:false,hit:false});
-      }
-    }
-    if(out.length){this.notes=out.sort((a,b)=>a.time-b.time);this.chartBpm=bpm;this.duration=Math.max(10,this.notes.at(-1).time+5);this.loaded=true;return true;}return false;
-  },
-  chartToJSON(){
-    return JSON.stringify({version:1,bpm:this.chartBpm,duration:this.duration,notes:this.notes.map(n=>({time:n.time,lane:n.lane,type:n.type,duration:n.duration,endLane:n.endLane,critical:n.critical}))},null,2);
-  },
-  importChartText(text){
-    let ok=false;try{const j=JSON.parse(text);if(Array.isArray(j)){this.notes=j;ok=true;}else if(Array.isArray(j.notes)){this.notes=j.notes.map((n,i)=>({...n,id:i,lane:clamp(+n.lane||0,0,11),time:+n.time||0,duration:+n.duration||0,type:n.type||"tap",critical:!!n.critical,hit:false}));this.chartBpm=+j.bpm||120;this.duration=+j.duration||this.duration;ok=true;}}catch(_){}
-    if(!ok)ok=this.parseSUS(text);
-    if(ok){this.active.clear();this.combo=0;this.score=0;this.counts={perfect:0,great:0,good:0,bad:0,miss:0};this.render();return true;}return false;
-  },
-  currentTime(){return this.audio?.currentTime||0;},
-  judgeWindow(ms){const a=Math.abs(ms);if(a<=this.judgment.perfect)return"perfect";if(a<=this.judgment.great)return"great";if(a<=this.judgment.good)return"good";if(a<=this.judgment.bad)return"bad";return null;},
-  hit(lane,type,dx=0,dy=0,event=null){
-    const t=this.currentTime()*1000;
-    const flick=Math.abs(dx)+Math.abs(dy)>=this.flickMinDistance;
-let best=null,bestAbs=Infinity;
-    for(const n of this.notes){if(n.hit||n.lane!==lane)continue;const d=(n.time*1000-t)-this.offset;if(Math.abs(d)<bestAbs&&Math.abs(d)<=this.judgment.bad+40){best=n;bestAbs=Math.abs(d);}}
-    if(!best){this.playSfx("miss");return;}
-    if((best.type==="flick"||best.type==="trace-flick")&&!flick){return;}
-    if(type==="tap"&&best.type==="hold"&&event?.type==="pointerdown")best.pointerId=event.pointerId;
-    const j=this.judgeWindow(bestAbs);if(!j){this.playSfx("miss");return;}
-    best.hit=true;best.judgment=j;this.counts[j]++;
-    if(best.type==="hold"&&best.duration){best.holdUntil=best.time+best.duration;}
-    this.effects.push({x:lane,y:.84,kind:j,life:0.42,max:.42,lane,critical:!!best.critical});this.combo=j==="miss"?0:this.combo+1;this.maxCombo=Math.max(this.maxCombo,this.combo);
-    this.score+=j==="perfect"?1000:j==="great"?800:j==="good"?500:100;this.lastHit=j.toUpperCase();this.playSfx(best.type==="flick"?"flick":"tap");this.render();return best;
-  },
-  releaseHold(n,now){
-    if(!n||n.holdComplete)return;
-    const t=this.currentTime();
-    const remaining=Math.max(0,(n.holdUntil||n.time+n.duration)-t)*1000;
-    if(remaining<=this.holdGraceMs){n.holdComplete=true;this.playSfx("tap");this.effects.push({x:n.lane/12+.04,y:.84,kind:"perfect",life:.3,max:.3,lane:n.lane});}
-    else{n.holdComplete=true;n.judgment="bad";this.combo=0;this.counts.bad++;this.lastHit="BAD";this.playSfx("miss");}
-  },
-  updateMisses(t){
-    for(const n of this.notes){if(n.hit)continue;if((t-n.time)*1000-this.offset>this.judgment.bad){n.hit=true;n.judgment="miss";this.counts.miss++;this.combo=0;this.lastHit="MISS";this.effects.push({x:n.lane/12+.04,y:.84,kind:"miss",life:0.5,max:.5,lane:n.lane});}}
-  },
-  loop(){if(!this.running)return;this.updateMisses(this.currentTime());this.render();this.raf=requestAnimationFrame(()=>this.loop());},
-  playSfx(kind){
-    try{if(!this.audioCtx)this.audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(this.audioCtx.state==="suspended")this.audioCtx.resume();const o=this.audioCtx.createOscillator(),g=this.audioCtx.createGain();o.type="triangle";o.frequency.value=kind==="flick"?920:kind==="miss"?150:720;g.gain.setValueAtTime(.035,this.audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,this.audioCtx.currentTime+.065);o.connect(g).connect(this.audioCtx.destination);o.start();o.stop(this.audioCtx.currentTime+.07);}catch(_){}},
-  project(lane,progress,w,h){
-    const p=clamp(progress,0,1),pers=Math.pow(p,1.55),center=w/2,spread=w*.72*(.08+.92*pers),x=center+((lane+0.5)/12-.5)*spread;
-    const y=h*.08+(1-pers)*h*.78;return{x,y,w:Math.max(12,spread/12),p};
-  },
-  render(){
-    if(!this.ctx)return;const c=this.canvas,r=c.getBoundingClientRect(),w=r.width,h=r.height,ctx=this.ctx;ctx.clearRect(0,0,w,h);
-    const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,"#080a13");g.addColorStop(.55,"#171d34");g.addColorStop(1,"#070910");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-    // stage glow
-    const rg=ctx.createRadialGradient(w/2,h*.82,5,w/2,h*.82,w*.65);rg.addColorStop(0,"rgba(100,220,255,.18)");rg.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
-    // perspective lanes
-    ctx.lineWidth=1;for(let i=0;i<=12;i++){const x0=w*.14+i*w*.72/12;ctx.strokeStyle=i===0||i===12?"rgba(255,255,255,.20)":"rgba(255,255,255,.08)";ctx.beginPath();ctx.moveTo(w/2+(x0-w/2)*.08,h*.05);ctx.lineTo(x0,h*.93);ctx.stroke();}
-    ctx.strokeStyle="rgba(255,255,255,.34)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w*.09,h*.84);ctx.lineTo(w*.91,h*.84);ctx.stroke();
-    const now=this.currentTime(),travel=.95/(this.speed||1);
-    this.effects=this.effects.filter(e=>{e.life-=1/60;return e.life>0;});
-    for(const n of this.notes){if(n.hit && !(n.type==="hold" && !n.holdComplete))continue;let anchorTime=(n.type==="hold"&&n.hit)?Math.min(now,n.time):n.time;let p=1-(anchorTime-now)/travel;if(p<0||p>1.08)continue;if(this.sudden&&p<.45)continue;
-      const q=this.project(this.mirror?11-n.lane:n.lane,p,w,h),size=q.w*(n.critical?1.05:.9);
-      if(n.type==="hold"&&n.duration){const tailP=1-(n.time+n.duration-now)/travel,qt=this.project(this.mirror?11-(n.endLane??n.lane):n.endLane??n.lane,tailP,w,h);ctx.strokeStyle=n.critical?"#ffd84d":"#55d7ef";ctx.lineWidth=Math.max(5,size*.65);ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(qt.x,qt.y);ctx.stroke();
-        if(n.hit&&!n.holdComplete){ctx.globalAlpha=.65;ctx.fillStyle=n.critical?"#ffd84d":"#55d7ef";ctx.beginPath();ctx.arc(qt.x,qt.y,Math.max(4,size*.42),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
-        if(n.type==="trace"||n.type==="trace-flick"){ctx.globalAlpha=.35;ctx.lineWidth=Math.max(2,size*.28);ctx.strokeStyle=n.critical?"#ffe36b":"#74f0c4";ctx.beginPath();ctx.arc(q.x,q.y,size*1.2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}}
-
-      ctx.save();ctx.translate(q.x,q.y);if(n.type==="flick")ctx.rotate(n.reverse?Math.PI:0);ctx.shadowBlur=14;ctx.shadowColor=n.critical?"#ffd84d":"#5ee7ff";ctx.fillStyle=n.critical?"#ffd84d":n.type==="trace"?"#70e7c0":"#eafaff";ctx.beginPath();ctx.roundRect(-size*.7,-size*.7,size*1.4,size*1.4,Math.max(3,size*.28));ctx.fill();ctx.strokeStyle=n.critical?"#fff0a8":"#fff";ctx.lineWidth=1.5;ctx.stroke();if(n.type==="flick"){ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(0,-size*1.2);ctx.lineTo(size*.45,-size*.35);ctx.lineTo(-size*.45,-size*.35);ctx.closePath();ctx.fill();}ctx.restore();
-    }
-    for(const e of this.effects){const life=1-e.life/e.max;const x=w*(.14+e.lane/12*.72),y=h*.79-life*34;ctx.save();ctx.globalAlpha=Math.max(0,1-life);ctx.translate(x,y);ctx.scale(1+life*.7,1+life*.7);ctx.font="900 15px sans-serif";ctx.textAlign="center";ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe76b":e.kind==="good"?"#7ee7ff":e.kind==="miss"?"#ff6b8a":"#fff";ctx.shadowBlur=14;ctx.shadowColor=ctx.fillStyle;ctx.fillText(String(e.kind).toUpperCase(),0,0);ctx.restore();}
-    const combo=$("#pjskCombo"),score=$("#pjskScore"),judge=$("#pjskJudge");if(combo)combo.textContent=this.combo; if(score)score.textContent=String(Math.round(this.score)).padStart(7,"0");if(judge)judge.textContent=this.lastHit||"—";
-  }
-};
-window.PJSekaiWebDojo=Engine;
-function boot(){Engine.init();const stage=$("#dojoStage");if(!stage)return;
-  // chart import panel
-  const box=document.createElement("div");box.className="pjsk-import-box";box.innerHTML='<div><b>譜面引擎</b><span>匯入 SUS / Web Dojo JSON</span></div><label class="pjsk-file-btn">選擇譜面<input id="pjskChartFile" type="file" accept=".sus,.json,text/plain,application/json"></label><button id="pjskDemoChart" type="button">載入測試譜面</button><button id="pjskExportChart" type="button">匯出目前譜面</button>';
-  stage.parentElement.appendChild(box);
-  $("#pjskChartFile")?.addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;const ok=Engine.importChartText(await f.text());showToast?.(ok?"譜面載入成功":"譜面格式無法解析");});
-  $("#pjskDemoChart")?.addEventListener("click",()=>{Engine.makeDemoChart();Engine.render();showToast?.("已載入測試譜面");});
-  $("#pjskExportChart")?.addEventListener("click",()=>{const b=new Blob([Engine.chartToJSON()],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="pjsekai-dojo-chart.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),500);});
-}
-if(document.readyState==="loading")addEventListener("DOMContentLoaded",boot);else boot();
+const q=s=>document.querySelector(s), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const E={canvas:null,ctx:null,audio:null,raf:0,running:false,notes:[],pointers:new Map(),effects:[],speed:1,offset:0,mirror:false,reverse:false,sudden:false,combo:0,maxCombo:0,score:0,counts:{perfect:0,great:0,good:0,bad:0,miss:0},bpm:120,duration:90,judgment:{perfect:45,great:90,good:140,bad:200},holdGrace:90,chartName:"Web Dojo",lastJudge:"—",audioCtx:null,
+init(){const s=q("#dojoStage");if(!s)return;this.canvas=s.querySelector("canvas")||document.createElement("canvas");this.ctx=this.canvas.getContext("2d");s.innerHTML="";s.classList.add("pjsk-engine-stage");s.appendChild(this.canvas);this.audio=q("#dojoAudio");this.makeChart();this.bind(s);this.resize();addEventListener("resize",()=>this.resize());this.render()},
+resize(){const r=this.canvas.getBoundingClientRect(),d=devicePixelRatio||1;this.canvas.width=r.width*d;this.canvas.height=r.height*d;this.ctx.setTransform(d,0,0,d,0,0)},
+bind(s){this.audio?.addEventListener("play",()=>{this.running=true;cancelAnimationFrame(this.raf);this.loop()});this.audio?.addEventListener("pause",()=>{this.running=false;cancelAnimationFrame(this.raf);this.render()});this.audio?.addEventListener("seeked",()=>this.resetJudgments());this.audio?.addEventListener("loadedmetadata",()=>this.duration=this.audio.duration||this.duration);
+q("#dojoPracticePlay")?.addEventListener("click",()=>this.toggle());q("#dojoPracticeStop")?.addEventListener("click",()=>this.stop());q("#dojoSpeed")?.addEventListener("input",e=>{this.speed=+e.target.value||1;if(this.audio)this.audio.playbackRate=this.speed});q("#dojoMirror")?.addEventListener("change",e=>this.mirror=e.target.checked);q("#dojoReverse")?.addEventListener("change",e=>this.reverse=e.target.checked);q("#dojoSudden")?.addEventListener("change",e=>this.sudden=e.target.checked);
+q("#dojoAudioFile")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f){this.audio.src=URL.createObjectURL(f);this.audio.load();const n=q("#dojoAudioName");if(n)n.textContent=f.name}});
+s.addEventListener("pointerdown",e=>{s.setPointerCapture?.(e.pointerId);this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,note:null,down:performance.now()});this.input(e,true,0,0)}, {passive:true});
+s.addEventListener("pointermove",e=>{const p=this.pointers.get(e.pointerId);if(!p)return;p.x=e.clientX;p.y=e.clientY;if(p.note?.type==="trace"||p.note?.type==="slide")this.follow(p.note,e)}, {passive:true});
+s.addEventListener("pointerup",e=>{const p=this.pointers.get(e.pointerId);if(p?.note?.type==="hold"||p?.note?.type==="slide")this.release(p.note);this.input(e,false,p?e.clientX-p.x:0,p?e.clientY-p.y:0);this.pointers.delete(e.pointerId)}, {passive:true});
+s.addEventListener("pointercancel",e=>{const p=this.pointers.get(e.pointerId);if(p?.note)this.release(p.note);this.pointers.delete(e.pointerId)},{passive:true});
+addEventListener("keydown",e=>{if(e.repeat)return;const m={a:0,s:1,d:2,f:3,j:8,k:9,l:10,";":11};if(m[e.key.toLowerCase()]!==undefined)this.hit(m[e.key.toLowerCase()],"tap",0,0,null);if(e.key===" ")this.toggle()})},
+makeChart(){this.notes=[];let t=1.2,id=0;for(let i=0;i<240;i++){const lane=(i*7+i%4)%12;let type=i%23===0?"slide":i%17===0?"hold":i%11===0?"flick":i%13===0?"trace":"tap";const dur=type==="hold"?0.65:type==="slide"?0.9:0;this.notes.push({id:id++,time:t,lane,type,duration:dur,endLane:(lane+(i%2?3:-3)+12)%12,dir:i%4,hit:false,holdUntil:0,tickCount:0});t+=i%9===0?.24:i%5===0?.36:.46}this.duration=t+2},
+resetJudgments(){for(const n of this.notes)n.hit=false,n.holdUntil=0,n.tickCount=0;n=>0;this.combo=0;this.score=0;this.counts={perfect:0,great:0,good:0,bad:0,miss:0};this.effects=[];this.render()},
+time(){return this.audio?.currentTime||0},
+toggle(){if(!this.audio)return;if(this.audio.paused)this.audio.play().catch(()=>{});else this.audio.pause()},
+stop(){if(!this.audio)return;this.audio.pause();this.audio.currentTime=0;this.resetJudgments()},
+window(ms){const a=Math.abs(ms);return a<=this.judgment.perfect?"perfect":a<=this.judgment.great?"great":a<=this.judgment.good?"good":a<=this.judgment.bad?"bad":null},
+input(e,down,dx,dy){const r=this.canvas.getBoundingClientRect(),x=e.clientX-r.left;if(e.clientY-r.top<r.height*.65)return;let lane=clamp(Math.floor(x/r.width*12),0,11);if(this.mirror)lane=11-lane;const p=this.pointers.get(e.pointerId);if(down){const n=this.find(lane);if(n){this.hit(lane,"tap",dx,dy,e);if(p)p.note=n}}else if(p?.note?.type==="flick"){}},
+find(lane){const now=this.time()*1000;let b=null,bd=Infinity;for(const n of this.notes){if(n.hit||n.lane!==lane)continue;const d=Math.abs(n.time*1000-now-this.offset);if(d<bd&&d<=this.judgment.bad+60)b=n,bd=d}return b},
+hit(lane,type,dx,dy,event){const n=this.find(lane);if(!n)return;const delta=n.time*1000-this.time()*1000-this.offset;const j=this.window(delta);if(!j)return;if((n.type==="flick"||n.type==="slide")&&(Math.abs(dx)+Math.abs(dy)<12))return;n.hit=true;n.judgment=j;n.holdUntil=n.time+n.duration;this.counts[j]++;this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);this.score+=j==="perfect"?1000:j==="great"?800:j==="good"?500:100;this.lastJudge=j.toUpperCase();this.effects.push({lane,kind:j,life:.42,max:.42});this.sfx(n.type==="flick"?"flick":"tap");return n},
+follow(n,e){if(!n.hit)return;const r=this.canvas.getBoundingClientRect(),x=e.clientX-r.left,lane=clamp(Math.floor(x/r.width*12),0,11);if(n.type==="slide"&&Math.abs(lane-n.endLane)<=1)this.effects.push({lane,kind:"trace",life:.15,max:.15})},
+release(n){if(!n||!n.hit)return;if(n.type==="hold"||n.type==="slide"){const remain=Math.max(0,(n.holdUntil-this.time())*1000);if(remain<=this.holdGrace){this.combo++;this.score+=300;this.sfx("tap")}else{this.combo=0;this.counts.bad++;this.lastJudge="BAD";this.sfx("miss")}}},
+sfx(k){try{this.audioCtx??=new(window.AudioContext||window.webkitAudioContext)();const o=this.audioCtx.createOscillator(),g=this.audioCtx.createGain();o.type="triangle";o.frequency.value=k==="flick"?980:k==="miss"?160:720;g.gain.value=.035;g.gain.exponentialRampToValueAtTime(.0001,this.audioCtx.currentTime+.07);o.connect(g).connect(this.audioCtx.destination);o.start();o.stop(this.audioCtx.currentTime+.08)}catch{}},
+loop(){if(!this.running)return;const t=this.time();for(const n of this.notes){if(!n.hit&&(t-n.time)*1000-this.offset>this.judgment.bad){n.hit=true;n.judgment="miss";this.counts.miss++;this.combo=0;this.lastJudge="MISS";this.effects.push({lane:n.lane,kind:"miss",life:.4,max:.4})}}this.render();this.raf=requestAnimationFrame(()=>this.loop())},
+project(l,p,w,h){const z=Math.pow(clamp(p,0,1),1.6),spread=w*.76*(.06+.94*z),x=w/2+((l+.5)/12-.5)*spread,y=h*.08+(1-z)*h*.76;return{x,y,size:Math.max(9,spread/12)}},
+render(){const ctx=this.ctx,r=this.canvas.getBoundingClientRect(),w=r.width,h=r.height;if(!w)return;ctx.clearRect(0,0,w,h);const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,"#070914");g.addColorStop(1,"#111a32");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+ctx.strokeStyle="rgba(255,255,255,.1)";ctx.lineWidth=1;for(let i=0;i<=12;i++){ctx.beginPath();ctx.moveTo(w/2+(i/12-.5)*w*.06,h*.05);ctx.lineTo(w*.12+i*w*.76/12,h*.93);ctx.stroke()}ctx.strokeStyle="rgba(255,255,255,.4)";ctx.beginPath();ctx.moveTo(w*.1,h*.84);ctx.lineTo(w*.9,h*.84);ctx.stroke();
+const now=this.time(),travel=.95/(this.speed||1);for(const n of this.notes){if(n.hit&&n.type!=="hold"&&n.type!=="slide")continue;const p=1-(n.time-now)/travel;if(p<0||p>1.08)continue;if(this.sudden&&p<.45)continue;const l=this.mirror?11-n.lane:n.lane, a=this.project(l,p,w,h), tail=this.project(this.mirror?11-(n.endLane??n.lane):n.endLane??n.lane,1-(n.time+n.duration-now)/travel,w,h);
+if(n.type==="hold"||n.type==="slide"){ctx.strokeStyle=n.type==="slide"?"#ffcf63":"#56dcef";ctx.lineWidth=Math.max(5,a.size*.55);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(tail.x,tail.y);ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(tail.x,tail.y,Math.max(4,a.size*.35),0,Math.PI*2);ctx.fill()}
+ctx.save();ctx.translate(a.x,a.y);ctx.shadowBlur=14;ctx.shadowColor=n.type==="flick"?"#ffd24d":"#63e9ff";ctx.fillStyle=n.type==="flick"?"#ffd24d":n.type==="trace"?"#75e7c0":"#f4fbff";ctx.beginPath();ctx.roundRect(-a.size*.7,-a.size*.7,a.size*1.4,a.size*1.4,5);ctx.fill();if(n.type==="flick"){ctx.fillStyle="#fff";ctx.beginPath();const d=n.dir%4;const pts=[[0,-a.size*1.2],[a.size*1.2,0],[0,a.size*1.2],[-a.size*1.2,0]][d];ctx.moveTo(pts[0],pts[1]);ctx.lineTo(-a.size*.45,-a.size*.35);ctx.lineTo(a.size*.45,-a.size*.35);ctx.closePath();ctx.fill()}ctx.restore()}
+for(const e of this.effects){e.life-=1/60;if(e.life<=0)continue;ctx.save();ctx.globalAlpha=e.life/e.max;ctx.fillStyle=e.kind==="perfect"?"#fff":e.kind==="great"?"#ffe36b":e.kind==="good"?"#69dcff":e.kind==="miss"?"#ff6b86":"#75e7c0";ctx.font="900 14px sans-serif";ctx.textAlign="center";ctx.fillText(String(e.kind).toUpperCase(),w*(.12+(e.lane+.5)/12*.76),h*.79-(1-e.life/e.max)*35);ctx.restore()}
+const C=q("#pjskCombo"),S=q("#pjskScore"),J=q("#pjskJudge");if(C)C.textContent=this.combo;if(S)S.textContent=String(Math.round(this.score)).padStart(7,"0");if(J)J.textContent=this.lastJudge}}
+window.PJSekaiWebDojo=E;if(document.readyState==="loading")addEventListener("DOMContentLoaded",()=>E.init());else E.init();
 })();
