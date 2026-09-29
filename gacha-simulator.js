@@ -151,12 +151,12 @@ function pickupFor(rarity){
 }
 function pull(count){
  if(!current){status('請先同步並選擇卡池');return}
- const rate=ratesFor(current), cost=count===10?n(current.costCount||DEFAULT.tenCost):n(current.costCount||DEFAULT.pullCost);
- const totalCost=count===10?(n(current.costCount||0)||DEFAULT.tenCost):((n(current.costCount||0)||DEFAULT.pullCost));
+ const rate=ratesFor(current);
+ const singleCost=Math.max(1,n(current?.costCount||DEFAULT.pullCost));const totalCost=count===10?(singleCost*10):singleCost;
  if(state.crystals<totalCost){status('水晶不足：本次需要 '+fmt(totalCost));return}
  const out=[];let four=0,three=0;
  for(let i=0;i<count;i++){const forceThree=count===10&&i===9&&out.every(x=>x.rarity===2);const rarity=drawRarity(forceThree);if(rarity===4)four++;if(rarity===3)three++;out.push({rarity,card:pickupFor(rarity),time:Date.now()})}
- state.crystals-=totalCost;state.seals+=count;state.gachaBonus+=count;
+ state.crystals-=totalCost;const givesSeals=!(String(current?.gachaType||'').toLowerCase().includes('free'));if(givesSeals)state.seals+=count;state.gachaBonus+=count;
  const record={at:Date.now(),gachaId:String(current.id),gachaName:current.name||'',mode:count===10?'10':'1',cost:totalCost,results:out.map(x=>({rarity:x.rarity,cardId:idOf(x.card),cardName:x.card?.prefix||x.card?.name||x.card?.title||''}))};
  state.history=[record,...state.history].slice(0,500);persist();renderLastPull(out);renderAll();
 }
