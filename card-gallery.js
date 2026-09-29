@@ -27,6 +27,8 @@ function cardBundle(c){return c?.assetbundleName||c?.assetBundleName||'';}
 function titleOf(c){return c?.prefix||c?.name||c?.title||('#'+c?.id);}
 function idOf(c){return String(c?.id??c?.cardId??'');}
 function skillText(c){const s=c?.skill;return s?.description||s?.shortDescription||c?.skillDescription||c?.skill?.name||'未提供技能文字';}
+function poolKind(c){const supply=String(c?.cardSupplyType||c?.cardSupply?.cardSupplyType||'').toLowerCase();if(supply.includes('birthday'))return 'birthday';if(supply.includes('festival')||supply.includes('fes'))return 'fes';return 'normal';}
+function skillKind(c){const raw=JSON.stringify(c?.skill||c?.skillKey||'').toLowerCase();if(raw.includes('recovery')||raw.includes('life'))return '回血';if(raw.includes('perfect')||raw.includes('judgment'))return '判定';if(raw.includes('score'))return '加分';return c?.skillKey||'未分類';}
 function cardArt(c,isTrained=false,kind='small'){const b=cardBundle(c);if(!b)return '';const suffix=isTrained?'after_training':'normal';if(kind==='cutout')return ASSET+'character/member_cutout/'+encodeURIComponent(b)+'/'+suffix+'.png';if(kind==='full')return ASSET+'character/member/'+encodeURIComponent(b)+'/card_'+suffix+'.png';if(kind==='gacha')return ASSET+'character/member_gacha/'+encodeURIComponent(b)+'/'+suffix+'.png';return ASSET+'thumbnail/chara/'+encodeURIComponent(b)+'_'+suffix+'.webp';}
 function getParams(c){const p=c?.cardParameters||c?.card_parameters||c?.params; if(!p)return []; if(Array.isArray(p))return p; const out=[]; for(const [key,arr] of Object.entries(p||{})){if(!Array.isArray(arr))continue;const m=String(key).match(/param(\d)/i);if(!m)continue;for(let i=0;i<arr.length;i++){let row=out.find(x=>x.level===i+1);if(!row){row={level:i+1,p1:0,p2:0,p3:0};out.push(row)}row['p'+m[1]]=n(arr[i]);}}return out;}
 function normalizedParams(c){const rows=getParams(c);const map=new Map();for(const row of rows){const level=n(row.cardLevel??row.level);if(!level)continue;const type=String(row.cardParameterType||row.type||'').toLowerCase();const power=n(row.power??row.value);let p=map.get(level)||{level,p1:0,p2:0,p3:0};if(type.includes('1')||type.includes('performance'))p.p1=power;else if(type.includes('2')||type.includes('technique'))p.p2=power;else if(type.includes('3')||type.includes('stamina'))p.p3=power;else {if(row.p1!==undefined)p.p1=n(row.p1);if(row.p2!==undefined)p.p2=n(row.p2);if(row.p3!==undefined)p.p3=n(row.p3)}map.set(level,p);}return [...map.values()].sort((a,b)=>a.level-b.level).map(r=>({...r,total:r.p1+r.p2+r.p3}));}
@@ -34,7 +36,7 @@ function maxLevel(c){const rar=String(c?.cardRarityType||c?.rarityType||'').toLo
 function trainedTalent(c){const rows=normalizedParams(c);const target=maxLevel(c);let exact=rows.find(x=>x.level===target);if(!exact)exact=rows[rows.length-1];return exact?.total||0;}
 function rank5Talent(c){return trainedTalent(c)+MASTER_BONUS[String(c?.cardRarityType||c?.rarityType||'').toLowerCase()]*5;}
 function characterName(c){if(c?.character?.name)return c.character.name;if(c?.characterName)return c.characterName;return c?.character?.firstName&&c?.character?.givenName?c.character.firstName+' '+c.character.givenName:'';}
-function normalizeCard(c){return {...c,id:idOf(c),prefix:titleOf(c),assetbundleName:cardBundle(c),cardRarityType:c?.cardRarityType||c?.rarityType||c?.cardRarity?.cardRarityType||'',characterName:characterName(c),unit:c?.unit||c?.character?.unit||'',attr:c?.attr||c?.attribute||'',releaseAt:c?.releaseAt??c?.release_at,skillKey:c?.skillKey||c?.skill?.name||'',skill:c?.skill||null,cardParameters:c?.cardParameters||c?.card_parameters||null};}
+function normalizeCard(c){return {...c,id:idOf(c),prefix:titleOf(c),assetbundleName:cardBundle(c),cardRarityType:c?.cardRarityType||c?.rarityType||c?.cardRarity?.cardRarityType||'',characterName:characterName(c),unit:c?.unit||c?.character?.unit||'',attr:c?.attr||c?.attribute||'',releaseAt:c?.releaseAt??c?.release_at,skillKey:c?.skillKey||c?.skillId||c?.skill?.id||c?.skill?.name||'',skill:c?.skill||null,cardParameters:c?.cardParameters||c?.card_parameters||null,cardSupplyType:c?.cardSupplyType||c?.cardSupply?.cardSupplyType||''};}
 async function fetchJson(url){const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function loadRaw(){
   const urls={cards:RAW+'cards.json',episodes:RAW+'cardEpisodes.json',costumes:RAW+'cardCostume3ds.json',rarities:RAW+'cardRarities.json',supplies:RAW+'cardSupplies.json'};
@@ -49,15 +51,15 @@ async function load(){
   data._source=source;try{sessionStorage.setItem(CACHE,JSON.stringify(data));}catch(_){}
 }
 function renderFilters(){
-  const unit=new Set(),char=new Set(),attr=new Set(),rar=new Set(),skill=new Set();
-  for(const c of data.cards){if(c.unit)unit.add(unitLabel(c.unit));if(characterName(c))char.add(characterName(c));if(c.attr)attr.add(String(c.attr));if(c.cardRarityType)rar.add(String(c.cardRarityType));const sk=String(c.skillKey||'').toLowerCase();if(sk)skill.add(sk);}
+  const unit=new Set(),char=new Set(),attr=new Set(),rar=new Set(),skill=new Set(),pool=new Set();
+  for(const c of data.cards){if(c.unit)unit.add(unitLabel(c.unit));if(characterName(c))char.add(characterName(c));if(c.attr)attr.add(String(c.attr));if(c.cardRarityType)rar.add(String(c.cardRarityType));const sk=skillKind(c);if(sk)skill.add(sk);pool.add(poolKind(c));}
   const fill=(id,arr,labels)=>{$(id).innerHTML='<option value="">全部</option>'+[...arr].sort((a,b)=>String(a).localeCompare(String(b))).map(v=>'<option value="'+esc(v)+'">'+esc(labels?labels(v):v)+'</option>').join('');};
-  fill('cgpUnit',unit);fill('cgpCharacter',char);fill('cgpAttr',attr,attrLabel);fill('cgpRarity',rar,rarityLabel);fill('cgpSkill',skill);
+  fill('cgpUnit',unit);fill('cgpCharacter',char);fill('cgpAttr',attr,attrLabel);fill('cgpRarity',rar,rarityLabel);fill('cgpSkill',skill);fill('cgpPool',pool,v=>v==='fes'?'Fes':v==='birthday'?'生日':'一般');
 }
 function matches(c){
-  const q=String($('cgpSearch')?.value||'').trim().toLowerCase(),unit=$('cgpUnit')?.value||'',char=$('cgpCharacter')?.value||'',attr=$('cgpAttr')?.value||'',rar=$('cgpRarity')?.value||'',skill=$('cgpSkill')?.value||'';
+  const q=String($('cgpSearch')?.value||'').trim().toLowerCase(),unit=$('cgpUnit')?.value||'',char=$('cgpCharacter')?.value||'',attr=$('cgpAttr')?.value||'',rar=$('cgpRarity')?.value||'',skill=$('cgpSkill')?.value||'',pool=$('cgpPool')?.value||'';
   const hay=(titleOf(c)+' '+idOf(c)+' '+characterName(c)+' '+unitLabel(c.unit)+' '+skillText(c)).toLowerCase();
-  if(q&&!hay.includes(q))return false;if(unit&&unitLabel(c.unit)!==unit)return false;if(char&&characterName(c)!==char)return false;if(attr&&String(c.attr)!==attr)return false;if(rar&&String(c.cardRarityType)!==rar)return false;if(skill&&String(c.skillKey||'').toLowerCase()!==skill)return false;
+  if(q&&!hay.includes(q))return false;if(unit&&unitLabel(c.unit)!==unit)return false;if(char&&characterName(c)!==char)return false;if(attr&&String(c.attr)!==attr)return false;if(rar&&String(c.cardRarityType)!==rar)return false;if(skill&&String(skillKind(c)).toLowerCase()!==skill.toLowerCase())return false;if(pool&&poolKind(c)!==pool)return false;
   const fav=($('cgpFavOnly')?.checked);if(fav&&!APP.getState?.().favorites?.cards?.includes?.(idOf(c)))return false;
   return true;
 }
@@ -73,7 +75,7 @@ function renderCards(){
 function renderListInfo(c){
   const rows=normalizedParams(c), lvl1=rows.find(x=>x.level===1), max=maxLevel(c), maxRow=rows.find(x=>x.level===max)||rows[rows.length-1];
   const skill=skillText(c), rarity=String(c.cardRarityType||'').toLowerCase(), mr=MASTER_BONUS[rarity]||0;
-  const episodes=data.episodes.filter(e=>String(e.cardId??e.card_id)===idOf(c));
+  const detail=c.__detail||{};const detailParams=detail?.params||detail?.data?.params||detail?.cardParameters;const allParams=c.cardParameters||detailParams;const episodes=(detail?.episodes||detail?.data?.episodes||data.episodes).filter(e=>String(e.cardId??e.card_id)===idOf(c));
   const costumes=data.costumes.filter(e=>String(e.cardId)===idOf(c));
   $('cgdContent').innerHTML=`
     <div class="card-gallery-detail">
@@ -84,8 +86,8 @@ function renderListInfo(c){
           <button data-art="trained">覺醒後原畫</button>
           <button data-art="cutout">去背立繪</button>
         </div>
-        <div class="card-gallery-actions">
-          <button class="card-gallery-btn primary" id="cgdDownload">⬇ 下載目前圖片</button>
+        <div class="card-gallery-status" id="cgdDetailStatus">詳細資料尚未同步</div><div class="card-gallery-actions">
+          <button class="card-gallery-btn primary" id="cgdDownload">⬇ 下載 PNG</button><button class="card-gallery-btn" id="cgdDownloadJpg">⬇ 下載 JPG</button>
           <a class="card-gallery-btn" target="_blank" rel="noopener" href="${esc(cardArt(c,false,'full'))}">↗ 開啟 PNG</a>
         </div>
       </div>
@@ -99,17 +101,19 @@ function renderListInfo(c){
             <div><small>MR Lv.5 估算上限</small><strong>${esc(fmt((maxRow?.total||0)+mr*5))}</strong></div><div><small>最高 Skill Lv.</small><strong>${esc(fmt(c?.maxSkillLevel||4))}</strong></div>
           </div>
         </section>
-        <section class="card-gallery-info-card"><h4>技能</h4><div class="card-gallery-skill">${esc(skill)}</div><div class="card-gallery-formula">技能詳細數值與秒數以 master data 的 skill effect / detail 為準。若目前卡片資料只提供 skill key，本卡不猜測官方公式。</div></section>
-        <section class="card-gallery-info-card"><h4>特訓與素材</h4><div class="card-gallery-row"><span>3★/4★ 可特訓</span><strong>${['rarity_3','rarity_4'].includes(rarity)?'是':'否'}</strong></div><div class="card-gallery-row"><span>特訓後最高等級</span><strong>${esc(max)}</strong></div><div class="card-gallery-note">特訓資源需依屬性與稀有度計算；此畫廊會優先顯示 master data 中的明確成本，缺少對應資料時不填假數值。</div></section>
+        <section class="card-gallery-info-card"><h4>技能</h4><div class="card-gallery-skill">${esc(skill)}</div><div class="card-gallery-formula">類型：${esc(skillKind(c))} · 技能上限：Lv.${esc(c?.maxSkillLevel||4)}<br>詳細數值與秒數以 master data 的 skill effect / detail 為準。</div>${c?.__detail?.card?.skill?.effects||c?.__detail?.skill?.effects?'<div class="card-gallery-skill">'+esc(JSON.stringify(c.__detail.card?.skill?.effects||c.__detail.skill?.effects))+'</div>':''}</section>
+        <section class="card-gallery-info-card"><h4>特訓與素材</h4><div class="card-gallery-row"><span>3★/4★ 可特訓</span><strong>${['rarity_3','rarity_4'].includes(rarity)?'是':'否'}</strong></div><div class="card-gallery-row"><span>特訓後最高等級</span><strong>${esc(max)}</strong></div><div class="card-gallery-row"><span>3★ 特訓素材</span><strong>${rarity==='rarity_3'?'對應屬性 Gem ×100 + Miracle Gem ×50':'—'}</strong></div><div class="card-gallery-row"><span>4★ 特訓素材</span><strong>${rarity==='rarity_4'?'對應屬性 Gem ×200 + Miracle Gem ×100':'—'}</strong></div><div class="card-gallery-note">這些固定成本僅套用在 3★/4★ 的一般特訓規則；特殊卡型若 master data 有明確成本，詳細資料優先。</div></section>
         <section class="card-gallery-info-card"><h4>3D Costume</h4><div class="card-gallery-costume">${costumes.length?costumes.map(x=>'<div class="card-gallery-row"><span>Costume 3D ID</span><strong>#'+esc(x.costume3dId)+'</strong></div>').join(''):'<div class="card-gallery-note">Master DB 沒有直接綁定 Costume 3D。</div>'}</div><div class="card-gallery-note">Costume variant 的解鎖狀態依 Master Rank 與卡片類型而定；本頁不把不存在的服裝資料當成已解鎖。</div></section>
         <section class="card-gallery-info-card"><h4>Side Story / Episodes</h4><div class="card-gallery-episode">${episodes.length?episodes.map(x=>'<div class="card-gallery-row"><span>'+esc(x.title||x.name||('Episode '+(x.episodeNo||'')))+'</span><strong>'+esc(x.id||'')+'</strong></div>').join(''):'<div class="card-gallery-note">此卡未在目前同步的 cardEpisodes 資料中找到。</div>'}</div></section>
-        <section class="card-gallery-info-card"><h4>實裝與卡池</h4><div class="card-gallery-history"><div class="card-gallery-row"><span>實裝</span><strong>${esc(date(c.releaseAt))}</strong></div><div class="card-gallery-row"><span>供給類型</span><strong>${esc(c.cardSupplyType||'—')}</strong></div><div class="card-gallery-note">卡池歷史需要 gacha-card 關聯資料；此版本在可取得關聯時顯示，否則提供卡片實裝日與供給類型，不猜卡池。</div></div></section>
+        <section class="card-gallery-info-card"><h4>實裝與卡池</h4><div class="card-gallery-history"><div class="card-gallery-row"><span>實裝</span><strong>${esc(date(c.releaseAt))}</strong></div><div class="card-gallery-row"><span>供給類型</span><strong>${esc(poolKind(c).toUpperCase())}</strong></div>${(c.__detail?.gachas||c.__detail?.data?.gachas||[]).length?(c.__detail.gachas||c.__detail.data.gachas).map(x=>'<div class="card-gallery-row"><span>'+esc(x.name||('Gacha #'+x.id))+'</span><strong>'+esc(date(x.startAt||x.start_at))+'</strong></div>').join(''):'<div class="card-gallery-note">目前 detail API 未提供卡池關聯。</div>'}</div></section>
       </div>
     </div>`;
   $('cgdDownload').onclick=()=>{const src=$('cgdMainArt').src;const a=document.createElement('a');a.href=src;a.download='card-'+idOf(c)+(trained?'-after_training':'-normal')+'.png';a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();};
+  $('cgdDownloadJpg').onclick=async()=>{const img=$('cgdMainArt');try{const blob=await (await fetch(img.src,{mode:'cors'})).blob();const bmp=await createImageBitmap(blob);const canvas=document.createElement('canvas');canvas.width=bmp.width;canvas.height=bmp.height;canvas.getContext('2d').drawImage(bmp,0,0);const a=document.createElement('a');a.href=canvas.toDataURL('image/jpeg',.95);a.download='card-'+idOf(c)+(trained?'-after_training':'-normal')+'.jpg';a.click();}catch(_){window.open(img.src,'_blank','noopener');}};
   document.querySelectorAll('[data-art]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('[data-art]').forEach(x=>x.classList.toggle('active',x===btn));const k=btn.dataset.art;trained=k==='trained';$('cgdMainArt').src=k==='normal'?cardArt(c,false,'full'):k==='trained'?cardArt(c,true,'full'):cardArt(c,trained,'cutout');$('cgdMainArt').alt=titleOf(c)+' '+k;});
 }
-function openCard(c){selected=c;trained=false;$('cgdTitle').textContent=titleOf(c);$('cgdModal').classList.add('open');document.body.style.overflow='hidden';renderListInfo(c);}
+async function enrichCard(c){try{const x=await fetchJson(API+'/cards/jp/'+encodeURIComponent(idOf(c))+'/detail');const d=x?.card?.data||x?.card||x?.data?.card||x?.data||{};if(d&&typeof d==='object'){Object.assign(c,d);if(x?.params)c.cardParameters=x.params?.card?.data?.cardParameters||x.params?.cardParameters||x.params?.card?.cardParameters||x.params?.data?.cardParameters||c.cardParameters;c.__detail=x;}}catch(_){}};
+async function openCard(c){selected=c;trained=false;$('cgdTitle').textContent=titleOf(c);$('cgdModal').classList.add('open');document.body.style.overflow='hidden';renderListInfo(c);$('cgdDetailStatus').textContent='正在補充卡片詳細資料…';await enrichCard(c);if($('cgdModal')?.classList.contains('open')&&selected===c){renderListInfo(c);$('cgdDetailStatus').textContent=c.__detail?'詳細資料已同步':'詳細 API 不可用，使用 master DB 資料';}}
 function closeCard(){$('cgdModal')?.classList.remove('open');document.body.style.overflow='';}
 function buildUi(host){
   host.innerHTML=`
@@ -124,7 +128,7 @@ function buildUi(host){
           <div class="card-gallery-field"><label>角色</label><select id="cgpCharacter"></select></div>
           <div class="card-gallery-field"><label>屬性</label><select id="cgpAttr"></select></div>
           <div class="card-gallery-field"><label>稀有度</label><select id="cgpRarity"></select></div>
-          <div class="card-gallery-field"><label>技能類型/Key</label><select id="cgpSkill"></select></div>
+          <div class="card-gallery-field"><label>技能類型</label><select id="cgpSkill"></select></div><div class="card-gallery-field"><label>卡池類型</label><select id="cgpPool"></select></div>
           <label class="card-gallery-field" style="justify-content:end"><span style="font-size:7px;font-weight:900;color:#747b8d">收藏</span><span><input id="cgpFavOnly" type="checkbox" style="width:auto;margin-right:5px">只看收藏</span></label>
         </div>
         <div class="card-gallery-actions"><button class="card-gallery-btn primary" id="cgpLoad">↻ 同步卡牌資料</button><button class="card-gallery-btn" id="cgpClear">清除篩選</button><a class="card-gallery-btn" target="_blank" rel="noopener" href="https://sekai.best/cards/jp">↗ 開啟 Sekai Viewer</a></div>
@@ -137,8 +141,8 @@ function buildUi(host){
   bind(host);
 }
 function bind(host){
-  ['cgpSearch','cgpUnit','cgpCharacter','cgpAttr','cgpRarity','cgpSkill','cgpFavOnly'].forEach(id=>$(id)?.addEventListener('input',()=>{page=1;renderCards();}));
-  $('cgpClear')?.addEventListener('click',()=>{['cgpSearch','cgpUnit','cgpCharacter','cgpAttr','cgpRarity','cgpSkill'].forEach(id=>$(id).value='');$('cgpFavOnly').checked=false;page=1;renderCards();});
+  ['cgpSearch','cgpUnit','cgpCharacter','cgpAttr','cgpRarity','cgpSkill','cgpPool','cgpFavOnly'].forEach(id=>$(id)?.addEventListener('input',()=>{page=1;renderCards();}));
+  $('cgpClear')?.addEventListener('click',()=>{['cgpSearch','cgpUnit','cgpCharacter','cgpAttr','cgpRarity','cgpSkill','cgpPool'].forEach(id=>$(id).value='');$('cgpFavOnly').checked=false;page=1;renderCards();});
   $('cgpPrev')?.addEventListener('click',()=>{page=Math.max(1,page-1);renderCards();});
   $('cgpNext')?.addEventListener('click',()=>{const max=Math.max(1,Math.ceil(filtered.length/PAGE));page=Math.min(max,page+1);renderCards();});
   $('cgpGrid')?.addEventListener('click',e=>{const item=e.target.closest('[data-card-id]');if(item){const c=data.cards.find(x=>idOf(x)===item.dataset.cardId);if(c)openCard(c);}});
