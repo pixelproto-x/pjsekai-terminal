@@ -176,9 +176,9 @@ const Engine={
   }
   this.ticksPerBeat=tpb;
   const firstBpm=Object.keys(bpmMap)[0];this.bpm=firstBpm?(bpmMap[firstBpm]||120):120;
+  const measureBeats=n=>measures[n]??4;
   const max=Math.max(0,...raw.map(x=>x.measure)),starts=[];let cursor=0;
   for(let i=0;i<=max;i++){starts[i]=cursor;cursor+=measureBeats(i)*60/this.bpm}
-  const measureBeats=n=>measures[n]??4;
   const events=[];
   for(const r of raw){
    const pairs=Math.max(1,Math.floor(r.data.length/2));
