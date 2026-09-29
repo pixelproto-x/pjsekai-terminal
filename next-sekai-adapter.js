@@ -93,20 +93,20 @@ function susToUSC(sus){
   else if(h.length===5&&h[3]==="5")for(const r of rawAt(line,index))directionalNotes.push({tick:r.tick,lane:parseInt(h[4],36),width:parseInt(r.value[1],36),type:parseInt(r.value[0],36)});
  });
  const key=n=>n.lane+"-"+n.tick,flick=new Map(),trace=new Set(),critical=new Set(),removeTick=new Set(),removeEnd=new Set();
- directionalNotes.forEach(n=>{const k=key(n);if(n.type===1)flick.set(k,"up");else if(n.type===3)flick.set(k,"left");else if(n.type===4)flick.set(k,"right")});
+ directionalNotes.forEach(n=>{const k=key(n);if(n.type===1)flick.set(k,"up");else if(n.type===3)flick.set(k,"left");else if(n.type===4)flick.set(k,"right");else if(n.type===2)easeMods.set(k,"in");else if(n.type===5||n.type===6)easeMods.set(k,"out")});
  tapNotes.forEach(n=>{const k=key(n);if(n.type===2)critical.add(k);else if(n.type===5)trace.add(k);else if(n.type===6){trace.add(k);critical.add(k)}else if(n.type===3)removeTick.add(k);else if(n.type===7)removeEnd.add(k);else if(n.type===8){critical.add(k);removeEnd.add(k)}});
  const prevent=new Set();for(const s of streams.values())if(s.type===3)for(const n of s.notes)if([1,2,3,5].includes(n.type))prevent.add(key(n));
  const objects=[...timeScaleChanges.map(x=>({type:"timeScale",beat:x.tick/tpb,timeScale:x.timeScale})),...bpmChanges.map(x=>({type:"bpm",beat:x.tick/tpb,bpm:x.bpm}))],seen=new Set();
  for(const n of tapNotes){if(n.lane<=1||n.lane>=14||![1,2,5,6].includes(n.type))continue;const k=key(n);if(prevent.has(k)||seen.has(k))continue;seen.add(k);const o={type:"single",beat:n.tick/tpb,lane:n.lane-8+n.width/2,size:n.width/2,trace:n.type===5||n.type===6,critical:n.type===2||n.type===6};if(flick.has(k))o.direction=flick.get(k);objects.push(o)}
- for(const s of streams.values()){let cur=null;for(const n of s.notes.sort((a,b)=>a.tick-b.tick)){if(!cur){cur={type:"slide",active:s.type===3,critical:false,connections:[]};objects.push(cur)}const k=key(n),base={beat:n.tick/tpb,lane:n.lane-8+n.width/2,size:n.width/2,ease:"linear"};if(cur.connections.length===0)cur.critical=critical.has(k);if(n.type===1)cur.connections.push(cur.active&&!removeEnd.has(k)?{type:"start",...base,trace:trace.has(k),critical:cur.critical}:{type:"ignore",...base});else if(n.type===2){const q=cur.active&&!removeEnd.has(k)?{type:"end",...base,trace:trace.has(k),critical:cur.critical}:{type:"ignore",...base};if(q.type==="end"&&flick.has(k))q.direction=flick.get(k);cur.connections.push(q)}else if(n.type===3)cur.connections.push(removeTick.has(k)?{type:"attach",beat:n.tick/tpb,critical:cur.critical}:{type:"tick",...base,trace:trace.has(k),critical:cur.critical});else if(n.type===5&&!removeTick.has(k))cur.connections.push({type:"ignore",...base});if(n.type===2)cur=null}}
- return {offset,ticksPerBeat:tpb,objects,meta};
+ for(const s of streams.values()){let cur=null;for(const n of s.notes.sort((a,b)=>a.tick-b.tick)){if(!cur){cur={type:"slide",active:s.type===3,critical:false,connections:[]};objects.push(cur)}const k=key(n),base={beat:n.tick/tpb,lane:n.lane-8+n.width/2,size:n.width/2,ease:easeMods.get(k)||"linear"};if(cur.connections.length===0)cur.critical=critical.has(k);if(n.type===1)cur.connections.push(cur.active&&!removeEnd.has(k)?{type:"start",...base,trace:trace.has(k),critical:cur.critical}:{type:"ignore",...base});else if(n.type===2){const q=cur.active&&!removeEnd.has(k)?{type:"end",...base,trace:trace.has(k),critical:cur.critical}:{type:"ignore",...base};if(q.type==="end"&&flick.has(k))q.direction=flick.get(k);cur.connections.push(q)}else if(n.type===3)cur.connections.push(removeTick.has(k)?{type:"attach",beat:n.tick/tpb,critical:cur.critical}:{type:"tick",...base,trace:trace.has(k),critical:cur.critical});else if(n.type===5&&!removeTick.has(k))cur.connections.push({type:"ignore",...base});if(n.type===2)cur=null}}
+ return {offset,ticksPerBeat:tpb,objects,meta,title:String(meta.get("TITLE")||"").replace(/^"|"$/g,""),artist:String(meta.get("ARTIST")||"").replace(/^"|"$/g,"")};
 }
 function uscToBrowser(usc){
- const objects=usc.objects||[],bpms=objects.filter(o=>o.type==="bpm").map(o=>({beat:num(o.beat),bpm:num(o.bpm,120)})).sort((a,b)=>a.beat-b.beat),base=bpms[0]?.bpm||120;
+ const objects=usc.objects||[],bpms=objects.filter(o=>o.type==="bpm").map(o=>({beat:num(o.beat),bpm:num(o.bpm,120)})).sort((a,b)=>a.beat-b.beat),metaBase=usc.meta?Object.entries(usc.meta).find(([k])=>/^BPM[0-9A-Z]{2}$/i.test(k)):null,base=bpms[0]?.bpm||(metaBase?num(metaBase[1],120):120);
  const beatSec=beat=>{let sec=0,last=0,bpm=base;for(const x of bpms){if(x.beat>=beat)break;sec+=(x.beat-last)*60/Math.max(.01,bpm);last=x.beat;bpm=x.bpm}return sec+(beat-last)*60/Math.max(.01,bpm)};
  const notes=[],timescales=objects.filter(o=>o.type==="timeScale").map(o=>({time:beatSec(num(o.beat)),speed:num(o.timeScale,1)}));let id=0;
  for(const o of objects){if(o.type==="single"){const type=o.trace?(o.direction?"trace-flick":"trace"):(o.direction?"flick":"tap");notes.push({id:id++,time:beatSec(num(o.beat)),lane:clamp(num(o.lane)+num(o.size,.5)-.5,0,11),width:Math.max(.5,num(o.size,.5)*2),type,critical:!!o.critical,dir:{left:2,up:0,right:3}[o.direction]??0})}else if(o.type==="slide"){const cs=(o.connections||[]).filter(x=>x.lane!=null).sort((a,b)=>a.beat-b.beat);if(cs.length>=2){const b0=num(cs[0].beat),b1=num(cs.at(-1).beat),d=Math.max(.001,beatSec(b1)-beatSec(b0)),path=cs.map(x=>({t:(num(x.beat)-b0)/Math.max(.001,b1-b0),l:clamp(num(x.lane),0,11)})),end=cs.at(-1),ticks=cs.filter(x=>x.type==="tick").map(x=>beatSec(num(x.beat)));notes.push({id:id++,time:beatSec(b0),lane:path[0].l,width:Math.max(.5,num(cs[0].size,.5)*2),type:cs[0].trace?"trace":"slide",duration:d,endLane:end.lane,path,critical:!!o.critical,dir:{left:2,up:0,right:3}[end.direction]??0,tickTimes:ticks})}}}
- return {title:"SUS / USC Chart",artist:"",bpm:base,notes,timescales,timescaleGroups:{"0":timescales}};
+ return {title:usc.title||"SUS / USC Chart",artist:usc.artist||"",bpm:base,notes,timescales,timescaleGroups:{"0":timescales},offset:num(usc.offset,0)};
 }
 function normalize(input){
  if(typeof input==="string"){
@@ -133,5 +133,5 @@ function normalize(input){
   }
  };
 }
-window.PJSekaiNextSekaiAdapter={version:"3.0.0",normalize,normalizeNote};
+window.PJSekaiNextSekaiAdapter={version:"3.1.0",normalize,normalizeNote};
 })();
