@@ -184,10 +184,10 @@ for(const e of this.effects){e.life-=.016;if(e.life<=0)continue;const x=w*(.08+(
  loadJSON(input){
   let normalized=null;
   try{normalized=window.PJSekaiNextSekaiAdapter?.normalize(input)||null}catch(err){console.warn("Next SEKAI adapter fallback:",err)}
-  const data=normalized||{title:"Imported JSON",bpm:120,notes:Array.isArray(input)?input:(input?.notes||[])};
+  const data=normalized||{title:"Imported JSON",bpm:120,notes:Array.isArray(input)?input:(input?.notes||[])};\n  const normalizedTime=!!normalized;
   this.notes=[];let id=0;
   for(const x of data.notes||[]){
-   const n={id:id++,time:+x.time/1000||+x.time||0,lane:clamp(+x.lane||0,0,11),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,fake:!!x.fake,damage:!!x.damage,guideColor:+x.guideColor||0,timescaleGroup:+x.timescaleGroup||0,speed:+x.speed||1,ease:x.ease||"smooth",path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};
+   const n={id:id++,time:normalizedTime?(+x.time||0):(+x.time/1000||+x.time||0),lane:clamp(+x.lane||0,0,11),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,fake:!!x.fake,damage:!!x.damage,guideColor:+x.guideColor||0,timescaleGroup:+x.timescaleGroup||0,speed:+x.speed||1,ease:x.ease||"smooth",path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};
    if(n.path?.length)n.endLane=n.path[n.path.length-1].l;
    if(n.type==="fake")n.fake=true;if(n.type==="damage")n.damage=true;
    this.notes.push(n);
