@@ -973,11 +973,12 @@ body[data-sekai-theme] .theme-choice.active{
       <h3>虛擬按鍵 / 鍵盤 Key Mapping</h3>
       <p class="dojo-config-desc">4 鍵預設 D / F / J / K，可直接修改並保存。這組映射會作為 bridge 設定送出；跨來源 iframe 不會被強制攔截鍵盤事件。</p>
       <div class="dojo-key-grid">
-        <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D" aria-label="Lane 1 key"></div>
-        <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F" aria-label="Lane 2 key"></div>
-        <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J" aria-label="Lane 3 key"></div>
-        <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K" aria-label="Lane 4 key"></div>
+        <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D" aria-label="Lane 1 key"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
+        <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F" aria-label="Lane 2 key"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
+        <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J" aria-label="Lane 3 key"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
+        <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K" aria-label="Lane 4 key"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
       </div>
+      <div class="dojo-virtual-hint">點擊虛擬鍵只做本頁映射測試與視覺回饋；不攔截 Sonolus iframe 的原生輸入。</div>
       <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新傳送設定</button></div>
       <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>Sonolus Web iframe 尚未回覆橋接確認。</span></div></div>
     </section>
