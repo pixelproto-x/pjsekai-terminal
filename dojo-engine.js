@@ -165,7 +165,7 @@ const Engine={
   if(n.duration>0||n.type.startsWith("slide")||n.type.startsWith("trace"))this.drawPath(ctx,n,w,h);
   ctx.save();ctx.translate(p.x,p.y);ctx.shadowBlur=critical?22:13;ctx.shadowColor=critical?"#ffe05a":n.type.startsWith("trace")?"#69e6a9":n.type.includes("flick")?"#ffbd4a":"#58dcff";
   ctx.fillStyle=n.damage?"#ff5577":critical?"#fff19a":n.type.startsWith("trace")?"#69e6a9":n.type.includes("flick")?"#ffc44d":"#f4fbff";
-  const s=p.size*margin;ctx.beginPath();ctx.roundRect(-s*.72,-s*.52,s*1.44,s*1.04,s*.22);ctx.fill();
+  const s=p.size*margin*clamp(Math.sqrt(n.width||1),1,3);ctx.beginPath();ctx.roundRect(-s*.72,-s*.52,s*1.44,s*1.04,s*.22);ctx.fill();
   if(this.isFlick(n)){ctx.fillStyle="#fff";ctx.beginPath();const ang=(n.dir||0)*45-90;const a=ang*RAD;ctx.moveTo(Math.cos(a)*s*1.05,Math.sin(a)*s*1.05);ctx.lineTo(Math.cos(a+2.45)*s*.35,Math.sin(a+2.45)*s*.35);ctx.lineTo(Math.cos(a-2.45)*s*.35,Math.sin(a-2.45)*s*.35);ctx.closePath();ctx.fill()}
   if(critical){ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke()}ctx.restore();
  },
@@ -189,7 +189,7 @@ drawEffects(ctx,w,h){const now=performance.now()/1000;for(const e of this.effect
   this.timescaleEvents=(data.timescales||[]).map(e=>({time:+e.time||0,speed:clamp(+e.speed||1,.05,8),nextSpeed:Number.isFinite(+e.nextSpeed)?clamp(+e.nextSpeed,.05,8):null,ease:String(e.ease||"linear").toLowerCase(),transition:e.transition||"timescale"})).sort((a,b)=>a.time-b.time);
   this.notes=[];let id=0;
   for(const x of data.notes||[]){
-   const n={id:id++,time:normalizedTime?(+x.time||0):(+x.time/1000||+x.time||0),lane:clamp(+x.lane||0,0,11),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,fake:!!x.fake,damage:!!x.damage,guideColor:+x.guideColor||0,timescaleGroup:+x.timescaleGroup||0,speed:+x.speed||1,ease:x.ease||"smooth",path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};
+   const n={id:id++,time:normalizedTime?(+x.time||0):(+x.time/1000||+x.time||0),lane:clamp(+x.lane||0,0,11),width:clamp(+(x.width||1),1,12),type:String(x.type||"tap").toLowerCase(),duration:+x.duration||0,endLane:clamp(+(x.endLane??x.lane)||0,0,11),critical:!!x.critical,dir:+x.dir||0,fake:!!x.fake,damage:!!x.damage,guideColor:+x.guideColor||0,timescaleGroup:+x.timescaleGroup||0,speed:+x.speed||1,ease:x.ease||"smooth",path:Array.isArray(x.path)?x.path.map(p=>({t:+p.t||0,l:clamp(+p.l||0,0,11)})):null};
    if(n.path?.length)n.endLane=n.path[n.path.length-1].l;
    if(n.type==="fake")n.fake=true;if(n.type==="damage")n.damage=true;
    this.notes.push(n);
