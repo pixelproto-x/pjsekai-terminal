@@ -8,9 +8,10 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, dev
 page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
 page.on('pageerror', err => pageErrors.push(err.message));
 
-await page.goto('http://127.0.0.1:4173/#songs', { waitUntil: 'domcontentloaded', timeout: 30000 });
-await page.waitForSelector('#dojoGameCard', { timeout: 30000 });
-await page.waitForSelector('#dojoGameCanvas', { timeout: 30000 });
+await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
+await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
+await page.waitForSelector('#dojoGameCanvas', { state: 'visible', timeout: 30000 });
 await page.waitForTimeout(2500);
 
 const before = await page.evaluate(() => {
