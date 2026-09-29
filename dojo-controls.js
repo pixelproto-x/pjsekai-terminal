@@ -24,8 +24,11 @@ function ensure(){
 function save(){try{B.save()}catch(_){}}
 function getConfig(){const s=ensure();const song=$('dojoSelectedTitle')?.textContent?.trim()||s.dojo.selectedSong||'';const difficulty=$('dojoSelectedDifficulty')?.textContent?.trim()||s.dojo.selectedDifficulty||'Expert';s.dojo.selectedSong=song==='尚未選擇歌曲'?'':song;s.dojo.selectedDifficulty=difficulty||'Expert';return{version:1,server:s.dojo.server,speed:s.dojo.speed,mirror:!!s.dojo.mirror,sudden:!!s.dojo.sudden,hidden:!!s.dojo.hidden,audioOffset:n(s.dojo.audioOffset),visualOffset:n(s.dojo.visualOffset),keys:s.dojo.keys.slice(0,4),song:s.dojo.selectedSong,difficulty:s.dojo.selectedDifficulty}}
 function status(mode,text){
- const el=$('dojoBridgeStatus');if(!el)return;el.className='dojo-bridge-status '+mode;el.querySelector('strong').textContent=mode==='ack'?'引擎橋接已回應':mode==='loaded'?'iframe 已載入':'等待引擎橋接';
- el.querySelector('span').textContent=text;
+ const el=$('dojoBridgeStatus');if(!el)return;
+ el.className='dojo-bridge-status '+(mode||'');
+ const strong=el.querySelector('strong');const span=el.querySelector('span');
+ if(strong)strong.textContent=mode==='ack'?'引擎橋接已回應':mode==='loaded'?'iframe 已載入':'等待引擎橋接';
+ if(span)span.textContent=String(text??'');
 }
 function log(msg){const el=$('dojoApiLog');if(el)el.innerHTML='<strong>BRIDGE</strong> '+String(msg).replace(/[<>]/g,'')}
 function sendConfig(reason){
