@@ -816,6 +816,7 @@ body[data-sekai-theme] .theme-choice.active{
 <link rel="stylesheet" href="event-calc.css">
 <link rel="stylesheet" href="card-gallery.css">
 <link rel="stylesheet" href="gacha-simulator.css">
+<link rel="stylesheet" href="chart-analyzer.css">
 </head>
 <body>
 <div class="top-accent"></div>
@@ -932,6 +933,7 @@ body[data-sekai-theme] .theme-choice.active{
 
   <section class="page" data-page="songs">
     <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">DOJO</div><h1 class="page-title">音遊實戰工具</h1><p class="page-subtitle">歌曲資料庫、譜面密度分析、練習室、AP Offset 與 Note Speed 換算。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
+    <div id="chartAnalyzerMount"></div>
     <div class="dojo-hero">
       <div class="dojo-panel dark"><div class="dojo-kicker">SONG DATABASE</div><div class="dojo-title">歌曲資料庫</div><p class="dojo-copy">依歌名、歌手、屬性、難度與 BPM 搜尋。資料目前以本地資料庫運作，之後可直接擴充 JSON。</p><div class="dojo-search-row"><input id="dojoSongSearch" class="search-input" placeholder="搜尋歌名 / 歌手 / 關鍵字" autocomplete="off"><button id="dojoClearSearch" class="data-action" type="button">清除</button></div><div class="dojo-filter-row"><select id="dojoAttrFilter" class="dojo-select"><option value="">全部屬性</option><option value="Cool">Cool</option><option value="Cute">Cute</option><option value="Pure">Pure</option><option value="Happy">Happy</option><option value="Mysterious">Mysterious</option></select><select id="dojoDifficultyFilter" class="dojo-select"><option value="">全部難度</option><option value="Easy">Easy</option><option value="Normal">Normal</option><option value="Hard">Hard</option><option value="Expert">Expert</option><option value="Master">Master</option><option value="Append">Append</option></select><input id="dojoBpmFilter" class="dojo-number" type="number" min="1" placeholder="BPM ≥"></div><div id="dojoSongList" class="dojo-song-list"></div></div>
       <div class="dojo-panel"><div class="dojo-kicker">SELECTED SONG</div><div class="dojo-title" id="dojoSelectedTitle">尚未選擇歌曲</div><p class="dojo-copy" id="dojoSelectedMeta">從左側選一首歌曲開始分析。</p><div class="dojo-stat-grid"><div class="dojo-stat"><small>BPM</small><strong id="dojoSelectedBpm">—</strong></div><div class="dojo-stat"><small>難度</small><strong id="dojoSelectedDifficulty">—</strong></div><div class="dojo-stat"><small>Notes</small><strong id="dojoSelectedNotes">—</strong></div><div class="dojo-stat"><small>NPS</small><strong id="dojoSelectedNps">—</strong></div></div><div class="dojo-difficulty" id="dojoDifficultyButtons"></div><div class="dojo-action-row"><button class="primary-btn" id="dojoAnalyzeBtn" type="button">分析譜面</button><button class="secondary-btn" id="dojoOpenPracticeBtn" type="button">開啟練習室</button></div></div>
@@ -3254,5 +3256,6 @@ window.__PJSEKAI_APP__ = {
 <script src="event-calc.js" defer></script>
 <script src="card-gallery.js" defer></script>
 <script src="gacha-simulator.js" defer></script>
+<script src="chart-analyzer.js" defer></script>
 </body>
 </html>
