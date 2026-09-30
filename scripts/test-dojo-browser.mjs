@@ -36,7 +36,7 @@ if (!referenceReady) throw new Error('Modular Project SEKAI reference renderer d
 for (const asset of [
   'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_normal_left.png',
   'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_crtcl_left.png',
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_03.png'
+  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_crtcl_03.png'
 ]) {
   const response = await page.request.get(asset);
   if (!response.ok()) throw new Error('Reference chart asset unavailable: '+asset+' HTTP '+response.status());
@@ -178,7 +178,8 @@ if (!advanced.includes('Note Speed') || !advanced.includes('Audio Offset')) thro
 const dojoResourceFailures = failedRequests.filter(x => {
   if (x.url.startsWith('http://127.0.0.1:4173/')) return true;
   return x.url.includes('assets.unipjsk.com/startapp/music/music_score/') ||
-    x.url.includes('assets.unipjsk.com/ondemand/music/long/');
+    x.url.includes('assets.unipjsk.com/ondemand/music/long/') ||
+    x.url.includes('cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/');
 });
 if (pageErrors.length || dojoResourceFailures.length) {
   throw new Error(
