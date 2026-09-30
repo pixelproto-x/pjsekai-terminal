@@ -131,34 +131,6 @@ function writeCache(songs){
 async function loadSongs(){
   const cached=readCache();
   if(cached?.length)return cached;
-  let apiSongs=[];
-  try{
-    const pages=[];
-    for(let page=1;page<=8;page++){
-      const payload=await fetchJson(SOURCES.apiList+'?page='+page+'&page_size=100&spoiler=false&sort_by=id&sort_order=asc');
-      const items=getApiItems(payload);
-      if(!items.length)break;
-      pages.push(...items);
-      if(items.length<100)break;
-    }
-    apiSongs=pages;
-  }catch(_){}
-  try{
-    if(apiSongs.length){
-      let diffRows=[];
-      try{ const rawDiffs=await fetchJson(SOURCES.diffs); diffRows=arr(rawDiffs); }catch(_){}
-      if(diffRows.length){
-        const grouped=new Map();
-        diffRows.forEach(d=>{const id=num(d?.musicId??d?.id,0);if(!id)return;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(d);});
-        const normalized=apiSongs.map(x=>normalizeMusic(x,grouped.get(num(x.id,0))||[])).filter(Boolean);
-        writeCache(normalized);
-        return normalized;
-      }
-      const normalized=apiSongs.map(x=>normalizeMusic(x,[])).filter(Boolean);
-      writeCache(normalized);
-      return normalized;
-    }
-  }catch(_){}
   const [musics,diffs]=await Promise.all([fetchJson(SOURCES.musics),fetchJson(SOURCES.diffs)]);
   const merged=mergeSongs(arr(musics),arr(diffs));
   writeCache(merged);
