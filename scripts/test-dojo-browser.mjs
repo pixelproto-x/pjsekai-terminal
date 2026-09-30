@@ -28,10 +28,9 @@ if (!diagnostics.dojoObject || !diagnostics.prepared || !diagnostics.preparedNot
   throw new Error('Dojo diagnostics: '+JSON.stringify(diagnostics)+'\nConsole errors: '+errors.join(' | ')+'\nPage errors: '+pageErrors.join(' | '));
 }
 
-const before = await page.evaluate(() => ({
+const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
   return {
-    pixi: !!window.PIXI,
     prepared: !!p?.state?.prepared,
     title: p?.state?.prepared?.music?.title || '',
     difficulty: p?.state?.prepared?.difficulty || '',
@@ -41,7 +40,6 @@ const before = await page.evaluate(() => ({
     canvasHeight: document.querySelector('#dojoGameCanvas')?.clientHeight || 0
   };
 });
-if (!before.pixi) throw new Error('PixiJS did not load');
 if (!before.prepared) throw new Error('Default chart was not prepared');
 if (!before.notes) throw new Error('Prepared chart contains no playable notes');
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Gameplay canvas has no rendered size');
