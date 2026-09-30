@@ -3293,6 +3293,11 @@ window.__PJSEKAI_APP__ = {
     const target=toPlay?playMount():homeMount();
     if(card&&target&&!target.contains(card))target.appendChild(card);
   }
+  document.addEventListener("pjsekai-dojo-exit",()=>{
+    window.__PJSEKAI_DOJO__?.stop?.();
+    moveGame(false);
+    go("songs");
+  });
   document.addEventListener("click",e=>{
     const play=e.target.closest("#dojoOpenPracticeBtn");
     if(play&&currentRoute==="songs"){
