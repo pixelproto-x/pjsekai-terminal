@@ -128,7 +128,7 @@ function drawTick(kind,lane,travel,alpha=1){drawImage(kind==="crtcl"?"notes_long
 function drawConnection(kind,laneA,travelA,laneB,travelB,thickness=10,alpha=1){
   const a=stagePoint(laneA,travelA),b=stagePoint(laneB,travelB);
   const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len*thickness*.5,ny=dx/len*thickness*.5;
-  drawImage("notes_long_middle.png",[
+  drawImage(kind==="crtcl"?"notes_long_middle.png":"notes_long_middle.png",[
     {x:a.x+nx,y:a.y+ny},{x:b.x+nx,y:b.y+ny},
     {x:b.x-nx,y:b.y-ny},{x:a.x-nx,y:a.y-ny}
   ],alpha);
