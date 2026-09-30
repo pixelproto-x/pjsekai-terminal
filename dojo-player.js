@@ -369,7 +369,7 @@ async function initPixi(){
   if(!wrap||!canvas)throw new Error('Dojo 遊戲畫面初始化失敗');
   const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
   if(!ctx)throw new Error('此瀏覽器不支援 Canvas 2D');
-  state.ctx=ctx;state.canvas=canvas;state.renderMode='2d';
+  state.ctx=ctx;state.canvas=canvas;state.renderMode='2d';state.app=true;
   const resize=()=>{
     const rect=wrap.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
     canvas.width=Math.max(1,Math.round(rect.width*dpr));
@@ -380,6 +380,10 @@ async function initPixi(){
   resize();
   if(window.ResizeObserver){const ro=new ResizeObserver(resize);ro.observe(wrap);state.resizeObserver=ro;}
   else window.addEventListener('resize',resize,{passive:true});
+  if(!state.raf){
+    const loop=()=>{frame();state.raf=requestAnimationFrame(loop);};
+    state.raf=requestAnimationFrame(loop);
+  }
 }
 function laneGeom(){
   const w=$('dojoGameStageWrap')?.clientWidth||960,h=$('dojoGameStageWrap')?.clientHeight||540;
@@ -543,7 +547,9 @@ function hitGroup(group){
   if(candidate.kind==='hold'){
     if(label==='MISS'){judge(candidate,'MISS',delta);return;}
     candidate.started=true;candidate.holding=group;candidate.lastHeldAt=now;
-    state.held.set(candidate.id,group);state.score+=scoreValue(label);state.combo++;state.judged++;
+    state.held.set(candidate.id,group);state.counts[label]=(state.counts[label]||0)+1;state.score+=scoreValue(label);state.judged++;
+    if(label==='BAD'){state.combo=0;state.life=Math.max(0,state.life-25);}else{state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);}
+    if(Number.isFinite(delta)){state.totalTiming+=Math.abs(delta)*1000;state.timingCount++;}
     showJudge(label,delta);
   }else judge(candidate,label,delta);
 }
@@ -601,10 +607,8 @@ async function startGame(){
     state.startSeek=Math.max(0,(Number(pre.music.fillerSec)||0)-lead);
     const speed=clamp(num(appState().dojo.speed,10),1,12);
     state.leadTime=clamp(3.3-(speed-1)*0.15,1.2,3.3);
+    try{state.audio.currentTime=state.startSeek;}catch(_){}
     await state.audio.play().catch(e=>{throw new Error('瀏覽器拒絕播放音訊，請再按一次「開始打歌」');});
-    try{
-      state.audio.currentTime=state.startSeek;
-    }catch(_){ }
     state.notes=pre.notes.map(n=>({...n,judged:false,started:false}));
     state.score=0;state.combo=0;state.bestCombo=0;state.judged=0;state.life=1000;state.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};state.totalTiming=0;state.timingCount=0;state.finished=false;state.running=true;
     showGameReady('遊玩中 · 觸控下方區域或使用 D / F / J / K');
