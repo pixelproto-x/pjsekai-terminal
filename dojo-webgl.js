@@ -498,14 +498,11 @@ function drawNote(n,now){
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.035,1):1;
   const q=stageAt(travel),x=laneX(n.l,travel),lw=laneW(travel),w=Math.max(10,lw*(n.w||1)*0.98);
   const h=Math.max(10,w*0.44);
-  const bucket=n.c?"yellow":n.f?"red":n.t?"green":"cyan";
-  const side=x<q.l+(q.r-q.l)*.34?"Left":x>q.l+(q.r-q.l)*.66?"Right":"Middle";
-  const bodyKey=n.c?"#NOTE_HEAD_YELLOW":n.f?"#NOTE_HEAD_RED":n.t?"#NOTE_HEAD_GREEN":"#NOTE_HEAD_CYAN";
-  const body= S.skin?.sprites?.["#NOTE_HEAD_"+bucket.toUpperCase()] ? "#NOTE_HEAD_"+bucket.toUpperCase() : (n.c?"critical":n.f?"flick":n.t?"trace":"normal");
+  const bucket=n.c?"YELLOW":n.f?"RED":n.t?"GREEN":"CYAN";
+  const atlasKey="#NOTE_HEAD_"+bucket;
+  const body=S.skin?.sprites?.[atlasKey] ? atlasKey : (n.c?"critical":n.f?"flick":n.t?"trace":"normal");
+  // Public Next-SEKAI pixel atlas is the primary note-head renderer; procedural glow remains only as a lighting layer.
   drawSkinSprite(body,x,q.y,Math.max(14,w*1.82),Math.max(14,h*1.62),0.98*alpha);
-  // Use the same public Next-SEKAI atlas pieces for the three lane-facing note heads.
-  const sideKey=(n.c?"#NOTE_HEAD_YELLOW":n.f?"#NOTE_HEAD_RED":n.t?"#NOTE_HEAD_GREEN":"#NOTE_HEAD_CYAN");
-  if(S.skin?.sprites?.[sideKey]) drawSkinSprite(sideKey,x,q.y,Math.max(14,w*1.82),Math.max(14,h*1.62),0.98*alpha);
   if(!n.t){
     const glow=n.c?[1,.82,.18]:n.f?[1,.24,.43]:[.20,.90,1];
     circle(x,q.y,Math.max(9,w*0.74),glow,0.045*alpha,20);
