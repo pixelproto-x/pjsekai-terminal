@@ -31,7 +31,7 @@ const state={
 };
 
 state.audio.preload='auto';
-state.audio.addEventListener('ended',()=>finishGame());
+state.audio.addEventListener('ended',()=>{if(state.running)finishGame();});
 state.audio.addEventListener('error',()=>showGameError('歌曲音訊無法載入，但仍可使用靜音譜面練習。'));
 state.audio.addEventListener('canplay',()=>{const m=$('dojoGameMessage');if(m&&state.running)m.textContent='遊玩中 · 觸控下方區域或使用 D / F / J / K';});
 
@@ -445,9 +445,10 @@ function drawScene(now){
     if(note.flick){ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-wh*.2,y);ctx.lineTo(x+wh*.2,y);ctx.stroke();}
   }
 }
-function spawnEffect(kind){
-  const g=laneGeom(),color=kind==='PERFECT'?'#74e6ff':kind==='GREAT'?'#8fe6b8':kind==='GOOD'?'#ffd34f':'#ff6f91';
-  state.effects.push({created:performance.now(),color,x:g.w/2,y:g.hitY});
+function spawnEffect(kind,lane=5){
+  const g=laneGeom(),color=kind==='PERFECT'?'#74e6ff':kind==='GREAT'?'#8fe6b8':kind==='GOOD'?'#ffd34f':kind==='BAD'?'#ffb15c':'#ff6f91';
+  const x=laneX(clamp(Number(lane)||5,0,11),1,g);
+  state.effects.push({created:performance.now(),color,x,y:g.hitY});
 }
 function drawEffects(){
   const ctx=state.ctx;if(!ctx)return;
@@ -514,10 +515,11 @@ function judge(note,label,delta){
   state.score+=scoreValue(label);showJudge(label,delta);
   if(state.life<=0)finishGame(true);
 }
-function showJudge(label){
+let noteLaneForEffect=5;
+function showJudge(label,delta){
   const el=$('dojoJudgeText');if(!el)return;
   el.textContent=label;el.className='dojo-judge-text show';
-  el.dataset.judge=label;spawnEffect(label);
+  el.dataset.judge=label;spawnEffect(label,noteLaneForEffect);
   clearTimeout(state.lastJudgeToken);state.lastJudgeToken=setTimeout(()=>el.classList.remove('show'),180);
 }
 function classify(delta){
@@ -543,7 +545,7 @@ function hitGroup(group){
     if(d<=JUDGE.good&&d<best){best=d;candidate=n;}
   }
   if(!candidate)return;
-  const delta=now-candidate.hit,label=classify(delta);
+  const delta=now-candidate.hit,label=classify(delta);noteLaneForEffect=candidate.lane;
   if(candidate.kind==='hold'){
     if(label==='MISS'){judge(candidate,'MISS',delta);return;}
     candidate.started=true;candidate.holding=group;candidate.lastHeldAt=now;
@@ -630,7 +632,7 @@ function finishGame(failed=false){
   const accuracy=state.judged?((state.counts.PERFECT+state.counts.GREAT*.7+state.counts.GOOD*.4+state.counts.BAD*.1)/state.judged*100).toFixed(2):'100.00';
   const timing=state.timingCount?(state.totalTiming/state.timingCount).toFixed(0):'0';
   const result=$('dojoGameResult');if(result){result.hidden=false;result.innerHTML='<strong>'+(failed?'FAILED':'CLEAR')+'</strong><div class="dojo-result-score">'+String(Math.round(state.score)).padStart(7,'0')+'</div><div class="dojo-result-grid"><span>ACC <b>'+accuracy+'%</b></span><span>MAX COMBO <b>'+state.bestCombo+'</b></span><span>PERFECT <b>'+state.counts.PERFECT+'</b></span><span>GREAT <b>'+state.counts.GREAT+'</b></span><span>GOOD <b>'+state.counts.GOOD+'</b></span><span>BAD / MISS <b>'+state.counts.BAD+' / '+state.counts.MISS+'</b></span><span>AVG TIMING <b>'+timing+'ms</b></span></div><button type="button" id="dojoResultReplay">再玩一次</button>';result.querySelector('#dojoResultReplay')?.addEventListener('click',()=>{result.hidden=true;startGame();});}
-  showGameReady((failed?'生命歸零 · ':'完成！')+'最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
+  const rank=state.life<=0?'F':accuracy>=97?'S':accuracy>=90?'A':accuracy>=80?'B':'C';if(result)result.querySelector('strong').textContent=(failed?'FAILED':'CLEAR')+'  ·  '+rank;showGameReady((failed?'生命歸零 · ':'完成！')+'最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
 }
 function bindControls(){
   $('dojoOpenPracticeBtn')?.addEventListener('click',()=>{
