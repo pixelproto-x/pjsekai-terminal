@@ -235,7 +235,7 @@ function vocalFor(music){
   })[0];
   if(found?.assetbundleName)return found;
   const id=String(music?.id||'').padStart(4,'0');
-  return id?{musicId:Number(music.id),musicVocalType:'original_song',assetbundleName:'vs_'+id+'_01',caption:'官方原曲'}:null;
+  return id?{musicId:Number(music.id),musicVocalType:'original_song',assetbundleName:id+'_01',caption:'官方原曲'}:null;
 }
 function audioUrl(vocal,music){
   const name=vocal?.assetbundleName;
