@@ -9,6 +9,7 @@ if(!B)return;
 
 const MUSIC_URL='dojo-musics.json';
 const VOCAL_URL='dojo-vocals.json';
+const DIFFICULTY_URL='dojo-difficulties.json';
 const ASSETS='https://assets.unipjsk.com';
 const DIFFS=['easy','normal','hard','expert','master','append'];
 const DIFF_LABEL={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
@@ -19,7 +20,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const num=(v,d=0)=>{const n=Number(v);return Number.isFinite(n)?n:d};
 
 const state={
-  songs:null,vocals:null,prepared:null,prepareKey:'',
+  songs:null,vocals:null,difficulties:null,prepared:null,prepareKey:'',
   pixi:null,app:null,stage:null,laneLayer:null,noteLayer:null,effectLayer:null,
   audio:new Audio(),running:false,starting:false,raf:0,
   notes:[],score:0,combo:0,bestCombo:0,judged:0,lastJudgeToken:0,
@@ -239,16 +240,23 @@ function audioUrl(vocal){
 
 async function loadData(){
   if(!state.songs){
-    const songs=await json(MUSIC_URL);
+    const [songs,difficulties]=await Promise.all([json(MUSIC_URL),json(DIFFICULTY_URL)]);
     state.songs=Array.isArray(songs)?songs:[];
+    state.difficulties=Array.isArray(difficulties)?difficulties:[];
+    const byMusic=new Map();
+    for(const d of state.difficulties){
+      const id=Number(d.musicId);if(!Number.isFinite(id))continue;
+      if(!byMusic.has(id))byMusic.set(id,{});
+      const key=String(d.musicDifficulty||'').toLowerCase();
+      if(DIFFS.includes(key))byMusic.get(id)[key]=d;
+    }
+    state.songs=state.songs.map(m=>({...m,difficulties:byMusic.get(Number(m.id))||{}}));
   }
   if(!state.vocals){
     try{
       const vocals=await json(VOCAL_URL);
       state.vocals=Array.isArray(vocals)?vocals:[];
-    }catch(_){
-      state.vocals=[];
-    }
+    }catch(_){state.vocals=[];}
   }
   if(!state.songs.length)throw new Error('歌曲資料載入失敗');
 }
