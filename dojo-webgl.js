@@ -350,13 +350,24 @@ function setup(){
     const r=w.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
     c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));
     g.viewport(0,0,c.width,c.height);
-    // Public Next-SEKAI reference field is 16:9; keep the reference proportions in the web stage.
-    const aspect=Math.max(0.001,r.width/r.height),target=16/9;
-    const fh=r.height,fw=aspect>target?fh*target:r.width,ox=(r.width-fw)*.5;
-    S.geom={w:r.width,h:r.height,top:r.height*.10,far:r.height*.18,hit:r.height*.875,
-      tl:ox+fw*.28,tr:ox+fw*.72,bl:ox+fw*.035,br:ox+fw*.965};
+    const ref=window.__PJSEKAI_SEKAI_REF__;
+    if(ref){
+      const rg=ref.layout(c.width,c.height);
+      const far=ref.screenPoint(0,rg.laneTop,1).y,hit=ref.screenPoint(0,1,1).y;
+      S.geom={w:c.width,h:c.height,top:far,far,hit,
+        tl:ref.screenPoint(-6,rg.laneTop,1).x,tr:ref.screenPoint(6,rg.laneTop,1).x,
+        bl:ref.screenPoint(-6,1,1).x,br:ref.screenPoint(6,1,1).x};
+    }else{
+      const aspect=Math.max(0.001,r.width/r.height),target=16/9;
+      const fh=c.height,fw=aspect>target?fh*target:c.width,ox=(c.width-fw)*.5;
+      S.geom={w:c.width,h:c.height,top:fh*.10,far:fh*.18,hit:fh*.875,
+        tl:ox+fw*.28,tr:ox+fw*.72,bl:ox+fw*.035,br:ox+fw*.965};
+    }
   };
   rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});loadSkin();
+  if(window.__PJSEKAI_SEKAI_REF__){
+    try{window.__PJSEKAI_SEKAI_REF__.attach(g,S.texProgram,S.texBuf,S.texLoc);window.__PJSEKAI_SEKAI_REF__.loadAll().catch(()=>{});}catch(_){}
+  }
   if(window.ResizeObserver){S.ro=new ResizeObserver(rs);S.ro.observe(w);}
   if(!w.querySelector(".dojo-wgl-overlay")){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
@@ -431,6 +442,12 @@ function line(points,c,a=1,width=1){
 }
 const APPROACH_SCALE=Math.pow(1.06,-45);
 function stageAt(p){
+  const ref=window.__PJSEKAI_SEKAI_REF__;
+  if(ref?.geom){
+    const travel=cl(ref.approach(p),0,1.25);
+    const l=ref.screenPoint(-6,1,travel),r=ref.screenPoint(6,1,travel),m=ref.screenPoint(0,1,travel);
+    return{y:m.y,l:l.x,r:r.x};
+  }
   const g=S.geom,t=Math.pow(APPROACH_SCALE,1-cl(p,0,1));
   return{y:g.far+(g.hit-g.far)*t,l:g.tl+(g.bl-g.tl)*t,r:g.tr+(g.br-g.tr)*t};
 }
@@ -440,8 +457,8 @@ function laneX(l,p){
 }
 function laneW(p){const q=stageAt(p);return(q.r-q.l)/12}
 function preemptForSpeed(speed){
-  const u=cl((N(speed,10)-12)/(1-12),0,1);
-  return .35+(4-.35)*Math.pow(u,1.31);
+  const ref=window.__PJSEKAI_SEKAI_REF__;
+  return ref?ref.preempt(N(speed,10)):(.35+(4-.35)*Math.pow(cl((N(speed,10)-12)/(1-12),0,1),1.31));
 }
 function scrollRateAt(t){
   const ev=S.prep?.timeScaleChanges||[];
@@ -515,37 +532,24 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
   poly(pts,col,a);
 }
 function drawNote(n,now){
-  const travel=travelAt(now,n.hit),settings=app().dojo||{};
+  const travel=travelAt(now,n.hit),settings=app().dojo||{},ref=window.__PJSEKAI_SEKAI_REF__;
   if(settings.sudden&&travel<0.34)return;
-  const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1;
-  const p=cl(travel,0,1),q=stageAt(p),x=laneX(n.l,p),lw=laneW(p);
-  const w=Math.max(11,lw*(n.w||1)*1.08);
-  const h=Math.max(11,w*.74);
+  const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1,p=cl(travel,0,1);
+  if(ref?.geom?.ws){
+    const mirror=!!settings.mirror,lane=(mirror?11-n.l:n.l)-5.5,size=Math.max(.5,(n.w||1)*.5);
+    const kind=n.f?(n.c?"crtcl":"flick"):(n.c?"crtcl":n.t?"long":"normal");
+    ref.drawBody(kind,lane,size,p,alpha);
+    if(n.f)ref.drawArrow(n.c?"crtcl":"normal",lane,size,p,n.f,alpha);
+    if(n.t&&!n.f)ref.drawTick(n.c?"crtcl":"normal",lane,p,alpha*.86);
+    return;
+  }
+  const q=stageAt(p),x=laneX(n.l,p),lw=laneW(p),w=Math.max(11,lw*(n.w||1)*1.08),h=Math.max(11,w*.74);
   const head=n.c?"#NOTE_HEAD_YELLOW":n.f?"#NOTE_HEAD_RED":n.t?"#NOTE_HEAD_GREEN":"#NOTE_HEAD_CYAN";
   const conn=n.c?"#NOTE_CONNECTION_YELLOW":n.f?"#NOTE_CONNECTION_RED":n.t?"#NOTE_CONNECTION_GREEN":"#NOTE_CONNECTION_CYAN";
-
-  // The reference engine renders notes from a skin atlas (left/middle/right
-  // body pieces) rather than a CSS-like rounded rectangle.  Use the committed
-  // atlas directly so the browser note silhouette stays pixel-accurate.
-  if((n.w||1)>1.05){
-    const bodyW=Math.max(8,w*1.55);
-    drawSkinSprite(conn,x,q.y,bodyW,Math.max(8,h*.48),.96*alpha);
-  }
+  if((n.w||1)>1.05)drawSkinSprite(conn,x,q.y,Math.max(8,w*1.55),Math.max(8,h*.48),.96*alpha);
   drawSkinSprite(head,x,q.y,Math.max(16,w*1.58),Math.max(16,h*1.32),.99*alpha);
-
-  if(n.f){
-    const marker=n.c?"criticalMarker":"flickMarker";
-    drawSkinSprite(marker,x,q.y-h*.72,Math.max(18,w*1.52),Math.max(18,w*1.52),.96*alpha);
-    // Keep the directional arrow as a crisp overlay for keyboards/touch while
-    // the atlas marker supplies the actual note styling.
-    drawDirectionalArrow(x,q.y-h*.72,Math.max(18,w*1.22),n.f,
-      n.c?[1,.88,.25]:[1,.28,.48],.78*alpha);
-  }
-
-  if(n.t){
-    drawSkinSprite(n.c?"#NOTE_TICK_YELLOW":"#NOTE_TICK_GREEN",x,q.y,
-      Math.max(15,w*.92),Math.max(15,w*.92),.84*alpha);
-  }
+  if(n.f)drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*.72,Math.max(18,w*1.52),Math.max(18,w*1.52),.96*alpha);
+  if(n.t)drawSkinSprite(n.c?"#NOTE_TICK_YELLOW":"#NOTE_TICK_GREEN",x,q.y,Math.max(15,w*.92),Math.max(15,w*.92),.84*alpha);
 }
 function drawSlideRibbon(n,now,tailOnly=false){
   if(!n.path?.length)return;
@@ -638,60 +642,40 @@ function drawMultiTapGuide(now){
   }
 }
 function drawStage(){
-  const h=S.geom,tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
-  // perspective playfield
+  const ref=window.__PJSEKAI_SEKAI_REF__,h=S.geom;
+  if(ref?.geom?.ws){
+    const g=ref.geom;
+    const laneQuad=(l,r)=>ref.persp(l,r,g.laneTop,g.laneBottom,1);
+    poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.96);
+    // The public engine draws six 2-lane stage strips over a continuous field.
+    for(const lane of [-5,-3,-1,1,3,5]){
+      const q=laneQuad(lane-1,lane+1);
+      poly(q.map(p=>[p.x,p.y]),[.08,.13,.24],.055);
+      line([[q[0].x,q[0].y],[q[3].x,q[3].y]],[.70,.86,1],.20);
+      line([[q[1].x,q[1].y],[q[2].x,q[2].y]],[.70,.86,1],.20);
+    }
+    const left=laneQuad(-6.5,-6),right=laneQuad(6,6.5);
+    line([[left[0].x,left[0].y],[left[3].x,left[3].y]],[.88,.96,1],.95);
+    line([[right[1].x,right[1].y],[right[2].x,right[2].y]],[1,.64,.84],.95);
+    const jg=laneQuad(-6,6);
+    poly([[jg[0].x,jg[0].y],[jg[1].x,jg[1].y],[jg[2].x,jg[2].y],[jg[3].x,jg[3].y]],[.65,.86,1],.10);
+    line([[jg[0].x,jg[0].y],[jg[1].x,jg[1].y]],[.96,1,1],1.5);
+    line([[jg[3].x,jg[3].y],[jg[2].x,jg[2].y]],[1,.36,.70],.52);
+    // Keep thin 12-input guides aligned with the actual 12 touch lanes.
+    for(let i=1;i<12;i++){
+      const a=ref.screenPoint(-6+i,1,1);
+      const b=ref.screenPoint(-6+i,g.laneTop,1);
+      line([[a.x,a.y],[b.x,b.y]],[.70,.84,1],i%2?.08:.12);
+    }
+    if(S.skin?.sprites?.["#STAGE_COVER"])drawSkinSprite("#STAGE_COVER",(h.tl+h.tr)/2,h.far,(h.tr-h.tl),Math.max(1,h.far*.12),.05);
+    return;
+  }
+  const tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
   poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+34],[h.bl,h.hit+34]],[.015,.038,.090],.95);
-  poly([[h.tl+7,h.far+5],[h.tr-7,h.far+5],[h.br-18,h.hit-1],[h.bl+18,h.hit-1]],[.022,.070,.145],.66);
-  // 12 lanes, with subtle alternate shading.
-  for(let i=0;i<12;i++){
-    const x1=h.tl+(h.tr-h.tl)*i/12,x2=h.tl+(h.tr-h.tl)*(i+1)/12;
-    const yTop=h.far,yBot=h.hit+18;
-    const bx1=h.bl+(h.br-h.bl)*i/12,bx2=h.bl+(h.br-h.bl)*(i+1)/12;
-    poly([[x1,yTop],[x2,yTop],[bx2,yBot],[bx1,yBot]],[.08,.12,.22],i%2?0.035:0.065);
-  }
-  // guide rows
-  for(let i=1;i<=10;i++){
-    const p=i/11,q=stageAt(p);
-    line([[q.l,q.y],[q.r,q.y]],[.45,.68,1],.028+.012*p);
-  }
-  // Atlas-backed judgment line and stage borders from the public Next-SEKAI skin.
-  // Atlas stage frame: the same corner/border primitives used by the public
-  // Next-SEKAI skin are kept at the four perspective anchors.
-  if(S.skin?.sprites?.["#STAGE_TOP_LEFT_CORNER"])drawSkinSprite("#STAGE_TOP_LEFT_CORNER",h.tl,h.far,30,30,.88);
-  if(S.skin?.sprites?.["#STAGE_TOP_RIGHT_CORNER"])drawSkinSprite("#STAGE_TOP_RIGHT_CORNER",h.tr,h.far,30,30,.88);
-  if(S.skin?.sprites?.["#STAGE_BOTTOM_LEFT_CORNER"])drawSkinSprite("#STAGE_BOTTOM_LEFT_CORNER",h.bl,h.hit+4,36,36,.94);
-  if(S.skin?.sprites?.["#STAGE_BOTTOM_RIGHT_CORNER"])drawSkinSprite("#STAGE_BOTTOM_RIGHT_CORNER",h.br,h.hit+4,36,36,.94);
-  if(S.skin?.sprites?.["#STAGE_TOP_BORDER"])drawSkinSprite("#STAGE_TOP_BORDER",(h.tl+h.tr)/2,h.far,h.tr-h.tl,Math.max(7,h.h*.012),.72);
-  if(S.skin?.sprites?.["#STAGE_BOTTOM_BORDER"])drawSkinSprite("#STAGE_BOTTOM_BORDER",(h.bl+h.br)/2,h.hit+5,h.br-h.bl,Math.max(8,h.h*.014),.78);
-  if(S.skin?.sprites?.["#JUDGMENT_LINE"]) drawSkinSprite("#JUDGMENT_LINE",(h.bl+h.br)/2,h.hit,h.br-h.bl,Math.max(10,h.h*.018),.92);
-  if(S.skin?.sprites?.["#STAGE_LEFT_BORDER"]) drawSkinSprite("#STAGE_LEFT_BORDER",(h.tl+h.bl)/2,h.hit*.56,Math.max(2,h.bl-h.tl),h.hit-h.far,.48);
-  if(S.skin?.sprites?.["#STAGE_RIGHT_BORDER"]) drawSkinSprite("#STAGE_RIGHT_BORDER",(h.tr+h.br)/2,h.hit*.56,Math.max(2,h.br-h.tr),h.hit-h.far,.48);
-  // lane dividers / edges
-  for(let i=0;i<=12;i++){
-    const tx=h.tl+(h.tr-h.tl)*i/12,bx=h.bl+(h.br-h.bl)*i/12;
-    const edge=(i===0||i===12),alpha=edge?.80:.14+.04*pulse;
-    line([[tx,h.far],[bx,h.hit+9]],[.52,.80,1],alpha);
-  }
-  // bottom judgment slots / groups
-  const q=stageAt(1);
-  for(let i=0;i<12;i++){
-    const x1=q.l+(q.r-q.l)*i/12,x2=q.l+(q.r-q.l)*(i+1)/12;
-    const c=i%3===0?[.30,.78,1]:i%3===1?[.82,.38,1]:[1,.33,.70];
-    poly([[x1,q.y-5],[x2,q.y-5],[x2,q.y+16],[x1,q.y+16]],c,.08);
-    line([[x1,q.y-5],[x2,q.y-5]],c,.50);
-  }
-  // official-like judgement line: bright center + colored edge glow.
-  poly([[h.bl,h.hit-12],[h.br,h.hit-12],[h.br,h.hit+5],[h.bl,h.hit+5]],[.38,.70,1],.16+.10*pulse);
+  for(let i=0;i<12;i++){const x1=h.tl+(h.tr-h.tl)*i/12,x2=h.tl+(h.tr-h.tl)*(i+1)/12,bx1=h.bl+(h.br-h.bl)*i/12,bx2=h.bl+(h.br-h.bl)*(i+1)/12;poly([[x1,h.far],[x2,h.far],[bx2,h.hit+18],[bx1,h.hit+18]],[.08,.12,.22],i%2?.035:.065);}
+  for(let i=1;i<=10;i++){const q=stageAt(i/11);line([[q.l,q.y],[q.r,q.y]],[.45,.68,1],.028+.012*pulse);}
+  if(S.skin?.sprites?.["#JUDGMENT_LINE"])drawSkinSprite("#JUDGMENT_LINE",(h.bl+h.br)/2,h.hit,h.br-h.bl,Math.max(10,h.h*.018),.92);
   line([[h.bl,h.hit-5],[h.br,h.hit-5]],[.82,.96,1],1.15);
-  line([[h.bl,h.hit+2],[h.br,h.hit+2]],[1,.25,.66],.42);
-  line([[h.tl,h.far],[h.bl,h.hit+10]],[.72,.88,1],.72);
-  line([[h.tr,h.far],[h.br,h.hit+10]],[1,.50,.80],.52);
-  for(let k=0;k<4;k++){
-    const f=Math.max(0,(S.keyFlash[k]-performance.now())/.18);
-    if(f<=0)continue;
-    const x1=h.bl+(h.br-h.bl)*(k*3)/12,x2=h.bl+(h.br-h.bl)*((k+1)*3)/12;
-    poly([[x1,h.hit-28],[x2,h.hit-28],[x2,h.hit+12],[x1,h.hit+12]],[.58,.92,1],cl(f*.42,0,.42));
-  }
 }
 function spawnFx(lane,judgeKind,critical=false){
   const x=laneX(lane,1),y=S.geom.hit-2;
