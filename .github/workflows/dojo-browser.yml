@@ -7,6 +7,7 @@ on:
       - "index.html"
       - "dojo-webgl.js"
       - "dojo-*.json"
+      - "dojo-skin.json"
       - "scripts/test-dojo-browser.mjs"
       - "scripts/build-dojo-static-data.mjs"
       - "tailwind.config.js"
