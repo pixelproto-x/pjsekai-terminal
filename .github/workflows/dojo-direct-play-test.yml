@@ -21,6 +21,8 @@ jobs:
         run: npm install --no-save playwright@1.55.0
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Generate Dojo static data
+        run: node scripts/build-dojo-static-data.mjs
       - name: Start local server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/dojo-http.log 2>&1 &
