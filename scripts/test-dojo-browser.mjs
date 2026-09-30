@@ -44,16 +44,16 @@ if (!before.prepared) throw new Error('Default chart was not prepared');
 if (!before.notes) throw new Error('Prepared chart contains no playable notes');
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Gameplay canvas has no rendered size');
 
-await page.locator('#caSearch').fill('Tell Your World');
-await page.waitForTimeout(300);
-await page.locator('#caSongList [data-ca-song]').first().click();
+await page.locator('#dojoSongSearch').fill('Tell Your World');
 await page.waitForTimeout(250);
-await page.locator('#caDetail [data-ca-diff="expert"]').click();
-await page.waitForTimeout(250);
+await page.locator('#dojoSongList [data-dojo-local-song]').first().click();
+await page.waitForTimeout(150);
+await page.locator('#dojoDifficultyButtons [data-dojo-diff="expert"]').click();
+await page.waitForTimeout(350);
 
 const selected = await page.evaluate(() => ({
-  title: document.querySelector('#caDetail .ca-detail-title h3')?.textContent?.trim() || '',
-  difficulty: document.querySelector('#caDetail .ca-chip')?.textContent?.trim() || ''
+  title: document.querySelector('#dojoSelectedTitle')?.textContent?.trim() || '',
+  difficulty: document.querySelector('#dojoDifficultyButtons .active')?.dataset?.dojoDiff || ''
 }));
 if (!selected.title.toLowerCase().includes('tell your world')) throw new Error('Song selection did not update');
 if (selected.difficulty.toLowerCase() !== 'expert') throw new Error('Difficulty selection did not update');
