@@ -335,8 +335,11 @@ function setup(){
     const r=w.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
     c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));
     g.viewport(0,0,c.width,c.height);
+    // Public Next-SEKAI reference field is 16:9; keep the reference proportions in the web stage.
+    const aspect=Math.max(0.001,r.width/r.height),target=16/9;
+    const fh=r.height,fw=aspect>target?fh*target:r.width,ox=(r.width-fw)*.5;
     S.geom={w:r.width,h:r.height,top:r.height*.10,far:r.height*.18,hit:r.height*.875,
-      tl:r.width*.28,tr:r.width*.72,bl:r.width*.035,br:r.width*.965};
+      tl:ox+fw*.28,tr:ox+fw*.72,bl:ox+fw*.035,br:ox+fw*.965};
   };
   rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});loadSkin();
   if(window.ResizeObserver){S.ro=new ResizeObserver(rs);S.ro.observe(w);}
@@ -491,32 +494,20 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
 }
 function drawNote(n,now){
   const travel=travelAt(now,n.hit),settings=app().dojo||{};
-  if(settings.sudden&&travel<.34)return;
-  const alpha=settings.hidden?cl((travel-.14)/.40,.035,1):1;
-  const q=stageAt(travel),x=laneX(n.l,travel),laneWidth=laneW(travel),w=Math.max(12,laneWidth*(n.w||1)*.96),h=Math.max(9,w*.22);
-  const col=noteColor(n), glow=[Math.min(1,col[0]+.24),Math.min(1,col[1]+.18),Math.min(1,col[2]+.18)];
-  circle(x,q.y,w*.86,glow,.05*alpha,18);
-  if(n.c){
-    const pts=[[x,q.y-h*1.35],[x+w*.66,q.y],[x,q.y+h*1.35],[x-w*.66,q.y]];
-    poly(pts,col,.98*alpha);
-    drawSkinSprite(n.t?"trace":"critical",x,q.y,Math.max(12,w*1.25),Math.max(12,h*2.0),.72*alpha);
-    poly([[x,q.y-h*.68],[x+w*.34,q.y],[x,q.y+h*.68],[x-w*.34,q.y]],[1,.97,.72],.78*alpha);
-    line([[x-w*.55,q.y],[x,q.y-h*.74],[x+w*.55,q.y]], [1,1,1], .55*alpha);
-  }else{
-    roundedRect(x-w*.98,q.y-h*.60,w*1.96,h*1.20,Math.min(7,h*.45),col,.98*alpha);
-    roundedRect(x-w*.70,q.y-h*.28,w*1.40,h*.56,Math.min(5,h*.26),[1,1,1],.14*alpha);
-    drawSkinSprite(n.f?"flick":n.t?"trace":"normal",x,q.y,Math.max(10,w*1.55),Math.max(10,h*2.1),.64*alpha);
-    line([[x-w*.80,q.y-h*.62],[x+w*.80,q.y-h*.62]],[1,1,1],.28*alpha);
+  if(settings.sudden&&travel<0.34)return;
+  const alpha=settings.hidden?cl((travel-0.14)/0.40,0.035,1):1;
+  const q=stageAt(travel),x=laneX(n.l,travel),lw=laneW(travel),w=Math.max(10,lw*(n.w||1)*0.98);
+  const h=Math.max(10,w*0.44);
+  const body=n.c?"critical":n.f?"flick":n.t?"trace":"normal";
+  drawSkinSprite(body,x,q.y,Math.max(14,w*1.82),Math.max(14,h*1.62),0.98*alpha);
+  if(!n.t){
+    const glow=n.c?[1,.82,.18]:n.f?[1,.24,.43]:[.20,.90,1];
+    circle(x,q.y,Math.max(9,w*0.74),glow,0.045*alpha,20);
   }
   if(n.f){
-    drawDirectionalArrow(x,q.y-h*1.32,w,n.f,col,.98*alpha);
-    drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*1.30,Math.max(16,w*1.18),Math.max(16,w*1.18),.90*alpha);
-    line([[x-w*.34,q.y-h*1.02],[x+w*.34,q.y-h*1.02]],[1,1,1],.30*alpha);
-  }else if(n.t){
-    drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(16,w*1.05),Math.max(16,w*1.05),.92*alpha);
-    circle(x,q.y,w*.37,[.74,1,.90],.38*alpha,20);
-    circle(x,q.y,w*.17,col,.90*alpha,16);
+    drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*0.82,Math.max(18,w*1.25),Math.max(18,w*1.25),0.98*alpha);
   }
+  if(n.t)drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(16,w*1.05),Math.max(16,w*1.05),0.74*alpha);
 }
 function drawSlideRibbon(n,now,tailOnly=false){
   if(!n.path?.length)return;
@@ -532,13 +523,17 @@ function drawSlideRibbon(n,now,tailOnly=false){
     samples.push({x,y:q.y,w,p,trace:z.trace||n.t,critical:z.critical||n.c});
   }
   if(samples.length<2)return;
-  const base=n.c?[1,.80,.16]:n.t?[.17,1,.66]:[.16,.92,.62];
-  const glow=[Math.min(1,base[0]+.18),Math.min(1,base[1]+.18),Math.min(1,base[2]+.18)];
+  const base=n.c?[1,.80,.16]:[.16,.92,.62];
+  const glow=n.c?[1,.86,.26]:[.18,1,.70];
   for(let i=0;i<samples.length-1;i++){
-    const a=samples[i],b=samples[i+1],u=i/(samples.length-1),alpha=(hidden?.50:.72)*(0.44+.56*u);
-    poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha);
-    line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.22*alpha);
-    line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.22*alpha);
+    const a=samples[i],b=samples[i+1],u=i/(samples.length-1),alpha=(hidden?.50:.78)*(0.44+.56*u);
+    const cx=(a.x+b.x)*.5,cy=(a.y+b.y)*.5;
+    const segW=Math.max(4,Math.hypot(b.x-a.x,b.y-a.y)*1.15);
+    const segH=Math.max(3,(a.w+b.w)*0.22);
+    drawSkinSprite(n.c?"criticalConnection":"connection",cx,cy,segW,segH,alpha);
+    poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.34);
+    line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.30*alpha);
+    line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.30*alpha);
   }
   if(tailOnly)return;
   const head=pointOnPath(n.path,Math.max(n.b,now));
@@ -686,8 +681,13 @@ const WINDOWS={
 };
 function classify(diff,type){
   const w=type==="criticalFlick"?WINDOWS.criticalFlick:type==="traceFlick"?WINDOWS.traceFlick:type==="trace"?WINDOWS.trace:type==="slideEndFlick"?WINDOWS.slideEndFlick:type==="slideEndTrace"?WINDOWS.slideEndTrace:type==="slideEnd"?WINDOWS.slideEnd:type==="critical"?WINDOWS.critical:WINDOWS.tap;
-  const a=Math.abs(diff);
-  return a<=w.P?"PERFECT":a<=w.GREAT?"GREAT":a<=w.D?"GOOD":a<=w.B?"BAD":"MISS";
+  const d=N(diff,0);
+  const inside=(range)=>Array.isArray(range)?(d>=-range[0]&&d<=range[1]):Math.abs(d)<=range;
+  if(inside(w.P))return"PERFECT";
+  if(inside(w.GREAT))return"GREAT";
+  if(inside(w.D))return"GOOD";
+  if(inside(w.B))return"BAD";
+  return"MISS";
 }
 function ensureSfx(){
   if(S.audioCtx)return;
