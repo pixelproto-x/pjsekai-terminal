@@ -106,8 +106,8 @@ function parseSus(text){
   const tapNotes=[];
   const directionalNotes=[];
   const streams=new Map();
-  const toRaws=([h,d])=>{
-    const measure=+h.substring(0,3)+(measureChanges.find(([idx])=>idx<=lines.indexOf([h,d]))||[])[1]||0;
+  const toRaws=(h,d,idx)=>{
+    const measure=+h.substring(0,3)+(measureChanges.find(([i])=>i<=idx)||[])[1]||0;
     const vals=d.match(/.{2}/g)||[];
     const out=[];
     for(let i=0;i<vals.length;i++){
@@ -141,19 +141,19 @@ function parseSus(text){
     }
     if(h.length===5&&h.startsWith("BPM")){bpms.set(h.substring(3),+d);continue;}
     if(h.length===5&&h.endsWith("08")){
-      for(const x of toRaws([h,d]).map(x=>({...x,value:String(x.value)}))){
+      for(const x of toRaws(h,d,idx).map(x=>({...x,value:String(x.value)}))){
         bpmChanges.push({tick:x.tick,bpm:N(bpms.get(x.value),0)});
       }
       continue;
     }
-    if(h.length===5&&h[3]==="1"){tapNotes.push(...toRaws([h,d]).map(x=>noteFromRaw(h,x)));continue;}
+    if(h.length===5&&h[3]==="1"){tapNotes.push(...toRaws(h,d,idx).map(x=>noteFromRaw(h,x)));continue;}
     if(h.length===6&&(h[3]==="3"||h[3]==="9")){
       const key=(h[5]||"")+"-"+h[3];
       const stream=streams.get(key)||{type:+h[3],notes:[]};
-      stream.notes.push(...toRaws([h,d]).map(x=>noteFromRaw(h,x)));
+      stream.notes.push(...toRaws(h,d,idx).map(x=>noteFromRaw(h,x)));
       streams.set(key,stream);continue;
     }
-    if(h.length===5&&h[3]==="5"){directionalNotes.push(...toRaws([h,d]).map(x=>noteFromRaw(h,x)));continue;}
+    if(h.length===5&&h[3]==="5"){directionalNotes.push(...toRaws(h,d,idx).map(x=>noteFromRaw(h,x)));continue;}
     // Keep meta-linked lanes even when non-standard headers appear.
     void mo;
   }
