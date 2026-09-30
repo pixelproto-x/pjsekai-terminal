@@ -22,7 +22,7 @@ const images=new Map(),textures=new Map(),state={gl:null,program:null,buf:null,l
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function approach(progress){return Math.pow(APPROACH_SCALE,1-clamp(progress,0,1))}
-function preempt(speed){const u=cl((speed-12)/(1-12),0,1);return .35+3.65*Math.pow(u,1.31)}
+function preempt(speed){const u=clamp((speed-12)/(1-12),0,1);return .35+3.65*Math.pow(u,1.31)}
 function layout(width,height){
   const fieldW=height*TARGET>width?width:height*TARGET;
   const fieldH=fieldW/TARGET,ox=(width-fieldW)*.5,oy=(height-fieldH)*.5;
