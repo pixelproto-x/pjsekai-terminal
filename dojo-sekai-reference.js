@@ -106,8 +106,10 @@ function loadImage(name){
 function loadAll(){
   const names=new Set();
   Object.values(assets).flat().forEach(x=>x&&names.add(x));
-  for(let i=1;i<=6;i++)for(const p of ["","_diagonal","_diagonal_left","_diagonal_right","_crtcl","_crtcl_diagonal","_crtcl_diagonal_left","_crtcl_diagonal_right"])
+  for(let i=1;i<=6;i++)for(const p of ["","_diagonal","_diagonal_left","_diagonal_right"]){
     names.add("notes_flick_arrow_"+String(i).padStart(2,"0")+p+".png");
+    names.add("notes_flick_arrow_crtcl_"+String(i).padStart(2,"0")+p+".png");
+  }
   names.forEach(loadImage);
   return Promise.all([...names].map(n=>new Promise(r=>{const im=loadImage(n);if(im.complete)return r();im.onload=()=>r();im.onerror=()=>r()})));
 }
@@ -149,7 +151,7 @@ function drawArrow(kind,lane,size,travel,direction,alpha=1){
   const animationProgress=(performance.now()/1000/.5)%1;
   const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
   const d=String(direction||"up"),diagonal=d==="left"||d==="right",suffix=diagonal?"_diagonal_"+d:"";
-  const name="notes_flick_arrow_"+String(n).padStart(2,"0")+(nameKind==="crtcl"?"_crtcl":"")+suffix+".png";
+  const name="notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+suffix+".png";
   drawImage(name,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
 }
 
