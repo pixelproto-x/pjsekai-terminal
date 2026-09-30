@@ -965,7 +965,7 @@ function finish(){
   finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
-  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0,rank=ap?"ALL PERFECT":S.counts.MISS===0?"CLEAR":"FAILED";
+  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0,fc=S.counts.MISS===0&&S.counts.BAD===0,rank=ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
