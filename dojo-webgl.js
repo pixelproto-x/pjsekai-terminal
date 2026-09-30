@@ -1,6 +1,6 @@
 /* Dojo WebGL runtime — browser-native Project SEKAI-style practice engine. */
 (()=>{"use strict";
-let A=window.__PJSEKAI_APP__;if(!A){window.addEventListener("pjsekai-app-ready",()=>{A=window.__PJSEKAI_APP__;boot()},{once:true});return;}
+let A=window.__PJSEKAI_APP__;
 const $=id=>document.getElementById(id),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),N=(v,d=0)=>Number.isFinite(+v)?+v:d;
 const S={songs:null,diffs:null,vocals:null,selDiff:"expert",audio:new Audio(),notes:[],running:false,paused:false,starting:false,lead:2.5,seek:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},timing:0,tn:0,held:new Map(),fx:[],pt:[],gl:null,buf:null,pr:null,geom:null,raf:0,last:0,keys:["D","F","J","K"],ro:null,clockStart:0};
 S.audio.preload="auto";
@@ -104,5 +104,5 @@ function bind(){const touch=new Map();const b=$("dojoOpenPracticeBtn");if(b){con
  touch.set(e.pointerId,{l,x:e.clientX,y:e.clientY,t:performance.now()});hit(l);
 },{passive:false});document.addEventListener("pointermove",e=>{const q=touch.get(e.pointerId);if(!q||!S.running)return;const dx=e.clientX-q.x,dy=e.clientY-q.y;if(Math.hypot(dx,dy)>24){hit(q.l,"flick");touch.delete(e.pointerId)}},{passive:false});document.addEventListener("pointerup",e=>{const q=touch.get(e.pointerId);touch.delete(e.pointerId);if(q)release(q.l)});document.addEventListener("pointercancel",e=>{const q=touch.get(e.pointerId);touch.delete(e.pointerId);if(q)release(q.l)});document.addEventListener("click",e=>{const d=e.target.closest("[data-dojo-diff]");if(d)S.selDiff=d.dataset.dojoDiff||"expert"});$("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});$("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.audio.pause();if($("dojoGameResult"))$("dojoGameResult").hidden=true});}
 async function boot(){try{expose();setup();bind();if(!S.raf)S.raf=requestAnimationFrame(loop);await data();await prepareDefault()}catch(e){console.warn("[Dojo WebGL]",e);const m=$("dojoGameMessage");if(m)m.textContent="⚠ Dojo 初始化失敗："+(e?.message||"未知錯誤")}}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>boot(),{once:true});else boot();
 })();
