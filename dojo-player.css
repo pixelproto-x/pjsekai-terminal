@@ -43,3 +43,14 @@
 
 /* Complete gameplay HUD */
 .dojo-hud-score-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.dojo-hud-score-block>span{font:800 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cede}.dojo-hud-score-block>span b{color:#fff}.dojo-life{position:absolute;left:14px;right:14px;top:48px;height:4px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}.dojo-life span{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff6f91,#ffd34f,#62dca1);transition:width .12s linear}.dojo-game-result{position:absolute;z-index:30;inset:0;display:grid;place-content:center;text-align:center;padding:24px;background:rgba(5,8,16,.84);backdrop-filter:blur(10px)}.dojo-game-result[hidden]{display:none}.dojo-game-result>strong{font-size:clamp(28px,6vw,56px);letter-spacing:.08em}.dojo-result-score{font:950 clamp(24px,5vw,42px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;margin:8px 0 14px}.dojo-result-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:7px;max-width:520px}.dojo-result-grid span{padding:8px 6px;border-radius:10px;background:rgba(255,255,255,.07);font-size:7px;color:#aeb6ca}.dojo-result-grid b{display:block;color:#fff;font-size:11px;margin-top:3px}.dojo-game-result button{margin:15px auto 0;border:0;border-radius:999px;padding:10px 18px;background:#fff;color:#171a24;font-size:9px;font-weight:900}@media(max-width:560px){.dojo-result-grid{grid-template-columns:repeat(2,minmax(90px,1fr))}.dojo-life{top:44px;left:10px;right:10px}}
+/* Dedicated gameplay presentation */
+.dojo-play-page{padding-bottom:28px}
+.dojo-play-page .dojo-game-card{border-radius:18px;background:#070a12;box-shadow:0 28px 90px rgba(0,0,0,.32)}
+.dojo-play-page .dojo-game-head{display:none}
+.dojo-play-page .dojo-game-stage-wrap{width:100%;max-height:calc(100vh - 180px);background:#03050b}
+.dojo-play-page .dojo-game-controls{background:rgba(8,11,20,.96);backdrop-filter:blur(12px);padding:8px}
+.dojo-play-page .dojo-game-message{display:none}
+.dojo-play-page .dojo-game-progress{height:4px}
+.dojo-play-page .dojo-input-pad{height:28%;left:2%;right:2%}
+.dojo-play-page .dojo-hud-top{top:10px}
+@media(max-width:640px){.dojo-play-page{padding:0 0 18px}.dojo-play-page-head{padding:14px 10px 12px}.dojo-play-page-head .page-subtitle,.dojo-play-page-head .kicker{display:none}.dojo-play-page-title .page-title{font-size:34px}.dojo-play-page .dojo-game-card{border-radius:0}.dojo-play-page .dojo-game-stage-wrap{max-height:none}.dojo-play-page .dojo-game-controls button{min-height:38px}.dojo-play-page .dojo-input-pad{left:0;right:0;height:30%}}
