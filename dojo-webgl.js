@@ -838,7 +838,7 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
     n.started=true;n.headJudged=true;
     const head=award(n,now-n.hit,n.f?"flick":"tap",false,wrongWay);
     n.done=false;n.judged=true;
-    S.held.set(inputId,{note:n,lane:n.l,touchedLane:n.l,head});
+    S.held.set(inputId,{note:n,lane:n.l,touchedLane:n.l,inputLane:lane,exactInput:exact,head});
     for(const cp of n.checkpoints||[])cp.judged=false;
     return;
   }
@@ -872,11 +872,18 @@ function processHeld(now){
   for(const [id,h] of S.held){
     const n=h.note;
     h.targetLane=expectedLane(n,now);
+    const inputLane=N(h.inputLane,h.lane);
+    const mirror=!!app().dojo?.mirror;
+    const heldLane=mirror?11-inputLane:inputLane;
+    const laneMatches=(target)=>{
+      const span=Math.max(.62,(n.w||1)/2+.42);
+      return h.exactInput ? Math.abs(heldLane-target)<=span : Math.floor(heldLane/3)===Math.floor(target/3);
+    };
     for(const cp of n.checkpoints||[]){
       if(cp.judged||now<cp.sec-WINDOWS.slideEndTrace.B)continue;
       const laneNow=expectedLane(n,cp.sec);
-      const delta=Math.abs(laneNow-(app().dojo?.mirror?11-cp.lane:cp.lane));
-      if(delta<=Math.max(1,(n.w||1)/2)+.35){
+      const delta=Math.abs(laneNow-(mirror?11-cp.lane:cp.lane));
+      if(laneMatches(laneNow)&&delta<=Math.max(1,(n.w||1)/2)+.35){
         const d=now-cp.sec,jg=classify(d,cp.trace?(cp.critical?"traceFlick":"trace"):"trace");
         cp.judged=true;S.judged++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
         if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
@@ -1121,7 +1128,7 @@ function bind(){
     if(S.held.has("ptr:"+e.pointerId)){
       const w=$("dojoGameStageWrap"),r=w?.getBoundingClientRect();
       if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
-      const h=S.held.get("ptr:"+e.pointerId);if(h)h.lane=q.l;
+      const h=S.held.get("ptr:"+e.pointerId);if(h){h.lane=q.l;h.inputLane=q.l;h.exactInput=true;}
       if(Math.hypot(dx,dy)>20&&h){
         const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
         if(h.note?.tail?.dir){
