@@ -101,6 +101,6 @@ function bind(){const touch=new Map();const b=$("dojoOpenPracticeBtn");if(b){con
  const r=w.getBoundingClientRect(),x=cl((e.clientX-r.left)/r.width,0,0.999),l=Math.floor(x*12)/3|0;
  touch.set(e.pointerId,{l,x:e.clientX,y:e.clientY,t:performance.now()});hit(l);
 },{passive:false});document.addEventListener("pointermove",e=>{const q=touch.get(e.pointerId);if(!q||!S.running)return;const dx=e.clientX-q.x,dy=e.clientY-q.y;if(Math.hypot(dx,dy)>24){hit(q.l,"flick");touch.delete(e.pointerId)}},{passive:false});document.addEventListener("pointerup",e=>{const q=touch.get(e.pointerId);touch.delete(e.pointerId);if(q)release(q.l)});document.addEventListener("pointercancel",e=>{const q=touch.get(e.pointerId);touch.delete(e.pointerId);if(q)release(q.l)});document.addEventListener("click",e=>{const d=e.target.closest("[data-dojo-diff]");if(d)S.selDiff=d.dataset.dojoDiff||"expert"});$("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});$("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.audio.pause();if($("dojoGameResult"))$("dojoGameResult").hidden=true});}
-async function boot(){try{await data();setup();bind();expose();if(!S.raf)S.raf=requestAnimationFrame(loop);await prepareDefault()}catch(e){console.warn("[Dojo WebGL]",e)}}
-boot();
+async function boot(){try{expose();setup();bind();if(!S.raf)S.raf=requestAnimationFrame(loop);await data();await prepareDefault()}catch(e){console.warn("[Dojo WebGL]",e);const m=$("dojoGameMessage");if(m)m.textContent="⚠ Dojo 初始化失敗："+(e?.message||"未知錯誤")}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
