@@ -553,52 +553,49 @@ function drawNote(n,now){
 }
 function drawSlideRibbon(n,now,tailOnly=false){
   if(!n.path?.length)return;
-  const first=Math.max(n.b,now-S.lead),last=Math.min(n.end,now+S.lead*.28);
+  const ref=window.__PJSEKAI_SEKAI_REF__,first=Math.max(n.b,now-S.lead),last=Math.min(n.end,now+S.lead*.30);
   if(last<first)return;
-  const hidden=!!app().dojo?.hidden;
-  const samples=[];
-  const segments=54;
+  const hidden=!!app().dojo?.hidden,settings=app().dojo||{},mirror=!!settings.mirror;
+  const samples=[],segments=32;
   for(let i=0;i<=segments;i++){
-    const sec=first+(last-first)*(i/segments),z=pointOnPath(n.path,sec);
-    if(!z)continue;
-    const p=travelAt(now,sec),q=stageAt(cl(p,0,1)),x=laneX(z.l,cl(p,0,1)),w=laneW(cl(p,0,1))*Math.max(.65,z.w||n.w)*.64;
-    samples.push({x,y:q.y,w,p,trace:z.trace||n.t,critical:z.critical||n.c});
+    const sec=first+(last-first)*(i/segments),z=pointOnPath(n.path,sec);if(!z)continue;
+    const p=cl(travelAt(now,sec),0,1),q=stageAt(p),x=laneX(z.l,p),w=laneW(p)*Math.max(.5,z.w||n.w)*.48;
+    samples.push({sec,l:z.l,x,y:q.y,w,p,trace:z.trace||n.t,critical:z.critical||n.c});
   }
   if(samples.length<2)return;
-  const base=n.c?[1,.80,.16]:[.16,.92,.62];
-  const glow=n.c?[1,.86,.26]:[.18,1,.70];
+  const base=n.c?[1,.80,.16]:[.16,.92,.62],glow=n.c?[1,.86,.26]:[.18,1,.70];
   for(let i=0;i<samples.length-1;i++){
-    const a=samples[i],b=samples[i+1],u=i/(samples.length-1),alpha=(hidden?.50:.78)*(0.44+.56*u);
-    const cx=(a.x+b.x)*.5,cy=(a.y+b.y)*.5;
-    const segW=Math.max(4,Math.hypot(b.x-a.x,b.y-a.y)*1.15);
-    const segH=Math.max(3,(a.w+b.w)*0.22);
-    drawSkinSprite(n.c?"criticalConnection":"connection",cx,cy,segW,segH,alpha);
-    poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.34);
-    line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.30*alpha);
-    line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.30*alpha);
+    const a=samples[i],b=samples[i+1],alpha=(hidden?.40:.78)*(0.44+0.56*(i/(samples.length-1)));
+    if(ref?.geom?.ws){
+      ref.drawConnection(n.c?"crtcl":"normal",
+        (mirror?11-a.l:a.l)-5.5,cl(a.p,0,1),
+        (mirror?11-b.l:b.l)-5.5,cl(b.p,0,1),
+        Math.max(5,(a.w+b.w)*.42),alpha);
+    }
+    poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.22);
+    line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.24*alpha);
+    line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.24*alpha);
   }
   if(tailOnly)return;
   const head=pointOnPath(n.path,Math.max(n.b,now));
-  const hp=cl(travelAt(now,head.sec),0,1),hq=stageAt(hp),hx=laneX(head.l,hp),hw=laneW(hp)*(head.w||n.w)*.96;
-  circle(hx,hq.y,hw*1.12,base,.10);
-  if(n.headJudged===false||!n.judged){
-    roundedRect(hx-hw,hq.y-hw*.34,hw*2,hw*.68,Math.min(8,hw*.2),n.c?[1,.82,.18]:[.16,.92,.62],.94);
-    drawSkinSprite(n.c?"critical":n.t?"slide":"slide",hx,hq.y,Math.max(12,hw*1.65),Math.max(12,hw*.95),.72);
+  const hp=cl(travelAt(now,head.sec),0,1),hx=(mirror?11-head.l:head.l)-5.5,hs=Math.max(.5,(head.w||n.w)*.5);
+  if(ref?.geom?.ws)ref.drawBody(n.c?"crtcl":"long",hx,hs,hp,hidden?.70:.98);
+  const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tx=(mirror?11-tail.l:tail.l)-5.5,ts=Math.max(.5,(tail.w||n.w)*.5);
+  if(n.end>=now-S.lead&&ref?.geom?.ws){
+    if(tail.dir)ref.drawArrow(n.c?"crtcl":"normal",tx,ts,tp,tail.dir,1);
+    else if(tail.trace)ref.drawBody(n.c?"crtcl":"long",tx,ts,tp,.92);
+    else ref.drawBody(n.c?"crtcl":"long",tx,ts,tp,.98);
   }
-  const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tq=stageAt(tp),tx=laneX(tail.l,tp),tw=laneW(tp)*(tail.w||n.w)*.92;
-  if(n.end>=now-S.lead){
-    if(tail.dir)drawDirectionalArrow(tx,tq.y,tw,tail.dir,n.c?[1,.84,.22]:[1,.32,.48],1);
-    else if(tail.trace)circle(tx,tq.y,Math.max(10,tw*.64),[.58,1,.82],.82,22);
-    else {
-      roundedRect(tx-tw,tq.y-tw*.38,tw*2,tw*.76,Math.min(8,tw*.2),n.c?[1,.82,.18]:[.18,.92,.64],.95);
-      drawSkinSprite(n.c?"criticalTail":"tail",tx,tq.y,Math.max(12,tw*1.55),Math.max(12,tw*.92),.72);
+  if(n.end>=now-S.lead&&tailOnly===false){
+    for(const cp of n.checkpoints||[]){
+      if(cp.judged)continue;
+      const pp=cl(travelAt(now,cp.sec),0,1),lane=(mirror?11-cp.lane:cp.lane)-5.5;
+      if(ref?.geom?.ws)ref.drawTick(cp.critical||n.c?"crtcl":"normal",lane,pp,.86);
+      else{
+        const qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
+        drawSkinSprite(cp.critical||n.c?"criticalTick":"tick",cx,qq.y,Math.max(14,cw*2.2),Math.max(14,cw*2.2),.88);
+      }
     }
-  }
-  // checkpoints are deliberately visible like the in-game slide ticks.
-  for(const cp of n.checkpoints||[]){
-    if(cp.judged)continue;
-    const pp=cl(travelAt(now,cp.sec),0,1),qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
-    drawSkinSprite(n.c?"criticalTick":"tick",cx,qq.y,Math.max(14,cw*2.2),Math.max(14,cw*2.2),.88);
   }
 }
 function drawHold(n,now){
@@ -925,17 +922,14 @@ function processHeld(now){
     const n=h.note;
     h.targetLane=expectedLane(n,now);
     const inputLane=N(h.inputLane,h.lane);
-    const mirror=!!app().dojo?.mirror;
-    const heldLane=mirror?11-inputLane:inputLane;
     const laneMatches=(target)=>{
       const span=Math.max(.62,(n.w||1)/2+.42);
-      return h.exactInput ? Math.abs(heldLane-target)<=span : Math.floor(heldLane/3)===Math.floor(target/3);
+      return h.exactInput ? Math.abs(inputLane-target)<=span : Math.floor(inputLane/3)===Math.floor(target/3);
     };
     for(const cp of n.checkpoints||[]){
       if(cp.judged||now<cp.sec-WINDOWS.slideTick.P)continue;
       const laneNow=expectedLane(n,cp.sec);
-      const delta=Math.abs(laneNow-(mirror?11-cp.lane:cp.lane));
-      if(laneMatches(laneNow)&&delta<=Math.max(1,(n.w||1)/2)+.35){
+      if(laneMatches(laneNow)){
         const d=now-cp.sec;
         // Project SEKAI/Next-SEKAI slide ticks are binary: on-time hold = PERFECT, otherwise MISS.
         const jg=Math.abs(d)<=WINDOWS.slideTick.P?"PERFECT":"MISS";
@@ -979,7 +973,7 @@ function attachMissedHold(inputLane,now,exact,inputId){
     if(n.k!=="hold"||n.done||n.started||!n.headMissed||!Number.isFinite(n.end))continue;
     if(now<=n.hit+WINDOWS.tap.B||now>=n.end+WINDOWS.slideEnd.B)continue;
     const nl=expectedLane(n,now);
-    const match=exact?Math.abs(nl-inputLane)<=Math.max(1.5,(n.w||1)/2+1.25):Math.floor(nl/3)===inputLane;
+    const match=exact?Math.abs(nl-inputLane)<=Math.max(1.5,(n.w||1)/2+1.25):Math.floor(nl/3)===Math.floor(inputLane/3);
     if(!match)continue;
     n.started=true;
     n.judged=true;
