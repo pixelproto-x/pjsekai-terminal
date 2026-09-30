@@ -791,16 +791,19 @@ function release(inputId){
   const held=S.held.get(inputId);if(!held)return;
   S.held.delete(inputId);
   const n=held.note;
-  const settings=app().dojo||{},now=S.audio.currentTime-S.seek-S.chartOffset+N(settings.audioOffset,0)/1000;
+  const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   const tail=n.tail||n.path?.[n.path.length-1];if(!tail)return;
   const d=now-tail.sec;
   if(Math.abs(d)<=WINDOWS.slideEnd.B){
     if(n.done)return;
+    if(tail.dir&&!held.flicked){
+      n.done=true;n.judged=true;S.judged++;S.combo=0;S.life=cl(S.life-48,0,1000);S.counts.MISS++;S.tn++;hud("MISS");spawnFx(tail.l,"MISS",!!tail.critical);
+      if(S.judged>=S.total)finish();
+      return;
+    }
     const fake={...n,l:tail.l,c:tail.critical,t:tail.trace,f:tail.dir,done:false};
     const endType=tail.dir?(tail.critical?"criticalFlick":"flick"):tail.trace?(tail.critical?"slideEndTrace":"trace"):"slideEnd";
-    let wrongWay=false;
-    if(tail.dir)wrongWay=!!held.wrongFlick&&!held.flicked;
-    const jg=award(fake,d,endType,false,wrongWay);
+    const jg=award(fake,d,endType,false,false);
     n.done=true;n.judged=true;
     if(jg==="MISS")S.combo=0;
     if(S.judged>=S.total)finish();
