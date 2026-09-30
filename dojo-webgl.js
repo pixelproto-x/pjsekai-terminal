@@ -62,7 +62,7 @@ function sus(text){
  const buildLong=(laneType,kind,guide)=>{
    const groups=new Map();
    for(const n of notes.filter(x=>x.laneType===laneType&&x.channel)){
-     const g=groups.get(n.lane+"_"+n.channel)||[];g.push(n);groups.set(n.lane+"_"+n.channel,g);
+     const gkey=laneType===3?String(n.channel):n.lane+"_"+n.channel,g=groups.get(gkey)||[];g.push(n);groups.set(gkey,g);
    }
    for(const arr of groups.values()){
      arr.sort((a,b)=>a.sec-b.sec);
