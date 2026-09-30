@@ -771,7 +771,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   let jg=classify(d,kind);
   if(wrongWay&&jg==="PERFECT")jg="GREAT";
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
-  if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
+  if(jg==="MISS"||jg==="BAD"||jg==="GOOD")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
   const traceLike=type==="trace"||type==="traceFlick"||type==="slideEndTrace";
   const traceFlick=type==="traceFlick"||type==="slideEndTrace";
