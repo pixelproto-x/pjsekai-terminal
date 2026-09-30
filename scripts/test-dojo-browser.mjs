@@ -26,6 +26,7 @@ await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 }
 await page.waitForSelector('#dojoGameCanvas', { state: 'attached', timeout: 30000 });
 await page.waitForTimeout(3000);
 
+await page.waitForFunction(() => !!document.querySelector('#dojoGameCard')?.offsetParent, null, { timeout: 30000 });
 const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
   return {
