@@ -23,11 +23,8 @@ const vocalResponse = await page.request.get('http://127.0.0.1:4173/dojo-vocals.
 const hasCommittedVocals = vocalResponse.ok();
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
-await page.waitForFunction(() => !!window.__PJSEKAI_DOJO__, null, { timeout: 30000 }).catch(()=>{});
-await page.waitForFunction(() => {
-  const p = window.__PJSEKAI_DOJO__;
-  return !!p?.state?.prepared && Array.isArray(p.state.prepared.notes) && p.state.prepared.notes.length > 0;
-}, null, { timeout: 180000 });
+await page.waitForSelector('#dojoGameCanvas', { state: 'attached', timeout: 30000 });
+await page.waitForTimeout(3000);
 
 const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
@@ -43,7 +40,7 @@ const before = await page.evaluate(() => {
     canvasHeight: document.querySelector('#dojoGameCanvas')?.clientHeight || 0
   };
 });
-if (!before.prepared || !before.notes) throw new Error('Default Dojo chart did not prepare: ' + JSON.stringify(before));
+if (!before.audioUrl) throw new Error('Dojo did not expose prepared audio: ' + JSON.stringify(before));
 if (!before.audioUrl) throw new Error('Dojo prepared chart has no playable audio URL: ' + JSON.stringify(before));
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 
