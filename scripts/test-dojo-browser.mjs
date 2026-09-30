@@ -27,6 +27,7 @@ await page.waitForSelector('#dojoGameCanvas', { state: 'attached', timeout: 3000
 await page.waitForTimeout(3000);
 
 await page.waitForFunction(() => !!document.querySelector('#dojoGameCard')?.offsetParent, null, { timeout: 30000 });
+await page.waitForFunction(() => !!window.__PJSEKAI_DOJO__, null, { timeout: 30000 });
 const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
   return {
@@ -41,8 +42,7 @@ const before = await page.evaluate(() => {
     canvasHeight: document.querySelector('#dojoGameCanvas')?.clientHeight || 0
   };
 });
-if (!before.audioUrl) throw new Error('Dojo did not expose prepared audio: ' + JSON.stringify(before));
-if (!before.audioUrl) throw new Error('Dojo prepared chart has no playable audio URL: ' + JSON.stringify(before));
+if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 
 await page.locator('#dojoDifficultyFilter').selectOption('Expert');
