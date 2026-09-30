@@ -27,9 +27,9 @@
 .dojo-game-controls button.primary{background:#fff;color:#171a24;border-color:#fff}
 .dojo-game-controls button:disabled{opacity:.45}
 .dojo-game-progress{height:3px;background:rgba(255,255,255,.08)}.dojo-game-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#52cfe8,#9179f5,#ff5b9d);transition:width .08s linear}
-.dojo-input-pad{position:absolute;z-index:9;left:4%;right:4%;bottom:0;height:24%;display:grid;grid-template-columns:repeat(4,1fr);touch-action:none}
+.dojo-input-pad{position:absolute;z-index:9;left:4%;right:4%;bottom:0;height:24%;display:grid;grid-template-columns:repeat(12,1fr);touch-action:none}
 .dojo-input-zone{border-left:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,transparent,rgba(255,255,255,.025));display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px;user-select:none;-webkit-user-select:none}
-.dojo-input-zone:first-child{border-left:0}.dojo-input-zone span{font:900 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(255,255,255,.25)}
+.dojo-input-zone:first-child{border-left:0}.dojo-input-zone span{font:900 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(255,255,255,.38)}.dojo-input-zone:not([data-dojo-lane-zone="1"]):not([data-dojo-lane-zone="4"]):not([data-dojo-lane-zone="7"]):not([data-dojo-lane-zone="10"]) span{display:none}
 .dojo-input-zone.active{background:rgba(82,207,232,.11)}.dojo-input-zone.active span{color:rgba(255,255,255,.72)}
 .dojo-game-message{padding:9px 12px;color:#aab2c2;font-size:8px;line-height:1.6;text-align:center;border-top:1px solid rgba(255,255,255,.06);background:#0d111c}
 .dojo-game-card.ready .dojo-game-message{color:#8fe6b8}
