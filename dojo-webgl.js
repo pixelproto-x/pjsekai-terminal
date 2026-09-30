@@ -744,7 +744,6 @@ function classify(diff,type){
   if(inside(w.P))return"PERFECT";
   if(inside(w.GREAT))return"GREAT";
   if(inside(w.D))return"GOOD";
-  if(inside(w.B))return"BAD";
   return"MISS";
 }
 function ensureSfx(){
@@ -781,7 +780,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   const comboBoost=1+Math.min(Math.max(S.combo-1,0),100)/100;
   const unit=10;
   S.score+=Math.round(unit*weight*multiplier*comboBoost);
-  S.life=cl(S.life+(jg==="MISS"?-80:jg==="BAD"?-40:1),0,1000);
+  S.life=cl(S.life+(jg==="MISS"?-80:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
   S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:n.l,kind:type,judgement:jg,error:d};
@@ -877,7 +876,7 @@ function release(inputId){
   if(Math.abs(d)<=WINDOWS.slideEnd.B){
     if(n.done)return;
     if(tail.dir&&!held.flicked){
-      n.done=true;n.judged=true;S.judged++;S.combo=0;S.life=cl(S.life-48,0,1000);S.counts.MISS++;S.tn++;hud("MISS");spawnFx(tail.l,"MISS",!!tail.critical);
+      n.done=true;n.judged=true;S.judged++;S.combo=0;S.life=cl(S.life-80,0,1000);S.counts.MISS++;S.tn++;hud("MISS");spawnFx(tail.l,"MISS",!!tail.critical);
       if(S.judged>=S.total)finish();
       return;
     }
