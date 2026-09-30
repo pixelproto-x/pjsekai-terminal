@@ -283,6 +283,17 @@ function susToPlayable(text,baseBpm=120){
           slideNote.checkpoints.push({sec:p.sec,lane:p.l,type:p.type,critical:p.critical,trace:p.trace,judged:false});
         }
       }
+      const stepTicks=Math.max(1,Math.round(score.ticksPerBeat*.5));
+      for(let tick=start.tick+stepTicks;tick<last.tick-stepTicks*.25;tick+=stepTicks){
+        const sec=atTick(tick);
+        if(!Number.isFinite(sec)||sec<=path[0].sec+.006||sec>=last.sec-.006)continue;
+        const z=pointOnPath(path,sec);
+        if(!z)continue;
+        if(!slideNote.checkpoints.some(cp=>Math.abs(cp.sec-sec)<.018)){
+          slideNote.checkpoints.push({sec,lane:z.l,type:z.type,critical:z.critical,trace:z.trace,judged:false});
+        }
+      }
+      slideNote.checkpoints.sort((a,b)=>a.sec-b.sec);
       const dupe=slideHeads.get(sk);
       if(dupe){const at=notes.indexOf(dupe);if(at>=0)notes.splice(at,1);}
       notes.push(slideNote);slideHeads.set(sk,slideNote);
@@ -586,6 +597,24 @@ function bg(){
     circle(xx,yy,2.5+(i%3)*1.6,[.55,.80,1],.08,12);
   }
 }
+function drawMultiTapGuide(now){
+  const groups=new Map();
+  for(const n of S.notes){
+    if(n.done||n.started||!Number.isFinite(n.hit))continue;
+    if(Math.abs(n.hit-now)>S.lead*.98)continue;
+    const key=Math.round(n.hit*1000);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(n);
+  }
+  for(const group of groups.values()){
+    if(group.length<2)continue;
+    const pts=group.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return[laneX(n.l,p),q.y]}).sort((a,b)=>a[0]-b[0]);
+    for(let i=0;i<pts.length-1;i++){
+      line([pts[i],pts[i+1]],[.82,.92,1],.28);
+      line([[pts[i][0],pts[i][1]-2],[pts[i+1][0],pts[i+1][1]-2]],[1,1,1],.14);
+    }
+  }
+}
 function drawStage(){
   const h=S.geom,tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
   // perspective playfield
@@ -873,6 +902,7 @@ function loop(t){
   S.raf=requestAnimationFrame(loop);
   const dt=Math.min(.05,(t-(S.last||t))/1000);S.last=t;
   bg();drawStage();
+  if(S.running)drawMultiTapGuide(S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).visualOffset,0)/1000);
   if(S.running){
     const rawNow=S.audio.currentTime-S.seek,settings=app().dojo||{};
     const visualNow=rawNow+S.chartOffset+N(settings.visualOffset,0)/1000;
@@ -1103,6 +1133,8 @@ function bind(){
     if(Math.hypot(dx,dy)>22&&S.running){
       const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
       const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(dx,dy)/dt;
+      const w=$("dojoGameStageWrap"),r=w?.getBoundingClientRect();
+      if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
       if(speed>120)hit(q.l,"flick",true,dir,"ptr:"+e.pointerId);
       q.x=e.clientX;q.y=e.clientY;q.t=performance.now();
     }
