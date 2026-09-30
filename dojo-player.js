@@ -7,8 +7,8 @@
 const B=window.__PJSEKAI_APP__;
 if(!B)return;
 
-const MUSIC_URL='https://cdn.jsdelivr.net/gh/Sekai-World/sekai-master-db-diff@main/musics.json';
-const VOCAL_URL='https://cdn.jsdelivr.net/gh/Sekai-World/sekai-master-db-diff@main/musicVocals.json';
+const MUSIC_URL='dojo-musics.json';
+const VOCAL_URL='dojo-vocals.json';
 const ASSETS='https://assets.unipjsk.com';
 const DIFFS=['easy','normal','hard','expert','master','append'];
 const DIFF_LABEL={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
