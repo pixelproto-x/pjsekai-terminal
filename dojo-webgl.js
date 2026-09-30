@@ -231,7 +231,7 @@ function susToPlayable(text,baseBpm=120){
   for(const slide of score.slides)if(slide.type===3){
     for(const n of slide.notes)if([1,2,3,5].includes(n.type))preventSingles.add(key(n));
   }
-  const notes=[],used=new Set(),slideHeads=new Set();
+  const notes=[],used=new Set(),slideHeads=new Map();
   const lane12=n=>cl(n.lane-2,0,11);
   const pushSingle=n=>{
     const k=key(n);if(preventSingles.has(k)||used.has(k))return;
