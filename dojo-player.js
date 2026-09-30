@@ -14,7 +14,7 @@ const ASSETS='https://assets.unipjsk.com';
 const AUDIO_ASSETS='https://storage.sekai.best/sekai-jp-assets';
 const DIFFS=['easy','normal','hard','expert','master','append'];
 const DIFF_LABEL={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
-const JUDGE={perfect:.045,great:.085,good:.11,bad:.125};
+const JUDGE={perfect:.045,great:.085,good:.11,bad:.14};
 
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -27,7 +27,7 @@ const state={
   notes:[],score:0,combo:0,bestCombo:0,judged:0,lastJudgeToken:0,
   startSeek:0,leadTime:2.1,selected:null,
   held:new Map(),pointers:new Map(),lastFrame:0,
-  effects:[]
+  effects:[],life:1000,counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},totalTiming:0,timingCount:0,holdIntervals:new Map()
 };
 
 state.audio.preload='auto';
@@ -469,6 +469,9 @@ function updateHud(now){
   const bar=$('dojoGameProgressBar');if(bar)bar.style.width=(progress*100).toFixed(2)+'%';
   const score=$('dojoGameScore');if(score)score.textContent=String(Math.round(state.score)).padStart(7,'0');
   const combo=$('dojoGameCombo');if(combo)combo.textContent=state.combo>0?String(state.combo):'0';
+  const acc=$('dojoGameAccuracy');
+  if(acc){const total=state.judged||0;const weighted=state.counts.PERFECT*1+state.counts.GREAT*.7+state.counts.GOOD*.4+state.counts.BAD*.1;acc.textContent=total?((weighted/total)*100).toFixed(2)+'%':'100.00%';}
+  const life=$('dojoGameLifeBar');if(life)life.style.width=Math.max(0,Math.min(100,state.life/10))+'%';
   const status=$('dojoGameStatus');if(status)status.textContent=state.running?'PLAY':(state.prepared?'READY':'LOAD');
   const remaining=total-state.judged;
   const msg=$('dojoGameMessage');
@@ -480,20 +483,32 @@ function processNotes(now){
     if(note.judged)continue;
     if(note.kind==='hold'){
       if(!note.started && now-note.hit>JUDGE.bad){judge(note,'MISS',0);continue;}
-      if(note.started && now-note.end>JUDGE.bad){judge(note,'MISS',0);continue;}
       if(note.started){
-        for(const g of state.held.values())if(g===Math.floor(note.lane/3)){note.lastHeldAt=now;break;}
+        const holding=state.held.get(note.id)===note.holding;
+        if(!holding){
+          note.holdBroken=true;
+          if(now-note.lastHeldAt>0.09){state.life=Math.max(0,state.life-18);note.lastHeldAt=now;}
+        }else note.lastHeldAt=now;
+        if(now-note.end>JUDGE.bad){
+          if(note.holdBroken)judge(note,'MISS',0);
+          else {note.judged=true;state.judged++;state.counts.PERFECT++;state.score+=Math.round(scoreValue('PERFECT')*.6);state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);showJudge('PERFECT',0);}
+        }
       }
     }else if(now-note.hit>JUDGE.bad){
       judge(note,'MISS',0);
     }
   }
 }
-function scoreValue(j){return j==='PERFECT'?1000:j==='GREAT'?700:j==='GOOD'?400:0;}
+function scoreValue(j){return j==='PERFECT'?1000:j==='GREAT'?700:j==='GOOD'?400:j==='BAD'?100:0;}
 function judge(note,label,delta){
+  if(note.judged)return;
   note.judged=true;state.judged++;
-  if(label==='MISS'){state.combo=0;}else{state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);}
+  state.counts[label]=(state.counts[label]||0)+1;
+  if(label==='MISS'||label==='BAD'){state.combo=0;state.life=Math.max(0,state.life-(label==='MISS'?70:25));}
+  else{state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);state.life=Math.min(1000,state.life+(label==='PERFECT'?3:1));}
+  if(Number.isFinite(delta)){state.totalTiming+=Math.abs(delta)*1000;state.timingCount++;}
   state.score+=scoreValue(label);showJudge(label,delta);
+  if(state.life<=0)finishGame(true);
 }
 function showJudge(label){
   const el=$('dojoJudgeText');if(!el)return;
@@ -506,6 +521,7 @@ function classify(delta){
   if(a<=JUDGE.perfect)return'PERFECT';
   if(a<=JUDGE.great)return'GREAT';
   if(a<=JUDGE.good)return'GOOD';
+  if(a<=JUDGE.bad)return'BAD';
   return'MISS';
 }
 function laneMatches(note,group){
@@ -537,9 +553,14 @@ function releaseGroup(group){
   for(const n of state.notes){
     if(n.kind!=='hold'||n.judged||!n.started||n.holding!==group)continue;
     state.held.delete(n.id);
-    const label=classify(now-n.end);
-    if(label==='MISS'||now<n.end-JUDGE.good){judge(n,'MISS',now-n.end);}
-    else{n.judged=true;state.judged++;state.score+=scoreValue(label)*.6;showJudge(label,now-n.end);}
+    n.lastHeldAt=now;
+    if(now<n.end-JUDGE.good){n.holdBroken=true;state.life=Math.max(0,state.life-18);}
+    else if(now>=n.end-JUDGE.good){
+      const label=classify(now-n.end);
+      n.judged=true;state.judged++;state.counts[label]=(state.counts[label]||0)+1;
+      if(label==='MISS'||label==='BAD')state.combo=0;else{state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);}
+      state.score+=Math.round(scoreValue(label)*.6);showJudge(label,now-n.end);
+    }
     n.holding=null;
   }
 }
@@ -585,7 +606,7 @@ async function startGame(){
       state.audio.currentTime=state.startSeek;
     }catch(_){ }
     state.notes=pre.notes.map(n=>({...n,judged:false,started:false}));
-    state.score=0;state.combo=0;state.bestCombo=0;state.judged=0;state.finished=false;state.running=true;
+    state.score=0;state.combo=0;state.bestCombo=0;state.judged=0;state.life=1000;state.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};state.totalTiming=0;state.timingCount=0;state.finished=false;state.running=true;
     showGameReady('遊玩中 · 觸控下方區域或使用 D / F / J / K');
     const msg=$('dojoGameMessage');if(msg)msg.textContent='遊玩中 · 觸控下方區域或使用 D / F / J / K';
   }catch(e){showGameError(e?.message||'開始打歌失敗');}
@@ -598,11 +619,14 @@ function togglePause(){
   if(!state.prepared)return;
   if(state.running){state.audio.pause();state.running=false;const b=$('dojoOpenPracticeBtn');if(b)b.textContent='▶ 繼續打歌';showGameReady('已暫停 · 按「繼續打歌」回到譜面');}
   else if(state.audio.src){state.audio.play().then(()=>{state.running=true;const b=$('dojoOpenPracticeBtn');if(b)b.textContent='⏸ 暫停';}).catch(()=>showGameError('無法繼續播放，請再點一次按鈕'));}}
-function finishGame(){
+function finishGame(failed=false){
   if(!state.running&&!state.starting)return;
   state.running=false;state.finished=true;
   const b=$('dojoOpenPracticeBtn');if(b){b.textContent='↻ 再玩一次';b.disabled=false;}
-  showGameReady('完成！最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
+  const accuracy=state.judged?((state.counts.PERFECT+state.counts.GREAT*.7+state.counts.GOOD*.4+state.counts.BAD*.1)/state.judged*100).toFixed(2):'100.00';
+  const timing=state.timingCount?(state.totalTiming/state.timingCount).toFixed(0):'0';
+  const result=$('dojoGameResult');if(result){result.hidden=false;result.innerHTML='<strong>'+(failed?'FAILED':'CLEAR')+'</strong><div class="dojo-result-score">'+String(Math.round(state.score)).padStart(7,'0')+'</div><div class="dojo-result-grid"><span>ACC <b>'+accuracy+'%</b></span><span>MAX COMBO <b>'+state.bestCombo+'</b></span><span>PERFECT <b>'+state.counts.PERFECT+'</b></span><span>GREAT <b>'+state.counts.GREAT+'</b></span><span>GOOD <b>'+state.counts.GOOD+'</b></span><span>BAD / MISS <b>'+state.counts.BAD+' / '+state.counts.MISS+'</b></span><span>AVG TIMING <b>'+timing+'ms</b></span></div><button type="button" id="dojoResultReplay">再玩一次</button>';result.querySelector('#dojoResultReplay')?.addEventListener('click',()=>{result.hidden=true;startGame();});}
+  showGameReady((failed?'生命歸零 · ':'完成！')+'最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
 }
 function bindControls(){
   $('dojoOpenPracticeBtn')?.addEventListener('click',()=>{
@@ -616,7 +640,7 @@ function bindControls(){
     try{if(!document.fullscreenElement)await el.requestFullscreen();else await document.exitFullscreen();}catch(_){B.toast('無法進入全螢幕');}
   });
   $('dojoGameResetBtn')?.addEventListener('click',()=>{
-    state.audio.pause();state.running=false;state.finished=false;state.notes=[];state.score=0;state.combo=0;state.judged=0;
+    state.audio.pause();state.running=false;state.finished=false;state.notes=[];state.score=0;state.combo=0;state.judged=0;state.life=1000;state.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};state.totalTiming=0;state.timingCount=0;$('dojoGameResult')?.setAttribute('hidden','');
     const b=$('dojoOpenPracticeBtn');if(b)b.textContent='▶ 開始打歌';
     showGameReady('已重設 · 按「開始打歌」重新載入');
   });
