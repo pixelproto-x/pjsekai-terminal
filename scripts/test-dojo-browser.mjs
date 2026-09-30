@@ -68,6 +68,13 @@ if (!selected.title.toLowerCase().includes('tell your world')) throw new Error('
 if (selected.difficulty.toLowerCase() !== 'expert') throw new Error('Difficulty selection did not update: ' + JSON.stringify(selected));
 
 await page.locator('#dojoOpenPracticeBtn').click();
+await page.waitForFunction(() => document.body.dataset.page === 'dojo-play' || document.querySelector('.dojo-play-page.active')?.offsetParent, null, { timeout: 10000 });
+const playRoute = await page.evaluate(() => ({
+  route: document.body.dataset.page || '',
+  pageVisible: !!document.querySelector('.dojo-play-page.active')?.offsetParent,
+  gameMounted: !!document.querySelector('#dojoPlayMount #dojoGameCard')
+}));
+if (!playRoute.pageVisible || !playRoute.gameMounted) throw new Error('Dojo did not enter dedicated gameplay page: ' + JSON.stringify(playRoute));
 try{
   await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
 }catch(error){
@@ -154,5 +161,5 @@ if (pageErrors.length || dojoResourceFailures.length) {
   );
 }
 
-console.log(JSON.stringify({ PASS: true, before, selected, started, audioProgress, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
+console.log(JSON.stringify({ PASS: true, before, selected, playRoute, started, audioProgress, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
 await browser.close();
