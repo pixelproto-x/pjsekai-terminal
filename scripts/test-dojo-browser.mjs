@@ -12,13 +12,23 @@ await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeo
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
 await page.waitForSelector('#dojoGameCanvas', { state: 'visible', timeout: 30000 });
-await page.waitForFunction(() => {
-  const p = window.__PJSEKAI_DOJO__;
-  return !!p?.state?.prepared && Array.isArray(p.state.prepared.notes) && p.state.prepared.notes.length > 0;
-}, null, { timeout: 45000 });
-await page.waitForTimeout(250);
+await page.waitForTimeout(5000);
 
-const before = await page.evaluate(() => {
+const diagnostics = await page.evaluate(() => ({
+  dojoObject: !!window.__PJSEKAI_DOJO__,
+  hasAppBridge: !!window.__PJSEKAI_APP__,
+  prepared: !!window.__PJSEKAI_DOJO__?.state?.prepared,
+  preparedTitle: window.__PJSEKAI_DOJO__?.state?.prepared?.music?.title || '',
+  preparedNotes: window.__PJSEKAI_DOJO__?.state?.prepared?.notes?.length || 0,
+  gameMessage: document.querySelector('#dojoGameMessage')?.textContent || '',
+  gameStatus: document.querySelector('#dojoGameStatus')?.textContent || '',
+  loadingHidden: document.querySelector('#dojoGameLoading')?.classList.contains('hidden') || false
+}));
+if (!diagnostics.dojoObject || !diagnostics.prepared || !diagnostics.preparedNotes) {
+  throw new Error('Dojo diagnostics: '+JSON.stringify(diagnostics)+'\nConsole errors: '+errors.join(' | ')+'\nPage errors: '+pageErrors.join(' | '));
+}
+
+const before = await page.evaluate(() => ({
   const p = window.__PJSEKAI_DOJO__;
   return {
     pixi: !!window.PIXI,
