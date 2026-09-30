@@ -1002,39 +1002,43 @@ body[data-sekai-theme] .theme-choice.active{
     </div>
   </section>
 
-  <section class="dojo-game-card dojo-real-engine-card" id="dojoGameCard">
+  <section class="dojo-game-card" id="dojoGameCard">
   <div class="dojo-game-head">
     <div class="dojo-game-title">
-      <div class="dojo-real-engine-badge">NEXT SEKAI</div>
-      <div><h2 id="dojoGameSongTitle">尚未選擇歌曲</h2><p id="dojoGameSongMeta">請先選擇歌曲與難度</p></div>
+      <img class="dojo-game-cover" id="dojoGameCover" alt="">
+      <div><h2 id="dojoGameSongTitle">Tell Your World</h2><p id="dojoGameSongMeta">官方音源 · Expert</p></div>
     </div>
     <div class="dojo-game-head-actions">
-      <span id="dojoGameStatus">ENGINE READY</span>
+      <span id="dojoGameStatus">LOAD</span>
       <button id="dojoGameResetBtn" type="button">↻ 重設</button>
     </div>
   </div>
-  <div class="dojo-real-engine-stage" id="dojoGameStageWrap">
-    <div class="dojo-real-engine-backdrop">
-      <div class="dojo-real-engine-grid"></div>
-      <div class="dojo-real-engine-lane"></div>
-      <div class="dojo-real-engine-center">NEXT SEKAI</div>
+  <div class="dojo-game-stage-wrap" id="dojoGameStageWrap">
+    <canvas class="dojo-game-canvas" id="dojoGameCanvas" aria-label="Project SEKAI Dojo 遊戲畫面"></canvas>
+    <div class="dojo-game-hud" aria-hidden="true">
+      <div class="dojo-hud-top">
+        <div class="dojo-hud-song"><strong id="dojoHudSongTitle">Tell Your World</strong><span id="dojoHudSongMeta">Expert</span></div>
+        <div class="dojo-hud-score-block"><span>ACC <b id="dojoGameAccuracy">100.00%</b></span><strong class="dojo-hud-score" id="dojoGameScore">0000000</strong></div>
+      </div>
+      <div class="dojo-life"><span id="dojoGameLifeBar"></span></div>
+      <div class="dojo-hud-combo"><strong id="dojoGameCombo">0</strong><span>COMBO</span></div>
+      <div class="dojo-judge-text" id="dojoJudgeText"></div>
+      <div class="dojo-game-result" id="dojoGameResult" hidden></div>
     </div>
-    <div class="dojo-real-engine-info">
-      <strong>Project SEKAI 節奏引擎</strong>
-      <span>使用 Next SEKAI / Sonolus 實際遊玩，不再使用網站內的簡化 Canvas 模擬器。</span>
+    <div class="dojo-input-pad" aria-label="四鍵觸控區">
+      <div class="dojo-input-zone" data-dojo-lane-zone="0"><span>D</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="1"><span>F</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="2"><span>J</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="3"><span>K</span></div>
     </div>
-    <div class="dojo-real-engine-actions">
-      <button class="primary" id="dojoOpenPracticeBtn" type="button">▶ 用 Next SEKAI 開始</button>
-      <button id="dojoOpenPracticeWebBtn" type="button">查看譜面伺服器</button>
-      <button id="dojoGameFullscreenBtn" type="button">⛶ 全螢幕</button>
-    </div>
-    <div class="dojo-real-engine-note" id="dojoGameMessage">按「用 Next SEKAI 開始」會直接呼叫 Sonolus，進入 Next SEKAI 的實際遊玩環境。</div>
+    <div class="dojo-game-loading" id="dojoGameLoading"><div><strong>正在準備譜面</strong><span>載入歌曲與譜面資料…</span></div></div>
   </div>
-  <div class="dojo-real-engine-meta">
-    <span>ENGINE <b>Next SEKAI</b></span>
-    <span>DIFFICULTY <b id="dojoHudSongMeta">Expert</b></span>
-    <span>SERVER <b>coconut.sonolus.com/next-sekai</b></span>
+  <div class="dojo-game-progress"><span id="dojoGameProgressBar"></span></div>
+  <div class="dojo-game-controls">
+    <button class="primary" id="dojoOpenPracticeBtn" type="button">▶ 開始打歌</button>
+    <button id="dojoGameFullscreenBtn" type="button">⛶ 全螢幕</button>
   </div>
+  <div class="dojo-game-message" id="dojoGameMessage">選好歌曲與難度後，按「開始打歌」即可直接遊玩。</div>
 </section>
 
 <details class="dojo-extra">
