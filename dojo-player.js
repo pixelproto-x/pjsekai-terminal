@@ -593,6 +593,10 @@ async function boot(){
   }
   $('dojoSongList')?.addEventListener('click',()=>schedulePrepare());
   $('dojoDifficultyButtons')?.addEventListener('click',()=>schedulePrepare());
+  $('caSongList')?.addEventListener('click',()=>schedulePrepare());
+  $('caDetail')?.addEventListener('click',e=>{
+    if(e.target.closest('[data-ca-diff]'))schedulePrepare();
+  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
