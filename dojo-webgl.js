@@ -31,7 +31,11 @@ S.audio.crossOrigin="anonymous";
 const style=document.createElement("style");
 style.textContent=[
 "#dojoGameStageWrap{position:relative;overflow:hidden;aspect-ratio:16/9;min-height:320px;background:#03040b;touch-action:none;isolation:isolate}","#dojoGameStageWrap:fullscreen{width:100vw;height:100vh;background:#03040b}","#dojoGameStageWrap:fullscreen .dojo-input-pad{display:grid}",".dojo-input-pad{position:absolute;inset:auto 0 0;height:24%;z-index:4;display:grid;grid-template-columns:repeat(12,1fr);pointer-events:auto}",".dojo-input-zone{background:transparent;border:0;position:relative;touch-action:none}",".dojo-input-zone:active{background:rgba(120,210,255,.08)}",
-"#dojoGameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}",
+"#dojoGameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}","#dojoGameScore{font-variant-numeric:tabular-nums;letter-spacing:.06em;text-shadow:0 2px 8px rgba(0,0,0,.48)}",
+"#dojoGameAccuracy{font-variant-numeric:tabular-nums}",
+"#dojoGameCombo{font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(255,255,255,.4)}",
+"#dojoJudgeText{font-weight:1000;letter-spacing:.04em}",
+"#dojoGameResult{backdrop-filter:blur(18px);background:rgba(3,5,14,.78);border:1px solid rgba(255,255,255,.16);box-shadow:0 20px 80px rgba(0,0,0,.45)}",
 ".dojo-wgl-overlay{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 72%,rgba(44,70,130,.05),rgba(2,4,14,.46) 80%,rgba(0,0,0,.78) 100%);z-index:2}",
 ".dojo-wgl-status{position:absolute;z-index:5;left:12px;bottom:10px;padding:5px 9px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(5,8,20,.46);color:rgba(255,255,255,.72);font:800 9px system-ui;letter-spacing:.1em;pointer-events:none;backdrop-filter:blur(8px)}",
 ".dojo-wgl-pause{position:absolute;z-index:6;right:12px;top:12px;width:40px;height:40px;border:1px solid rgba(255,255,255,.25);background:rgba(9,12,28,.58);color:#fff;border-radius:12px;font-weight:900;font-size:17px;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.24)}",
@@ -232,7 +236,7 @@ function susToPlayable(text,baseBpm=120){
     for(const n of slide.notes)if([1,2,3,5].includes(n.type))preventSingles.add(key(n));
   }
   const notes=[],used=new Set(),slideHeads=new Map();
-  const lane12=n=>cl(n.lane-2,0,11);
+  const lane12=n=>cl(n.lane-2+Math.max(0,(n.width||1)-1)*.5,0,11);
   const pushSingle=n=>{
     const k=key(n);if(preventSingles.has(k)||used.has(k))return;
     if(![1,2,5,6].includes(n.type))return;
@@ -303,8 +307,8 @@ function susToPlayable(text,baseBpm=120){
 function setup(){
   const c=$("dojoGameCanvas"),w=$("dojoGameStageWrap");
   if(!c||!w)throw Error("Dojo 畫面不存在");
-  S.gl=c.getContext("webgl2",{antialias:true,alpha:false,preserveDrawingBuffer:false})||
-        c.getContext("webgl",{antialias:true,alpha:false,preserveDrawingBuffer:false});
+  S.gl=c.getContext("webgl2",{antialias:true,alpha:true,preserveDrawingBuffer:false})||
+        c.getContext("webgl",{antialias:true,alpha:true,preserveDrawingBuffer:false});
   if(!S.gl)throw Error("瀏覽器不支援 WebGL");
   const g=S.gl;
   const vs="attribute vec2 p;attribute vec4 c;varying vec4 v;varying vec2 q;void main(){gl_Position=vec4(p,0.,1.);v=c;q=p;}";
@@ -317,7 +321,7 @@ function setup(){
   S.program=g.createProgram();g.attachShader(S.program,sh(g.VERTEX_SHADER,vs));g.attachShader(S.program,sh(g.FRAGMENT_SHADER,fs));g.linkProgram(S.program);
   if(!g.getProgramParameter(S.program,g.LINK_STATUS))throw Error(g.getProgramInfoLog(S.program)||"WebGL link");
   S.buf=g.createBuffer();S.pp=g.getAttribLocation(S.program,"p");S.cc=g.getAttribLocation(S.program,"c");
-  g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);g.disable(g.DEPTH_TEST);
+  g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);g.disable(g.DEPTH_TEST);g.clearColor(0,0,0,0);
   const rs=()=>{
     const r=w.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
     c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));
@@ -325,7 +329,7 @@ function setup(){
     S.geom={w:r.width,h:r.height,top:r.height*.10,far:r.height*.18,hit:r.height*.875,
       tl:r.width*.28,tr:r.width*.72,bl:r.width*.035,br:r.width*.965};
   };
-  rs();addEventListener("resize",rs,{passive:true});
+  rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});
   if(window.ResizeObserver){S.ro=new ResizeObserver(rs);S.ro.observe(w);}
   if(!w.querySelector(".dojo-wgl-overlay")){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
@@ -348,8 +352,9 @@ function line(points,c,a=1,width=1){
   g.vertexAttribPointer(S.pp,2,g.FLOAT,false,24,0);g.vertexAttribPointer(S.cc,4,g.FLOAT,false,24,8);
   g.lineWidth(width);g.drawArrays(g.LINE_STRIP,0,points.length);
 }
+const APPROACH_SCALE=Math.pow(1.06,-45);
 function stageAt(p){
-  const g=S.geom,t=Math.pow(cl(p,0,1),.76);
+  const g=S.geom,t=Math.pow(APPROACH_SCALE,1-cl(p,0,1));
   return{y:g.far+(g.hit-g.far)*t,l:g.tl+(g.bl-g.tl)*t,r:g.tr+(g.br-g.tr)*t};
 }
 function laneX(l,p){
@@ -390,10 +395,10 @@ function stagePoint(lane,p,mirror=false){
   return q.l+(q.r-q.l)*(m+.5)/12;
 }
 function noteColor(n){
-  if(n.c)return [1,.82,.18];
-  if(n.f)return [1,.30,.44];
-  if(n.t)return [.18,1,.68];
-  return [.16,.78,1];
+  if(n.c)return [1,.80,.18];
+  if(n.f)return [1,.25,.46];
+  if(n.t)return [.16,1,.67];
+  return [.94,.96,1];
 }
 function drawDirectionalArrow(x,y,w,dir,col,a=1){
   const s=Math.max(7,w*.22),pts=[];
@@ -479,7 +484,8 @@ function drawHold(n,now){
 }
 function bg(){
   const h=S.geom,tm=S.audio.currentTime||0,p=.5+.5*Math.sin(tm*Math.PI*2*1.75);
-  poly([[0,0],[h.w,0],[h.w,h.h],[0,h.h]],[.002,.004,.014],1);
+  S.gl.clear(S.gl.COLOR_BUFFER_BIT);
+  poly([[0,0],[h.w,0],[h.w,h.h],[0,h.h]],[.002,.004,.014],.20);
   // layered stage lights
   poly([[h.w*.05,0],[h.w*.34,0],[h.bl,h.hit],[h.w*.43,h.hit]],[.12,.34,1],.065+.026*p);
   poly([[h.w*.95,0],[h.w*.66,0],[h.br,h.hit],[h.w*.57,h.hit]],[1,.10,.42],.055+.022*p);
@@ -636,7 +642,7 @@ function findCandidate(inputLane,now,mode="tap",exact=false,direction="up"){
     if(mode==="flick"&&!n.f)continue;
     if(mode!=="flick"&&n.f)continue;
     const nl=expectedLane(n,now);
-    const match=exact?Math.abs(nl-inputLane)<=Math.max(.5,(n.w||1)/2):Math.floor(nl/3)===inputLane;
+    const match=exact?Math.abs(nl-inputLane)<=Math.max(.75,(n.w||1)/2+.75):Math.floor(nl/3)===inputLane;
     if(!match)continue;
     const d=now-n.hit,a=Math.abs(d),w=n.f?(n.c?WINDOWS.criticalFlick.B:WINDOWS.flick.B):(n.c?WINDOWS.critical.B:WINDOWS.tap.B);
     if(a<=w&&a<bestAbs){bestAbs=a;best=n;}
@@ -690,7 +696,7 @@ function release(inputId){
     const fake={...n,l:tail.l,c:tail.critical,t:tail.trace,f:tail.dir,done:false};
     const endType=tail.dir?(tail.critical?"criticalFlick":"flick"):tail.trace?(tail.critical?"slideEndTrace":"trace"):"slideEnd";
     const jg=award(fake,d,endType,false);
-    n.done=true;n.judged=true;S.judged++;
+    n.done=true;n.judged=true;
     if(jg==="MISS")S.combo=0;
     if(S.judged>=S.total)finish();
   }else{
@@ -751,15 +757,31 @@ function loop(t){
 function resultCounts(){
   return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　BAD "+S.counts.BAD+"　MISS "+S.counts.MISS;
 }
+function finalizePending(){
+  for(const n of S.notes){
+    if(n.k==="hold"){
+      for(const cp of n.checkpoints||[]){
+        if(cp.judged)continue;
+        cp.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-20,0,1000);
+      }
+      if(!n.done){
+        n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-48,0,1000);
+      }
+    }else if(!n.done){
+      n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-65,0,1000);
+    }
+  }
+}
 function finish(){
   if(!S.running)return;
+  finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
   const ap=S.counts.MISS===0&&S.counts.BAD===0,rank=ap?"ALL PERFECT":S.counts.MISS<5?"CLEAR":"FAILED";
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
-    r.innerHTML="<strong>"+rank+"</strong><span>"+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><button type=\"button\" data-dojo-result-replay>再玩一次</button>";
+    r.innerHTML="<strong>"+rank+"</strong><span>"+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type="button" data-dojo-result-replay>再玩一次</button>";
     r.querySelector("[data-dojo-result-replay]")?.addEventListener("click",()=>{r.hidden=true;start()},{once:true});
   }
   const b=$("dojoOpenPracticeBtn");if(b)b.textContent="↻ 再玩一次";
@@ -938,7 +960,7 @@ function bind(){
   const endPointer=e=>{const q=S.touch.get(e.pointerId);S.touch.delete(e.pointerId);if(q)release("ptr:"+e.pointerId);};
   document.addEventListener("pointerup",endPointer);document.addEventListener("pointercancel",endPointer);
   $("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});
-  $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
+  $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");if(st){st.style.backgroundImage="";st.style.backgroundSize="";st.style.backgroundPosition="";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
 }
 function expose(){
   window.__PJSEKAI_DOJO__={
