@@ -116,8 +116,9 @@ const firstNotes = await page.evaluate(() => {
   const now = p.state.audio.currentTime || 0;
   const notes = p.state.notes;
   const future = notes.filter(n => !n.judged && n.hit > now + 0.1).slice(0, 8);
-  return future.map(n => ({ lane: n.lane, kind: n.kind, hit: n.hit, now, key: ['D','F','J','K'][Math.min(3, Math.floor(n.lane / 3))] }));
+  return future.filter(n => Number.isFinite(n.lane)).map(n => ({ lane: n.lane, kind: n.kind, hit: n.hit, now, key: ['D','F','J','K'][Math.max(0, Math.min(3, Math.floor(n.lane / 3)))] }));
 });
+if (!firstNotes.length) throw new Error('Dojo produced no future playable notes after resume');
 for (const n of firstNotes) {
   await page.waitForTimeout(Math.max(0, Math.round((n.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 12)));
   await page.keyboard.press(n.key);
