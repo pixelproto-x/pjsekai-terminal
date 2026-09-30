@@ -366,8 +366,11 @@ function setup(){
   };
   rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});loadSkin();
   if(window.__PJSEKAI_SEKAI_REF__){
-    try{window.__PJSEKAI_SEKAI_REF__.attach(g,S.texProgram,S.texBuf,S.texLoc);window.__PJSEKAI_SEKAI_REF__.loadAll().catch(()=>{});}catch(_){}
-  }
+    try{
+      window.__PJSEKAI_SEKAI_REF__.attach(g,S.texProgram,S.texBuf,S.texLoc);
+      S.refReady=window.__PJSEKAI_SEKAI_REF__.loadAll().catch(()=>{});
+    }catch(_){S.refReady=Promise.resolve();}
+  }else S.refReady=Promise.resolve();
   if(window.ResizeObserver){S.ro=new ResizeObserver(rs);S.ro.observe(w);}
   if(!w.querySelector(".dojo-wgl-overlay")){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
@@ -1129,7 +1132,7 @@ async function start(){
     ensureSfx();if(S.audioCtx?.state==="suspended")await S.audioCtx.resume();
     const b=$("dojoOpenPracticeBtn");if(b){b.disabled=true;b.textContent="載入中…";}
     const q=selection();if(!q?.m)throw Error("請先選擇歌曲");
-    await data();const prep=await ensurePrepared();
+    await data();const prep=await ensurePrepared();await (S.refReady||Promise.resolve());
     S.notes=prep.notes.map(x=>({...x,path:x.path?.map(p=>({...p})),tail:x.tail?{...x.tail}:null,checkpoints:x.checkpoints?.map(p=>({...p}))}));
     S.total=S.notes.reduce((n,x)=>n+((x.k==="hold"?2:1)+(x.checkpoints?.length||0)),0);
     S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;S.chartOffset=N(prep.offset,0);
