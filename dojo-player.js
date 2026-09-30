@@ -282,13 +282,15 @@ function renderDojoSelection(){
   if(!list||!state.songs?.length)return;
   const q=String($('dojoSongSearch')?.value||'').trim().toLowerCase();
   const attr=String($('dojoAttrFilter')?.value||'').trim().toLowerCase();
+  const diff=String($('dojoDifficultyFilter')?.value||'').trim().toLowerCase();
   const bpm=num($('dojoBpmFilter')?.value,0);
   const remembered=Number(localStorage.getItem('pjsekai-chart-last-song')||0);
   if(!state.uiSongId)state.uiSongId=remembered||1;
   const filtered=state.songs.filter(m=>{
     const text=[m.title,m.artist,m.composer,m.lyricist,m.unit].join(' ').toLowerCase();
     const a=String(m.attr||m.attribute||m.unit||'').toLowerCase();
-    return (!q||text.includes(q))&&(!attr||a.includes(attr))&&(Number(m.bpm||m.bpmMin||0)>=bpm);
+    const hasDifficulty=!diff||!!m?.difficulties?.[diff];
+    return (!q||text.includes(q))&&(!attr||a.includes(attr))&&hasDifficulty&&(Number(m.bpm||m.bpmMin||0)>=bpm);
   });
   const shown=filtered.slice(0,120);
   if($('dojoSongCount'))$('dojoSongCount').textContent=filtered.length.toLocaleString('en-US');
@@ -617,7 +619,21 @@ function bindControls(){
     const b=$('dojoOpenPracticeBtn');if(b)b.textContent='▶ 開始打歌';
     showGameReady('已重設 · 按「開始打歌」重新載入');
   });
-  document.querySelectorAll('[data-dojo-key]').forEach(el=>el.addEventListener('change',()=>{try{B.save();}catch(_){}}));
+  document.querySelectorAll('[data-dojo-key]').forEach(el=>el.addEventListener('change',e=>{
+    const i=Number(e.currentTarget.dataset.dojoKey);
+    const value=String(e.currentTarget.value||'').trim().toUpperCase().slice(0,2);
+    if(!value){e.currentTarget.value=appState().dojo.keys[i]||['D','F','J','K'][i];return;}
+    appState().dojo.keys[i]=value;
+    e.currentTarget.value=value;
+    const virtual=document.querySelector('[data-virtual-lane="'+i+'"]');
+    if(virtual)virtual.textContent=value;
+    try{B.save();}catch(_){}
+  }));
+  document.querySelectorAll('[data-virtual-lane]').forEach(el=>el.addEventListener('click',e=>{
+    const i=Number(e.currentTarget.dataset.virtualLane);
+    if(!Number.isFinite(i))return;
+    pressZone(i);hitGroup(i);window.setTimeout(()=>releaseZone(i),80);
+  }));
   $('dojoSpeedRange')?.addEventListener('input',e=>{
     const s=appState(),v=clamp(num(e.target.value,10),1,12);s.dojo.speed=v;
     if($('dojoSpeedValue'))$('dojoSpeedValue').textContent=v.toFixed(1);
@@ -668,7 +684,18 @@ async function boot(){
     setUiSelection(state.uiSongId,b.dataset.dojoDiff);
     schedulePrepare();
   });
-  ['dojoSongSearch','dojoAttrFilter','dojoBpmFilter'].forEach(id=>$(id)?.addEventListener('input',renderDojoSelection));
+  ['dojoSongSearch','dojoAttrFilter','dojoDifficultyFilter','dojoBpmFilter'].forEach(id=>{
+    const el=$(id);
+    el?.addEventListener('input',renderDojoSelection);
+    el?.addEventListener('change',renderDojoSelection);
+  });
+  $('dojoClearSearch')?.addEventListener('click',()=>{
+    const search=$('dojoSongSearch');
+    if(search)search.value='';
+    renderDojoSelection();
+    search?.focus();
+  });
+
   $('caSongList')?.addEventListener('click',()=>schedulePrepare());
   $('caDetail')?.addEventListener('click',e=>{if(e.target.closest('[data-ca-diff]'))schedulePrepare();});
 }
