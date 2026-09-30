@@ -85,7 +85,7 @@ makeMount();renderUnit();initDark();applyPerf(localStorage.getItem(KEY.perf)==="
 (function(){
   var load=function(){
     if(document.querySelector('script[data-dojo-webgl]'))return;
-    var s=document.createElement('script');s.src='dojo-webgl.js?v=20260930-webgl1';s.async=true;s.dataset.dojoWebgl='1';document.body.appendChild(s);
+    var s=document.createElement('script');s.src='dojo-webgl.js?v=20260930-webgl2';s.async=true;s.dataset.dojoWebgl='1';document.body.appendChild(s);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 })();
