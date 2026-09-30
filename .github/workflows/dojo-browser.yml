@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Generate Project SEKAI static data
         run: node scripts/build-static-data.mjs
@@ -43,7 +42,9 @@ jobs:
         run: npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i ./tailwind.input.css -o ./tailwind.css --minify
 
       - name: Install browser test dependency
-        run: npm install --no-save playwright@1.55.0
+        run: |
+          npm init -y
+          npm install --no-save playwright@1.55.0
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
