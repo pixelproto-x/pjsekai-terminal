@@ -295,28 +295,22 @@ function renderHeader(prep){
 }
 
 async function initPixi(){
-  if(state.app)return;
-  if(!window.PIXI)throw new Error('PixiJS 載入失敗');
+  if(state.ctx)return;
   const wrap=$('dojoGameStageWrap'),canvas=$('dojoGameCanvas');
   if(!wrap||!canvas)throw new Error('Dojo 遊戲畫面初始化失敗');
-  const app=new PIXI.Application();
-  await app.init({canvas,resizeTo:wrap,antialias:true,backgroundAlpha:0,resolution:Math.min(window.devicePixelRatio||1,2),autoDensity:true});
-  const stage=new PIXI.Container(),lane=new PIXI.Graphics(),notes=new PIXI.Container(),fx=new PIXI.Container();
-  app.stage.addChild(stage);stage.addChild(lane);stage.addChild(notes);stage.addChild(fx);
-  state.app=app;state.stage=stage;state.laneLayer=lane;state.noteLayer=notes;state.effectLayer=fx;
-  const ro=window.ResizeObserver?new ResizeObserver(()=>{
-    const w=wrap.clientWidth,h=wrap.clientHeight;
-    if(w&&h)app.renderer.resize(w,h);
-  }):null;
-  ro?.observe(wrap);
-  app.ticker.add(()=>frame());
-}
-
-function poly(g,points,color,alpha=1){
-  g.poly(points).fill({color,alpha});
-}
-function stroke(g,points,color,width=1,alpha=1){
-  g.poly(points).stroke({color,width,alpha});
+  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  if(!ctx)throw new Error('此瀏覽器不支援 Canvas 2D');
+  state.ctx=ctx;state.canvas=canvas;state.renderMode='2d';
+  const resize=()=>{
+    const rect=wrap.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.max(1,Math.round(rect.width*dpr));
+    canvas.height=Math.max(1,Math.round(rect.height*dpr));
+    canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  };
+  resize();
+  if(window.ResizeObserver){const ro=new ResizeObserver(resize);ro.observe(wrap);state.resizeObserver=ro;}
+  else window.addEventListener('resize',resize,{passive:true});
 }
 function laneGeom(){
   const w=$('dojoGameStageWrap')?.clientWidth||960,h=$('dojoGameStageWrap')?.clientHeight||540;
@@ -332,65 +326,63 @@ function laneEdge(index,progress,g){
   const t=clamp(progress,0,1),top=g.topL+(g.topR-g.topL)*index2/12,bottom=g.bottomL+(g.bottomR-g.bottomL)*index2/12;
   return top+(bottom-top)*t;
 }
+function roundNote2d(ctx,x,y,w,color,alpha){
+  const r=Math.min(6,w*.25);
+  ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.beginPath();
+  ctx.roundRect(x-w/2,y-6,w,12,r);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.28)';ctx.roundRect(x-w/2,y-3,w,3,2);ctx.fill();ctx.globalAlpha=1;
+}
 function drawScene(now){
-  const g=laneGeom(),l=state.laneLayer;
-  l.clear();
-  poly(l,[[g.topL,g.topY],[g.topR,g.topY],[g.bottomR,g.hitY],[g.bottomL,g.hitY]],0x0b1020,.93);
+  const ctx=state.ctx;if(!ctx)return;
+  const g=laneGeom(),w=g.w,h=g.h;
+  ctx.clearRect(0,0,w,h);
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#0b1020');bg.addColorStop(1,'#151a2a');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(5,9,20,.74)';
+  ctx.beginPath();ctx.moveTo(g.topL,g.topY);ctx.lineTo(g.topR,g.topY);ctx.lineTo(g.bottomR,g.hitY);ctx.lineTo(g.bottomL,g.hitY);ctx.closePath();ctx.fill();
   for(let i=0;i<=12;i++){
     const x1=laneEdge(i,0,g),x2=laneEdge(i,1,g);
-    stroke(l,[[x1,g.topY],[x2,g.hitY]],0xb7c6e7,i===0||i===12?2:1,i===0||i===12?.45:.18);
+    ctx.strokeStyle=i===0||i===12?'rgba(190,205,235,.45)':'rgba(183,198,231,.18)';
+    ctx.lineWidth=i===0||i===12?2:1;
+    ctx.beginPath();ctx.moveTo(x1,g.topY);ctx.lineTo(x2,g.hitY);ctx.stroke();
   }
-  stroke(l,[[g.bottomL,g.hitY],[g.bottomR,g.hitY]],0x66e3ff,3,.8);
-  stroke(l,[[g.bottomL,g.hitY+5],[g.bottomR,g.hitY+5]],0xffffff,1,.18);
-  const z=state.noteLayer;
-  z.removeChildren();
-  const lead=state.leadTime;
-  const settings=appState().dojo;
+  ctx.strokeStyle='rgba(102,227,255,.82)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(g.bottomL,g.hitY);ctx.lineTo(g.bottomR,g.hitY);ctx.stroke();
+  const settings=appState().dojo,lead=state.leadTime;
   for(const note of state.notes){
-    const primaryDelta=note.hit-now;
-    const tailDelta=note.kind==='hold'?note.end-now:null;
+    const primaryDelta=note.hit-now,tailDelta=note.kind==='hold'?note.end-now:null;
     if(note.kind==='hold'){
       const headP=1-clamp(primaryDelta/lead,0,1),tailP=1-clamp(tailDelta/lead,0,1);
       if(tailDelta<-JUDGE.bad||primaryDelta>lead)continue;
-      const gg=new PIXI.Graphics();
       const xh=laneX(note.lane,headP,g),xe=laneX(note.path?.at(-1)?.lane??note.lane,tailP,g);
       const wh=Math.max(8,(g.bottomR-g.bottomL)/12*note.width*.72);
-      poly(gg,[[xh-wh/2,g.topY+(1-headP)*(g.hitY-g.topY)],[xh+wh/2,g.topY+(1-headP)*(g.hitY-g.topY)],[xe+wh/2,g.topY+(1-tailP)*(g.hitY-g.topY)],[xe-wh/2,g.topY+(1-tailP)*(g.hitY-g.topY)]],0x62dca1,note.started?.62:.42);
+      ctx.fillStyle=note.started?'rgba(98,220,161,.66)':'rgba(98,220,161,.44)';
+      ctx.beginPath();ctx.moveTo(xh-wh/2,g.topY+(1-headP)*(g.hitY-g.topY));ctx.lineTo(xh+wh/2,g.topY+(1-headP)*(g.hitY-g.topY));ctx.lineTo(xe+wh/2,g.topY+(1-tailP)*(g.hitY-g.topY));ctx.lineTo(xe-wh/2,g.topY+(1-tailP)*(g.hitY-g.topY));ctx.closePath();ctx.fill();
       const headY=g.topY+(1-headP)*(g.hitY-g.topY);
-      roundNote(gg,xh,headY,wh,note.critical?0xffd34f:0x62dca1);
-      z.addChild(gg);
+      roundNote2d(ctx,xh,headY,wh,note.critical?'#ffd34f':'#62dca1',.96);
       continue;
     }
     if(primaryDelta<-JUDGE.bad||primaryDelta>lead)continue;
     const p=1-clamp(primaryDelta/lead,0,1);
     if(settings.sudden&&p<.28)continue;
-    const x=laneX(note.lane,p,g),y=g.topY+(1-p)*(g.hitY-g.topY);
-    const wh=Math.max(10,(g.bottomR-g.bottomL)/12*note.width*.72),gg=new PIXI.Graphics();
-    const col=note.flick?0xff6f91:(note.critical?0xffd34f:0x58d6ef);
-    const noteAlpha=settings.hidden?clamp(p/.8,.18,1):1;
-    gg.roundRect(x-wh/2,y-6,wh,12,5).fill({color:col,alpha:.96*noteAlpha});
-    gg.roundRect(x-wh/2,y-3,wh,3,2).fill({color:0xffffff,alpha:.28*noteAlpha});
-    z.addChild(gg);
+    const x=laneX(note.lane,p,g),y=g.topY+(1-p)*(g.hitY-g.topY),wh=Math.max(10,(g.bottomR-g.bottomL)/12*note.width*.72);
+    const col=note.flick?'#ff6f91':(note.critical?'#ffd34f':'#58d6ef');
+    const alpha=settings.hidden?clamp(p/.8,.18,1):1;
+    roundNote2d(ctx,x,y,wh,col,.96*alpha);
+    if(note.flick){ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-wh*.2,y);ctx.lineTo(x+wh*.2,y);ctx.stroke();}
   }
 }
-function roundNote(g,x,y,w,color){
-  g.roundRect(x-w/2,y-6,w,12,5).fill({color,alpha:.96});
-  g.roundRect(x-w/2,y-3,w,3,2).fill({color:0xffffff,alpha:.28});
-}
-
 function spawnEffect(kind){
-  const g=laneGeom(),container=state.effectLayer,centerX=g.w/2,centerY=g.hitY;
-  const color=kind==='PERFECT'?0x74e6ff:kind==='GREAT'?0x8fe6b8:kind==='GOOD'?0xffd34f:0xff6f91;
-  state.effects.push({created:performance.now(),color,x:centerX,y:centerY});
+  const g=laneGeom(),color=kind==='PERFECT'?'#74e6ff':kind==='GREAT'?'#8fe6b8':kind==='GOOD'?'#ffd34f':'#ff6f91';
+  state.effects.push({created:performance.now(),color,x:g.w/2,y:g.hitY});
 }
 function drawEffects(){
-  const c=state.effectLayer;c.removeChildren();const now=performance.now();
+  const ctx=state.ctx;if(!ctx)return;
+  const now=performance.now();
   state.effects=state.effects.filter(e=>now-e.created<420);
   for(const e of state.effects){
-    const age=(now-e.created)/420,gg=new PIXI.Graphics();
-    const r=18+age*55;
-    gg.circle(e.x,e.y,r).stroke({color:e.color,width:3,alpha:1-age});
-    c.addChild(gg);
+    const age=(now-e.created)/420,r=18+age*55;
+    ctx.globalAlpha=1-age;ctx.strokeStyle=e.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
   }
 }
 function frame(){
