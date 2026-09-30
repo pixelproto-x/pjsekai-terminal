@@ -2,10 +2,12 @@ import { chromium } from 'playwright';
 
 const errors = [];
 const pageErrors = [];
+const failedResponses = [];
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
 page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
 page.on('pageerror', err => pageErrors.push(err.message));
+page.on('response', response => { if (response.status() >= 400) failedResponses.push({status: response.status(), url: response.url()}); });
 
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 30000 });
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
