@@ -239,11 +239,11 @@ function vocalFor(music){
 }
 function audioUrl(vocal,music){
   const name=vocal?.assetbundleName;
-  if(name)return AUDIO_ASSETS+'/music/long/'+name+'/'+name+'.mp3';
+  if(name)return AUDIO_ASSETS+'/music/long/'+name+'/'+name+'.wav';
   const id=Number(music?.id);
   if(Number.isFinite(id)&&id>0){
     const fallback=String(id).padStart(4,'0')+'_01';
-    return AUDIO_ASSETS+'/music/long/'+fallback+'/'+fallback+'.mp3';
+    return AUDIO_ASSETS+'/music/long/'+fallback+'/'+fallback+'.wav';
   }
   return '';
 }
