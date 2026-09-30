@@ -944,7 +944,7 @@ function sweep(now){
       n.done=true;n.judged=true;S.judged++;hud("MISS",now-n.hit);spawnFx(n.l,"MISS",!!n.c);
     }
   }
-  if(S.life<=0)finish();
+  if(S.life<=0){S.life=0;hud("");}
 }
 function attachMissedHold(inputLane,now,exact,inputId){
   for(const n of S.notes){
