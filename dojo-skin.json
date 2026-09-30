@@ -1,11 +1,8 @@
 {
-  "version": 2,
-  "source": "https://github.com/qwewqa/sonolus-next-sekai-arc-engine",
-  "license": "MIT",
-  "sourceData": "resources/skins/pixel/data.json",
   "textureUrl": "https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/texture.png",
   "width": 128,
   "height": 128,
+  "interpolation": false,
   "sprites": {
     "#LANE": {
       "x": 1,
@@ -631,5 +628,6 @@
       "w": 8,
       "h": 1
     }
-  }
+  },
+  "aliases": {}
 }
