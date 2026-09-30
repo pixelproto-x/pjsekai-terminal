@@ -50,24 +50,51 @@ function persp(l,r,t,b,travel){
   return [cv(l,t),cv(r,t),cv(r,b),cv(l,b)];
 }
 function noteBodyQuads(lane,size,travel,slim=false){
-  const g=state.geom, margin=0.0, edge=slim?0.0625:0.25;
-  const h=g.noteH;
-  const l=lane-size+margin,r=lane+size-margin,m=(l+r)/2;
-  const ml=Math.min(l+edge,m),mr=Math.max(r-edge,m);
-  return {
-    left:persp(l,ml,1-h,1+h,travel),
-    middle:persp(ml,mr,1-h,1+h,travel),
-    right:persp(mr,r,1-h,1+h,travel),
-    whole:persp(l,r,1-h,1+h,travel)
-  };
+  const g=state.geom,margin=0,edge=slim?.125:.25,h=g.noteH;
+  const l=lane-size+margin,r=lane+size-margin,m=(l+r)/2,ml=Math.min(l+edge,m),mr=Math.max(r-edge,m);
+  const rect=(a,b)=>persp(a,b,1-h,1+h,travel);
+  return{left:rect(l,ml),middle:arcSlices(rect(ml,mr),g),right:rect(mr,r),whole:rect(l,r)};
+}
+function arcSlices(q,g){
+  const a=q[0],b=q[1],c=q[2],d=q[3],span=Math.max(1,Math.min(18,Math.ceil((Math.abs(b.x-a.x)+Math.abs(d.x-c.x))*20/Math.max(20,Math.abs(a.y)))));
+  const out=[];
+  for(let i=0;i<span;i++){const l=i/span,r=(i+1)/span;out.push([
+    {x:a.x+(b.x-a.x)*l,y:a.y+(b.y-a.y)*l},{x:a.x+(b.x-a.x)*r,y:a.y+(b.y-a.y)*r},
+    {x:d.x+(c.x-d.x)*r,y:d.y+(c.y-d.y)*r},{x:d.x+(c.x-d.x)*l,y:d.y+(c.y-d.y)*l}
+  ])}
+  return out;
+}
+function logicalPoint(lane,travel){
+  const g=state.geom;return arcAdjust({x:lane*travel*g.ws,y:travel*g.hs+g.t});
+}
+function mapLogical(v){
+  const g=state.geom;return{x:g.ox+g.fieldW*.5+v.x,y:g.oy+g.fieldH*.5-v.y};
 }
 function tickQuad(lane,travel){
-  const g=state.geom,center=p2s(lane*travel*g.ws,travel*g.hs+g.t);
-  const center2=p2s((lane+1.0)*travel*g.ws,travel*g.hs+g.t);
-  const w=Math.max(6,(center2.x-center.x)*.95);
-  const h=Math.max(6,w*.95);
-  return [{x:center.x-w,y:center.y-h},{x:center.x+w,y:center.y-h},{x:center.x+w,y:center.y+h},{x:center.x-w,y:center.y+h}];
+  const g=state.geom,center=logicalPoint(lane,travel),half=g.scaledNoteH*travel;
+  const l=arcAdjust({x:center.x-half,y:center.y}),r=arcAdjust({x:center.x+half,y:center.y});
+  const dx=r.x-l.x,dy=r.y-l.y,ox=-dy/2,oy=dx/2;
+  return[
+    mapLogical({x:l.x-ox,y:l.y-oy}),mapLogical({x:r.x-ox,y:r.y-oy}),
+    mapLogical({x:r.x+ox,y:r.y+oy}),mapLogical({x:l.x+ox,y:l.y+oy})
+  ];
 }
+function arrowQuad(lane,size,travel,direction,animationProgress){
+  const g=state.geom,w=clamp(size,0,3)/2,bl=logicalPoint(lane-w,travel),br=logicalPoint(lane+w,travel);
+  const up=rotate({x:br.x-bl.x,y:br.y-bl.y},Math.PI/2);
+  const baseTL={x:bl.x+up.x,y:bl.y+up.y},baseTR={x:br.x+up.x,y:br.y+up.y};
+  const dir=String(direction||"up"),down=dir==="down",left=dir==="left",right=dir==="right";
+  const topX=left?-1:right?1:0,offsetScale=down?1-animationProgress:animationProgress;
+  const off=rotate({x:topX*g.ws,y:2*g.ws},Math.atan2(up.y,up.x)-Math.PI/2);
+  const O={x:off.x*offsetScale*travel,y:off.y*offsetScale*travel};
+  let q=[
+    {x:bl.x+O.x,y:bl.y+O.y},{x:br.x+O.x,y:br.y+O.y},
+    {x:baseTR.x+O.x,y:baseTR.y+O.y},{x:baseTL.x+O.x,y:baseTL.y+O.y}
+  ];
+  if(right)q=[q[1],q[0],q[3],q[2]];
+  return q.map(mapLogical);
+}
+function rotate(v,a){const c=Math.cos(a),s=Math.sin(a);return{x:v.x*c-v.y*s,y:v.x*s+v.y*c};}
 function loadImage(name){
   if(!images.has(name)){
     const im=new Image();im.crossOrigin="anonymous";im.decoding="async";
@@ -112,20 +139,20 @@ function drawImage(name,q,alpha=1){
 }
 function toClip(p){const g=state.geom;return[p.x/g.width*2-1,1-p.y/g.height*2]}
 function drawBody(kind,lane,size,travel,alpha=1){
-  const map=assets[kind]||assets.normal, q=noteBodyQuads(lane,size,travel,(kind==="trace"));
-  drawImage(map[0],q.left,alpha);drawImage(map[1],q.middle,alpha);drawImage(map[2],q.right,alpha);
+  const map=assets[kind]||assets.normal,q=noteBodyQuads(lane,size,travel,kind==="trace");
+  drawImage(map[0],q.left,alpha);
+  for(const seg of q.middle)drawImage(map[1],seg,alpha);
+  drawImage(map[2],q.right,alpha);
 }
+
 function drawArrow(kind,lane,size,travel,direction,alpha=1){
-  const g=state.geom,dir=String(direction||"up"),diagonal=dir==="left"||dir==="right",
-    n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2))),sz=arrowSize[diagonal?"diagonal":"straight"][n-1],
-    arrowW=clamp(size,0,3)*g.ws*2,arrowH=arrowW*sz[1]/sz[0],
-    center=stagePoint(lane,travel),x=center.x+(dir==="left"?-g.ws*.12:dir==="right"?g.ws*.12:0),
-    y=center.y-arrowH*.5-g.fieldH/32;
-  let suffix="";
-  if(diagonal)suffix="_diagonal_"+dir;
-  const name="notes_flick_arrow_"+String(n).padStart(2,"0")+(kind==="crtcl"?"_crtcl":"")+suffix+".png";
-  drawImage(name,[{x:x-arrowW/2,y},{x:x+arrowW/2,y},{x:x+arrowW/2,y: y+arrowH},{x:x-arrowW/2,y:y+arrowH}],alpha);
+  const animationProgress=(performance.now()/1000/.5)%1;
+  const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
+  const d=String(direction||"up"),diagonal=d==="left"||d==="right",suffix=diagonal?"_diagonal_"+d:"";
+  const name="notes_flick_arrow_"+String(n).padStart(2,"0")+(nameKind==="crtcl"?"_crtcl":"")+suffix+".png";
+  drawImage(name,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
 }
+
 function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
