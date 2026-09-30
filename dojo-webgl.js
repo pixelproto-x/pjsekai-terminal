@@ -721,16 +721,17 @@ function hud(judgment,error=0){
   }
 }
 const WINDOWS={
+  // Next-SEKAI's public bucket windows are frame-based at 60 FPS.
   tap:{P:2.5/60,G:5/60,D:6.5/60,B:7.5/60},
   critical:{P:3.3/60,G:4.5/60,D:6.5/60,B:7.5/60},
-  flick:{P:2.5/60,G:7.5/60,D:8/60,B:8.5/60},
-  criticalFlick:{P:3.5/60,G:7.5/60,D:8/60,B:8.5/60},
+  flick:{P:2.5/60,G:[6.5/60,7.5/60],D:[7/60,8/60],B:[7.5/60,8.5/60]},
+  criticalFlick:{P:3.5/60,G:[6.5/60,7.5/60],D:[7/60,8/60],B:[7.5/60,8.5/60]},
   trace:{P:5/60,G:5/60,D:5/60,B:5/60},
-  traceFlick:{P:7.5/60,G:7.5/60,D:7.5/60,B:7.5/60},
-  slideEnd:{P:3.5/60,G:8/60,D:8.5/60,B:8.5/60},
-  slideEndTrace:{P:8/60,G:8/60,D:8/60,B:8/60},
-  slideEndFlick:{P:3.5/60,G:8/60,D:8.5/60,B:8.5/60},
-  slideTick:{P:3/60,G:3/60,D:3/60,B:3/60}
+  traceFlick:{P:[6.5/60,7.5/60],G:[6.5/60,7.5/60],D:[6.5/60,7.5/60],B:[6.5/60,7.5/60]},
+  slideEnd:{P:[3.5/60,4/60],G:[6.5/60,8/60],D:[7.5/60,8.5/60],B:[7.5/60,8.5/60]},
+  slideEndTrace:{P:[6.5/60,8/60],G:[6.5/60,8/60],D:[6.5/60,8/60],B:[6.5/60,8/60]},
+  slideEndFlick:{P:[3.5/60,4/60],G:[6.5/60,8/60],D:[7.5/60,8.5/60],B:[7.5/60,8.5/60]},
+  slideTick:{P:5/60,G:5/60,D:5/60,B:5/60}
 };
 function classify(diff,type){
   const w=type==="criticalFlick"?WINDOWS.criticalFlick:type==="traceFlick"?WINDOWS.traceFlick:type==="trace"?WINDOWS.trace:type==="slideEndFlick"?WINDOWS.slideEndFlick:type==="slideEndTrace"?WINDOWS.slideEndTrace:type==="slideEnd"?WINDOWS.slideEnd:type==="critical"?WINDOWS.critical:WINDOWS.tap;
