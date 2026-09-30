@@ -906,7 +906,7 @@ function processHeld(now){
       return h.exactInput ? Math.abs(heldLane-target)<=span : Math.floor(heldLane/3)===Math.floor(target/3);
     };
     for(const cp of n.checkpoints||[]){
-      if(cp.judged||now<cp.sec-WINDOWS.slideEndTrace.B)continue;
+      if(cp.judged||now<cp.sec-WINDOWS.slideTick.P)continue;
       const laneNow=expectedLane(n,cp.sec);
       const delta=Math.abs(laneNow-(mirror?11-cp.lane:cp.lane));
       if(laneMatches(laneNow)&&delta<=Math.max(1,(n.w||1)/2)+.35){
