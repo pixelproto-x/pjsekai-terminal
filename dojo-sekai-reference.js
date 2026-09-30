@@ -192,9 +192,9 @@ function drawArrow(kind,lane,size,travel,direction,alpha=1){
 }
 
 function screenPoint(x,y,travel=1){
-  const g=state.geom;return mapLogical(p2sLogical(x*y*travel*g.ws,y*travel*g.hs+g.t));
+  const g=state.geom,v=arcRaw({x:x*y*travel*g.ws,y:y*travel*g.hs+g.t});
+  return rawLogical(v.x,v.y);
 }
-function p2sLogical(v){return mapLogical(arcAdjust(v));}
 function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
