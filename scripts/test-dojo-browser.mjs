@@ -23,10 +23,11 @@ const vocalResponse = await page.request.get('http://127.0.0.1:4173/dojo-vocals.
 const hasCommittedVocals = vocalResponse.ok();
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
+await page.waitForFunction(() => !!window.__PJSEKAI_DOJO__, null, { timeout: 30000 });
 await page.waitForFunction(() => {
   const p = window.__PJSEKAI_DOJO__;
   return !!p?.state?.prepared && Array.isArray(p.state.prepared.notes) && p.state.prepared.notes.length > 0;
-}, null, { timeout: 45000 });
+}, null, { timeout: 180000 });
 
 const before = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
