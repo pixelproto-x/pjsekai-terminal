@@ -597,7 +597,7 @@ function bindInputs(){
 function pressZone(i){const el=document.querySelector('[data-dojo-lane-zone="'+i+'"]');el?.classList.add('active');}
 function releaseZone(i){const el=document.querySelector('[data-dojo-lane-zone="'+i+'"]');el?.classList.remove('active');}
 
-async async function startGame(){
+async async async function startGame(){
   if(state.starting)return;
   try{
     state.starting=true;
