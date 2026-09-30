@@ -625,6 +625,15 @@ function drawStage(){
     poly([[x1,h.hit-28],[x2,h.hit-28],[x2,h.hit+12],[x1,h.hit+12]],[.58,.92,1],cl(f*.42,0,.42));
   }
 }
+function spawnFx(lane,judgeKind,critical=false){
+  const x=laneX(lane,1),y=S.geom.hit-2;
+  S.fx.push({x,y,t:0,j:judgeKind,c:critical,seed:Math.random()*Math.PI*2});
+  const count=critical?24:16;
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2,v=55+Math.random()*185;
+    S.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:.36+Math.random()*.28,size:1.5+Math.random()*3,c:critical?[1,.82,.18]:[.55,.92,1]});
+  }
+}
 function effects(dt){
   for(const e of S.fx){
     e.t+=dt;const k=cl(e.t/.52,0,1),r=8+92*k;
