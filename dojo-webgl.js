@@ -1,4 +1,5 @@
 /* Dojo WebGL runtime — Project SEKAI-style browser practice engine. */
+/* renderer revision: 2026-09-30 */
 /*
  * Chart conversion logic follows the public Next-SEKAI SUS concepts:
  * ticks/measure lengths, directional notes, active slide streams and
