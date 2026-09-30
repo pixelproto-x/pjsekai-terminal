@@ -516,11 +516,11 @@ function drawNote(n,now){
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.035,1):1;
   const q=stageAt(travel),x=laneX(n.l,travel),lw=laneW(travel),w=Math.max(10,lw*(n.w||1)*0.98);
   const h=Math.max(10,w*0.44);
-  const bucket=n.c?"YELLOW":n.f?"RED":n.t?"GREEN":"CYAN";
+  const bucket=n.c?"YELLOW":n.f?"RED":n.t?"GREEN":"NEUTRAL";
   const atlasKey="#NOTE_HEAD_"+bucket;
   const body=S.skin?.sprites?.[atlasKey] ? atlasKey : (n.c?"critical":n.f?"flick":n.t?"trace":"normal");
   // Public Next-SEKAI pixel atlas is the primary note-head renderer; procedural glow remains only as a lighting layer.
-  drawSkinSprite(body,x,q.y,Math.max(14,w*1.82),Math.max(14,h*1.62),0.98*alpha);
+  drawSkinSprite(body,x,q.y,Math.max(14,w*1.14),Math.max(10,h*1.18),0.98*alpha);
   if(!n.t){
     const glow=n.c?[1,.82,.18]:n.f?[1,.24,.43]:[.20,.90,1];
     circle(x,q.y,Math.max(9,w*0.74),glow,0.045*alpha,20);
@@ -758,7 +758,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
   if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
-  const weight=n.c?1.35:n.f?1.15:n.t?.35:1;
+  const weight=n.c?(n.f?3:2):(n.f?1:1);
   S.score+=Math.round((jg==="PERFECT"?1000:jg==="GREAT"?700:jg==="GOOD"?400:jg==="BAD"?150:0)*weight);
   S.life=cl(S.life+(jg==="MISS"?-65:jg==="BAD"?-28:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
