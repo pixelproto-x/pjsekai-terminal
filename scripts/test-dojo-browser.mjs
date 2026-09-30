@@ -7,7 +7,7 @@ const failedResponses = [];
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
 page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-page.on('pageerror', err => pageErrors.push(err.message));
+page.on('pageerror', err => pageErrors.push(err.stack || err.message));
 page.on('response', response => {
   if (response.status() >= 400) failedRequests.push({ status: response.status(), url: response.url() });
 });
