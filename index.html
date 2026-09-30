@@ -3304,10 +3304,19 @@ window.__PJSEKAI_APP__ = {
       return;
     }
     const back=e.target.closest("[data-dojo-back]");
+    const exit=e.target.closest("[data-dojo-exit]");
+    if(exit){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.__PJSEKAI_DOJO__?.stop?.();
+      moveGame(false);
+      go("songs");
+      return;
+    }
     if(back){
       e.preventDefault();
       e.stopImmediatePropagation();
-      window.__PJSEKAI_DOJO__?.pause?.();
+      window.__PJSEKAI_DOJO__?.stop?.();
       moveGame(false);
       go(back.dataset.dojoBack||"songs");
     }
