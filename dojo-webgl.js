@@ -771,16 +771,15 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   let jg=classify(d,kind);
   if(wrongWay&&jg==="PERFECT")jg="GREAT";
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
-  if(jg==="MISS"||jg==="BAD"||jg==="GOOD")S.combo=0;else S.combo++;
+  if(jg==="MISS")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
   const traceLike=type==="trace"||type==="traceFlick"||type==="slideEndTrace";
-  const traceFlick=type==="traceFlick"||type==="slideEndTrace";
   // Public Next-SEKAI score weights: tap 10, critical tap 20,
   // flick 10/30, trace 1/2, trace-flick 10/30.
   const weight=traceLike?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));
   const multiplier=jg==="PERFECT"?1:jg==="GREAT"?.7:jg==="GOOD"?.5:0;
   const comboBoost=1+Math.min(Math.max(S.combo-1,0),100)/100;
-  const unit=traceFlick?10:10;
+  const unit=10;
   S.score+=Math.round(unit*weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="MISS"?-80:jg==="BAD"?-40:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
@@ -984,7 +983,7 @@ function loop(t){
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&S.running)pause()},{passive:true});
 function resultCounts(){
-  return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　BAD "+S.counts.BAD+"　MISS "+S.counts.MISS;
+  return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　MISS "+S.counts.MISS;
 }
 function finalizePending(){
   for(const n of S.notes){
@@ -1006,7 +1005,7 @@ function finish(){
   finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
-  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0,fc=S.counts.MISS===0&&S.counts.BAD===0,rank=ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
+  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0,rank=ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
@@ -1111,7 +1110,7 @@ async function start(){
     S.notes=prep.notes.map(x=>({...x,path:x.path?.map(p=>({...p})),tail:x.tail?{...x.tail}:null,checkpoints:x.checkpoints?.map(p=>({...p}))}));
     S.total=S.notes.reduce((n,x)=>n+((x.k==="hold"?2:1)+(x.checkpoints?.length||0)),0);
     S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;S.chartOffset=N(prep.offset,0);
-    S.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};S.timing=0;S.tn=0;
+    S.counts={PERFECT:0,GREAT:0,GOOD:0,MISS:0};S.timing=0;S.tn=0;
     S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
     S.audio.pause();S.audio.src="https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav";S.audio.load();
