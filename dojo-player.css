@@ -99,4 +99,6 @@
 /* Official-style play HUD: gameplay itself carries score/combo/life/judgment; auxiliary accuracy/timing readouts stay hidden. */
 .dojo-play-page .dojo-hud-score-block>span{display:none!important}
 .dojo-play-page #dojoGameAccuracy{display:none!important}
-.dojo-play-page #dojoJudgeText[data-timing]:after{display:none!important}
+.dojo-play-page #dojoJudgeText[data-timing]:after{display:block;position:absolute;left:50%;top:-1.25em;transform:translateX(-50%);font:900 .42em/1 system-ui;letter-spacing:.12em;opacity:.82}
+.dojo-play-page #dojoJudgeText[data-timing="FAST"]:after{content:"FAST"}
+.dojo-play-page #dojoJudgeText[data-timing="LATE"]:after{content:"LATE"}
