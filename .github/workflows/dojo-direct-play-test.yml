@@ -2,7 +2,7 @@ name: Dojo direct play browser test
 
 on:
   push:
-    branches: ["dojo-direct-play-test"]
+    branches: ["main", "dojo-direct-play-test"]
 
 permissions:
   contents: read
