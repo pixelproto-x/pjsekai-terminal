@@ -233,9 +233,15 @@ function vocalFor(music){
     return rank(a)-rank(b)||Number(a.seq||0)-Number(b.seq||0)||Number(a.id||0)-Number(b.id||0);
   })[0]||null;
 }
-function audioUrl(vocal){
+function audioUrl(vocal,music){
   const name=vocal?.assetbundleName;
-  return name?ASSETS+'/ondemand/music/long/'+name+'/'+name+'.mp3':'';
+  if(name)return ASSETS+'/ondemand/music/long/'+name+'/'+name+'.mp3';
+  const id=Number(music?.id);
+  if(Number.isFinite(id)&&id>0){
+    const fallback=String(id).padStart(4,'0')+'_01';
+    return ASSETS+'/ondemand/music/long/'+fallback+'/'+fallback+'.mp3';
+  }
+  return '';
 }
 
 async function loadData(){
@@ -324,7 +330,7 @@ async function prepareSelection(){
   const score=analyzeSus(sus);
   const notes=buildNotes(score,music,difficulty);
   const vocal=vocalFor(music);
-  const prepared={music,difficulty,score,notes,vocal,audioUrl:audioUrl(vocal),jacket:jacketUrl(music)};
+  const prepared={music,difficulty,score,notes,vocal,audioUrl:audioUrl(vocal,music),jacket:jacketUrl(music)};
   state.prepareKey=key;state.prepared=prepared;state.selected=prepared;
   renderHeader(prepared);
   hideLoading();
@@ -568,8 +574,10 @@ async function startGame(){
     state.startSeek=Math.max(0,(Number(pre.music.fillerSec)||0)-lead);
     const speed=clamp(num(appState().dojo.speed,10),1,12);
     state.leadTime=clamp(3.3-(speed-1)*0.15,1.2,3.3);
+    try{
+      state.audio.currentTime=state.startSeek;
+    }catch(_){}
     await state.audio.play().catch(e=>{throw new Error('瀏覽器拒絕播放音訊，請再按一次「開始打歌」');});
-    state.audio.currentTime=state.startSeek;
     state.notes=pre.notes.map(n=>({...n,judged:false,started:false}));
     state.score=0;state.combo=0;state.bestCombo=0;state.judged=0;state.finished=false;state.running=true;
     showGameReady('遊玩中 · 觸控下方區域或使用 D / F / J / K');
