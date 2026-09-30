@@ -406,6 +406,19 @@ function xy2(x,y){return[x/S.geom.w*2-1,1-y/S.geom.h*2]}
 function drawSkinSprite(name,x,y,w,h,alpha=1){
   const sp=S.skin?.sprites?.[name];if(sp)spriteQuad(x,y,w,h,sp,alpha);
 }
+function drawSkinPerspective(name,q,alpha=1){
+  const sp=S.skin?.sprites?.[name],tex=S.tex,g=S.gl,loc=S.texLoc;
+  if(!sp||!tex||!g||!loc||!Array.isArray(q)||q.length!==4)return;
+  const W=S.skin?.width||128,H=S.skin?.height||128,u0=sp.x/W,u1=(sp.x+sp.w)/W,v0=1-(sp.y+sp.h)/H,v1=1-sp.y/H;
+  const Q=[q[0],q[1],q[3],q[2]];
+  const d=[...xy2(Q[0].x,Q[0].y),u0,v1,...xy2(Q[1].x,Q[1].y),u1,v1,...xy2(Q[2].x,Q[2].y),u0,v0,...xy2(Q[3].x,Q[3].y),u1,v0];
+  g.bindBuffer(g.ARRAY_BUFFER,S.texBuf);g.bufferData(g.ARRAY_BUFFER,new Float32Array(d),g.STREAM_DRAW);
+  g.useProgram(S.texProgram);g.enableVertexAttribArray(S.texLoc.p);g.enableVertexAttribArray(S.texLoc.uv);
+  g.vertexAttribPointer(S.texLoc.p,2,g.FLOAT,false,16,0);g.vertexAttribPointer(S.texLoc.uv,2,g.FLOAT,false,16,8);
+  g.activeTexture(g.TEXTURE0);g.bindTexture(g.TEXTURE_2D,tex);g.uniform1i(S.texLoc.tex,0);g.uniform1f(S.texLoc.alpha,alpha);
+  g.drawArrays(g.TRIANGLE_STRIP,0,4);
+}
+
 async function loadSkin(){
   try{
     const data=await j("dojo-skin.json");
@@ -644,30 +657,25 @@ function drawMultiTapGuide(now){
 function drawStage(){
   const ref=window.__PJSEKAI_SEKAI_REF__,h=S.geom;
   if(ref?.geom?.ws){
-    const g=ref.geom;
-    const laneQuad=(l,r)=>ref.persp(l,r,g.laneTop,g.laneBottom,1);
+    const g=ref.geom,laneQuad=(l,r)=>ref.perspRaw?ref.perspRaw(l,r,g.laneTop,g.laneBottom,1).map(v=>{const a=ref.arcPoint(v);return a}):ref.persp(l,r,g.laneTop,g.laneBottom,1);
     poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.96);
-    // The public engine draws six 2-lane stage strips over a continuous field.
+    const left=ref.persp(-6.5,-6,g.laneTop,g.laneBottom,1);
+    const right=ref.persp(6,6.5,g.laneTop,g.laneBottom,1);
+    drawSkinPerspective("#STAGE_LEFT_BORDER",left,.98);
+    drawSkinPerspective("#STAGE_RIGHT_BORDER",right,.98);
+    const laneSprite=S.skin?.sprites?.["#LANE"];
     for(const lane of [-5,-3,-1,1,3,5]){
-      const q=laneQuad(lane-1,lane+1);
-      poly(q.map(p=>[p.x,p.y]),[.08,.13,.24],.055);
-      line([[q[0].x,q[0].y],[q[3].x,q[3].y]],[.70,.86,1],.20);
-      line([[q[1].x,q[1].y],[q[2].x,q[2].y]],[.70,.86,1],.20);
+      const q=ref.persp(lane-1,lane+1,g.laneTop,g.laneBottom,1);
+      if(laneSprite)drawSkinPerspective("#LANE",q,.88);
+      else poly(q.map(p=>[p.x,p.y]),[.08,.13,.24],.055);
     }
-    const left=laneQuad(-6.5,-6),right=laneQuad(6,6.5);
-    line([[left[0].x,left[0].y],[left[3].x,left[3].y]],[.88,.96,1],.95);
-    line([[right[1].x,right[1].y],[right[2].x,right[2].y]],[1,.64,.84],.95);
-    const jg=laneQuad(-6,6);
-    poly([[jg[0].x,jg[0].y],[jg[1].x,jg[1].y],[jg[2].x,jg[2].y],[jg[3].x,jg[3].y]],[.65,.86,1],.10);
-    line([[jg[0].x,jg[0].y],[jg[1].x,jg[1].y]],[.96,1,1],1.5);
-    line([[jg[3].x,jg[3].y],[jg[2].x,jg[2].y]],[1,.36,.70],.52);
-    // Keep thin 12-input guides aligned with the actual 12 touch lanes.
+    const judge=ref.persp(-6,6,1-g.noteH,1+g.noteH,1);
+    drawSkinPerspective("#JUDGMENT_LINE",judge,.98);
     for(let i=1;i<12;i++){
-      const a=ref.screenPoint(-6+i,1,1);
-      const b=ref.screenPoint(-6+i,g.laneTop,1);
-      line([[a.x,a.y],[b.x,b.y]],[.70,.84,1],i%2?.08:.12);
+      const q=ref.persp(-6+i-0.015,-6+i+0.015,g.laneTop,g.laneBottom,1);
+      if(!laneSprite)continue;
+      drawSkinPerspective("#LANE",q,.20);
     }
-    if(S.skin?.sprites?.["#STAGE_COVER"])drawSkinSprite("#STAGE_COVER",(h.tl+h.tr)/2,h.far,(h.tr-h.tl),Math.max(1,h.far*.12),.05);
     return;
   }
   const tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
