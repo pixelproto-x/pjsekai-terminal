@@ -57,9 +57,10 @@
 .dojo-play-page .dojo-hud-top{left:18px;right:18px;top:14px;align-items:flex-start}
 .dojo-play-page .dojo-hud-song{display:none}
 .dojo-play-page .dojo-hud-score-block{position:absolute;left:0;top:0;align-items:flex-start;gap:5px}
-.dojo-play-page .dojo-hud-score-block>span{font-size:8px;letter-spacing:.08em;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.7)}
+.dojo-play-page .dojo-hud-score-block>span{font-size:0;letter-spacing:0;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.7)}
 .dojo-play-page .dojo-hud-score-block>span b{display:none}
-.dojo-play-page .dojo-hud-score-block:after{content:"C    B    A    S";display:block;width:156px;height:10px;padding:1px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(104,82,165,.45));color:rgba(255,255,255,.92);font:800 6px/8px system-ui;letter-spacing:.24em;word-spacing:4px;box-shadow:0 1px 7px rgba(0,0,0,.4)}
+.dojo-play-page .dojo-hud-score-block>span:before{content:"SCORE";display:block;font:900 7px/9px system-ui;letter-spacing:.12em;color:#fff}
+.dojo-play-page .dojo-hud-score-block:after{content:"C     B     A     S";display:block;width:156px;height:9px;padding:1px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(90deg,rgba(93,231,208,.72) 0 30%,rgba(127,206,236,.66) 30% 54%,rgba(178,146,239,.62) 54% 76%,rgba(255,236,159,.76) 76%);color:rgba(255,255,255,.96);font:900 5px/7px system-ui;letter-spacing:.18em;word-spacing:5px;box-shadow:0 1px 7px rgba(0,0,0,.4)}
 .dojo-play-page .dojo-hud-score{font-size:18px;line-height:1;letter-spacing:.02em;text-shadow:0 2px 7px rgba(0,0,0,.7)}
 .dojo-play-page .dojo-life{left:auto;right:18px;top:16px;width:170px;height:9px;border:2px solid rgba(255,255,255,.9);background:rgba(18,24,39,.78);box-shadow:0 2px 8px rgba(0,0,0,.45);transform:skewX(-16deg)}
 .dojo-play-page .dojo-life span{background:linear-gradient(90deg,#8be7c1,#d8f7a2);box-shadow:inset 0 0 5px rgba(255,255,255,.7)}.dojo-play-page .dojo-life:before{content:"LIFE";position:absolute;z-index:2;left:-36px;top:-3px;color:#fff;font:900 7px/10px system-ui;transform:skewX(16deg);text-shadow:0 1px 4px rgba(0,0,0,.8)}
