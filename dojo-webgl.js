@@ -347,6 +347,13 @@ function setup(){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
     const q=document.createElement("div");q.className="dojo-wgl-status";q.textContent="DOJO · WEBGL";w.appendChild(q);S.status=q;
     const p=document.createElement("button");p.className="dojo-wgl-pause";p.type="button";p.textContent="Ⅱ";p.hidden=true;p.setAttribute("aria-label","暫停");p.onclick=pause;w.appendChild(p);S.pause=p;
+    const menu=document.createElement("div");menu.className="dojo-wgl-pause-menu";menu.hidden=true;menu.innerHTML="<div class=\"dojo-wgl-pause-panel\"><strong>遊戲暫停</strong><span>選擇要繼續、重開或離開打歌。</span><div><button type=\"button\" data-dojo-resume>▶ 繼續</button><button type=\"button\" data-dojo-retry>↻ 重開</button><button type=\"button\" data-dojo-exit>‹ 離開</button></div></div>";w.appendChild(menu);
+    menu.addEventListener("click",e=>{
+      if(e.target.closest("[data-dojo-resume]")){pause();return;}
+      if(e.target.closest("[data-dojo-retry]")){menu.hidden=true;S.paused=false;S.running=false;S.audio.pause();S.audio.currentTime=0;start();return;}
+      if(e.target.closest("[data-dojo-exit]")){window.__PJSEKAI_DOJO__?.stop?.();document.dispatchEvent(new CustomEvent("pjsekai-dojo-exit"));return;}
+    });
+    S.pauseMenu=menu;
   }
 }
 function xy(x,y,c,a=1){return[x/S.geom.w*2-1,1-y/S.geom.h*2,c[0],c[1],c[2],a]}
@@ -920,12 +927,23 @@ function finish(){
 function pause(){
   if(S.starting)return;
   if(S.paused){
-    S.audio.play().then(()=>{S.paused=false;S.running=true;if(S.pause)S.pause.textContent="Ⅱ";if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="⏸ 暫停"}).catch(()=>{});
+    S.audio.play().then(()=>{S.paused=false;S.running=true;if(S.pause)S.pause.textContent="Ⅱ";if(S.pauseMenu)S.pauseMenu.hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="⏸ 暫停"}).catch(()=>{});
     return;
   }
   if(!S.running)return;
   S.audio.pause();S.running=false;S.paused=true;
-  if(S.pause)S.pause.textContent="▶";if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="繼續打歌";
+  if(S.pause)S.pause.textContent="▶";
+  if(S.pauseMenu)S.pauseMenu.hidden=false;
+  if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="繼續打歌";
+}
+function stop(){
+  S.running=false;S.paused=false;S.starting=false;S.audio.pause();
+  try{S.audio.currentTime=0}catch(_){}
+  S.held.clear();S.touch.clear();S.fx=[];S.particles=[];S.judgementHistory=[];S.lastInput=null;
+  if(S.pause)S.pause.hidden=true;
+  if(S.pauseMenu)S.pauseMenu.hidden=true;
+  if($("dojoGameResult"))$("dojoGameResult").hidden=true;
+  if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";
 }
 async function data(){
   if(S.songs)return;
@@ -1096,7 +1114,7 @@ function bind(){
 }
 function expose(){
   window.__PJSEKAI_DOJO__={
-    start,pause,finish,
+    start,pause,stop,finish,
     state:{
       get prepared(){if(!S.prep)return null;return{music:S.prep.music,difficulty:S.prep.difficulty,audioUrl:S.prep.audioUrl||"",vocal:S.prep.vocal||null,notes:S.prep.notes||[]};},
       get notes(){return S.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:!!n.done}));},
