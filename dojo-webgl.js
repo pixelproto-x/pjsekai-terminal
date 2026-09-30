@@ -771,7 +771,8 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
 function nowTime(){return Number.isFinite(S.audio.currentTime)?S.audio.currentTime:0;}
 function expectedLane(n,time){
   const z=pointOnPath(n.path,time);
-  return z?z.l:n.l;
+  const raw=z?z.l:n.l;
+  return app().dojo?.mirror?11-raw:raw;
 }
 function directionMatches(direction,dx,dy){
   if(Math.hypot(dx,dy)<1)return true;
@@ -873,8 +874,8 @@ function processHeld(now){
     h.targetLane=expectedLane(n,now);
     for(const cp of n.checkpoints||[]){
       if(cp.judged||now<cp.sec-WINDOWS.slideEndTrace.B)continue;
-      const laneNow=expectedLane(n,now);
-      const delta=Math.abs(laneNow-cp.lane);
+      const laneNow=expectedLane(n,cp.sec);
+      const delta=Math.abs(laneNow-(app().dojo?.mirror?11-cp.lane:cp.lane));
       if(delta<=Math.max(1,(n.w||1)/2)+.35){
         const d=now-cp.sec,jg=classify(d,cp.trace?(cp.critical?"traceFlick":"trace"):"trace");
         cp.judged=true;S.judged++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
