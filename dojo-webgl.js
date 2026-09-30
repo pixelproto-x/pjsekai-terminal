@@ -655,6 +655,14 @@ function drawStage(){
     line([[q.l,q.y],[q.r,q.y]],[.45,.68,1],.028+.012*p);
   }
   // Atlas-backed judgment line and stage borders from the public Next-SEKAI skin.
+  // Atlas stage frame: the same corner/border primitives used by the public
+  // Next-SEKAI skin are kept at the four perspective anchors.
+  if(S.skin?.sprites?.["#STAGE_TOP_LEFT_CORNER"])drawSkinSprite("#STAGE_TOP_LEFT_CORNER",h.tl,h.far,30,30,.88);
+  if(S.skin?.sprites?.["#STAGE_TOP_RIGHT_CORNER"])drawSkinSprite("#STAGE_TOP_RIGHT_CORNER",h.tr,h.far,30,30,.88);
+  if(S.skin?.sprites?.["#STAGE_BOTTOM_LEFT_CORNER"])drawSkinSprite("#STAGE_BOTTOM_LEFT_CORNER",h.bl,h.hit+4,36,36,.94);
+  if(S.skin?.sprites?.["#STAGE_BOTTOM_RIGHT_CORNER"])drawSkinSprite("#STAGE_BOTTOM_RIGHT_CORNER",h.br,h.hit+4,36,36,.94);
+  if(S.skin?.sprites?.["#STAGE_TOP_BORDER"])drawSkinSprite("#STAGE_TOP_BORDER",(h.tl+h.tr)/2,h.far,h.tr-h.tl,Math.max(7,h.h*.012),.72);
+  if(S.skin?.sprites?.["#STAGE_BOTTOM_BORDER"])drawSkinSprite("#STAGE_BOTTOM_BORDER",(h.bl+h.br)/2,h.hit+5,h.br-h.bl,Math.max(8,h.h*.014),.78);
   if(S.skin?.sprites?.["#JUDGMENT_LINE"]) drawSkinSprite("#JUDGMENT_LINE",(h.bl+h.br)/2,h.hit,h.br-h.bl,Math.max(10,h.h*.018),.92);
   if(S.skin?.sprites?.["#STAGE_LEFT_BORDER"]) drawSkinSprite("#STAGE_LEFT_BORDER",(h.tl+h.bl)/2,h.hit*.56,Math.max(2,h.bl-h.tl),h.hit-h.far,.48);
   if(S.skin?.sprites?.["#STAGE_RIGHT_BORDER"]) drawSkinSprite("#STAGE_RIGHT_BORDER",(h.tr+h.br)/2,h.hit*.56,Math.max(2,h.br-h.tr),h.hit-h.far,.48);
