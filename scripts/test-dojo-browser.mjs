@@ -141,9 +141,13 @@ if (afterInput.judged <= 0 || afterInput.score <= 0) {
   throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
 }
 
-await page.locator('details.dojo-extra').first().click();
+await page.locator('[data-dojo-back="songs"]').click();
+await page.waitForFunction(() => document.querySelector('.page[data-page="songs"].active')?.offsetParent, null, { timeout: 10000 });
+const advancedDetails = page.locator('.page[data-page="songs"] details.dojo-extra').first();
+await advancedDetails.scrollIntoViewIfNeeded();
+await advancedDetails.locator('summary').click();
 await page.waitForTimeout(100);
-const advanced = await page.locator('details.dojo-extra').first().textContent();
+const advanced = await advancedDetails.textContent();
 if (!advanced.includes('Note Speed') || !advanced.includes('Audio Offset')) throw new Error('Advanced settings did not expand');
 const dojoResourceFailures = failedRequests.filter(x => {
   if (x.url.startsWith('http://127.0.0.1:4173/')) return true;
