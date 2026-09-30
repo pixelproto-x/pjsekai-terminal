@@ -739,6 +739,14 @@ async function prepare(){
     if(n.tail)n.tail.sec+=filler;
     if(n.checkpoints)for(const cp of n.checkpoints)cp.sec+=filler;
   }
+  // Some legacy SUS exports contain a duplicated zero-time metadata cluster.
+  // Ignore that cluster only when a real chart start is clearly separated from it.
+  const ordered=parsed.notes.filter(n=>Number.isFinite(n.hit)).sort((a,b)=>a.hit-b.hit);
+  const early=ordered.filter(n=>n.hit<0.25);
+  const next=ordered.find(n=>n.hit>=0.25);
+  if(early.length>=4&&next&&next.hit-early[early.length-1].hit>1.5){
+    parsed.notes=ordered.filter(n=>n.hit>=0.25);
+  }
   const vocal=S.vocals.find(x=>+x.musicId===+q.m.id&&x.musicVocalType==="original_song")||S.vocals.find(x=>+x.musicId===+q.m.id);
   const vn=vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
   parsed.music=q.m;parsed.difficulty=q.d;parsed.vocal=vocal||null;
