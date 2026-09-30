@@ -372,8 +372,8 @@ function pointOnPath(path,sec){
   return{...path[path.length-1]};
 }
 function circle(x,y,r,col,a=1,segments=18){
-  const pts=[];
-  for(let i=0;i<segments;i++){const t=i/segments*Math.PI*2;pts.push([x+Math.cos(t)*r,y+Math.sin(t)*r]);}
+  const pts=[[x,y]];
+  for(let i=0;i<=segments;i++){const t=i/segments*Math.PI*2;pts.push([x+Math.cos(t)*r,y+Math.sin(t)*r]);}
   poly(pts,col,a);
 }
 function roundedRect(x,y,w,h,r,col,a=1){
@@ -473,6 +473,9 @@ function drawSlideRibbon(n,now,tailOnly=false){
     const pp=cl(1-(cp.sec-now)/S.lead,0,1),qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
     circle(cx,qq.y,cw,n.c?[1,.86,.28]:[.72,1,.90],.92,14);
   }
+}
+function drawHold(n,now){
+  drawSlideRibbon(n,now);
 }
 function bg(){
   const h=S.geom,tm=S.audio.currentTime||0,p=.5+.5*Math.sin(tm*Math.PI*2*1.75);
@@ -734,7 +737,7 @@ function loop(t){
     const visualNow=rawNow+N(settings.visualOffset,0)/1000;
     for(const n of S.notes){
       if(n.k==="hold")drawHold(n,visualNow);
-      else if(visualNow>n.hit-S.lead&&visualNow<n.hit+.16)drawNote(n,visualNow);
+      else if(visualNow>n.hit-S.lead&&visualNow<n.hit+.18)drawNote(n,visualNow);
     }
     const judgeNow=rawNow+N(settings.audioOffset,0)/1000;
     processHeld(judgeNow);sweep(judgeNow);
@@ -920,7 +923,7 @@ function bind(){
       if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
       const h=S.held.get("ptr:"+e.pointerId);if(h)h.lane=q.l;
       if(Math.hypot(dx,dy)>20){
-        const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):"up";
+        const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
         if(h?.note?.tail?.dir&&h.note.tail.dir===dir)h.flicked=true;
       }
       return;
