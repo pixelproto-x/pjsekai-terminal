@@ -3269,6 +3269,7 @@ window.__PJSEKAI_APP__ = {
   toast(message){ if(typeof showToast==="function") showToast(message); },
   profileApiBase: PROFILE_API_BASE
 };
+window.dispatchEvent(new Event("pjsekai-app-ready"));
 
 </script>
 <script src="my-sekai.js" defer></script>
