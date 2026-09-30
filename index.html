@@ -86,6 +86,14 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .page[data-page="tools"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png")}
 .page[data-page="profile"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png")}
 .page.active{display:block}
+.dojo-play-page{min-height:calc(100vh - 90px)}
+.dojo-play-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:38px 6px 18px}
+.dojo-play-page-title{flex:1;text-align:right}
+.dojo-play-page-title .page-title{font-size:clamp(42px,6vw,72px);margin-top:7px}
+.dojo-play-page #dojoGameHomeMount{display:none}
+.dojo-play-page #dojoPlayMount{width:100%}
+.dojo-play-page #dojoGameCard{margin-top:0}
+@media(max-width:640px){.dojo-play-page-head{padding-top:22px;display:block}.dojo-play-page-title{text-align:left;margin-top:18px}}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:66px 6px 30px}
@@ -1002,7 +1010,8 @@ body[data-sekai-theme] .theme-choice.active{
     </div>
   </section>
 
-  <section class="dojo-game-card" id="dojoGameCard">
+  <div id="dojoGameHomeMount"></div>
+<section class="dojo-game-card" id="dojoGameCard">
   <div class="dojo-game-head">
     <div class="dojo-game-title">
       <img class="dojo-game-cover" id="dojoGameCover" alt="">
@@ -1096,6 +1105,19 @@ body[data-sekai-theme] .theme-choice.active{
       </section>
     </div>
   </details>
+</section>
+
+<section class="page dojo-play-page" data-page="dojo-play">
+  <div class="dojo-play-page-head">
+    <button class="back-btn" type="button" data-dojo-back="songs">‹ 返回歌曲選擇</button>
+    <div class="dojo-play-page-title">
+      <div class="sekai-chip"><span class="chip-dot"></span>DOJO LIVE</div>
+      <div class="kicker">RHYTHM GAME</div>
+      <h1 class="page-title">打歌</h1>
+      <p class="page-subtitle">現在就是遊戲畫面。選好的歌曲與難度會直接在這裡開始。</p>
+    </div>
+  </div>
+  <div id="dojoPlayMount"></div>
 </section>
 
 <section class="page" data-page="characters">
@@ -2478,13 +2500,14 @@ bottomBar?.addEventListener("click",e=>{
 
 
 
-const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
+const routeOrder=["home","sekai","songs","dojo-play","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
 
 function updateTabMotion(page){
-  tabs.forEach(t=>t.classList.toggle("active",t.dataset.go===page));
-  const i=Math.max(0,tabs.findIndex(t=>t.dataset.go===page));
+  const tabPage=page==="dojo-play"?"songs":page;
+  tabs.forEach(t=>t.classList.toggle("active",t.dataset.go===tabPage));
+  const i=Math.max(0,tabs.findIndex(t=>t.dataset.go===tabPage));
   setIndicator(i,true);
 }
 
@@ -3260,6 +3283,37 @@ window.__PJSEKAI_APP__ = {
   toast(message){ if(typeof showToast==="function") showToast(message); },
   profileApiBase: PROFILE_API_BASE
 };
+
+// ===== Dojo dedicated play page =====
+(function(){
+  const homeMount=()=>document.getElementById("dojoGameHomeMount");
+  const playMount=()=>document.getElementById("dojoPlayMount");
+  function moveGame(toPlay){
+    const card=document.getElementById("dojoGameCard");
+    const target=toPlay?playMount():homeMount();
+    if(card&&target&&!target.contains(card))target.appendChild(card);
+  }
+  document.addEventListener("click",e=>{
+    const play=e.target.closest("#dojoOpenPracticeBtn");
+    if(play&&currentRoute==="songs"){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      moveGame(true);
+      go("dojo-play");
+      window.setTimeout(()=>window.__PJSEKAI_DOJO__?.start?.(),90);
+      return;
+    }
+    const back=e.target.closest("[data-dojo-back]");
+    if(back){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.__PJSEKAI_DOJO__?.pause?.();
+      moveGame(false);
+      go(back.dataset.dojoBack||"songs");
+    }
+  },true);
+})();
+
 window.dispatchEvent(new Event("pjsekai-app-ready"));
 try{initRoute();}catch(e){console.warn("[Route] initial route failed",e)}
 try{syncBottomBarIndicator();}catch(e){console.warn("[Route] indicator sync failed",e)}
