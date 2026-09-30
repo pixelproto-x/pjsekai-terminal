@@ -174,7 +174,7 @@ function parseSus(text){
   return{
     offset:-N(meta.get("WAVEOFFSET"),0),
     ticksPerBeat,
-    timeScaleChanges:timeScaleChanges.sort((a,b)=>a.tick-b.tick),
+    timeScaleChanges,
     bpmChanges:bpmChanges.sort((a,b)=>a.tick-b.tick),
     tapNotes,directionalNotes,slides,
     bars,meta
@@ -212,7 +212,7 @@ function susToPlayable(text,baseBpm=120){
     sec+=(c.beat-prevBeat)*60/prevBpm;
     c.sec=sec;prevBeat=c.beat;prevBpm=c.bpm||prevBpm;
   }
-  const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);
+  const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
   const flick=new Map(),trace=new Set(),critical=new Set(),removeTick=new Set(),removeSE=new Set(),ease=new Map();
   for(const n of score.directionalNotes){
@@ -414,6 +414,29 @@ function laneX(l,p){
   return q.l+(q.r-q.l)*(l2+.5)/12;
 }
 function laneW(p){const q=stageAt(p);return(q.r-q.l)/12}
+function scrollRateAt(t){
+  const ev=S.prep?.timeScaleChanges||[];
+  let rate=1;
+  for(const e of ev){if(e.sec<=t)rate=N(e.timeScale,rate);else break;}
+  return Math.max(.01,rate);
+}
+function scrollDistance(now,hit){
+  if(!Number.isFinite(now)||!Number.isFinite(hit))return 0;
+  if(now===hit)return 0;
+  const reverse=now>hit,lo=reverse?hit:now,hi=reverse?now:hit;
+  const ev=S.prep?.timeScaleChanges||[];
+  let cur=lo,rate=scrollRateAt(lo),sum=0;
+  for(const e of ev){
+    if(e.sec<=lo)continue;
+    if(e.sec>=hi)break;
+    sum+=(e.sec-cur)*rate;cur=e.sec;rate=Math.max(.01,N(e.timeScale,rate));
+  }
+  sum+=(hi-cur)*rate;
+  return reverse?-sum:sum;
+}
+function travelAt(now,target){
+  return cl(1-scrollDistance(now,target)/Math.max(.001,S.lead),-.35,1.2);
+}
 function pointOnPath(path,sec){
   if(!path?.length)return null;
   if(sec<=path[0].sec)return{...path[0]};
@@ -463,7 +486,7 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
   poly(pts,col,a);
 }
 function drawNote(n,now){
-  const travel=cl(1-(n.hit-now)/S.lead,0,1),settings=app().dojo||{};
+  const travel=travelAt(now,n.hit),settings=app().dojo||{};
   if(settings.sudden&&travel<.34)return;
   const alpha=settings.hidden?cl((travel-.14)/.40,.035,1):1;
   const q=stageAt(travel),x=laneX(n.l,travel),laneWidth=laneW(travel),w=Math.max(12,laneWidth*(n.w||1)*.96),h=Math.max(9,w*.22);
@@ -501,7 +524,7 @@ function drawSlideRibbon(n,now,tailOnly=false){
   for(let i=0;i<=segments;i++){
     const sec=first+(last-first)*(i/segments),z=pointOnPath(n.path,sec);
     if(!z)continue;
-    const p=cl(1-(sec-now)/S.lead,0,1),q=stageAt(p),x=laneX(z.l,p),w=laneW(p)*Math.max(.65,z.w||n.w)*.64;
+    const p=travelAt(now,sec),q=stageAt(cl(p,0,1)),x=laneX(z.l,cl(p,0,1)),w=laneW(cl(p,0,1))*Math.max(.65,z.w||n.w)*.64;
     samples.push({x,y:q.y,w,p,trace:z.trace||n.t,critical:z.critical||n.c});
   }
   if(samples.length<2)return;
@@ -515,13 +538,13 @@ function drawSlideRibbon(n,now,tailOnly=false){
   }
   if(tailOnly)return;
   const head=pointOnPath(n.path,Math.max(n.b,now));
-  const hp=cl(1-(head.sec-now)/S.lead,0,1),hq=stageAt(hp),hx=laneX(head.l,hp),hw=laneW(hp)*(head.w||n.w)*.96;
+  const hp=cl(travelAt(now,head.sec),0,1),hq=stageAt(hp),hx=laneX(head.l,hp),hw=laneW(hp)*(head.w||n.w)*.96;
   circle(hx,hq.y,hw*1.12,base,.10);
   if(n.headJudged===false||!n.judged){
     roundedRect(hx-hw,hq.y-hw*.34,hw*2,hw*.68,Math.min(8,hw*.2),n.c?[1,.82,.18]:[.16,.92,.62],.94);
     drawSkinSprite(n.c?"critical":n.t?"slide":"slide",hx,hq.y,Math.max(12,hw*1.65),Math.max(12,hw*.95),.72);
   }
-  const tail=n.tail||n.path[n.path.length-1],tp=cl(1-(n.end-now)/S.lead,0,1),tq=stageAt(tp),tx=laneX(tail.l,tp),tw=laneW(tp)*(tail.w||n.w)*.92;
+  const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tq=stageAt(tp),tx=laneX(tail.l,tp),tw=laneW(tp)*(tail.w||n.w)*.92;
   if(n.end>=now-S.lead){
     if(tail.dir)drawDirectionalArrow(tx,tq.y,tw,tail.dir,n.c?[1,.84,.22]:[1,.32,.48],1);
     else if(tail.trace)circle(tx,tq.y,Math.max(10,tw*.64),[.58,1,.82],.82,22);
@@ -533,7 +556,7 @@ function drawSlideRibbon(n,now,tailOnly=false){
   // checkpoints are deliberately visible like the in-game slide ticks.
   for(const cp of n.checkpoints||[]){
     if(cp.judged)continue;
-    const pp=cl(1-(cp.sec-now)/S.lead,0,1),qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
+    const pp=cl(travelAt(now,cp.sec),0,1),qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
     drawSkinSprite(n.c?"criticalTick":"tick",cx,qq.y,Math.max(14,cw*2.2),Math.max(14,cw*2.2),.88);
   }
 }
