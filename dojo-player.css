@@ -62,7 +62,7 @@
 .dojo-play-page .dojo-hud-score-block:after{content:"C    B    A    S";display:block;width:156px;height:10px;padding:1px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(104,82,165,.45));color:rgba(255,255,255,.92);font:800 6px/8px system-ui;letter-spacing:.24em;word-spacing:4px;box-shadow:0 1px 7px rgba(0,0,0,.4)}
 .dojo-play-page .dojo-hud-score{font-size:18px;line-height:1;letter-spacing:.02em;text-shadow:0 2px 7px rgba(0,0,0,.7)}
 .dojo-play-page .dojo-life{left:auto;right:18px;top:16px;width:170px;height:9px;border:2px solid rgba(255,255,255,.9);background:rgba(18,24,39,.78);box-shadow:0 2px 8px rgba(0,0,0,.45);transform:skewX(-16deg)}
-.dojo-play-page .dojo-life span{background:linear-gradient(90deg,#8be7c1,#d8f7a2);box-shadow:inset 0 0 5px rgba(255,255,255,.7)}
+.dojo-play-page .dojo-life span{background:linear-gradient(90deg,#8be7c1,#d8f7a2);box-shadow:inset 0 0 5px rgba(255,255,255,.7)}.dojo-play-page .dojo-life:before{content:"LIFE";position:absolute;z-index:2;left:-36px;top:-3px;color:#fff;font:900 7px/10px system-ui;transform:skewX(16deg);text-shadow:0 1px 4px rgba(0,0,0,.8)}
 .dojo-play-page .dojo-hud-combo{left:auto;right:6%;top:27%;transform:none;text-align:right;text-shadow:0 3px 16px rgba(0,0,0,.8)}
 .dojo-play-page .dojo-hud-combo strong{font-size:clamp(30px,5.8vw,64px);line-height:.9;font-weight:900}
 .dojo-play-page .dojo-hud-combo span{font-size:10px;letter-spacing:.12em}
