@@ -816,7 +816,7 @@ function bind(){
     const d=e.target.closest("[data-dojo-diff]");if(d)S.selDiff=d.dataset.dojoDiff||"expert";
   },{capture:true});
   document.addEventListener("keydown",e=>{
-    if(/INPUT|TEXTAREA|SELECT|BUTTON/.test(e.target?.tagName||""))return;
+    if(/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName||""))return;
     const i=S.keys.findIndex(k=>String(k).toUpperCase()===String(e.key).toUpperCase());
     if(i<0||e.repeat)return;e.preventDefault();
     hit(i,"tap",false,"up","key:"+e.key.toUpperCase());
