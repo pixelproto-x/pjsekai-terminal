@@ -414,6 +414,10 @@ function laneX(l,p){
   return q.l+(q.r-q.l)*(l2+.5)/12;
 }
 function laneW(p){const q=stageAt(p);return(q.r-q.l)/12}
+function preemptForSpeed(speed){
+  const u=cl((N(speed,10)-12)/(1-12),0,1);
+  return .35+(4-.35)*Math.pow(u,1.31);
+}
 function scrollRateAt(t){
   const ev=S.prep?.timeScaleChanges||[];
   let rate=1;
@@ -985,7 +989,7 @@ async function start(){
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
     S.audio.pause();S.audio.src="https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav";S.audio.load();
     const speed=N(app().dojo?.speed,10);
-    S.lead=cl(3.25-(speed-1)*.16,1.6,3.25);S.seek=0;
+    S.lead=preemptForSpeed(speed);S.seek=0;
     await new Promise((resolve,reject)=>{
       if(S.audio.readyState>=2){resolve();return;}
       const ok=()=>{cleanup();resolve()},bad=()=>{cleanup();reject(Error("官方音源載入失敗"))};
