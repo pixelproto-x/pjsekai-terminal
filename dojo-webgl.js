@@ -67,7 +67,7 @@ function drawScene(){
  poly([[h.tl,h.top],[h.tr,h.top],[h.br,h.h],[h.bl,h.h]],[.025,.055,.12]);
  poly([[h.tl+8,h.top+6],[h.tr-8,h.top+6],[h.br-18,h.hit-5],[h.bl+18,h.hit-5]],[.04,.085,.17],.48);
  for(let i=0;i<7;i++){const p=(i+1)/8,y=h.top+(h.hit-h.top)*Math.pow(p,.82),l=h.tl+(h.bl-h.tl)*Math.pow(p,.82),r=h.tr+(h.br-h.tr)*Math.pow(p,.82);ln([[l,y],[r,y]],[.34,.62,.95],.045+.02*p)}
- for(let i=0;i<=12;i++){const a=(i===0||i===12)?.5:.12+.08*pulse;ln([[h.tl+(h.tr-h.tl)*i/12,h.top],[h.bl+(h.br-h.bl)*i/12,h.hit]],[.28,.72,1],a)}
+ for(let i=0;i<=12;i++){const a=(i===0||i===12)?0.5:(0.12+0.08*pulse);ln([[h.tl+(h.tr-h.tl)*i/12,h.top],[h.bl+(h.br-h.bl)*i/12,h.hit]],[.28,.72,1],a)}
  for(let i=1;i<9;i++){const p=i/9,y=h.top+(h.hit-h.top)*Math.pow(p,.82),l=h.tl+(h.bl-h.tl)*Math.pow(p,.82),r=h.tr+(h.br-h.tr)*Math.pow(p,.82);ln([[l,y],[r,y]],[.3,.55,.85],.08)}
  ln([[h.bl,h.hit],[h.br,h.hit]],[.55,.92,1],.9);
  ln([[h.tl,h.top],[h.tr,h.top]],[.25,.55,.9],.42);
