@@ -41,7 +41,10 @@ style.textContent=[
 ".dojo-wgl-status{position:absolute;z-index:5;left:12px;bottom:10px;padding:5px 9px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(5,8,20,.46);color:rgba(255,255,255,.72);font:800 9px system-ui;letter-spacing:.1em;pointer-events:none;backdrop-filter:blur(8px)}",
 ".dojo-wgl-pause{position:absolute;z-index:6;right:12px;top:12px;width:40px;height:40px;border:1px solid rgba(255,255,255,.25);background:rgba(9,12,28,.58);color:#fff;border-radius:12px;font-weight:900;font-size:17px;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.24)}",
 ".dojo-wgl-pause:active{transform:scale(.95)}",
-"#dojoJudgeText{transition:transform .12s ease,opacity .18s ease;text-shadow:0 0 18px currentColor}",
+"#dojoJudgeText{transition:transform .12s ease,opacity .18s ease;text-shadow:0 0 18px currentColor;position:relative}",
+"#dojoJudgeText[data-timing]:after{content:attr(data-timing);display:block;font:900 8px/10px system-ui;letter-spacing:.16em;opacity:.9;margin-top:2px}",
+"#dojoJudgeText[data-timing='FAST']:after{color:#8bdcff}",
+"#dojoJudgeText[data-timing='LATE']:after{color:#ffb2d3}",
 "#dojoJudgeText[data-j='"+"PERFECT"+"']{color:#fff}",
 "#dojoJudgeText[data-j='"+"GREAT"+"']{color:#98dcff}",
 "#dojoJudgeText[data-j='"+"GOOD"+"']{color:#8effcf}",
@@ -608,10 +611,15 @@ function drawMultiTapGuide(now){
   }
   for(const group of groups.values()){
     if(group.length<2)continue;
-    const pts=group.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return[laneX(n.l,p),q.y]}).sort((a,b)=>a[0]-b[0]);
+    const pts=group.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return{n,x:laneX(n.l,p),y:q.y,p}}).sort((a,b)=>a.x-b.x);
     for(let i=0;i<pts.length-1;i++){
-      line([pts[i],pts[i+1]],[.82,.92,1],.28);
-      line([[pts[i][0],pts[i][1]-2],[pts[i+1][0],pts[i+1][1]-2]],[1,1,1],.14);
+      line([[pts[i].x,pts[i].y],[pts[i+1].x,pts[i+1].y]],[.82,.92,1],.28);
+      line([[pts[i].x,pts[i].y-2],[pts[i+1].x,pts[i+1].y-2]],[1,1,1],.14);
+    }
+    for(const z of pts){
+      const bucket=z.n.c?"YELLOW":"NEUTRAL";
+      const marker="#SIMULTANEOUS_MARKER_"+bucket;
+      if(S.skin?.sprites?.[marker])drawSkinSprite(marker,z.x,z.y,Math.max(16,laneW(z.p)*1.55),Math.max(16,laneW(z.p)*1.55),.55);
     }
   }
 }
@@ -693,7 +701,7 @@ function effects(dt){
   }
   S.particles=S.particles.filter(p=>p.t<p.life);
 }
-function hud(judgment){
+function hud(judgment,error=0){
   const put=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
   put("dojoGameScore",String(Math.max(0,Math.floor(S.score))).padStart(7,"0"));
   put("dojoGameCombo",S.combo);
@@ -704,6 +712,7 @@ function hud(judgment){
   if(jt){
     jt.textContent=judgment||"";
     jt.dataset.j=judgment||"";
+    jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
     if(judgment){
       jt.style.opacity="1";jt.style.transform="translateY(-2px) scale(1.03)";
       clearTimeout(S.judgeTimer);
@@ -720,7 +729,8 @@ const WINDOWS={
   traceFlick:{P:7.5/60,G:7.5/60,D:7.5/60,B:7.5/60},
   slideEnd:{P:3.5/60,G:8/60,D:8.5/60,B:8.5/60},
   slideEndTrace:{P:8/60,G:8/60,D:8/60,B:8/60},
-  slideEndFlick:{P:3.5/60,G:8/60,D:8.5/60,B:8.5/60}
+  slideEndFlick:{P:3.5/60,G:8/60,D:8.5/60,B:8.5/60},
+  slideTick:{P:3/60,G:3/60,D:3/60,B:3/60}
 };
 function classify(diff,type){
   const w=type==="criticalFlick"?WINDOWS.criticalFlick:type==="traceFlick"?WINDOWS.traceFlick:type==="trace"?WINDOWS.trace:type==="slideEndFlick"?WINDOWS.slideEndFlick:type==="slideEndTrace"?WINDOWS.slideEndTrace:type==="slideEnd"?WINDOWS.slideEnd:type==="critical"?WINDOWS.critical:WINDOWS.tap;
@@ -759,12 +769,14 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
   const weight=n.c?(n.f?3:2):(n.f?1:1);
-  S.score+=Math.round((jg==="PERFECT"?1000:jg==="GREAT"?700:jg==="GOOD"?400:jg==="BAD"?150:0)*weight);
-  S.life=cl(S.life+(jg==="MISS"?-65:jg==="BAD"?-28:1),0,1000);
+  const traceLike=type==="trace"||type==="traceFlick"||type==="slideEndTrace";
+  const base=jg==="PERFECT"?1000:jg==="GREAT"?700:jg==="GOOD"?500:jg==="BAD"?250:0;
+  S.score+=Math.round((traceLike?base*.1:base)*weight);
+  S.life=cl(S.life+(jg==="MISS"?-80:jg==="BAD"?-40:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
   S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:n.l,kind:type,judgement:jg,error:d};
-  hud(jg);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS"){sfx(jg,!!n.c);try{navigator.vibrate?.(jg==="PERFECT"&&n.c?8:5)}catch(_){}}
+  hud(jg,d);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS"){sfx(jg,!!n.c);try{navigator.vibrate?.(jg==="PERFECT"&&n.c?8:5)}catch(_){}}
   if(allowFinish&&S.judged>=S.total)finish();
   return jg;
 }
@@ -884,12 +896,14 @@ function processHeld(now){
       const laneNow=expectedLane(n,cp.sec);
       const delta=Math.abs(laneNow-(mirror?11-cp.lane:cp.lane));
       if(laneMatches(laneNow)&&delta<=Math.max(1,(n.w||1)/2)+.35){
-        const d=now-cp.sec,jg=classify(d,cp.trace?(cp.critical?"traceFlick":"trace"):"trace");
+        const d=now-cp.sec;
+        // Project SEKAI/Next-SEKAI slide ticks are binary: on-time hold = PERFECT, otherwise MISS.
+        const jg=Math.abs(d)<=WINDOWS.slideTick.P?"PERFECT":"MISS";
         cp.judged=true;S.judged++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
-        if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
+        if(jg==="MISS")S.combo=0;else S.combo++;
         S.best=Math.max(S.best,S.combo);S.counts[jg]++;
-        S.score+=jg==="PERFECT"?(cp.critical?420:110):jg==="GREAT"?(cp.critical?300:80):jg==="GOOD"?45:0;
-        S.life=cl(S.life+(jg==="MISS"?-20:1),0,1000);
+        S.score+=jg==="PERFECT"?(cp.critical?20:10):0;
+        S.life=cl(S.life+(jg==="MISS"?-40:1),0,1000);
         S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:cp.lane,kind:"tick",judgement:jg,error:d};
         hud(jg);if(jg!=="MISS"){ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);}
       }else{
