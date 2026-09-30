@@ -35,9 +35,14 @@ function layout(width,height){
     laneTop:47/850,laneBottom:1176/850+.4};
   return state.geom;
 }
+function arcAdjust(v){
+  const g=state.geom,vp={x:0,y:g.t},r=(vp.y-v.y)*1.05||1;
+  let theta=(v.x-vp.x)/r;theta=clamp(theta,-Math.PI/2,Math.PI/2);
+  return {x:vp.x+Math.sin(theta)*r,y:vp.y-Math.cos(theta)*r};
+}
 function p2s(x,y){
-  const g=state.geom;
-  return {x:g.ox+g.fieldW*.5+x,y:g.oy+g.fieldH*.5-y};
+  const g=state.geom,a=arcAdjust({x,y});
+  return {x:g.ox+g.fieldW*.5+a.x,y:g.oy+g.fieldH*.5-a.y};
 }
 function persp(l,r,t,b,travel){
   const g=state.geom;
