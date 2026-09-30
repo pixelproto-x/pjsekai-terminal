@@ -1,0 +1,31 @@
+name: Dojo direct play browser test
+
+on:
+  push:
+    branches: ["dojo-direct-play-test"]
+
+permissions:
+  contents: read
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: npm install --no-save playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Generate Dojo static data
+        run: node scripts/build-dojo-static-data.mjs
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/dojo-http.log 2>&1 &
+          echo $! > /tmp/dojo-http.pid
+      - name: Run Dojo browser test
+        run: node scripts/test-dojo-browser.mjs

@@ -813,7 +813,7 @@ body[data-sekai-theme] .theme-choice.active{
 
 .dojo-sonolus-frame{clip-path:polygon(1.6% 0,98.9% 0,100% 1.8%,98.5% 100%,1.2% 100%,0 98.4%,0 1.8%);background:#020617}.dojo-sonolus-frame iframe{min-width:100%;min-height:100%}@media(max-width:900px){.dojo-sonolus-frame{border-radius:16px!important}}</style>
 <link rel="stylesheet" href="my-sekai.css">
-<link rel="stylesheet" href="dojo-controls.css">
+<link rel="stylesheet" href="dojo-player.css?v=20260930-dojo1">
 <link rel="stylesheet" href="event-calc.css">
 <link rel="stylesheet" href="card-gallery.css">
 <link rel="stylesheet" href="gacha-simulator.css">
@@ -993,73 +993,75 @@ body[data-sekai-theme] .theme-choice.active{
     </div>
     <div class="dojo-selected-action">
       <div class="dojo-kicker">STEP 3 · PLAY</div>
-      <strong>準備好了嗎？</strong>
-      <p>選好難度後，按下面按鈕進入練習區。</p>
-      <button class="dojo-play-btn" id="dojoOpenPracticeBtn" type="button">▶ 進入練習區</button>
-      <button class="dojo-secondary-btn" id="dojoAnalyzeBtn" type="button">分析這首譜面</button>
+      <strong>選好難度後直接開始</strong>
+      <p>不用開 Sonolus。真正的打歌按鈕就在下方遊戲畫面。</p>
     </div>
   </section>
 
-  <section class="dojo-practice-clean" id="dojoSonolusFrame">
-    <div class="dojo-practice-head">
-      <div>
-        <div class="dojo-kicker">PRACTICE ROOM</div>
-        <h2>音遊實戰特訓房</h2>
-        <p>這裡使用 Sonolus Web。歌曲與譜面由 Sonolus 伺服器提供，不在本頁重寫遊戲引擎。</p>
+  <section class="dojo-game-card" id="dojoGameCard">
+  <div class="dojo-game-head">
+    <div class="dojo-game-title">
+      <img class="dojo-game-cover" id="dojoGameCover" alt="">
+      <div><h2 id="dojoGameSongTitle">Tell Your World</h2><p id="dojoGameSongMeta">官方音源 · Expert</p></div>
+    </div>
+    <div class="dojo-game-head-actions">
+      <span id="dojoGameStatus">LOAD</span>
+      <button id="dojoGameResetBtn" type="button">↻ 重設</button>
+    </div>
+  </div>
+  <div class="dojo-game-stage-wrap" id="dojoGameStageWrap">
+    <canvas class="dojo-game-canvas" id="dojoGameCanvas" aria-label="Project SEKAI Dojo 遊戲畫面"></canvas>
+    <div class="dojo-game-hud" aria-hidden="true">
+      <div class="dojo-hud-top">
+        <div class="dojo-hud-song"><strong id="dojoHudSongTitle">Tell Your World</strong><span id="dojoHudSongMeta">Expert</span></div>
+        <div class="dojo-hud-score" id="dojoGameScore">0000000</div>
       </div>
-      <button class="dojo-simple-btn" id="dojoOpenServerWebBtn" type="button">開啟 Sonolus</button>
+      <div class="dojo-hud-combo"><strong id="dojoGameCombo">0</strong><span>COMBO</span></div>
+      <div class="dojo-judge-text" id="dojoJudgeText"></div>
     </div>
-    <div class="dojo-practice-note">
-      <span>ⓘ</span>
-      <span>目前網頁版會先開啟 Sonolus Web。要真正進入可玩的譜面，請在 Sonolus 裡選擇對應伺服器與 LEVEL；本頁的歌曲選擇主要用來查資料與分析。</span>
+    <div class="dojo-input-pad" aria-label="四鍵觸控區">
+      <div class="dojo-input-zone" data-dojo-lane-zone="0"><span>D</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="1"><span>F</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="2"><span>J</span></div>
+      <div class="dojo-input-zone" data-dojo-lane-zone="3"><span>K</span></div>
     </div>
-    <div class="dojo-frame-shell" id="dojoFrameShellInner">
-      <iframe id="dojoSonolusIframe" src="https://sonolus.com/web/" allow="autoplay; fullscreen" title="Sonolus Web" loading="eager"></iframe>
-      <button class="dojo-frame-fullscreen" id="dojoFullscreenBtn" type="button">⛶ 全螢幕</button>
-    </div>
-    <div class="dojo-api-log" id="dojoApiLog"><strong>BRIDGE</strong> 初始化中……</div>
-  </section>
+    <div class="dojo-game-loading" id="dojoGameLoading"><div><strong>正在準備譜面</strong><span>載入歌曲與譜面資料…</span></div></div>
+  </div>
+  <div class="dojo-game-progress"><span id="dojoGameProgressBar"></span></div>
+  <div class="dojo-game-controls">
+    <button class="primary" id="dojoOpenPracticeBtn" type="button">▶ 開始打歌</button>
+    <button id="dojoGameFullscreenBtn" type="button">⛶ 全螢幕</button>
+  </div>
+  <div class="dojo-game-message" id="dojoGameMessage">選好歌曲與難度後，按「開始打歌」即可直接遊玩。</div>
+</section>
 
-  <details class="dojo-extra">
-    <summary>進階設定 <span>Note Speed、Offset、按鍵、鏡像</span></summary>
-    <div class="dojo-extra-body">
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>Sonolus 伺服器</h3><p>一般使用者不需要改這裡。需要其他譜面來源時再選。</p></div></div>
-        <div class="dojo-server-select-row">
-          <select id="dojoServerSelect" class="dojo-select" aria-label="Sonolus 伺服器"></select>
-          <button class="dojo-control-btn primary" id="dojoOpenServerBtn" type="button">在 Sonolus 開啟</button>
-          <button class="dojo-control-btn light-btn" id="dojoCopyServerBtn" type="button">複製網址</button>
-        </div>
-        <div class="dojo-selected-server"><strong id="dojoSelectedServerName">Sekai Viewer</strong><span id="dojoSelectedServerUrl">https://sonolus.sekai.best/</span></div>
-      </section>
-
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>遊玩設定</h3><p>只有需要校準手感時再調。設定會保存在這台裝置。</p></div><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設</button></div>
-        <div class="dojo-setting-grid dojo-setting-grid-clean">
-          <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
-          <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>聲音晚到/太早時調整</small></div>
-          <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定看起來偏早/偏晚時調整</small></div>
-        </div>
-        <div class="dojo-toggle-grid">
-          <button class="dojo-toggle-control" id="dojoToggle_mirror" type="button" aria-pressed="false"><span>Mirror 鏡像</span><i></i></button>
-          <button class="dojo-toggle-control" id="dojoToggle_sudden" type="button" aria-pressed="false"><span>Sudden 隱藏區</span><i></i></button>
-          <button class="dojo-toggle-control" id="dojoToggle_hidden" type="button" aria-pressed="false"><span>Hidden 消失</span><i></i></button>
-        </div>
-      </section>
-
-      <section class="dojo-extra-card">
-        <div class="dojo-extra-head"><div><h3>鍵盤按鍵</h3><p>預設 D / F / J / K。可以改成你習慣的四鍵配置。</p></div></div>
-        <div class="dojo-key-grid">
-          <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
-          <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
-          <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
-          <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
-        </div>
-        <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新傳送設定</button></div>
-        <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>等待 Sonolus Web 回覆。</span></div></div>
-      </section>
-    </div>
-  </details>
+<details class="dojo-extra">
+  <summary>進階設定 <span>速度、Offset、按鍵</span></summary>
+  <div class="dojo-extra-body">
+    <section class="dojo-extra-card">
+      <div class="dojo-extra-head"><div><h3>遊玩設定</h3><p>一般不用改。只在需要校準手感時使用。</p></div><button class="dojo-control-btn light-btn" id="dojoResetSettingsBtn" type="button">恢復預設</button></div>
+      <div class="dojo-setting-grid dojo-setting-grid-clean">
+        <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
+        <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>聲音偏早/偏晚時調整</small></div>
+        <div class="dojo-setting"><label><span>Visual Offset</span><b>ms</b></label><input id="dojoVisualOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>畫面判定偏早/偏晚時調整</small></div>
+      </div>
+      <div class="dojo-toggle-grid">
+        <button class="dojo-toggle-control" id="dojoToggle_mirror" type="button" aria-pressed="false"><span>Mirror 鏡像</span><i></i></button>
+        <button class="dojo-toggle-control" id="dojoToggle_sudden" type="button" aria-pressed="false"><span>Sudden 隱藏區</span><i></i></button>
+        <button class="dojo-toggle-control" id="dojoToggle_hidden" type="button" aria-pressed="false"><span>Hidden 消失</span><i></i></button>
+      </div>
+    </section>
+    <section class="dojo-extra-card">
+      <div class="dojo-extra-head"><div><h3>鍵盤按鍵</h3><p>預設 D / F / J / K。觸控與鍵盤都可以玩。</p></div></div>
+      <div class="dojo-key-grid">
+        <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
+        <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
+        <div class="dojo-key-slot"><label>Lane 3</label><input data-dojo-key="2" maxlength="2" value="J"><button class="dojo-virtual-key" data-virtual-lane="2" type="button">J</button></div>
+        <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
+      </div>
+    </section>
+  </div>
+</details>
 
   <details class="dojo-extra">
     <summary>其他工具 <span>NPS 分析、Offset 校準、Speed 換算</span></summary>
@@ -2811,82 +2813,6 @@ document.addEventListener("click",e=>{const d=e.target.closest("[data-delete-sna
 
 
 /* ===== Stage 3 Dojo ===== */
-const DOJO_SONGS=[
- {id:"tell-your-world",title:"Tell Your World",artist:"初音ミク",attr:"Cool",bpm:150,diffs:{Easy:5,Normal:10,Hard:15,Expert:24,Master:29,Append:32},notes:{Easy:420,Normal:710,Hard:1040,Expert:1320,Master:1560,Append:1860}},
- {id:"world-is-mine",title:"ワールドイズマイン",artist:"初音ミク",attr:"Cute",bpm:165,diffs:{Easy:5,Normal:10,Hard:16,Expert:25,Master:30,Append:33},notes:{Easy:430,Normal:720,Hard:1060,Expert:1390,Master:1640,Append:1940}},
- {id:"senbonzakura",title:"千本桜",artist:"初音ミク",attr:"Cool",bpm:154,diffs:{Easy:6,Normal:12,Hard:18,Expert:26,Master:31,Append:34},notes:{Easy:500,Normal:820,Hard:1190,Expert:1510,Master:1780,Append:2020}},
- {id:"roki",title:"ロキ",artist:"鏡音リン・みきとP",attr:"Happy",bpm:150,diffs:{Easy:6,Normal:12,Hard:18,Expert:27,Master:31,Append:34},notes:{Easy:520,Normal:850,Hard:1210,Expert:1560,Master:1810,Append:2050}},
- {id:"king",title:"KING",artist:"GUMI",attr:"Mysterious",bpm:166,diffs:{Easy:6,Normal:12,Hard:18,Expert:26,Master:30,Append:33},notes:{Easy:480,Normal:790,Hard:1140,Expert:1490,Master:1740,Append:1980}},
- {id:"venom",title:"ビターチョコデコレーション",artist:"初音ミク",attr:"Mysterious",bpm:140,diffs:{Easy:5,Normal:11,Hard:17,Expert:25,Master:30,Append:32},notes:{Easy:440,Normal:750,Hard:1080,Expert:1410,Master:1690,Append:1900}},
- {id:"ready-steady",title:"Ready Steady",artist:"Vivid BAD SQUAD",attr:"Cool",bpm:126,diffs:{Easy:5,Normal:10,Hard:16,Expert:24,Master:29,Append:32},notes:{Easy:410,Normal:700,Hard:1010,Expert:1280,Master:1510,Append:1830}},
- {id:"phony",title:"フォニイ",artist:"25時、ナイトコードで。",attr:"Mysterious",bpm:170,diffs:{Easy:5,Normal:11,Hard:17,Expert:26,Master:31,Append:34},notes:{Easy:450,Normal:760,Hard:1120,Expert:1470,Master:1780,Append:2040}},
- {id:"lower",title:"限りなく灰色へ",artist:"鏡音リン",attr:"Pure",bpm:130,diffs:{Easy:5,Normal:11,Hard:17,Expert:25,Master:30,Append:32},notes:{Easy:430,Normal:730,Hard:1070,Expert:1400,Master:1660,Append:1910}},
- {id:"venom-2",title:"ロウワー",artist:"25時、ナイトコードで。",attr:"Mysterious",bpm:132,diffs:{Easy:5,Normal:11,Hard:17,Expert:25,Master:30,Append:32},notes:{Easy:440,Normal:740,Hard:1090,Expert:1430,Master:1700,Append:1930}},
- {id:"niccori",title:"にっこり^^調査隊のテーマ",artist:"ワンダーランズ×ショウタイム",attr:"Happy",bpm:176,diffs:{Easy:5,Normal:10,Hard:16,Expert:25,Master:30,Append:33},notes:{Easy:460,Normal:770,Hard:1150,Expert:1500,Master:1790,Append:2020}},
- {id:"hitorinbo",title:"独りんぼエンヴィー",artist:"初音ミク",attr:"Cute",bpm:132,diffs:{Easy:4,Normal:9,Hard:15,Expert:23,Master:28,Append:31},notes:{Easy:390,Normal:650,Hard:960,Expert:1210,Master:1450,Append:1760}}
-];
-const DOJO_DIFFICULTIES=["Easy","Normal","Hard","Expert","Master","Append"];
-const dojoState={song:DOJO_SONGS[0],difficulty:"Expert",calibrating:false,calStart:0,calBeat:0,taps:[]};
-function dojoEsc(v){return typeof escapeHtml==="function"?escapeHtml(String(v)):String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function dojoRatio(w,h){const g=Math.max(1,Math.round(gcd(Math.round(w),Math.round(h))));return Math.round(w/g)+":"+Math.round(h/g);}
-function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a||1;}
-function dojoNoteTimes(song,diff){
-  const n=song?.notes?.[diff]||0,dur=Math.max(30,n/(song?.bpm||120)*.42),out=[];let t=.4;
-  for(let i=0;i<n;i++){const burst=Math.sin(i*.73)*.035+(i%37===0?.22:0);out.push(Math.max(0,t+burst));t+=dur/Math.max(1,n)* (i%23===0?1.8:i%11===0?0.55:.92);}
-  return out;
-}
-function dojoParseTimes(raw){try{const x=JSON.parse(raw);if(Array.isArray(x))return x.map(Number).filter(Number.isFinite).sort((a,b)=>a-b);}catch(_){}return String(raw||"").split(/[,\s]+/).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);}
-function dojoAnalyze(){
-  const s=dojoState.song,d=dojoState.difficulty,raw=$("#dojoNoteTimes")?.value.trim(),times=raw?dojoParseTimes(raw):dojoNoteTimes(s,d);
-  if(times.length<2){showToast("至少需要 2 個 Note 時間點");return;}
-  const end=Math.max(times[times.length-1],1),bins=Math.min(48,Math.max(12,Math.ceil(end/2))),width=end/bins,counts=Array.from({length:bins},()=>0);
-  times.forEach(t=>counts[Math.min(bins-1,Math.floor(t/width))]++);
-  const nps=counts.map((x,i)=>x/width),avg=times.length/end,peak=Math.max(...nps),peakI=nps.indexOf(peak),dense=width*peakI+"–"+(width*(peakI+1)).toFixed(1)+"s";
-  const restI=nps.findIndex(x=>x<=avg*.35),rest=restI>=0?width*restI.toFixed(1)+"s":"—";
-  $("#dojoSelectedTitle").textContent=s.title;$("#dojoSelectedMeta").textContent=s.artist+" · "+s.attr+" · "+d+" · BPM "+s.bpm;$("#dojoSelectedBpm").textContent=s.bpm;$("#dojoSelectedDifficulty").textContent=d;$("#dojoSelectedNotes").textContent=times.length;$("#dojoSelectedNps").textContent=avg.toFixed(2);$("#dojoAvgNps").textContent=avg.toFixed(2);$("#dojoPeakNps").textContent=peak.toFixed(2);$("#dojoDenseRange").textContent=dense;$("#dojoRestRange").textContent=rest;
-  $("#dojoDensityChart").innerHTML=nps.map(v=>'<span class="dojo-bar" style="height:'+Math.max(7,Math.min(100,v/Math.max(peak,1)*100))+'%"></span>').join("");
-}
-function renderDojoSongs(){
-  const q=String($("#dojoSongSearch")?.value||"").trim().toLowerCase(),a=$("#dojoAttrFilter")?.value||"",d=$("#dojoDifficultyFilter")?.value||"",b=num($("#dojoBpmFilter")?.value,0);
-  const list=DOJO_SONGS.filter(s=>(!q||(s.title+" "+s.artist+" "+s.attr).toLowerCase().includes(q))&&(!a||s.attr===a)&&(!d||s.diffs[d])&&(!b||s.bpm>=b));
-  $("#dojoSongList").innerHTML=list.length?list.map(s=>'<article class="dojo-song '+(dojoState.song.id===s.id?"active":"")+'" data-dojo-song="'+dojoEsc(s.id)+'"><div class="dojo-song-head"><div><div class="dojo-song-title">'+dojoEsc(s.title)+'</div><div class="dojo-song-meta">'+dojoEsc(s.artist)+' · '+dojoEsc(s.attr)+'</div></div><span class="dojo-bpm">'+s.bpm+' BPM</span></div><div class="dojo-tags">'+Object.entries(s.diffs).map(([k,v])=>'<span class="dojo-tag">'+k+' '+v+'</span>').join("")+'</div></article>').join(""):'<div class="search-empty">找不到符合條件的歌曲。</div>';
-}
-function selectDojoSong(id){const s=DOJO_SONGS.find(x=>x.id===id);if(!s)return;dojoState.song=s;renderDojoSongs();renderDojoDifficulty();dojoAnalyze();}
-function renderDojoDifficulty(){$("#dojoDifficultyButtons").innerHTML=DOJO_DIFFICULTIES.filter(d=>dojoState.song.diffs[d]).map(d=>'<button type="button" class="'+(d===dojoState.difficulty?"active":"")+'" data-dojo-diff="'+d+'">'+d+' '+dojoState.song.diffs[d]+'</button>').join("");}
-
-
-
-
-
-
-
-
-
-
-function offsetStats(){const x=dojoState.taps;if(!x.length)return;const mean=x.reduce((a,b)=>a+b,0)/x.length,sort=[...x].sort((a,b)=>a-b),med=sort[Math.floor(sort.length/2)],suggest=-Math.round(med);$("#dojoOffsetMean").textContent=(mean>=0?"+":"")+mean.toFixed(1)+" ms";$("#dojoOffsetMedian").textContent=(med>=0?"+":"")+med.toFixed(1)+" ms";$("#dojoOffsetSuggest").textContent=(suggest>=0?"+":"")+suggest+" ms";const bins=[-100,-75,-50,-25,0,25,50,75,100],counts=bins.map((v,i)=>x.filter(z=>z>=v&&z<(bins[i+1]??Infinity)).length),mx=Math.max(...counts,1);$("#dojoOffsetChart").innerHTML=counts.map(v=>'<span class="dojo-bar" style="height:'+Math.max(7,v/mx*100)+'%"></span>').join("");}
-function startCalibration(){dojoState.calibrating=true;dojoState.taps=[];dojoState.calStart=Date.now()+1000;dojoState.calBeat=0;$("#dojoTapBtn").disabled=false;$("#dojoCalStart").disabled=true;showToast("1 秒後開始，請跟著節拍點擊 TAP");const bpm=Math.max(30,Math.min(300,num($("#dojoCalBpm").value,120))),int=60000/bpm;clearInterval(dojoState.calTimer);dojoState.calTimer=setInterval(()=>{if(!dojoState.calibrating)return;const now=Date.now();if(now<dojoState.calStart)return;const expected=dojoState.calStart+dojoState.calBeat*int;if(now-expected>int*2){dojoState.calBeat=Math.round((now-dojoState.calStart)/int);}else if(now>=expected){dojoState.calBeat++;}},int/4);}
-function tapCalibration(){if(!dojoState.calibrating)return;const bpm=Math.max(30,Math.min(300,num($("#dojoCalBpm").value,120))),int=60000/bpm,now=Date.now();if(now<dojoState.calStart)return;const beat=Math.round((now-dojoState.calStart)/int),expected=dojoState.calStart+beat*int,offset=now-expected;dojoState.taps.push(offset);offsetStats();if(dojoState.taps.length>=32)stopCalibration();}
-function stopCalibration(){dojoState.calibrating=false;clearInterval(dojoState.calTimer);dojoState.calTimer=null;$("#dojoTapBtn").disabled=true;$("#dojoCalStart").disabled=false;offsetStats();}
-function calcSpeed(){const rw=Math.max(1,num($("#dojoRefW").value,1080)),rh=Math.max(1,num($("#dojoRefH").value,1920)),tw=Math.max(1,num($("#dojoTargetW").value,1179)),th=Math.max(1,num($("#dojoTargetH").value,2556)),base=Math.max(.1,num($("#dojoBaseSpeed").value,10)),factor=th/rh;$("#dojoRefRatio").textContent=dojoRatio(rw,rh);$("#dojoTargetRatio").textContent=dojoRatio(tw,th);$("#dojoHeightFactor").textContent=factor.toFixed(3)+"x";$("#dojoSpeedResult").textContent=(base*factor).toFixed(2);}
-function initDojo(){
-  renderDojoSongs();renderDojoDifficulty();dojoAnalyze();calcSpeed();
-  ["dojoSongSearch","dojoAttrFilter","dojoDifficultyFilter","dojoBpmFilter"].forEach(id=>$("#"+id)?.addEventListener("input",renderDojoSongs));
-  $("#dojoClearSearch")?.addEventListener("click",()=>{$("#dojoSongSearch").value="";$("#dojoAttrFilter").value="";$("#dojoDifficultyFilter").value="";$("#dojoBpmFilter").value="";renderDojoSongs();});
-  $("#dojoSongList")?.addEventListener("click",e=>{const x=e.target.closest("[data-dojo-song]");if(x)selectDojoSong(x.dataset.dojoSong);});
-  $("#dojoDifficultyButtons")?.addEventListener("click",e=>{const x=e.target.closest("[data-dojo-diff]");if(x){dojoState.difficulty=x.dataset.dojoDiff;renderDojoDifficulty();dojoAnalyze();}});
-  $("#dojoAnalyzeBtn")?.addEventListener("click",dojoAnalyze);$("#dojoOpenPracticeBtn")?.addEventListener("click",()=>document.getElementById("dojoSonolusFrame")?.scrollIntoView({behavior:"smooth",block:"center"}));
-  
-  
-  
-  
-  $("#dojoCalStart")?.addEventListener("click",startCalibration);$("#dojoTapBtn")?.addEventListener("click",tapCalibration);$("#dojoCalReset")?.addEventListener("click",()=>{stopCalibration();dojoState.taps=[];$("#dojoOffsetMean").textContent="—";$("#dojoOffsetMedian").textContent="—";$("#dojoOffsetSuggest").textContent="—";$("#dojoOffsetChart").innerHTML='<div class="dojo-chart-empty">尚無 Timing 資料</div>';});
-  ["dojoRefW","dojoRefH","dojoBaseSpeed","dojoTargetW","dojoTargetH"].forEach(id=>$("#"+id)?.addEventListener("input",calcSpeed));$("#dojoSpeedCalc")?.addEventListener("click",calcSpeed);
-  $("#dojoNoteTimes")?.addEventListener("change",dojoAnalyze);
-}
-initDojo();
-
-
-
 /* ===== Stage 4 Strategy Calc logic ===== */
 const SC_MATERIAL_DEFAULTS=[
   {name:"素材 A",mr:10,skill:4,stock:0},
@@ -3340,7 +3266,7 @@ window.__PJSEKAI_APP__ = {
 
 </script>
 <script src="my-sekai.js" defer></script>
-<script src="dojo-controls.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js" defer></script>\n<script src="dojo-player.js?v=20260930-dojo1" defer></script>
 <script src="event-calc.js" defer></script>
 <script src="card-gallery.js?v=20260929-fix1" defer></script>
 <script src="gacha-simulator.js?v=20260929-fix2" defer></script>

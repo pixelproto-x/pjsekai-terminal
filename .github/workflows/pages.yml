@@ -31,6 +31,8 @@ jobs:
           node-version: 20
       - name: Generate current Project SEKAI static data
         run: node scripts/build-static-data.mjs
+      - name: Generate Dojo song and vocal data
+        run: node scripts/build-dojo-static-data.mjs
       - name: Build production Tailwind CSS
         run: npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i ./tailwind.input.css -o ./tailwind.css --minify
       - name: Setup Pages
