@@ -43,7 +43,6 @@ const before = await page.evaluate(() => {
   };
 });
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
-if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 
 await page.locator('#dojoDifficultyFilter').selectOption('Expert');
 const filteredCount = await page.locator('#dojoSongList [data-dojo-local-song]').count();
@@ -130,7 +129,7 @@ const afterInput = await page.evaluate(() => ({
   judged: window.__PJSEKAI_DOJO__?.state?.judged || 0,
   running: !!window.__PJSEKAI_DOJO__?.state?.running
 }));
-if (afterInput.judged <= 0 && afterInput.score <= 0 && afterInput.combo <= 0) {
+if (afterInput.judged <= 0 || afterInput.score <= 0) {
   const postInputDebug=await page.evaluate(()=>({now:window.__PJSEKAI_DOJO__?.state?.audio?.currentTime||0,lastInput:window.__PJSEKAI_DOJO__?.state?.lastInput||null}));
   throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
 }

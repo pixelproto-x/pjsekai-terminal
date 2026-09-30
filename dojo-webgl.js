@@ -639,9 +639,9 @@ function processHeld(now){
       const laneNow=h.lane;
       const delta=Math.abs(laneNow-cp.lane);
       if(delta<=Math.max(1,(n.w||1)/2)+.35){
-        cp.judged=true;S.combo++;S.best=Math.max(S.best,S.combo);S.score+=cp.critical?400:100;S.life=cl(S.life+1,0,1000);
+        cp.judged=true;S.judged++;S.combo++;S.best=Math.max(S.best,S.combo);S.score+=cp.critical?400:100;S.life=cl(S.life+1,0,1000);
       }else{
-        cp.judged=true;S.combo=0;S.life=cl(S.life-12,0,1000);S.counts.MISS++;S.tn++;hud("MISS");
+        cp.judged=true;S.judged++;S.combo=0;S.life=cl(S.life-12,0,1000);S.counts.MISS++;S.tn++;hud("MISS");
       }
     }
   }
