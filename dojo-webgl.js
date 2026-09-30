@@ -530,6 +530,9 @@ function drawNote(n,now){
   }
   if(n.f){
     drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*0.82,Math.max(18,w*1.25),Math.max(18,w*1.25),0.98*alpha);
+    // The public Next-SEKAI skin supplies the marker body; draw the directional
+    // arrow on top so left/right/up/down flicks remain visually distinct.
+    drawDirectionalArrow(x,q.y-h*0.82,Math.max(18,w*1.18),n.f,n.c?[1,.88,.25]:[1,.28,.48],.96*alpha);
   }
   if(n.t)drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(16,w*1.05),Math.max(16,w*1.05),0.74*alpha);
 }
