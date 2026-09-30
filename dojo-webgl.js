@@ -917,7 +917,7 @@ function processHeld(now){
         S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:cp.lane,kind:"tick",judgement:jg,error:d};
         hud(jg);if(jg!=="MISS"){ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);}
       }else{
-        cp.judged=true;S.judged++;S.tn++;S.combo=0;S.life=cl(S.life-20,0,1000);S.counts.MISS++;hud("MISS");spawnFx(cp.lane,"MISS",!!cp.critical);
+        cp.judged=true;S.judged++;S.tn++;S.combo=0;S.life=cl(S.life-40,0,1000);S.counts.MISS++;hud("MISS");spawnFx(cp.lane,"MISS",!!cp.critical);
       }
     }
   }
