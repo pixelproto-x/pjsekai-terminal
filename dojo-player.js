@@ -11,6 +11,7 @@ const MUSIC_URL='dojo-musics.json';
 const VOCAL_URL='dojo-vocals.json';
 const DIFFICULTY_URL='dojo-difficulties.json';
 const ASSETS='https://assets.unipjsk.com';
+const AUDIO_ASSETS='https://storage.sekai.best/sekai-jp-assets';
 const DIFFS=['easy','normal','hard','expert','master','append'];
 const DIFF_LABEL={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
 const JUDGE={perfect:.045,great:.085,good:.11,bad:.125};
@@ -238,11 +239,11 @@ function vocalFor(music){
 }
 function audioUrl(vocal,music){
   const name=vocal?.assetbundleName;
-  if(name)return ASSETS+'/ondemand/music/long/'+name+'/'+name+'.mp3';
+  if(name)return AUDIO_ASSETS+'/music/long/'+name+'/'+name+'.mp3';
   const id=Number(music?.id);
   if(Number.isFinite(id)&&id>0){
     const fallback=String(id).padStart(4,'0')+'_01';
-    return ASSETS+'/ondemand/music/long/'+fallback+'/'+fallback+'.mp3';
+    return AUDIO_ASSETS+'/music/long/'+fallback+'/'+fallback+'.mp3';
   }
   return '';
 }
