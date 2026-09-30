@@ -114,8 +114,9 @@ await page.evaluate(() => document.body.focus());
 const firstNotes = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
   const now = p.state.audio.currentTime || 0;
-  return p.state.notes.filter(n => !n.judged && n.kind === 'tap' && n.hit > now + 0.1).slice(0, 8)
-    .map(n => ({ lane: n.lane, hit: n.hit, now, key: ['D','F','J','K'][Math.min(3, Math.floor(n.lane / 3))] }));
+  const notes = p.state.notes;
+  const future = notes.filter(n => !n.judged && n.hit > now + 0.1).slice(0, 8);
+  return future.map(n => ({ lane: n.lane, kind: n.kind, hit: n.hit, now, key: ['D','F','J','K'][Math.min(3, Math.floor(n.lane / 3))] }));
 });
 for (const n of firstNotes) {
   await page.waitForTimeout(Math.max(0, Math.round((n.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 12)));
