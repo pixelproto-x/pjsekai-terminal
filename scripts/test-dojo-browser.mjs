@@ -130,7 +130,8 @@ const afterInput = await page.evaluate(() => ({
   running: !!window.__PJSEKAI_DOJO__?.state?.running
 }));
 if (afterInput.judged <= 0 && afterInput.score <= 0 && afterInput.combo <= 0) {
-  throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,now:window.__PJSEKAI_DOJO__?.state?.audio?.currentTime||0}));
+  const postInputDebug=await page.evaluate(()=>({now:window.__PJSEKAI_DOJO__?.state?.audio?.currentTime||0,lastInput:window.__PJSEKAI_DOJO__?.state?.lastInput||null}));
+  throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
 }
 
 await page.locator('details.dojo-extra').first().click();
