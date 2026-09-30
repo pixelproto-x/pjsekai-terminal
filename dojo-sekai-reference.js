@@ -40,43 +40,78 @@ function arcAdjust(v){
   let theta=(v.x-vp.x)/r;theta=clamp(theta,-Math.PI/2,Math.PI/2);
   return {x:vp.x+Math.sin(theta)*r,y:vp.y-Math.cos(theta)*r};
 }
+function rawLogical(x,y){
+  const g=state.geom;
+  return{x:g.ox+g.fieldW*.5+x,y:g.oy+g.fieldH*.5-y};
+}
+function transformRaw(x,y){
+  return{x:x,y:y};
+}
+function arcRaw(v){
+  const g=state.geom,vp={x:0,y:g.t},r=(vp.y-v.y)*1.05||1;
+  let theta=(v.x-vp.x)/r;theta=clamp(theta,-Math.PI/2,Math.PI/2);
+  return{x:vp.x+Math.sin(theta)*r,y:vp.y-Math.cos(theta)*r};
+}
+function arcScreen(x,y){
+  return rawLogical(x,y);
+}
 function p2s(x,y){
-  const g=state.geom,a=arcAdjust({x,y});
-  return {x:g.ox+g.fieldW*.5+a.x,y:g.oy+g.fieldH*.5-a.y};
+  const g=state.geom,a=arcRaw({x,y});
+  return{x:g.ox+g.fieldW*.5+a.x,y:g.oy+g.fieldH*.5-a.y};
+}
+function transformPoint(x,y){
+  const g=state.geom;return{x,y};
+}
+function perspRaw(l,r,t,b,travel){
+  const g=state.geom,cv=(x,y)=>transformPoint(x*y*travel*g.ws,y*travel*g.hs+g.t);
+  return[cv(l,t),cv(r,t),cv(r,b),cv(l,b)];
 }
 function persp(l,r,t,b,travel){
-  const g=state.geom;
-  const cv=(x,y)=>p2s(x*y*travel*g.ws,y*travel*g.hs+g.t);
-  return [cv(l,t),cv(r,t),cv(r,b),cv(l,b)];
+  return perspRaw(l,r,t,b,travel).map(arcRaw).map(rawLogical);
+}
+function arcQuad(q){
+  return q.map(v=>rawLogical(arcRaw(v).x,arcRaw(v).y));
 }
 function noteBodyQuads(lane,size,travel,slim=false){
   const g=state.geom,margin=0,edge=slim?.125:.25,h=g.noteH;
   const l=lane-size+margin,r=lane+size-margin,m=(l+r)/2,ml=Math.min(l+edge,m),mr=Math.max(r-edge,m);
-  const rect=(a,b)=>persp(a,b,1-h,1+h,travel);
-  return{left:rect(l,ml),middle:arcSlices(rect(ml,mr),g),right:rect(mr,r),whole:rect(l,r)};
+  const rect=(a,b)=>perspRaw(a,b,1-h,1+h,travel);
+  const left=rect(l,ml),right=rect(mr,r),mid=rect(ml,mr);
+  return{left:arcQuad(left),middle:arcMiddle(mid,g),right:arcQuad(right),whole:arcQuad(rect(l,r))};
 }
-function arcSlices(q,g){
-  const a=q[0],b=q[1],c=q[2],d=q[3],span=Math.max(1,Math.min(18,Math.ceil((Math.abs(b.x-a.x)+Math.abs(d.x-c.x))*20/Math.max(20,Math.abs(a.y)))));
+function arcMiddle(q,g){
+  const a=q[0],b=q[1],c=q[2],d=q[3];
+  const r0=Math.hypot(b.x-a.x,b.y-a.y),r1=Math.hypot(c.x-d.x,c.y-d.y);
+  const span=Math.max(1,Math.min(18,Math.ceil(Math.min(r0,r1)*20/Math.max(20,Math.abs(a.y)))));
   const out=[];
-  for(let i=0;i<span;i++){const l=i/span,r=(i+1)/span;out.push([
-    {x:a.x+(b.x-a.x)*l,y:a.y+(b.y-a.y)*l},{x:a.x+(b.x-a.x)*r,y:a.y+(b.y-a.y)*r},
-    {x:d.x+(c.x-d.x)*r,y:d.y+(c.y-d.y)*r},{x:d.x+(c.x-d.x)*l,y:d.y+(c.y-d.y)*l}
-  ])}
+  for(let i=0;i<span;i++){
+    const l=i/span,r=(i+1)/span;
+    const raw=[
+      {x:a.x+(b.x-a.x)*l,y:a.y+(b.y-a.y)*l},
+      {x:a.x+(b.x-a.x)*r,y:a.y+(b.y-a.y)*r},
+      {x:d.x+(c.x-d.x)*r,y:d.y+(c.y-d.y)*r},
+      {x:d.x+(c.x-d.x)*l,y:d.y+(c.y-d.y)*l}
+    ];
+    out.push(raw.map(v=>rawLogical(arcRaw(v).x,arcRaw(v).y)));
+  }
   return out;
 }
 function logicalPoint(lane,travel){
-  const g=state.geom;return arcAdjust({x:lane*travel*g.ws,y:travel*g.hs+g.t});
+  const g=state.geom,v={x:lane*travel*g.ws,y:travel*g.hs+g.t},a=arcRaw(v);
+  return rawLogical(a.x,a.y);
 }
 function mapLogical(v){
-  const g=state.geom;return{x:g.ox+g.fieldW*.5+v.x,y:g.oy+g.fieldH*.5-v.y};
+  return v;
 }
 function tickQuad(lane,travel){
-  const g=state.geom,center=logicalPoint(lane,travel),half=g.scaledNoteH*travel;
-  const l=arcAdjust({x:center.x-half,y:center.y}),r=arcAdjust({x:center.x+half,y:center.y});
-  const dx=r.x-l.x,dy=r.y-l.y,ox=-dy/2,oy=dx/2;
+  const g=state.geom,raw={x:lane*travel*g.ws,y:travel*g.hs+g.t};
+  const center=arcRaw(raw);
+  const l=arcRaw({x:raw.x-g.scaledNoteH*travel,y:raw.y});
+  const rr=arcRaw({x:raw.x+g.scaledNoteH*travel,y:raw.y});
+  const dx=rr.x-l.x,dy=rr.y-l.y,ox=-dy/2,oy=dx/2;
   return[
-    mapLogical({x:l.x-ox,y:l.y-oy}),mapLogical({x:r.x-ox,y:r.y-oy}),
-    mapLogical({x:r.x+ox,y:r.y+oy}),mapLogical({x:l.x+ox,y:l.y+oy})
+    rawLogical(l.x-ox,l.y-oy),rawLogical(rr.x-ox,rr.y-oy),
+    rawLogical(rr.x+ox,rr.y+oy),rawLogical(l.x+ox,l.y+oy)
   ];
 }
 function arrowQuad(lane,size,travel,direction,animationProgress){
@@ -92,9 +127,10 @@ function arrowQuad(lane,size,travel,direction,animationProgress){
     {x:baseTR.x+O.x,y:baseTR.y+O.y},{x:baseTL.x+O.x,y:baseTL.y+O.y}
   ];
   if(right)q=[q[1],q[0],q[3],q[2]];
-  return q.map(mapLogical);
+  return q;
 }
 function rotate(v,a){const c=Math.cos(a),s=Math.sin(a);return{x:v.x*c-v.y*s,y:v.x*s+v.y*c};}
+
 function loadImage(name){
   if(!images.has(name)){
     const im=new Image();im.crossOrigin="anonymous";im.decoding="async";
