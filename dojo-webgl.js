@@ -141,7 +141,29 @@ function selection(){
  return{m,d};
 }
 
-function expose(){window.__PJSEKAI_DOJO__={state:{get prepared(){if(!S.prep)return null;return{music:S.prep.music,difficulty:S.prep.difficulty,audioUrl:S.prep.audioUrl||"",vocal:S.prep.vocal||null,notes:S.prep.notes||[]}},get notes(){return S.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:!!n.done}))},get audio(){return S.audio},get running(){return S.running},get starting(){return S.starting},get score(){return S.score},get combo(){return S.combo},get judged(){return S.judged},get error(){return S.error||""},get noteStats(){const hits=S.notes.map(n=>n.hit).filter(Number.isFinite),future=S.notes.filter(n=>Number.isFinite(n.hit)&&n.hit>(S.audio.currentTime||0)+0.1).slice(0,12);return{count:S.notes.length,finite:hits.length,min:hits.length?Math.min(...hits):null,max:hits.length?Math.max(...hits):null,now:S.audio.currentTime||0,future:future.map(n=>({hit:n.hit,lane:n.l,kind:n.k,end:n.end||0}))}}}}
+function expose(){
+ window.__PJSEKAI_DOJO__={
+  start,
+  pause,
+  finish,
+  state:{
+   get prepared(){if(!S.prep)return null;return{music:S.prep.music,difficulty:S.prep.difficulty,audioUrl:S.prep.audioUrl||"",vocal:S.prep.vocal||null,notes:S.prep.notes||[]}},
+   get notes(){return S.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:!!n.done}))},
+   get audio(){return S.audio},
+   get running(){return S.running},
+   get starting(){return S.starting},
+   get score(){return S.score},
+   get combo(){return S.combo},
+   get judged(){return S.judged},
+   get error(){return S.error||""},
+   get noteStats(){
+    const hits=S.notes.map(n=>n.hit).filter(Number.isFinite);
+    const future=S.notes.filter(n=>Number.isFinite(n.hit)&&n.hit>(S.audio.currentTime||0)+0.1).slice(0,12);
+    return{count:S.notes.length,finite:hits.length,min:hits.length?Math.min(...hits):null,max:hits.length?Math.max(...hits):null,now:S.audio.currentTime||0,future:future.map(n=>({hit:n.hit,lane:n.l,kind:n.k,end:n.end||0}))};
+   }
+  }
+ };
+}
 async function prepareDefault(){try{await data();const q=selection();if(!q?.m)throw Error("歌曲資料尚未就緒");const url="https://assets.unipjsk.com/startapp/music/music_score/"+String(q.m.id).padStart(4,"0")+"_01/"+q.d,r=await fetch(url,{cache:"no-store"});if(!r.ok)throw Error("官方譜面載入失敗 HTTP "+r.status);const score=sus(await r.text()),filler=N(q.m.fillerSec,0);score.filler=filler;score.notes.forEach(n=>{n.hit+=filler;if(n.end)n.end+=filler});const v=S.vocals.find(x=>+x.musicId===+q.m.id&&x.musicVocalType==="original_song")||S.vocals.find(x=>+x.musicId===+q.m.id);const vn=v?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01",jacket="https://assets.unipjsk.com/startapp/music/jacket/"+vn+"/"+vn+".png";S.prep={...score,music:q.m,difficulty:q.d,vocal:v||null,audioUrl:"https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav",jacket,notes:score.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:false}))};return S.prep}catch(e){console.warn("[Dojo default prepare]",e);throw e}}
 async function ensurePrepared(){if(S.prep?.notes?.length)return S.prep;const q=selection();if(!q?.m)throw Error("歌曲資料尚未就緒");const url="https://assets.unipjsk.com/startapp/music/music_score/"+String(q.m.id).padStart(4,"0")+"_01/"+q.d,r=await fetch(url,{cache:"no-store"});if(!r.ok)throw Error("官方譜面載入失敗 HTTP "+r.status);const score=sus(await r.text()),filler=N(q.m.fillerSec,0);score.filler=filler;score.notes.forEach(n=>{n.hit+=filler;if(n.end)n.end+=filler});const v=S.vocals.find(x=>+x.musicId===+q.m.id&&x.musicVocalType==="original_song")||S.vocals.find(x=>+x.musicId===+q.m.id),vn=v?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01",jacket="https://assets.unipjsk.com/startapp/music/jacket/"+vn+"/"+vn+".png";return S.prep={...score,music:q.m,difficulty:q.d,vocal:v||null,audioUrl:"https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav",jacket}}
 
