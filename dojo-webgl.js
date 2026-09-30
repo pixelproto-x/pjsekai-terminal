@@ -685,6 +685,10 @@ function drawStage(){
   if(S.skin?.sprites?.["#JUDGMENT_LINE"])drawSkinSprite("#JUDGMENT_LINE",(h.bl+h.br)/2,h.hit,h.br-h.bl,Math.max(10,h.h*.018),.92);
   line([[h.bl,h.hit-5],[h.br,h.hit-5]],[.82,.96,1],1.15);
 }
+function spawnLaneFx(lane){
+  const x=laneX(lane,1),y=S.geom.hit-2;
+  S.fx.push({x,y,t:0,j:"",c:false,kind:"lane",dir:"up",seed:Math.random()*Math.PI*2});
+}
 function spawnFx(lane,judgeKind,critical=false){
   const x=laneX(lane,1),y=S.geom.hit-2;
   const input=S.lastInput||{};
@@ -750,15 +754,30 @@ function hud(judgment,error=0){
   const acc=S.tn?cl(100-(S.timing/S.tn)*120,0,100):100;
   put("dojoGameAccuracy",acc.toFixed(2)+"%");
   const life=$("dojoGameLifeBar");if(life)life.style.width=cl(S.life/10,0,100)+"%";
+  const combo=$("dojoGameCombo");
+  if(combo&&judgment){
+    combo.style.transform="translateX(-50%) scale(.6)";
+    combo.style.opacity="1";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      combo.style.transform="translateX(-50%) scale(1)";
+    }));
+  }
   const jt=$("dojoJudgeText");
   if(jt){
     jt.textContent=judgment||"";
     jt.dataset.j=judgment||"";
     jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
     if(judgment){
-      jt.style.opacity="1";jt.style.transform="translateY(-2px) scale(1.03)";
+      jt.style.opacity="1";
+      jt.style.transform="translateX(-50%) translateY(-2px) scale(.05)";
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        jt.style.transform="translateX(-50%) translateY(0) scale(1)";
+      }));
       clearTimeout(S.judgeTimer);
-      S.judgeTimer=setTimeout(()=>{jt.style.opacity=".86";jt.style.transform="translateY(0) scale(1)"},120);
+      S.judgeTimer=setTimeout(()=>{
+        jt.style.opacity="0";
+        jt.style.transform="translateX(-50%) translateY(0) scale(1)";
+      },300);
     }
   }
 }
@@ -872,15 +891,15 @@ function startHold(n,inputId,now){
   return head;
 }
 function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
-  if(!S.running||S.paused)return;
+  if(!S.running||S.paused)return false;
   const group=exact?Math.floor(lane/3):lane;
   S.keyFlash[cl(group,0,3)]=performance.now()+180;
   const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   const recovered=attachMissedHold(lane,now,exact,inputId);
-  if(recovered)return;
+  if(recovered)return true;
   let n=findCandidate(lane,now,mode,exact,direction);
   if(!n&&mode==="flick")n=findCandidate(lane,now,"tap",exact,direction);
-  if(!n)return;
+  if(!n)return false;
   let wrongWay=false;
   if(n.f){
     wrongWay=!flickDirectionOk(n.f,{dx:n.f==="left"?-1:n.f==="right"?1:0,dy:n.f==="up"?-1:n.f==="down"?1:0});
@@ -900,9 +919,10 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
     n.done=false;n.judged=true;
     S.held.set(inputId,{note:n,lane:n.l,touchedLane:n.l,inputLane:lane,exactInput:exact,head});
     for(const cp of n.checkpoints||[])cp.judged=false;
-    return;
+    return true;
   }
   award(n,now-n.hit,n.f?"flick":n.t?"trace":"tap",true,wrongWay);
+  return true;
 }
 function release(inputId){
   const held=S.held.get(inputId);if(!held)return;
@@ -1203,12 +1223,12 @@ function bind(){
       e.preventDefault();const lane=cl(+z.dataset.dojoLaneZone|0,0,11);
       try{z.setPointerCapture(e.pointerId)}catch(_){}
       S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true});
-      hit(lane,"tap",true,"up","ptr:"+e.pointerId);return;
+      if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);return;
     }
     const w=$("dojoGameStageWrap");if(!w||!S.running)return;
     const r=w.getBoundingClientRect(),x=cl((e.clientX-r.left)/r.width,0,.999),lane=cl(Math.floor(x*12),0,11);
     S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,t:performance.now(),exact:true});
-    hit(lane,"tap",true,"up","ptr:"+e.pointerId);
+    if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);
   },{passive:false});
   document.addEventListener("pointermove",e=>{
     const q=S.touch.get(e.pointerId);if(!q)return;
