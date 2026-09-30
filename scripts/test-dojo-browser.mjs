@@ -86,8 +86,9 @@ if (afterInput.judged <= 0 && afterInput.score <= 0 && afterInput.combo <= 0) {
 
 await page.locator('#dojoOpenPracticeBtn').click();
 await page.waitForTimeout(250);
-if ((await page.locator('#dojoOpenPracticeBtn').textContent()).includes('暫停')) {
-  throw new Error('Pause button did not change state');
+const pausedLabel=await page.locator('#dojoOpenPracticeBtn').textContent();
+if (!pausedLabel.includes('繼續打歌')) {
+  throw new Error('Pause button did not change state: '+pausedLabel);
 }
 await page.locator('#dojoOpenPracticeBtn').click();
 await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 5000 });
