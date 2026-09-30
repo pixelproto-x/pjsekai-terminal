@@ -83,7 +83,9 @@ function finish(){if(!S.running)return;S.running=false;S.audio.pause();if(S.paus
 function pause(){if(!S.running)return;if(S.paused){S.audio.play();S.paused=false;S.pause.textContent="Ⅱ"}else{S.audio.pause();S.paused=true;S.pause.textContent="▶"}}
 async function data(){if(!S.songs){const [a,b,c]=await Promise.all([j("dojo-musics.json"),j("dojo-difficulties.json"),j("dojo-vocals.json").catch(()=>[])]);S.songs=a;S.diffs=b;S.vocals=c;const m=new Map();for(const d of b){const id=+d.musicId;if(!m.has(id))m.set(id,{});m.get(id)[String(d.musicDifficulty).toLowerCase()]=d}S.songs=S.songs.map(x=>({...x,difficulties:m.get(+x.id)||{}}))}}
 function selection(){
- const title=$("dojoSelectedTitle")?.textContent?.trim()||"",id=+localStorage.getItem("pjsekai-chart-last-song")||1,m=S.songs.find(x=>x.title===title)||S.songs.find(x=>+x.id===id)||S.songs[0];
+ const title=$("dojoSelectedTitle")?.textContent?.trim()||"",id=+(localStorage.getItem("pjsekai-chart-last-song")||1);
+ const m=S.songs.find(x=>x.title===title)||S.songs.find(x=>+x.id===id)||S.songs[0];
+ if(!m)return null;
  let d=S.selDiff;
  const box=$("dojoDifficultyButtons");
  if(box){const a=box.querySelector(".active,[aria-pressed='true'],button.selected");if(a){const raw=(a.dataset.dojoDiff||a.dataset.difficulty||a.textContent||"").toLowerCase();const k=DIFF.find(x=>raw.includes(x));if(k)d=k}}
