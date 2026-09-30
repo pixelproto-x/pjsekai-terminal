@@ -11,39 +11,80 @@ function app(){const root=appRoot();const x=root?.getState?.()||{};x.dojo=x.dojo
 async function j(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
 function beatSec(b,c){let x=c[0]||{beat:0,bpm:120,sec:0};for(let i=1;i<c.length;i++){if(c[i].beat>b)break;x=c[i]}return x.sec+(b-x.beat)*60/x.bpm}
 function sus(text){
- const rows=String(text).split(/\r?\n/).map(x=>x.trim()).filter(x=>x[0]==="#"),meta=new Map(),data=[];
- for(const r of rows){const p=r.indexOf(":");if(p<0)continue;const h=r.slice(1,p),v=r.slice(p+1).trim();meta.set(h,v);data.push([h,v])}
- const tpb=+(String(meta.get("REQUEST")||"").match(/ticks_per_beat\s+(\d+)/)?.[1]||480),bars=[];
- for(const [h,v] of data)if(/^\d{3}02$/.test(h))bars.push({m:+h.slice(0,3),len:+v||4});
- bars.sort((a,b)=>a.m-b.m);if(!bars.length)bars.push({m:0,len:4});
- let tick=0,prev=bars[0],bm=[];for(const z of bars){if(z!==bars[0])tick+=(z.m-prev.m)*prev.len*tpb;bm.push({m:z.m,t:tick,len:z.len*tpb});prev=z}
- const off=m=>{let z=bm[0];for(const q of bm){if(q.m>m)break;z=q}return z.t+(m-z.m)*z.len/(bm.find(v=>v.m===z.m)?.len||4)};
- const beatAt=t=>t/tpb;
- const rowPoints=(h,v)=>{const m=+h.slice(0,3),c=h[3],lane=parseInt(h[4],36),channel=h[5]||"",len=bm.find(q=>q.m===m)?.len||4,a=String(v).match(/.{2}/g)||[],out=[];if(!Number.isFinite(lane)||lane<2||lane>13)return out;for(let i=0;i<a.length;i++){if(a[i]==="00")continue;out.push({tick:off(m)+i/a.length*len*tpb,lane,width:Math.max(1,parseInt(a[i][1],36)||1),type:parseInt(a[i][0],36),channel});}return out};
- const bpm=new Map(),changes=[],base=[],flicks=[],slides=new Map(),guides=new Map();
- for(const [h,v] of data){
-  if(/^BPM[0-9A-Z]{2}$/.test(h)){bpm.set(h.slice(3),+v||120);continue}
-  if(/^\d{3}08$/.test(h)){const key=String(v).trim().toUpperCase();changes.push({beat:0,bpm:bpm.get(key)||+v||120,rawTick:off(+h.slice(0,3))});continue}
-  if(/^\d{3}1[0-9a-z]$/i.test(h))base.push(...rowPoints(h,v));
-  else if(/^\d{3}5[0-9a-z]$/i.test(h))flicks.push(...rowPoints(h,v));
-  else if(/^\d{3}3[0-9a-z][0-9a-z]$/i.test(h)){for(const q of rowPoints(h,v)){const k=q.channel||h.slice(5,6);if(!slides.has(k))slides.set(k,[]);slides.get(k).push(q)}}
-  else if(/^\d{3}9[0-9a-z][0-9a-z]$/i.test(h)){for(const q of rowPoints(h,v)){const k=q.channel||h.slice(5,6);if(!guides.has(k))guides.set(k,[]);guides.get(k).push(q)}}
+ const valid=String(text).split(/\r?\n/).filter(line=>line.slice(0,1)==="#").map(line=>line.slice(1).trim());
+ const meta=new Map();
+ for(const line of valid){
+   const p=line.indexOf(":"); if(p<0)continue;
+   meta.set(line.slice(0,p).trim().toUpperCase(),line.slice(p+1).trim());
  }
- changes.sort((x,y)=>x.rawTick-y.rawTick);if(!changes.length)changes.push({beat:0,bpm:120,rawTick:0});if(changes[0].rawTick>0)changes.unshift({beat:0,bpm:changes[0].bpm,rawTick:0});
- let sec=0;for(let i=0;i<changes.length;i++){if(i)sec+=(changes[i].rawTick-changes[i-1].rawTick)/tpb*60/changes[i-1].bpm;changes[i].sec=sec}
- const beatSec2=b=>{let q=changes[0];for(const z of changes){if(z.rawTick> b*tpb)break;q=z}return q.sec+(b*tpb-q.rawTick)/tpb*60/q.bpm};
- const fm=new Map(flicks.map(q=>[(cl(q.lane-2,0,11))+"@"+q.tick,{dir:q.type===1?"up":q.type===3?"left":q.type===4?"right":"up"}]));
- const notes=[],criticalAt=new Set(base.filter(q=>q.type===2||q.type===6).map(q=>cl(q.lane-2,0,11)+"@"+q.tick));
- for(const q of base){
-  const l=cl(q.lane-2,0,11),f=fm.get(l+"@"+q.tick),typ=q.type;
-  if(typ===1||typ===2)notes.push({k:"tap",l,w:q.width,b:beatAt(q.tick),c:typ===2,f:f?.dir||null,t:!!f});
-  else if(typ===5||typ===6)notes.push({k:"trace",l,w:q.width,b:beatAt(q.tick),c:typ===6,f:f?.dir||null,t:!!f});
+ const tpb=480;
+ const measure=(valid.filter(line=>/^\d{3}[1-5][0-9a-fA-F][0-9a-zA-Z]?:/.test(line)).map(line=>+line.slice(0,3)).reduce((a,b)=>Math.max(a,b),0))+1;
+ const lineToDef=(re,s1,s2)=>valid.filter(x=>re.test(x)).reduce((a,line)=>{a[Number(line.slice(s1,s2))]=Number(line.split(":")[1].trim());return a},[]);
+ const fill=(def,len,base)=>{const out=[];let last=base;for(let i=0;i<len;i++){if(Number.isFinite(def[i]))last=def[i];out[i]=last}return out};
+ const baseBpm=Number(meta.get("BASEBPM"))>0?Number(meta.get("BASEBPM")):120;
+ const bpmDef=lineToDef(/^BPM\d{2}:/,3,5);
+ const bpmRef=lineToDef(/^\d{3}08:/,0,3);
+ const bpmByMeasure=fill(bpmRef.map(k=>Number.isFinite(bpmDef[k])?bpmDef[k]:undefined),measure,baseBpm).map(v=>v>0?v:baseBpm);
+ const beatDef=lineToDef(/^\d{3}02:/,0,3);
+ const beats=fill(beatDef,measure,4).map(v=>v>0?v:4);
+ const startSec=new Array(measure).fill(0);
+ for(let i=1;i<measure;i++)startSec[i]=startSec[i-1]+beats[i-1]*60/bpmByMeasure[i-1];
+ const parseLines=valid.filter(line=>/^\d{3}[1-5][0-9a-fA-F][0-9a-zA-Z]?:/.test(line));
+ const notes=[];
+ for(const line of parseLines){
+   const pair=line.split(":",2),h=pair[0],raw=String(pair[1]||"").trim().replace(/\s+/g,""),m=Number(h.slice(0,3)),laneType=Number(h[3]),lane=parseInt(h[4],16),channel=h.length>=6?h[5].toUpperCase().charCodeAt(0):0;
+   if(m<0||m>=measure||lane<0||lane>15||!raw||raw.length%2)continue;
+   const count=raw.length/2,slotBeats=beats[m]/count;
+   for(let i=0;i<count;i++){
+     const a=raw.slice(i*2,i*2+2),type=parseInt(a[0],36),width=parseInt(a[1],17);
+     if(!width||!Number.isFinite(type)||!Number.isFinite(lane))continue;
+     const beat=i*slotBeats+((0)),sec=startSec[m]+i*slotBeats*60/bpmByMeasure[m];
+     notes.push({lane,laneType,channel,measure:m,tick:Math.round(i*tpb*slotBeats),type,width,sec});
+   }
  }
- const makeSlides=(map,guide)=>{for(const arr of map.values()){arr.sort((x,y)=>x.tick-y.tick);if(arr.length<2)continue;const points=arr.map(q=>({l:cl(q.lane-2,0,11),b:beatAt(q.tick),w:q.width,type:q.type}));const start=points.findIndex(q=>q.type===1);if(start<0)continue;const tail=points.slice(start);const end=tail.findIndex(q=>q.type===2);const pts=end>=0?tail.slice(0,end+1):tail;if(pts.length<2)continue;notes.push({k:guide?"traceHold":"hold",l:pts[0].l,w:pts[0].w,b:pts[0].b,e:pts[pts.length-1].b,c:criticalAt.has(pts[0].l+"@"+arr.find(q=>q.type===1)?.tick)||criticalAt.has(pts[pts.length-1].l+"@"+arr.find(q=>q.type===2)?.tick),path:pts,guide})}};
- makeSlides(slides,false);makeSlides(guides,true);
- notes.sort((x,y)=>x.b-y.b);
- const o=(+meta.get("WAVEOFFSET")||0)/1000;
- return{changes,notes:notes.map((n,i)=>({...n,id:i,hit:beatSec2(n.b)+o,end:n.e==null?0:beatSec2(n.e)+o}))};
+ const byKey=new Map(),shortMap=new Map(),airMap=new Map();
+ const key=n=>n.measure+"_"+n.tick+"_"+n.lane;
+ for(const n of notes)if(n.laneType===1)shortMap.set(key(n),n);
+ for(const n of notes)if(n.laneType===5)airMap.set(key(n),n);
+ const out=[];
+ for(const n of notes.filter(x=>x.laneType===1)){
+   if(n.type===1)out.push({k:"tap",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:false,f:null,t:false});
+   else if(n.type===2)out.push({k:"tap",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:true,f:null,t:false});
+   else if(n.type===3)out.push({k:"trace",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:false,f:null,t:true});
+ }
+ for(const n of notes.filter(x=>x.laneType===5)){
+   const dir=n.type===3?"left":n.type===4?"right":n.type===5?"down":"up";
+   const existing=shortMap.get(key(n));
+   if(existing)shortMap.delete(key(n));
+   if(!existing)out.push({k:"tap",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:false,f:dir,t:true});
+ }
+ const buildLong=(laneType,kind,guide)=>{
+   const groups=new Map();
+   for(const n of notes.filter(x=>x.laneType===laneType&&n.channel)){
+     const g=groups.get(n.lane+"_"+n.channel)||[];g.push(n);groups.set(n.lane+"_"+n.channel,g);
+   }
+   for(const arr of groups.values()){
+     arr.sort((a,b)=>a.sec-b.sec);
+     const si=arr.findIndex(n=>n.type===1);if(si<0)continue;
+     const tail=arr.slice(si),ei=tail.findIndex(n=>n.type===2),path=ei>=0?tail.slice(0,ei+1):tail;
+     if(path.length<2)continue;
+     const points=path.map(n=>({l:cl(n.lane-2,0,11),b:n.sec,w:n.width,type:n.type,diamond:n.type===3}));
+     out.push({k:guide?"traceHold":kind,l:points[0].l,w:points[0].w,b:points[0].b,e:points[points.length-1].b,c:points[0].type===3||points[0].type===6,path:points,guide});
+   }
+ };
+ buildLong(2,"hold",false);
+ buildLong(3,"hold",false);
+ const consumed=new Set(out.filter(n=>n.path).flatMap(n=>n.path.map(p=>p.b+":"+p.l)));
+ const remaining=[];
+ for(const n of shortMap.values()){
+   if(n.type===1)remaining.push({k:"tap",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:false,f:null,t:false});
+   else if(n.type===2)remaining.push({k:"tap",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:true,f:null,t:false});
+   else if(n.type===3)remaining.push({k:"trace",l:cl(n.lane-2,0,11),w:n.width,b:n.sec,c:false,f:null,t:true});
+ }
+ out.push(...remaining);
+ out.sort((a,b)=>a.b-b.b);
+ const waveOffset=Number(meta.get("WAVEOFFSET"))/1000||0;
+ return{changes:bpmByMeasure.map((b,i)=>({beat:startSec[i],bpm:b,rawTick:i*4*tpb})),notes:out.map((n,i)=>({...n,id:i,hit:n.b+waveOffset,end:n.e==null?0:n.e+waveOffset})),filler:0};
 }
 function setup(){
  const c=$("dojoGameCanvas"),w=$("dojoGameStageWrap");if(!c||!w)throw Error("Dojo 畫面不存在");
