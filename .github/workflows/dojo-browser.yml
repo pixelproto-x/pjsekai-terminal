@@ -32,9 +32,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Generate Project SEKAI static data
-        run: node scripts/build-static-data.mjs
-
       - name: Generate Dojo song and vocal data
         run: node scripts/build-dojo-static-data.mjs
 
