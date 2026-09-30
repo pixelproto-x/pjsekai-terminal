@@ -19,7 +19,7 @@ function sus(text){
  let tick=0,prev=bars[0],bm=[];for(const z of bars){if(z!==bars[0])tick+=(z.m-prev.m)*prev.len*tpb;bm.push({m:z.m,t:tick,len:z.len*tpb});prev=z}
  const off=m=>{let z=bm[0];for(const q of bm){if(q.m>m)break;z=q}return z.t+(m-z.m)*z.len/(bm.find(v=>v.m===z.m)?.len||4)};
  const beatAt=t=>t/tpb;
- const rowPoints=(h,v)=>{const m=+h.slice(0,3),c=h[3],lane=parseInt(h[4],36),channel=h[5]||"",len=bm.find(q=>q.m===m)?.len||4,a=String(v).match(/.{2}/g)||[],out=[];for(let i=0;i<a.length;i++){if(a[i]==="00")continue;out.push({tick:off(m)+i/a.length*len*tpb,lane,width:Math.max(1,parseInt(a[i][1],36)||1),type:parseInt(a[i][0],36),channel});}return out};
+ const rowPoints=(h,v)=>{const m=+h.slice(0,3),c=h[3],lane=parseInt(h[4],36),channel=h[5]||"",len=bm.find(q=>q.m===m)?.len||4,a=String(v).match(/.{2}/g)||[],out=[];if(!Number.isFinite(lane)||lane<2||lane>13)return out;for(let i=0;i<a.length;i++){if(a[i]==="00")continue;out.push({tick:off(m)+i/a.length*len*tpb,lane,width:Math.max(1,parseInt(a[i][1],36)||1),type:parseInt(a[i][0],36),channel});}return out};
  const bpm=new Map(),changes=[],base=[],flicks=[],slides=new Map(),guides=new Map();
  for(const [h,v] of data){
   if(/^BPM[0-9A-Z]{2}$/.test(h)){bpm.set(h.slice(3),+v||120);continue}
