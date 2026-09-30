@@ -31,14 +31,14 @@ function sus(text){
  changes.sort((x,y)=>x.rawTick-y.rawTick);if(!changes.length)changes.push({beat:0,bpm:120,rawTick:0});if(changes[0].rawTick>0)changes.unshift({beat:0,bpm:changes[0].bpm,rawTick:0});
  let sec=0;for(let i=0;i<changes.length;i++){if(i)sec+=(changes[i].rawTick-changes[i-1].rawTick)/tpb*60/changes[i-1].bpm;changes[i].sec=sec}
  const beatSec2=b=>{let q=changes[0];for(const z of changes){if(z.rawTick> b*tpb)break;q=z}return q.sec+(b*tpb-q.rawTick)/tpb*60/q.bpm};
- const fm=new Map(flicks.map(q=>[q.lane+"@"+q.tick,{dir:q.type===1?"up":q.type===3?"left":q.type===4?"right":"up"}]));
- const notes=[];
+ const fm=new Map(flicks.map(q=>[(cl(q.lane-2,0,11))+"@"+q.tick,{dir:q.type===1?"up":q.type===3?"left":q.type===4?"right":"up"}]));
+ const notes=[],criticalAt=new Set(base.filter(q=>q.type===2||q.type===6).map(q=>cl(q.lane-2,0,11)+"@"+q.tick));
  for(const q of base){
   const l=cl(q.lane-2,0,11),f=fm.get(l+"@"+q.tick),typ=q.type;
   if(typ===1||typ===2)notes.push({k:"tap",l,w:q.width,b:beatAt(q.tick),c:typ===2,f:f?.dir||null,t:!!f});
   else if(typ===5||typ===6)notes.push({k:"trace",l,w:q.width,b:beatAt(q.tick),c:typ===6,f:f?.dir||null,t:!!f});
  }
- const makeSlides=(map,guide)=>{for(const arr of map.values()){arr.sort((x,y)=>x.tick-y.tick);if(arr.length<2)continue;const points=arr.map(q=>({l:cl(q.lane-2,0,11),b:beatAt(q.tick),w:q.width,type:q.type}));const start=points.findIndex(q=>q.type===1);if(start<0)continue;const tail=points.slice(start);const end=tail.findIndex(q=>q.type===2);const pts=end>=0?tail.slice(0,end+1):tail;if(pts.length<2)continue;notes.push({k:guide?"traceHold":"hold",l:pts[0].l,w:pts[0].w,b:pts[0].b,e:pts[pts.length-1].b,c:false,path:pts,guide})}};
+ const makeSlides=(map,guide)=>{for(const arr of map.values()){arr.sort((x,y)=>x.tick-y.tick);if(arr.length<2)continue;const points=arr.map(q=>({l:cl(q.lane-2,0,11),b:beatAt(q.tick),w:q.width,type:q.type}));const start=points.findIndex(q=>q.type===1);if(start<0)continue;const tail=points.slice(start);const end=tail.findIndex(q=>q.type===2);const pts=end>=0?tail.slice(0,end+1):tail;if(pts.length<2)continue;notes.push({k:guide?"traceHold":"hold",l:pts[0].l,w:pts[0].w,b:pts[0].b,e:pts[pts.length-1].b,c:criticalAt.has(pts[0].l+"@"+arr.find(q=>q.type===1)?.tick)||criticalAt.has(pts[pts.length-1].l+"@"+arr.find(q=>q.type===2)?.tick),path:pts,guide})}};
  makeSlides(slides,false);makeSlides(guides,true);
  notes.sort((x,y)=>x.b-y.b);
  const o=(+meta.get("WAVEOFFSET")||0)/1000;
