@@ -14,14 +14,14 @@ const SERVERS=[
  {id:'bestdori-community',name:'Bestdori Community',kind:'Bestdori 社群自製譜面',url:'https://sonolus.bestdori.com/community',deep:'https://sonolus.bestdori.com/community'}
 ];
 const DEFAULT_KEYS=['D','F','J','K'];
-const DEFAULTS={server:'sekai-best',speed:10,mirror:false,sudden:false,hidden:false,audioOffset:0,visualOffset:0,keys:DEFAULT_KEYS.slice(),selectedSong:'',selectedDifficulty:'Expert'};
+const DEFAULTS={server:'sekai-best',speed:5,mirror:false,sudden:false,hidden:false,audioOffset:0,visualOffset:0,keys:DEFAULT_KEYS.slice(),selectedSong:'',selectedDifficulty:'Expert'};
 
 function ensure(){
  const s=B.getState();
  s.dojo=s.dojo&&typeof s.dojo==='object'?s.dojo:{};
  s.dojo={...DEFAULTS,...s.dojo,keys:Array.isArray(s.dojo.keys)?s.dojo.keys.slice(0,4):DEFAULT_KEYS.slice()};
  while(s.dojo.keys.length<4)s.dojo.keys.push(DEFAULT_KEYS[s.dojo.keys.length]);
- s.dojo.speed=Math.max(1,Math.min(12,n(s.dojo.speed,10)));
+ s.dojo.speed=Math.max(1,Math.min(12,n(s.dojo.speed,5)));
  s.dojo.audioOffset=n(s.dojo.audioOffset);
  s.dojo.visualOffset=n(s.dojo.visualOffset);
  s.dojo.server=SERVERS.some(x=>x.id===s.dojo.server)?s.dojo.server:'sekai-best';
