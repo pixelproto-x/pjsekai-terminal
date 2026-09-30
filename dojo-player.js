@@ -567,7 +567,7 @@ function releaseGroup(group){
       const label=classify(now-n.end);
       n.judged=true;state.judged++;state.counts[label]=(state.counts[label]||0)+1;
       if(label==='MISS'||label==='BAD')state.combo=0;else{state.combo++;state.bestCombo=Math.max(state.bestCombo,state.combo);}
-      state.score+=Math.round(scoreValue(label)*.6);showJudge(label,now-n.end);
+      state.score+=Math.round(scoreValue(label)*.6);noteLaneForEffect=n.lane;showJudge(label,now-n.end);
     }
     n.holding=null;
   }
@@ -631,8 +631,10 @@ function finishGame(failed=false){
   const b=$('dojoOpenPracticeBtn');if(b){b.textContent='↻ 再玩一次';b.disabled=false;}
   const accuracy=state.judged?((state.counts.PERFECT+state.counts.GREAT*.7+state.counts.GOOD*.4+state.counts.BAD*.1)/state.judged*100).toFixed(2):'100.00';
   const timing=state.timingCount?(state.totalTiming/state.timingCount).toFixed(0):'0';
+  const weighted=state.judged?((state.counts.PERFECT+state.counts.GREAT*.7+state.counts.GOOD*.4+state.counts.BAD*.1)/state.judged*100):100;
+  const rank=failed?'F':weighted>=97?'S':weighted>=90?'A':weighted>=80?'B':'C';
   const result=$('dojoGameResult');if(result){result.hidden=false;result.innerHTML='<strong>'+(failed?'FAILED':'CLEAR')+'</strong><div class="dojo-result-score">'+String(Math.round(state.score)).padStart(7,'0')+'</div><div class="dojo-result-grid"><span>ACC <b>'+accuracy+'%</b></span><span>MAX COMBO <b>'+state.bestCombo+'</b></span><span>PERFECT <b>'+state.counts.PERFECT+'</b></span><span>GREAT <b>'+state.counts.GREAT+'</b></span><span>GOOD <b>'+state.counts.GOOD+'</b></span><span>BAD / MISS <b>'+state.counts.BAD+' / '+state.counts.MISS+'</b></span><span>AVG TIMING <b>'+timing+'ms</b></span></div><button type="button" id="dojoResultReplay">再玩一次</button>';result.querySelector('#dojoResultReplay')?.addEventListener('click',()=>{result.hidden=true;startGame();});}
-  const rank=state.life<=0?'F':accuracy>=97?'S':accuracy>=90?'A':accuracy>=80?'B':'C';if(result)result.querySelector('strong').textContent=(failed?'FAILED':'CLEAR')+'  ·  '+rank;showGameReady((failed?'生命歸零 · ':'完成！')+'最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
+  if(result)result.querySelector('strong').textContent=(failed?'FAILED':'CLEAR')+'  ·  '+rank;showGameReady((failed?'生命歸零 · ':'完成！')+'最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
 }
 function bindControls(){
   $('dojoOpenPracticeBtn')?.addEventListener('click',()=>{
