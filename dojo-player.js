@@ -579,10 +579,10 @@ async function startGame(){
     state.startSeek=Math.max(0,(Number(pre.music.fillerSec)||0)-lead);
     const speed=clamp(num(appState().dojo.speed,10),1,12);
     state.leadTime=clamp(3.3-(speed-1)*0.15,1.2,3.3);
+    await state.audio.play().catch(e=>{throw new Error('瀏覽器拒絕播放音訊，請再按一次「開始打歌」');});
     try{
       state.audio.currentTime=state.startSeek;
-    }catch(_){}
-    await state.audio.play().catch(e=>{throw new Error('瀏覽器拒絕播放音訊，請再按一次「開始打歌」');});
+    }catch(_){ }
     state.notes=pre.notes.map(n=>({...n,judged:false,started:false}));
     state.score=0;state.combo=0;state.bestCombo=0;state.judged=0;state.finished=false;state.running=true;
     showGameReady('遊玩中 · 觸控下方區域或使用 D / F / J / K');
