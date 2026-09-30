@@ -830,6 +830,8 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   const group=exact?Math.floor(lane/3):lane;
   S.keyFlash[cl(group,0,3)]=performance.now()+180;
   const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
+  const recovered=attachMissedHold(lane,now,exact,inputId);
+  if(recovered)return;
   let n=findCandidate(lane,now,mode,exact,direction);
   if(!n&&mode==="flick")n=findCandidate(lane,now,"tap",exact,direction);
   if(!n)return;
@@ -915,10 +917,39 @@ function processHeld(now){
 function sweep(now){
   for(const n of S.notes){
     if(n.done||n.started)continue;
+    if(n.k==="hold"){
+      const win=n.f?(n.c?WINDOWS.criticalFlick.B:WINDOWS.flick.B):(n.c?WINDOWS.critical.B:WINDOWS.tap.B);
+      if(!n.headJudged&&now-n.hit>win){
+        // Project SEKAI permits a missed hold head to be picked up while the finger
+        // is already inside the active hold area; keep the tail/checkpoints alive.
+        n.headJudged=true;n.headMissed=true;n.judged=true;
+        S.counts.MISS++;S.tn++;S.combo=0;S.life=cl(S.life-80,0,1000);S.judged++;
+        hud("MISS",now-n.hit);spawnFx(n.l,"MISS",!!n.c);
+      }
+      continue;
+    }
     const win=n.f?(n.c?WINDOWS.criticalFlick.B:WINDOWS.flick.B):n.t?(n.f?WINDOWS.traceFlick.B:WINDOWS.trace.B):(n.c?WINDOWS.critical.B:WINDOWS.tap.B);
-    if(now-n.hit>win){S.counts.MISS++;S.tn++;S.combo=0;S.life=cl(S.life-65,0,1000);n.done=true;n.judged=true;S.judged++;hud("MISS");spawnFx(n.l,"MISS",!!n.c);}
+    if(now-n.hit>win){
+      S.counts.MISS++;S.tn++;S.combo=0;S.life=cl(S.life-80,0,1000);
+      n.done=true;n.judged=true;S.judged++;hud("MISS",now-n.hit);spawnFx(n.l,"MISS",!!n.c);
+    }
   }
   if(S.life<=0)finish();
+}
+function attachMissedHold(inputLane,now,exact,inputId){
+  for(const n of S.notes){
+    if(n.k!=="hold"||n.done||n.started||!n.headMissed||!Number.isFinite(n.end))continue;
+    if(now<=n.hit+WINDOWS.tap.B||now>=n.end+WINDOWS.slideEnd.B)continue;
+    const nl=expectedLane(n,now);
+    const match=exact?Math.abs(nl-inputLane)<=Math.max(1.5,(n.w||1)/2+1.25):Math.floor(nl/3)===inputLane;
+    if(!match)continue;
+    n.started=true;
+    n.judged=true;
+    S.held.set(inputId,{note:n,lane:n.l,touchedLane:n.l,inputLane,exactInput:exact,head:"MISS"});
+    for(const cp of n.checkpoints||[])cp.judged=false;
+    return n;
+  }
+  return null;
 }
 function loop(t){
   S.raf=requestAnimationFrame(loop);
@@ -950,13 +981,13 @@ function finalizePending(){
     if(n.k==="hold"){
       for(const cp of n.checkpoints||[]){
         if(cp.judged)continue;
-        cp.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-20,0,1000);
+        cp.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-40,0,1000);
       }
       if(!n.done){
-        n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-48,0,1000);
+        n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-80,0,1000);
       }
     }else if(!n.done){
-      n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-65,0,1000);
+      n.done=true;n.judged=true;S.judged++;S.tn++;S.counts.MISS++;S.combo=0;S.life=cl(S.life-80,0,1000);
     }
   }
 }
