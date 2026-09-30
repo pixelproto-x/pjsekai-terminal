@@ -125,6 +125,15 @@ function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
 function drawTick(kind,lane,travel,alpha=1){drawImage(kind==="crtcl"?"notes_long_among_crtcl.png":"notes_long_among.png",tickQuad(lane,travel),alpha)}
+function drawConnection(kind,laneA,travelA,laneB,travelB,thickness=10,alpha=1){
+  const a=stagePoint(laneA,travelA),b=stagePoint(laneB,travelB);
+  const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len*thickness*.5,ny=dx/len*thickness*.5;
+  drawImage("notes_long_middle.png",[
+    {x:a.x+nx,y:a.y+ny},{x:b.x+nx,y:b.y+ny},
+    {x:b.x-nx,y:b.y-ny},{x:a.x-nx,y:a.y-ny}
+  ],alpha);
+}
+
 function drawStage(spriteDraw){
   const g=state.geom;
   if(!g)return;
@@ -137,7 +146,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,stagePoint,screenPoint,persp,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,stagePoint,screenPoint,persp,
   get geom(){return state.geom}
 };
 })();
