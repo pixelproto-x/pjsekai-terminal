@@ -46,7 +46,7 @@ if (!before.prepared || !before.notes) throw new Error('Default Dojo chart did n
 if (!before.audioUrl) throw new Error('Dojo prepared chart has no playable audio URL: ' + JSON.stringify(before));
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 
-await page.locator('#dojoDifficultyFilter').selectOption('expert');
+await page.locator('#dojoDifficultyFilter').selectOption('Expert');
 const filteredCount = await page.locator('#dojoSongList [data-dojo-local-song]').count();
 if (filteredCount <= 0) throw new Error('Difficulty filter returned no songs');
 
