@@ -61,7 +61,7 @@ function sus(text){
  }
  const buildLong=(laneType,kind,guide)=>{
    const groups=new Map();
-   for(const n of notes.filter(x=>x.laneType===laneType&&n.channel)){
+   for(const n of notes.filter(x=>x.laneType===laneType&&x.channel)){
      const g=groups.get(n.lane+"_"+n.channel)||[];g.push(n);groups.set(n.lane+"_"+n.channel,g);
    }
    for(const arr of groups.values()){
@@ -70,7 +70,7 @@ function sus(text){
      const tail=arr.slice(si),ei=tail.findIndex(n=>n.type===2),path=ei>=0?tail.slice(0,ei+1):tail;
      if(path.length<2)continue;
      const points=path.map(n=>({l:cl(n.lane-2,0,11),b:startBeat[n.measure]+n.tick/tpb,w:n.width,type:n.type,diamond:n.type===3,sec:n.sec}));
-     out.push({k:guide?"traceHold":kind,l:points[0].l,w:points[0].w,b:points[0].b,e:points[points.length-1].b,c:points[0].type===3||points[0].type===6,path:points,guide});
+     out.push({k:guide?"traceHold":kind,l:points[0].l,w:points[0].w,b:points[0].sec,e:points[points.length-1].sec,c:points[0].type===3||points[0].type===6,path:points,guide});
    }
  };
  buildLong(2,"hold",false);
