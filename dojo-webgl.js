@@ -19,7 +19,7 @@ const S={
   songs:null,diffs:null,vocals:null,selDiff:"expert",prep:null,
   audio:new Audio(),notes:[],running:false,paused:false,starting:false,
   lead:2.5,seek:0,chartOffset:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,
-  counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},
+  counts:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},
   timing:0,tn:0,held:new Map(),fx:[],particles:[],keyFlash:[0,0,0,0],
   gl:null,buf:null,program:null,pp:null,cc:null,geom:null,raf:0,last:0,
   keys:["D","F","J","K"],ro:null,status:null,pause:null,error:"",
@@ -519,26 +519,32 @@ function drawNote(n,now){
   if(settings.sudden&&travel<0.34)return;
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1;
   const p=cl(travel,0,1),q=stageAt(p),x=laneX(n.l,p),lw=laneW(p);
-  const w=Math.max(10,lw*(n.w||1)*1.02),h=Math.max(8,w*.52);
-  const body=n.c?[1,.82,.18]:n.f?[1,.22,.42]:n.t?[.16,.95,.64]:[.22,.78,1];
-  const edge=n.c?[1,.97,.58]:n.f?[1,.70,.78]:n.t?[.72,1,.88]:[.82,.96,1];
+  const w=Math.max(11,lw*(n.w||1)*1.08);
+  const h=Math.max(11,w*.74);
   const head=n.c?"#NOTE_HEAD_YELLOW":n.f?"#NOTE_HEAD_RED":n.t?"#NOTE_HEAD_GREEN":"#NOTE_HEAD_CYAN";
-  const marker=n.c?"criticalMarker":n.f?"flickMarker":null;
+  const conn=n.c?"#NOTE_CONNECTION_YELLOW":n.f?"#NOTE_CONNECTION_RED":n.t?"#NOTE_CONNECTION_GREEN":"#NOTE_CONNECTION_CYAN";
 
-  // Next-SEKAI draws a three-part note body; the browser renderer mirrors that
-  // silhouette with a rounded body plus the real pixel-skin atlas head.
-  roundedRect(x-w*.92,q.y-h*.42,w*1.84,h*.84,Math.min(6,h*.36),body,.94*alpha);
-  line([[x-w*.70,q.y-h*.23],[x+w*.70,q.y-h*.23]],edge,.34*alpha);
-  drawSkinSprite(head,x,q.y,Math.max(12,w*1.20),Math.max(12,h*1.24),alpha);
+  // The reference engine renders notes from a skin atlas (left/middle/right
+  // body pieces) rather than a CSS-like rounded rectangle.  Use the committed
+  // atlas directly so the browser note silhouette stays pixel-accurate.
+  if((n.w||1)>1.05){
+    const bodyW=Math.max(8,w*1.55);
+    drawSkinSprite(conn,x,q.y,bodyW,Math.max(8,h*.48),.96*alpha);
+  }
+  drawSkinSprite(head,x,q.y,Math.max(16,w*1.58),Math.max(16,h*1.32),.99*alpha);
 
   if(n.f){
-    if(marker)drawSkinSprite(marker,x,q.y-h*.78,Math.max(16,w*1.30),Math.max(16,w*1.30),alpha);
-    drawDirectionalArrow(x,q.y-h*.78,Math.max(17,w*1.18),n.f,
-      n.c?[1,.88,.25]:[1,.28,.48],.96*alpha);
+    const marker=n.c?"criticalMarker":"flickMarker";
+    drawSkinSprite(marker,x,q.y-h*.72,Math.max(18,w*1.52),Math.max(18,w*1.52),.96*alpha);
+    // Keep the directional arrow as a crisp overlay for keyboards/touch while
+    // the atlas marker supplies the actual note styling.
+    drawDirectionalArrow(x,q.y-h*.72,Math.max(18,w*1.22),n.f,
+      n.c?[1,.88,.25]:[1,.28,.48],.78*alpha);
   }
 
   if(n.t){
-    drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(14,w*1.02),Math.max(14,w*1.02),.82*alpha);
+    drawSkinSprite(n.c?"#NOTE_TICK_YELLOW":"#NOTE_TICK_GREEN",x,q.y,
+      Math.max(15,w*.92),Math.max(15,w*.92),.84*alpha);
   }
 }
 function drawSlideRibbon(n,now,tailOnly=false){
@@ -681,21 +687,49 @@ function drawStage(){
 }
 function spawnFx(lane,judgeKind,critical=false){
   const x=laneX(lane,1),y=S.geom.hit-2;
-  S.fx.push({x,y,t:0,j:judgeKind,c:critical,seed:Math.random()*Math.PI*2});
-  const count=critical?24:16;
+  const input=S.lastInput||{};
+  const kind=String(input.kind||"tap");
+  S.fx.push({x,y,t:0,j:judgeKind,c:critical,kind,dir:input.direction||"up",seed:Math.random()*Math.PI*2});
+  const count=critical?28:(kind.includes("flick")?22:18);
   for(let i=0;i<count;i++){
-    const a=Math.random()*Math.PI*2,v=55+Math.random()*185;
-    S.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:.36+Math.random()*.28,size:1.5+Math.random()*3,c:critical?[1,.82,.18]:[.55,.92,1]});
+    const a=Math.random()*Math.PI*2;
+    const v=(kind.includes("flick")?75:55)+Math.random()*(critical?230:175);
+    const spread=kind.includes("flick")?.72:1;
+    S.particles.push({
+      x,y,vx:Math.cos(a)*v*spread,vy:Math.sin(a)*v,
+      t:0,life:.34+Math.random()*.30,size:1.2+Math.random()*3.2,
+      c:critical?[1,.82,.18]:kind.includes("trace")?[.20,1,.72]:[.55,.92,1]
+    });
   }
 }
 function effects(dt){
   for(const e of S.fx){
-    e.t+=dt;const k=cl(e.t/.52,0,1),r=8+92*k;
-    circle(e.x,e.y,r,e.c?[1,.84,.20]:[.48,.86,1],(1-k)*.65,24);
-    circle(e.x,e.y,r*.44,e.c?[1,.96,.62]:[.74,.94,1],(1-k)*.24,18);
-    for(let i=0;i<10;i++){
-      const a=i*Math.PI/5+(e.seed||0),rr=r*(.34+.04*Math.sin(i+e.t*8));
-      line([[e.x+Math.cos(a)*rr*.28,e.y+Math.sin(a)*rr*.28],[e.x+Math.cos(a)*rr,e.y+Math.sin(a)*rr]],e.c?[1,.76,.20]:[.62,.92,1],(1-k)*.48);
+    e.t+=dt;
+    const k=cl(e.t/.52,0,1),r=8+92*k;
+    const base=e.c?[1,.84,.20]:e.kind.includes("trace")?[.22,1,.70]:[.48,.86,1];
+    circle(e.x,e.y,r,base,(1-k)*.65,28);
+    circle(e.x,e.y,r*.44,e.c?[1,.96,.62]:[.74,.94,1],(1-k)*.24,20);
+
+    // Directional hit burst: the public engine uses separate flick/trace
+    // effects; these layered streaks reproduce the same visual hierarchy.
+    const dir=e.dir==="left"?Math.PI:e.dir==="right"?0:e.dir==="down"?Math.PI/2:-Math.PI/2;
+    const streaks=e.kind.includes("flick")?8:6;
+    for(let i=0;i<streaks;i++){
+      const fan=(i-(streaks-1)/2)*.16;
+      const a=dir+fan;
+      const inner=r*(.20+.05*Math.sin(i+e.t*10));
+      const outer=r*(.72+.12*(1-k));
+      line([
+        [e.x+Math.cos(a)*inner,e.y+Math.sin(a)*inner],
+        [e.x+Math.cos(a)*outer,e.y+Math.sin(a)*outer]
+      ],e.c?[1,.76,.20]:base,(1-k)*.52);
+    }
+    if(e.kind.includes("trace")){
+      for(let i=0;i<5;i++){
+        const a=(i/5)*Math.PI*2+e.seed;
+        const rr=r*(.55+.10*Math.sin(e.t*9+i));
+        circle(e.x+Math.cos(a)*rr,e.y+Math.sin(a)*rr,2.2,[.55,1,.82],(1-k)*.42,10);
+      }
     }
   }
   S.fx=S.fx.filter(x=>x.t<.52);
