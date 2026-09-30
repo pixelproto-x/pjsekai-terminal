@@ -110,6 +110,7 @@ if (paused.running || !paused.audioPaused || !paused.label.includes('繼續打�
 await page.locator('#dojoOpenPracticeBtn').click();
 await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 5000 });
 
+await page.evaluate(() => document.body.focus());
 const firstNotes = await page.evaluate(() => {
   const p = window.__PJSEKAI_DOJO__;
   const now = p.state.audio.currentTime || 0;
@@ -118,7 +119,7 @@ const firstNotes = await page.evaluate(() => {
 });
 for (const n of firstNotes) {
   await page.waitForTimeout(Math.max(0, Math.round((n.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 12)));
-  await page.keyboard.press('Key' + n.key);
+  await page.keyboard.press(n.key);
 }
 await page.waitForTimeout(250);
 
@@ -129,7 +130,7 @@ const afterInput = await page.evaluate(() => ({
   running: !!window.__PJSEKAI_DOJO__?.state?.running
 }));
 if (afterInput.judged <= 0 && afterInput.score <= 0 && afterInput.combo <= 0) {
-  throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify(afterInput));
+  throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,now:window.__PJSEKAI_DOJO__?.state?.audio?.currentTime||0}));
 }
 
 await page.locator('details.dojo-extra').first().click();
