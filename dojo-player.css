@@ -43,14 +43,41 @@
 
 /* Complete gameplay HUD */
 .dojo-hud-score-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.dojo-hud-score-block>span{font:800 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cede}.dojo-hud-score-block>span b{color:#fff}.dojo-life{position:absolute;left:14px;right:14px;top:48px;height:4px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}.dojo-life span{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff6f91,#ffd34f,#62dca1);transition:width .12s linear}.dojo-game-result{position:absolute;z-index:30;inset:0;display:grid;place-content:center;text-align:center;padding:24px;background:rgba(5,8,16,.84);backdrop-filter:blur(10px)}.dojo-game-result[hidden]{display:none}.dojo-game-result>strong{font-size:clamp(28px,6vw,56px);letter-spacing:.08em}.dojo-result-score{font:950 clamp(24px,5vw,42px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;margin:8px 0 14px}.dojo-result-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:7px;max-width:520px}.dojo-result-grid span{padding:8px 6px;border-radius:10px;background:rgba(255,255,255,.07);font-size:7px;color:#aeb6ca}.dojo-result-grid b{display:block;color:#fff;font-size:11px;margin-top:3px}.dojo-game-result button{margin:15px auto 0;border:0;border-radius:999px;padding:10px 18px;background:#fff;color:#171a24;font-size:9px;font-weight:900}@media(max-width:560px){.dojo-result-grid{grid-template-columns:repeat(2,minmax(90px,1fr))}.dojo-life{top:44px;left:10px;right:10px}}
-/* Dedicated gameplay presentation */
-.dojo-play-page{padding-bottom:28px}
-.dojo-play-page .dojo-game-card{border-radius:18px;background:#070a12;box-shadow:0 28px 90px rgba(0,0,0,.32)}
-.dojo-play-page .dojo-game-head{display:none}
-.dojo-play-page .dojo-game-stage-wrap{width:100%;max-height:calc(100vh - 180px);background:#03050b}
-.dojo-play-page .dojo-game-controls{background:rgba(8,11,20,.96);backdrop-filter:blur(12px);padding:8px}
+/* Dedicated gameplay presentation — official-style live layout */
+.dojo-play-page{padding:0 0 18px;min-height:calc(100vh - 64px)}
+.dojo-play-page .dojo-play-page-head{display:none}
+.dojo-play-page #dojoPlayMount{width:100%;max-width:none}
+.dojo-play-page .dojo-game-card{margin:0;border-radius:0;border:0;background:#02040a;box-shadow:none;overflow:hidden}
+.dojo-play-page .dojo-game-stage-wrap{width:100%;height:auto;max-height:none;aspect-ratio:16/9;background:#02040a}
+.dojo-play-page .dojo-game-controls,
+.dojo-play-page .dojo-game-progress,
 .dojo-play-page .dojo-game-message{display:none}
-.dojo-play-page .dojo-game-progress{height:4px}
-.dojo-play-page .dojo-input-pad{height:28%;left:2%;right:2%}
-.dojo-play-page .dojo-hud-top{top:10px}
-@media(max-width:640px){.dojo-play-page{padding:0 0 18px}.dojo-play-page-head{padding:14px 10px 12px}.dojo-play-page-head .page-subtitle,.dojo-play-page-head .kicker{display:none}.dojo-play-page-title .page-title{font-size:34px}.dojo-play-page .dojo-game-card{border-radius:0}.dojo-play-page .dojo-game-stage-wrap{max-height:none}.dojo-play-page .dojo-game-controls button{min-height:38px}.dojo-play-page .dojo-input-pad{left:0;right:0;height:30%}}
+.dojo-play-page .dojo-input-pad{height:31%;left:0;right:0;bottom:0;opacity:0}
+.dojo-play-page .dojo-input-zone{border-left:0;background:transparent}
+.dojo-play-page .dojo-hud-top{left:18px;right:18px;top:14px;align-items:flex-start}
+.dojo-play-page .dojo-hud-song{display:none}
+.dojo-play-page .dojo-hud-score-block{position:absolute;left:0;top:0;align-items:flex-start;gap:5px}
+.dojo-play-page .dojo-hud-score-block>span{font-size:8px;letter-spacing:.08em;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.7)}
+.dojo-play-page .dojo-hud-score-block>span b{display:none}
+.dojo-play-page .dojo-hud-score-block:after{content:"C    B    A    S";display:block;width:156px;height:10px;padding:1px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(104,82,165,.45));color:rgba(255,255,255,.92);font:800 6px/8px system-ui;letter-spacing:.24em;word-spacing:4px;box-shadow:0 1px 7px rgba(0,0,0,.4)}
+.dojo-play-page .dojo-hud-score{font-size:18px;line-height:1;letter-spacing:.02em;text-shadow:0 2px 7px rgba(0,0,0,.7)}
+.dojo-play-page .dojo-life{left:auto;right:18px;top:16px;width:170px;height:9px;border:2px solid rgba(255,255,255,.9);background:rgba(18,24,39,.78);box-shadow:0 2px 8px rgba(0,0,0,.45);transform:skewX(-16deg)}
+.dojo-play-page .dojo-life span{background:linear-gradient(90deg,#8be7c1,#d8f7a2);box-shadow:inset 0 0 5px rgba(255,255,255,.7)}
+.dojo-play-page .dojo-hud-combo{left:auto;right:6%;top:27%;transform:none;text-align:right;text-shadow:0 3px 16px rgba(0,0,0,.8)}
+.dojo-play-page .dojo-hud-combo strong{font-size:clamp(30px,5.8vw,64px);line-height:.9;font-weight:900}
+.dojo-play-page .dojo-hud-combo span{font-size:10px;letter-spacing:.12em}
+.dojo-play-page .dojo-judge-text{left:50%;top:69%;font-size:clamp(16px,3vw,34px);text-shadow:0 2px 12px rgba(0,0,0,.85)}
+.dojo-play-page .dojo-wgl-status{display:none}
+.dojo-play-page .dojo-wgl-pause{right:18px;top:46px;width:38px;height:38px;border-radius:9px;background:rgba(248,249,252,.92);color:#313642;border:2px solid rgba(255,255,255,.95);box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.dojo-play-page #dojoGameResult{background:rgba(4,6,13,.9)}
+@media(max-width:640px){
+ .dojo-play-page{padding:0;min-height:100vh}
+ .dojo-play-page .dojo-game-stage-wrap{min-height:0}
+ .dojo-play-page .dojo-hud-top{left:10px;right:10px;top:9px}
+ .dojo-play-page .dojo-hud-score{font-size:14px}
+ .dojo-play-page .dojo-hud-score-block:after{width:132px;font-size:5px}
+ .dojo-play-page .dojo-life{right:10px;top:10px;width:125px;height:8px}
+ .dojo-play-page .dojo-wgl-pause{right:10px;top:35px;width:34px;height:34px}
+ .dojo-play-page .dojo-hud-combo{right:5%;top:28%}
+ .dojo-play-page .dojo-hud-combo strong{font-size:clamp(28px,10vw,50px)}
+}
