@@ -591,7 +591,11 @@ function finishGame(){
   showGameReady('完成！最高 Combo '+state.bestCombo+' · 分數 '+Math.round(state.score));
 }
 function bindControls(){
-  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>state.finished?startGame():(state.prepared&&!state.running&&state.audio.src?togglePause():startGame()));
+  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>{
+    if(state.finished){startGame();return;}
+    if(state.prepared&&state.audio.src){togglePause();return;}
+    startGame();
+  });
   $('dojoAnalyzeBtn')?.addEventListener('click',()=>window.setTimeout(()=>{},0));
   $('dojoGameFullscreenBtn')?.addEventListener('click',async()=>{
     const el=$('dojoGameStageWrap');if(!el)return;
