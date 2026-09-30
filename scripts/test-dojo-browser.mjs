@@ -24,6 +24,13 @@ const hasCommittedVocals = vocalResponse.ok();
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
 await page.waitForSelector('#dojoGameCanvas', { state: 'attached', timeout: 30000 });
+const dojoStructure = await page.evaluate(() => ({
+  laneZones: document.querySelectorAll('[data-dojo-lane-zone]').length,
+  dedicatedPage: !!document.querySelector('.dojo-play-page'),
+  runtime: !!window.__PJSEKAI_DOJO__,
+}));
+if (dojoStructure.laneZones !== 12) throw new Error('Dojo must expose 12 touch lanes: ' + JSON.stringify(dojoStructure));
+if (!dojoStructure.dedicatedPage || !dojoStructure.runtime) throw new Error('Dojo gameplay runtime/page missing');
 await page.waitForTimeout(3000);
 
 await page.waitForFunction(() => !!document.querySelector('#dojoGameCard')?.offsetParent, null, { timeout: 30000 });
@@ -77,6 +84,15 @@ const playRoute = await page.evaluate(() => ({
 if (!playRoute.pageVisible || !playRoute.gameMounted) throw new Error('Dojo did not enter dedicated gameplay page: ' + JSON.stringify(playRoute));
 try{
   await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
+const gameplayFeatures = await page.evaluate(() => ({
+  canvas: !!document.querySelector('#dojoGameCanvas'),
+  pause: !!document.querySelector('.dojo-wgl-pause'),
+  inputLanes: document.querySelectorAll('[data-dojo-lane-zone]').length,
+  score: !!document.querySelector('#dojoGameScore'),
+  life: !!document.querySelector('#dojoGameLifeBar'),
+  combo: !!document.querySelector('#dojoGameCombo'),
+}));
+for (const [key, ok] of Object.entries(gameplayFeatures)) if (!ok) throw new Error('Missing gameplay feature: ' + key);
 }catch(error){
   const debug=await page.evaluate(()=>({
     running:!!window.__PJSEKAI_DOJO__?.state?.running,
