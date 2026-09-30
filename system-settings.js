@@ -81,3 +81,11 @@ async function loadChanges(){
 function esc(v){return String(v??"").replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]})}
 makeMount();renderUnit();initDark();applyPerf(localStorage.getItem(KEY.perf)==="1",false);bindData();renderLanguageStatus();loadChanges();document.addEventListener("click",function(e){if(e.target.closest(".theme-choice[data-theme]"))setTimeout(function(){applyUnit(readUnit(),false)},0)});
 })();
+/* Dojo WebGL runtime loader: runs after the legacy adapter so the in-page game button is owned by the browser-native runtime. */
+(function(){
+  var load=function(){
+    if(document.querySelector('script[data-dojo-webgl]'))return;
+    var s=document.createElement('script');s.src='dojo-webgl.js?v=20260930-webgl1';s.async=true;s.dataset.dojoWebgl='1';document.body.appendChild(s);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+})();
