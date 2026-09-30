@@ -45,8 +45,8 @@ function persp(l,r,t,b,travel){
   return [cv(l,t),cv(r,t),cv(r,b),cv(l,b)];
 }
 function noteBodyQuads(lane,size,travel,slim=false){
-  const g=state.geom, margin=0.02, edge=(slim?.125:.25);
-  const h=g.noteH*(slim?1:1);
+  const g=state.geom, margin=0.0, edge=slim?0.0625:0.25;
+  const h=g.noteH;
   const l=lane-size+margin,r=lane+size-margin,m=(l+r)/2;
   const ml=Math.min(l+edge,m),mr=Math.max(r-edge,m);
   return {
@@ -92,7 +92,6 @@ function textureFor(name){
   g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,im);
   g.bindTexture(g.TEXTURE_2D,null);textures.set(name,t);return t;
 }
-function quad(g,q){const z=q[0],out=[z.x,z.y,q[1].x,q[1].y,q[2].x,q[2].y,q[3].x,q[3].y];return out}
 function drawImage(name,q,alpha=1){
   const g=state.gl,loc=state.loc,t=textureFor(name);
   if(!g||!loc||!t||!Array.isArray(q)||q.length!==4)return;
@@ -138,7 +137,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,stagePoint,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,stagePoint,screenPoint,persp,
   get geom(){return state.geom}
 };
 })();
