@@ -172,7 +172,7 @@ function parseSus(text){
     }
   }
   return{
-    offset:-N(meta.get("WAVEOFFSET"),0)/1000,
+    offset:-N(meta.get("WAVEOFFSET"),0),
     ticksPerBeat,
     timeScaleChanges:timeScaleChanges.sort((a,b)=>a.tick-b.tick),
     bpmChanges:bpmChanges.sort((a,b)=>a.tick-b.tick),
@@ -822,12 +822,12 @@ function loop(t){
   bg();drawStage();
   if(S.running){
     const rawNow=S.audio.currentTime-S.seek,settings=app().dojo||{};
-    const visualNow=rawNow-S.chartOffset+N(settings.visualOffset,0)/1000;
+    const visualNow=rawNow+S.chartOffset+N(settings.visualOffset,0)/1000;
     for(const n of S.notes){
       if(n.k==="hold")drawHold(n,visualNow);
       else if(visualNow>n.hit-S.lead&&visualNow<n.hit+.18)drawNote(n,visualNow);
     }
-    const judgeNow=rawNow-S.chartOffset+N(settings.audioOffset,0)/1000;
+    const judgeNow=rawNow+S.chartOffset+N(settings.audioOffset,0)/1000;
     processHeld(judgeNow);sweep(judgeNow);
     const endBase=S.notes.length?Math.max(...S.notes.map(n=>n.end||n.hit)):0;
     const p=endBase?cl(judgeNow/endBase,0,1):0;
