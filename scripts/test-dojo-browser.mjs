@@ -31,6 +31,16 @@ const dojoStructure = await page.evaluate(() => ({
 }));
 if (dojoStructure.laneZones !== 12) throw new Error('Dojo must expose 12 touch lanes: ' + JSON.stringify(dojoStructure));
 if (!dojoStructure.dedicatedPage || !dojoStructure.runtime) throw new Error('Dojo gameplay runtime/page missing');
+const referenceReady = await page.evaluate(() => !!window.__PJSEKAI_SEKAI_REF__ && typeof window.__PJSEKAI_SEKAI_REF__.drawBody === 'function');
+if (!referenceReady) throw new Error('Modular Project SEKAI reference renderer did not load');
+for (const asset of [
+  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_normal_left.png',
+  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_crtcl_left.png',
+  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_03.png'
+]) {
+  const response = await page.request.get(asset);
+  if (!response.ok()) throw new Error('Reference chart asset unavailable: '+asset+' HTTP '+response.status());
+}
 await page.waitForTimeout(3000);
 
 await page.waitForFunction(() => !!document.querySelector('#dojoGameCard')?.offsetParent, null, { timeout: 30000 });
