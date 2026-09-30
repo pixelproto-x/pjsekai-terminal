@@ -517,25 +517,29 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
 function drawNote(n,now){
   const travel=travelAt(now,n.hit),settings=app().dojo||{};
   if(settings.sudden&&travel<0.34)return;
-  const alpha=settings.hidden?cl((travel-0.14)/0.40,0.035,1):1;
-  const q=stageAt(travel),x=laneX(n.l,travel),lw=laneW(travel),w=Math.max(10,lw*(n.w||1)*0.98);
-  const h=Math.max(10,w*0.44);
-  const bucket=n.c?"YELLOW":n.f?"RED":n.t?"GREEN":"NEUTRAL";
-  const atlasKey="#NOTE_HEAD_"+bucket;
-  const body=S.skin?.sprites?.[atlasKey] ? atlasKey : (n.c?"critical":n.f?"flick":n.t?"trace":"normal");
-  // Public Next-SEKAI pixel atlas is the primary note-head renderer; procedural glow remains only as a lighting layer.
-  drawSkinSprite(body,x,q.y,Math.max(14,w*1.14),Math.max(10,h*1.18),0.98*alpha);
-  if(!n.t){
-    const glow=n.c?[1,.82,.18]:n.f?[1,.24,.43]:[.20,.90,1];
-    circle(x,q.y,Math.max(9,w*0.74),glow,0.045*alpha,20);
-  }
+  const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1;
+  const p=cl(travel,0,1),q=stageAt(p),x=laneX(n.l,p),lw=laneW(p);
+  const w=Math.max(10,lw*(n.w||1)*1.02),h=Math.max(8,w*.52);
+  const body=n.c?[1,.82,.18]:n.f?[1,.22,.42]:n.t?[.16,.95,.64]:[.22,.78,1];
+  const edge=n.c?[1,.97,.58]:n.f?[1,.70,.78]:n.t?[.72,1,.88]:[.82,.96,1];
+  const head=n.c?"#NOTE_HEAD_YELLOW":n.f?"#NOTE_HEAD_RED":n.t?"#NOTE_HEAD_GREEN":"#NOTE_HEAD_CYAN";
+  const marker=n.c?"criticalMarker":n.f?"flickMarker":null;
+
+  // Next-SEKAI draws a three-part note body; the browser renderer mirrors that
+  // silhouette with a rounded body plus the real pixel-skin atlas head.
+  roundedRect(x-w*.92,q.y-h*.42,w*1.84,h*.84,Math.min(6,h*.36),body,.94*alpha);
+  line([[x-w*.70,q.y-h*.23],[x+w*.70,q.y-h*.23]],edge,.34*alpha);
+  drawSkinSprite(head,x,q.y,Math.max(12,w*1.20),Math.max(12,h*1.24),alpha);
+
   if(n.f){
-    drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*0.82,Math.max(18,w*1.25),Math.max(18,w*1.25),0.98*alpha);
-    // The public Next-SEKAI skin supplies the marker body; draw the directional
-    // arrow on top so left/right/up/down flicks remain visually distinct.
-    drawDirectionalArrow(x,q.y-h*0.82,Math.max(18,w*1.18),n.f,n.c?[1,.88,.25]:[1,.28,.48],.96*alpha);
+    if(marker)drawSkinSprite(marker,x,q.y-h*.78,Math.max(16,w*1.30),Math.max(16,w*1.30),alpha);
+    drawDirectionalArrow(x,q.y-h*.78,Math.max(17,w*1.18),n.f,
+      n.c?[1,.88,.25]:[1,.28,.48],.96*alpha);
   }
-  if(n.t)drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(16,w*1.05),Math.max(16,w*1.05),0.74*alpha);
+
+  if(n.t){
+    drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(14,w*1.02),Math.max(14,w*1.02),.82*alpha);
+  }
 }
 function drawSlideRibbon(n,now,tailOnly=false){
   if(!n.path?.length)return;
