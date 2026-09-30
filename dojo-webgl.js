@@ -23,7 +23,8 @@ const S={
   gl:null,buf:null,program:null,pp:null,cc:null,geom:null,raf:0,last:0,
   keys:["D","F","J","K"],ro:null,status:null,pause:null,error:"",
   inputFlash:[],lastJudge:"",lastJudgeAt:0,backdrop:new Image(),backdropReady:false,
-  touch:new Map(),songStartPerf:0,lastNow:0,judgementHistory:[],lastInput:null,audioCtx:null,sfxGain:null,judgeTimer:null
+  touch:new Map(),songStartPerf:0,lastNow:0,judgementHistory:[],lastInput:null,audioCtx:null,sfxGain:null,judgeTimer:null,
+  skin:null,tex:null,texProgram:null,texBuf:null,texLoc:null
 };
 S.audio.preload="auto";
 S.audio.crossOrigin="anonymous";
@@ -321,6 +322,14 @@ function setup(){
   S.program=g.createProgram();g.attachShader(S.program,sh(g.VERTEX_SHADER,vs));g.attachShader(S.program,sh(g.FRAGMENT_SHADER,fs));g.linkProgram(S.program);
   if(!g.getProgramParameter(S.program,g.LINK_STATUS))throw Error(g.getProgramInfoLog(S.program)||"WebGL link");
   S.buf=g.createBuffer();S.pp=g.getAttribLocation(S.program,"p");S.cc=g.getAttribLocation(S.program,"c");
+  const tvs="attribute vec2 p;attribute vec2 uv;varying vec2 vuv;void main(){gl_Position=vec4(p,0.,1.);vuv=uv;}";
+  const tfs="precision mediump float;varying vec2 vuv;uniform sampler2D tex;uniform float alpha;void main(){vec4 c=texture2D(tex,vuv);gl_FragColor=vec4(c.rgb,c.a*alpha);}";
+  S.texProgram=g.createProgram();g.attachShader(S.texProgram,sh(g.VERTEX_SHADER,tvs));g.attachShader(S.texProgram,sh(g.FRAGMENT_SHADER,tfs));g.linkProgram(S.texProgram);
+  if(!g.getProgramParameter(S.texProgram,g.LINK_STATUS))throw Error(g.getProgramInfoLog(S.texProgram)||"WebGL texture link");
+  S.texBuf=g.createBuffer();S.texLoc={
+    p:g.getAttribLocation(S.texProgram,"p"),uv:g.getAttribLocation(S.texProgram,"uv"),
+    tex:g.getUniformLocation(S.texProgram,"tex"),alpha:g.getUniformLocation(S.texProgram,"alpha")
+  };
   g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);g.disable(g.DEPTH_TEST);g.clearColor(0,0,0,0);
   const rs=()=>{
     const r=w.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
@@ -329,7 +338,7 @@ function setup(){
     S.geom={w:r.width,h:r.height,top:r.height*.10,far:r.height*.18,hit:r.height*.875,
       tl:r.width*.28,tr:r.width*.72,bl:r.width*.035,br:r.width*.965};
   };
-  rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});
+  rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});loadSkin();
   if(window.ResizeObserver){S.ro=new ResizeObserver(rs);S.ro.observe(w);}
   if(!w.querySelector(".dojo-wgl-overlay")){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
@@ -338,6 +347,49 @@ function setup(){
   }
 }
 function xy(x,y,c,a=1){return[x/S.geom.w*2-1,1-y/S.geom.h*2,c[0],c[1],c[2],a]}
+function spriteQuad(x,y,w,h,sp,alpha=1){
+  if(!S.tex||!sp||!S.texProgram)return;
+  const g=S.gl,W=S.skin?.width||128,H=S.skin?.height||128;
+  const x0=x-w/2,x1=x+w/2,y0=y-h/2,y1=y+h/2;
+  const u0=sp.x/W,u1=(sp.x+sp.w)/W;
+  const v0=1-(sp.y+sp.h)/H,v1=1-sp.y/H;
+  const d=[
+    ...xy2(x0,y0),u0,v1,...xy2(x1,y0),u1,v1,
+    ...xy2(x0,y1),u0,v0,...xy2(x1,y1),u1,v0
+  ];
+  g.bindBuffer(g.ARRAY_BUFFER,S.texBuf);g.bufferData(g.ARRAY_BUFFER,new Float32Array(d),g.STREAM_DRAW);
+  g.useProgram(S.texProgram);g.enableVertexAttribArray(S.texLoc.p);g.enableVertexAttribArray(S.texLoc.uv);
+  g.vertexAttribPointer(S.texLoc.p,2,g.FLOAT,false,16,0);g.vertexAttribPointer(S.texLoc.uv,2,g.FLOAT,false,16,8);
+  g.activeTexture(g.TEXTURE0);g.bindTexture(g.TEXTURE_2D,S.tex);g.uniform1i(S.texLoc.tex,0);g.uniform1f(S.texLoc.alpha,alpha);
+  g.drawArrays(g.TRIANGLE_STRIP,0,4);
+}
+function xy2(x,y){return[x/S.geom.w*2-1,1-y/S.geom.h*2]}
+function drawSkinSprite(name,x,y,w,h,alpha=1){
+  const sp=S.skin?.sprites?.[name];if(sp)spriteQuad(x,y,w,h,sp,alpha);
+}
+async function loadSkin(){
+  try{
+    const data=await j("dojo-skin.json");
+    S.skin=data;
+    const img=new Image();img.crossOrigin="anonymous";
+    img.onload=()=>{
+      try{
+        const g=S.gl,t=g.createTexture();S.tex=t;
+        g.bindTexture(g.TEXTURE_2D,t);
+        g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, false);
+        g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.NEAREST);
+        g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.NEAREST);
+        g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+        g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+        g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,img);
+        g.bindTexture(g.TEXTURE_2D,null);
+      }catch(e){console.warn("[Dojo skin]",e)}
+    };
+    img.onerror=()=>console.warn("[Dojo skin] texture unavailable");
+    img.src=data.textureUrl;
+  }catch(e){console.warn("[Dojo skin metadata]",e)}
+}
+
 function poly(points,c,a=1){
   const g=S.gl,d=[];for(const p of points)d.push(...xy(p[0],p[1],c,a));
   g.bindBuffer(g.ARRAY_BUFFER,S.buf);g.bufferData(g.ARRAY_BUFFER,new Float32Array(d),g.STREAM_DRAW);
@@ -420,18 +472,22 @@ function drawNote(n,now){
   if(n.c){
     const pts=[[x,q.y-h*1.35],[x+w*.66,q.y],[x,q.y+h*1.35],[x-w*.66,q.y]];
     poly(pts,col,.98*alpha);
+    drawSkinSprite(n.t?"trace":"critical",x,q.y,Math.max(12,w*1.25),Math.max(12,h*2.0),.72*alpha);
     poly([[x,q.y-h*.68],[x+w*.34,q.y],[x,q.y+h*.68],[x-w*.34,q.y]],[1,.97,.72],.78*alpha);
     line([[x-w*.55,q.y],[x,q.y-h*.74],[x+w*.55,q.y]], [1,1,1], .55*alpha);
   }else{
     roundedRect(x-w*.98,q.y-h*.60,w*1.96,h*1.20,Math.min(7,h*.45),col,.98*alpha);
     roundedRect(x-w*.70,q.y-h*.28,w*1.40,h*.56,Math.min(5,h*.26),[1,1,1],.14*alpha);
+    drawSkinSprite(n.f?"flick":n.t?"trace":"normal",x,q.y,Math.max(10,w*1.55),Math.max(10,h*2.1),.64*alpha);
     line([[x-w*.80,q.y-h*.62],[x+w*.80,q.y-h*.62]],[1,1,1],.28*alpha);
   }
   if(n.f){
     drawDirectionalArrow(x,q.y-h*1.32,w,n.f,col,.98*alpha);
+    drawSkinSprite(n.c?"criticalMarker":"flickMarker",x,q.y-h*1.30,Math.max(16,w*1.18),Math.max(16,w*1.18),.90*alpha);
     line([[x-w*.34,q.y-h*1.02],[x+w*.34,q.y-h*1.02]],[1,1,1],.30*alpha);
   }else if(n.t){
-    circle(x,q.y,w*.37,[.74,1,.90],.78*alpha,20);
+    drawSkinSprite(n.c?"criticalTick":"tick",x,q.y,Math.max(16,w*1.05),Math.max(16,w*1.05),.92*alpha);
+    circle(x,q.y,w*.37,[.74,1,.90],.38*alpha,20);
     circle(x,q.y,w*.17,col,.90*alpha,16);
   }
 }
@@ -463,6 +519,7 @@ function drawSlideRibbon(n,now,tailOnly=false){
   circle(hx,hq.y,hw*1.12,base,.10);
   if(n.headJudged===false||!n.judged){
     roundedRect(hx-hw,hq.y-hw*.34,hw*2,hw*.68,Math.min(8,hw*.2),n.c?[1,.82,.18]:[.16,.92,.62],.94);
+    drawSkinSprite(n.c?"critical":n.t?"slide":"slide",hx,hq.y,Math.max(12,hw*1.65),Math.max(12,hw*.95),.72);
   }
   const tail=n.tail||n.path[n.path.length-1],tp=cl(1-(n.end-now)/S.lead,0,1),tq=stageAt(tp),tx=laneX(tail.l,tp),tw=laneW(tp)*(tail.w||n.w)*.92;
   if(n.end>=now-S.lead){
@@ -470,13 +527,14 @@ function drawSlideRibbon(n,now,tailOnly=false){
     else if(tail.trace)circle(tx,tq.y,Math.max(10,tw*.64),[.58,1,.82],.82,22);
     else {
       roundedRect(tx-tw,tq.y-tw*.38,tw*2,tw*.76,Math.min(8,tw*.2),n.c?[1,.82,.18]:[.18,.92,.64],.95);
+      drawSkinSprite(n.c?"criticalTail":"tail",tx,tq.y,Math.max(12,tw*1.55),Math.max(12,tw*.92),.72);
     }
   }
   // checkpoints are deliberately visible like the in-game slide ticks.
   for(const cp of n.checkpoints||[]){
     if(cp.judged)continue;
     const pp=cl(1-(cp.sec-now)/S.lead,0,1),qq=stageAt(pp),cx=laneX(cp.lane,pp),cw=Math.max(5,laneW(pp)*.28);
-    circle(cx,qq.y,cw,n.c?[1,.86,.28]:[.72,1,.90],.92,14);
+    drawSkinSprite(n.c?"criticalTick":"tick",cx,qq.y,Math.max(14,cw*2.2),Math.max(14,cw*2.2),.88);
   }
 }
 function drawHold(n,now){
