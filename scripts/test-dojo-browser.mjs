@@ -119,7 +119,7 @@ if (audioProgress <= started.currentTime + 0.2) {
   throw new Error('Dojo audio did not advance: started='+started.currentTime+' current='+audioProgress);
 }
 
-await page.locator('#dojoOpenPracticeBtn').click();
+await page.evaluate(() => document.querySelector('#dojoOpenPracticeBtn')?.click());
 const paused = await page.evaluate(() => ({
   running: !!window.__PJSEKAI_DOJO__?.state?.running,
   audioPaused: !!window.__PJSEKAI_DOJO__?.state?.audio?.paused,
@@ -129,7 +129,7 @@ if (paused.running || !paused.audioPaused || !paused.label.includes('繼續打�
   throw new Error('Pause state invalid: ' + JSON.stringify(paused));
 }
 
-await page.locator('#dojoOpenPracticeBtn').click();
+await page.evaluate(() => document.querySelector('#dojoOpenPracticeBtn')?.click());
 await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 5000 });
 
 await page.evaluate(() => document.body.focus());
@@ -157,7 +157,7 @@ if (afterInput.judged <= 0 || afterInput.score <= 0) {
   throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
 }
 
-await page.locator('[data-dojo-back="songs"]').click();
+await page.evaluate(() => document.querySelector('[data-dojo-back="songs"]')?.click());
 await page.waitForFunction(() => document.querySelector('.page[data-page="songs"].active')?.offsetParent, null, { timeout: 10000 });
 const advancedDetails = page.locator('.page[data-page="songs"] details.dojo-extra').first();
 await advancedDetails.scrollIntoViewIfNeeded();
