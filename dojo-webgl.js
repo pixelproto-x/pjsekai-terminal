@@ -773,7 +773,7 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   if(!S.running||S.paused)return;
   const group=exact?Math.floor(lane/3):lane;
   S.keyFlash[cl(group,0,3)]=performance.now()+180;
-  const settings=app().dojo||{},now=S.audio.currentTime-S.seek-S.chartOffset+N(settings.audioOffset,0)/1000;
+  const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   let n=findCandidate(lane,now,mode,exact,direction);
   if(!n&&mode==="flick")n=findCandidate(lane,now,"tap",exact,direction);
   if(!n)return;
