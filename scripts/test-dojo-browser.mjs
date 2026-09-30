@@ -70,7 +70,20 @@ if (!selected.title.toLowerCase().includes('tell your world')) throw new Error('
 if (selected.difficulty.toLowerCase() !== 'expert') throw new Error('Difficulty selection did not update: ' + JSON.stringify(selected));
 
 await page.locator('#dojoOpenPracticeBtn').click();
-await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
+try{
+  await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
+}catch(error){
+  const debug=await page.evaluate(()=>({
+    running:!!window.__PJSEKAI_DOJO__?.state?.running,
+    starting:!!window.__PJSEKAI_DOJO__?.state?.starting,
+    prepared:!!window.__PJSEKAI_DOJO__?.state?.prepared,
+    audioSrc:window.__PJSEKAI_DOJO__?.state?.audio?.src||'',
+    audioError:window.__PJSEKAI_DOJO__?.state?.audio?.error?.message||'',
+    button:document.querySelector('#dojoOpenPracticeBtn')?.textContent||'',
+    message:document.querySelector('#dojoGameMessage')?.textContent||''
+  }));
+  throw new Error('Dojo did not enter running state: '+JSON.stringify(debug)+'; '+error.message);
+}
 await page.waitForTimeout(350);
 
 const started = await page.evaluate(() => ({
