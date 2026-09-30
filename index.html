@@ -3244,10 +3244,6 @@ applyLanguage(appState.settings.language||localStorage.getItem("sekaiLanguage")|
 const initialPlayer=$("#playerId");
 if(initialPlayer)initialPlayer.value=appState.profile.playerId||"";
 window.addEventListener("hashchange",initRoute);
-initRoute();
-syncBottomBarIndicator();
-
-
 window.__PJSEKAI_APP__ = {
   getState(){ return appState; },
   save(){ return saveAppState(); },
@@ -3265,6 +3261,11 @@ window.__PJSEKAI_APP__ = {
   profileApiBase: PROFILE_API_BASE
 };
 window.dispatchEvent(new Event("pjsekai-app-ready"));
+try{initRoute();}catch(e){console.warn("[Route] initial route failed",e)}
+try{syncBottomBarIndicator();}catch(e){console.warn("[Route] indicator sync failed",e)}
+
+
+
 
 </script>
 <script src="my-sekai.js" defer></script>
