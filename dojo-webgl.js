@@ -43,7 +43,7 @@ function sus(text){
  makeSlides(slides,false);makeSlides(guides,true);
  notes.sort((x,y)=>x.b-y.b);
  const o=(+meta.get("WAVEOFFSET")||0)/1000;
- return{changes,notes:notes.map((n,i)=>({...n,id:i,hit:beatSec2(n.b)+o,end:n.e==null?0:beatSec2(n.e)+o})};
+ return{changes,notes:notes.map((n,i)=>({...n,id:i,hit:beatSec2(n.b)+o,end:n.e==null?0:beatSec2(n.e)+o}))};
 }
 function setup(){
  const c=$("dojoGameCanvas"),w=$("dojoGameStageWrap");if(!c||!w)throw Error("Dojo 畫面不存在");
