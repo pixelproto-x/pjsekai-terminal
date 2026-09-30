@@ -17,7 +17,7 @@ const KEYS=["D","F","J","K"];
 const S={
   songs:null,diffs:null,vocals:null,selDiff:"expert",prep:null,
   audio:new Audio(),notes:[],running:false,paused:false,starting:false,
-  lead:2.5,seek:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,
+  lead:2.5,seek:0,chartOffset:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,
   counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},
   timing:0,tn:0,held:new Map(),fx:[],particles:[],keyFlash:[0,0,0,0],
   gl:null,buf:null,program:null,pp:null,cc:null,geom:null,raf:0,last:0,
@@ -614,9 +614,10 @@ function sfx(jg,critical=false){
     o.connect(g);g.connect(S.sfxGain);o.start(now);o.stop(now+.075);
   }catch(_){}
 }
-function award(n,d,type="tap",allowFinish=true){
+function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   const kind=type==="criticalFlick"?"criticalFlick":type==="traceFlick"?"traceFlick":type==="slideEndFlick"?"slideEndFlick":type==="slideEndTrace"?"slideEndTrace":type==="flick"?(n.c?"criticalFlick":"flick"):n.c?"critical":n.t?(n.f?"traceFlick":"trace"):"tap";
-  const jg=classify(d,kind);
+  let jg=classify(d,kind);
+  if(wrongWay&&jg==="PERFECT")jg="GREAT";
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
   if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
@@ -626,7 +627,7 @@ function award(n,d,type="tap",allowFinish=true){
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
   S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:n.l,kind:type,judgement:jg,error:d};
-  hud(jg);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS")sfx(jg,!!n.c);
+  hud(jg);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS"){sfx(jg,!!n.c);try{navigator.vibrate?.(jg==="PERFECT"&&n.c?8:5)}catch(_){}}
   if(allowFinish&&S.judged>=S.total)finish();
   return jg;
 }
@@ -634,6 +635,18 @@ function nowTime(){return Number.isFinite(S.audio.currentTime)?S.audio.currentTi
 function expectedLane(n,time){
   const z=pointOnPath(n.path,time);
   return z?z.l:n.l;
+}
+function directionMatches(direction,dx,dy){
+  if(Math.hypot(dx,dy)<1)return true;
+  const a=Math.atan2(-dy,dx); // screen y is inverted to gameplay angle.
+  const targets={up:Math.PI/2,down:-Math.PI/2,left:Math.PI,right:0};
+  const t=targets[direction]??Math.PI/2;
+  const diff=Math.abs(Math.atan2(Math.sin(a-t),Math.cos(a-t)));
+  return diff<=Math.PI/2;
+}
+function flickDirectionOk(required,motion){
+  if(!required)return true;
+  return directionMatches(required,motion.dx,motion.dy);
 }
 function findCandidate(inputLane,now,mode="tap",exact=false,direction="up"){
   let best=null,bestAbs=999;
@@ -666,29 +679,38 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   if(!S.running||S.paused)return;
   const group=exact?Math.floor(lane/3):lane;
   S.keyFlash[cl(group,0,3)]=performance.now()+180;
-  const settings=app().dojo||{},now=S.audio.currentTime-S.seek+N(settings.audioOffset,0)/1000;
+  const settings=app().dojo||{},now=S.audio.currentTime-S.seek-S.chartOffset+N(settings.audioOffset,0)/1000;
   let n=findCandidate(lane,now,mode,exact,direction);
   if(!n&&mode==="flick")n=findCandidate(lane,now,"tap",exact,direction);
   if(!n)return;
+  let wrongWay=false;
   if(n.f){
-    if(n.f==="left"&&direction!=="left")return;
-    if(n.f==="right"&&direction!=="right")return;
+    wrongWay=!flickDirectionOk(n.f,{dx:n.f==="left"?-1:n.f==="right"?1:0,dy:n.f==="up"?-1:n.f==="down"?1:0});
+    // For keyboard/group input we do not have a gesture vector; the requested
+    // semantic direction is checked explicitly where available.
+    if(inputId.startsWith("ptr:")&&S.touch.has(Number(inputId.slice(4)))){
+      const q=S.touch.get(Number(inputId.slice(4)));
+      const dx=q.x-q.sx,dy=q.y-q.sy;
+      wrongWay=!directionMatches(n.f,dx,dy);
+    }else{
+      wrongWay=direction!=="up"&&direction!==n.f;
+    }
   }
   if(n.k==="hold"){
     n.started=true;n.headJudged=true;
-    const head=award(n,now-n.hit,n.f?"flick":"tap",false);
+    const head=award(n,now-n.hit,n.f?"flick":"tap",false,wrongWay);
     n.done=false;n.judged=true;
     S.held.set(inputId,{note:n,lane:n.l,touchedLane:n.l,head});
     for(const cp of n.checkpoints||[])cp.judged=false;
     return;
   }
-  award(n,now-n.hit,n.f?"flick":n.t?"trace":"tap");
+  award(n,now-n.hit,n.f?"flick":n.t?"trace":"tap",true,wrongWay);
 }
 function release(inputId){
   const held=S.held.get(inputId);if(!held)return;
   S.held.delete(inputId);
   const n=held.note;
-  const settings=app().dojo||{},now=S.audio.currentTime-S.seek+N(settings.audioOffset,0)/1000;
+  const settings=app().dojo||{},now=S.audio.currentTime-S.seek-S.chartOffset+N(settings.audioOffset,0)/1000;
   const tail=n.tail||n.path?.[n.path.length-1];if(!tail)return;
   const d=now-tail.sec;
   if(Math.abs(d)<=WINDOWS.slideEnd.B){
@@ -754,6 +776,7 @@ function loop(t){
   }
   effects(dt);
 }
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&S.running)pause()},{passive:true});
 function resultCounts(){
   return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　BAD "+S.counts.BAD+"　MISS "+S.counts.MISS;
 }
@@ -929,7 +952,7 @@ function bind(){
     if(z){
       e.preventDefault();const lane=cl(+z.dataset.dojoLaneZone|0,0,11);
       try{z.setPointerCapture(e.pointerId)}catch(_){}
-      S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,t:performance.now(),exact:true});
+      S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true});
       hit(lane,"tap",true,"up","ptr:"+e.pointerId);return;
     }
     const w=$("dojoGameStageWrap");if(!w||!S.running)return;
