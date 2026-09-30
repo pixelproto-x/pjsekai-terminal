@@ -197,17 +197,26 @@ function buildNotes(score,music,difficulty){
 }
 
 function selectedSong(){
-  const title=$('dojoSelectedTitle')?.textContent?.trim()||'';
-  const diffEl=document.querySelector('[data-dojo-diff].active');
-  const difficulty=(diffEl?.dataset?.dojoDiff||'expert').toLowerCase();
+  const detailTitle=document.querySelector('#caDetail .ca-detail-title h3')?.textContent?.trim()||'';
+  const legacyTitle=$('dojoSelectedTitle')?.textContent?.trim()||'';
+  const title=(detailTitle && !/選擇|未命名/.test(detailTitle))?detailTitle:legacyTitle;
+  const activeDiff=document.querySelector('#caDiffTable .selected,[data-ca-diff].selected,.ca-row.selected[data-ca-diff]');
+  const chip=document.querySelector('#caDetail .ca-detail-title .ca-chip')?.textContent?.trim()||'';
+  const difficulty=(activeDiff?.dataset?.caDiff||chip||'Expert').toLowerCase();
   return {title,difficulty};
 }
 function musicBySelection(list){
   const s=selectedSong();
-  let m=list.find(x=>x.title===s.title);
-  if(!m)m=list.find(x=>String(x.title||'').toLowerCase()===String(s.title||'').toLowerCase());
-  if(!m)m=list.find(x=>String(x.title||'').includes(String(s.title||'')));
-  return {music:m,difficulty:s.difficulty};
+  const remembered=Number(localStorage.getItem('pjsekai-chart-last-song')||0);
+  let m=null;
+  if(s.title && !/尚未選擇/.test(s.title)){
+    m=list.find(x=>x.title===s.title)
+      ||list.find(x=>String(x.title||'').toLowerCase()===String(s.title||'').toLowerCase())
+      ||list.find(x=>String(x.title||'').toLowerCase().includes(String(s.title||'').toLowerCase()));
+  }
+  if(!m && remembered)m=list.find(x=>Number(x.id)===remembered);
+  if(!m)m=list.find(x=>Number(x.id)===1)||list[0];
+  return {music:m,difficulty:DIFFS.includes(s.difficulty)?s.difficulty:(DIFFS.includes('expert')?'expert':DIFFS[0])};
 }
 
 function scoreUrl(id,difficulty){
@@ -219,8 +228,8 @@ function jacketUrl(music){
 }
 function vocalFor(music){
   return (state.vocals||[]).filter(v=>Number(v.musicId)===Number(music.id)).sort((a,b)=>{
-    const ao=a.musicVocalType==='original_song'?0:1,bo=b.musicVocalType==='original_song'?0:1;
-    return ao-bo||Number(a.seq||0)-Number(b.seq||0);
+    const rank=v=>v.musicVocalType==='original_song'?0:(v.musicVocalType==='sekai'?1:2);
+    return rank(a)-rank(b)||Number(a.seq||0)-Number(b.seq||0)||Number(a.id||0)-Number(b.id||0);
   })[0]||null;
 }
 function audioUrl(vocal){
@@ -229,10 +238,19 @@ function audioUrl(vocal){
 }
 
 async function loadData(){
-  if(state.songs&&state.vocals)return;
-  const [songs,vocals]=await Promise.all([json(MUSIC_URL),json(VOCAL_URL)]);
-  state.songs=Array.isArray(songs)?songs:[];
-  state.vocals=Array.isArray(vocals)?vocals:[];
+  if(!state.songs){
+    const songs=await json(MUSIC_URL);
+    state.songs=Array.isArray(songs)?songs:[];
+  }
+  if(!state.vocals){
+    try{
+      const vocals=await json(VOCAL_URL);
+      state.vocals=Array.isArray(vocals)?vocals:[];
+    }catch(_){
+      state.vocals=[];
+    }
+  }
+  if(!state.songs.length)throw new Error('歌曲資料載入失敗');
 }
 
 async function prepareSelection(){
