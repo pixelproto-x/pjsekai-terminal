@@ -94,3 +94,8 @@
 .dojo-wgl-pause-panel button{min-height:40px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:10px;font-weight:900}
 .dojo-wgl-pause-panel button:first-child{background:#fff;color:#171a24;border-color:#fff}
 @media(max-width:560px){.dojo-wgl-pause-panel{padding:20px}.dojo-wgl-pause-panel>div{grid-template-columns:1fr}.dojo-wgl-pause-panel button{min-height:38px}}
+
+/* Official-style play HUD: gameplay itself carries score/combo/life/judgment; auxiliary accuracy/timing readouts stay hidden. */
+.dojo-play-page .dojo-hud-score-block>span{display:none!important}
+.dojo-play-page #dojoGameAccuracy{display:none!important}
+.dojo-play-page #dojoJudgeText[data-timing]:after{display:none!important}
