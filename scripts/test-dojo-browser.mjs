@@ -79,7 +79,7 @@ try{
     audioSrc:window.__PJSEKAI_DOJO__?.state?.audio?.src||'',
     audioError:window.__PJSEKAI_DOJO__?.state?.audio?.error?.message||'',
     button:document.querySelector('#dojoOpenPracticeBtn')?.textContent||'',
-    message:document.querySelector('#dojoGameMessage')?.textContent||''
+    message:document.querySelector('#dojoGameMessage')?.textContent||'',error:window.__PJSEKAI_DOJO__?.state?.error||'',consoleErrors:errors.slice(-8),pageErrors:pageErrors.slice(-8)
   }));
   throw new Error('Dojo did not enter running state: '+JSON.stringify(debug)+'; '+error.message);
 }
