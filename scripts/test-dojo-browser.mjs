@@ -14,6 +14,13 @@ page.on('response', response => {
 page.on('response', response => { if (response.status() >= 400) failedResponses.push({status: response.status(), url: response.url()}); });
 
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+for (const asset of ['dojo-musics.json','dojo-difficulties.json']) {
+  const response = await page.request.get('http://127.0.0.1:4173/' + asset);
+  if (!response.ok()) throw new Error('Committed Dojo static asset missing: ' + asset + ' HTTP ' + response.status());
+}
+const vocalResponse = await page.request.get('http://127.0.0.1:4173/dojo-vocals.json');
+const hasCommittedVocals = vocalResponse.ok();
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
 await page.waitForFunction(() => {
@@ -28,12 +35,15 @@ const before = await page.evaluate(() => {
     title: p?.state?.prepared?.music?.title || '',
     difficulty: p?.state?.prepared?.difficulty || '',
     audioUrl: p?.state?.prepared?.audioUrl || '',
+    audioFallback: !p?.state?.prepared?.vocal,
+    hasCommittedVocals: !!window.__dojoHasCommittedVocals,
     notes: p?.state?.prepared?.notes?.length || 0,
     canvasWidth: document.querySelector('#dojoGameCanvas')?.clientWidth || 0,
     canvasHeight: document.querySelector('#dojoGameCanvas')?.clientHeight || 0
   };
 });
 if (!before.prepared || !before.notes) throw new Error('Default Dojo chart did not prepare: ' + JSON.stringify(before));
+if (!before.audioUrl) throw new Error('Dojo prepared chart has no playable audio URL: ' + JSON.stringify(before));
 if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
 
 await page.locator('#dojoSongSearch').fill('Tell Your World');
