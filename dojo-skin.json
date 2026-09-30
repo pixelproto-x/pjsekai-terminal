@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "source": "https://github.com/qwewqa/sonolus-next-sekai-arc-engine",
+  "license": "MIT",
+  "textureUrl": "https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/texture.png",
+  "width": 128,
+  "height": 128,
+  "sprites": {
+    "normal": {
+      "x": 38,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "critical": {
+      "x": 88,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "slide": {
+      "x": 48,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "flick": {
+      "x": 78,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "trace": {
+      "x": 48,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "tick": {
+      "x": 37,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "criticalTick": {
+      "x": 109,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "tail": {
+      "x": 1,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "criticalTail": {
+      "x": 41,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "flickMarker": {
+      "x": 91,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "criticalMarker": {
+      "x": 109,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "slot": {
+      "x": 98,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    }
+  }
+}
