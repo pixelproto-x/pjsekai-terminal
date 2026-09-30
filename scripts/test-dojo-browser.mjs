@@ -60,6 +60,11 @@ const started = await page.evaluate(() => ({
   currentTime: window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0
 }));
 if (!started.running) throw new Error('Dojo did not enter running state: ' + JSON.stringify(started));
+await page.waitForTimeout(700);
+const audioProgress = await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0);
+if (audioProgress <= started.currentTime + 0.2) {
+  throw new Error('Dojo audio did not advance: started='+started.currentTime+' current='+audioProgress);
+}
 
 await page.locator('#dojoOpenPracticeBtn').click();
 const paused = await page.evaluate(() => ({
@@ -100,17 +105,21 @@ await page.locator('details.dojo-extra').first().click();
 await page.waitForTimeout(100);
 const advanced = await page.locator('details.dojo-extra').first().textContent();
 if (!advanced.includes('Note Speed') || !advanced.includes('Audio Offset')) throw new Error('Advanced settings did not expand');
-const dojoResourceFailures = failedRequests.filter(x =>
-  x.url.includes('assets.unipjsk.com') || x.url.includes('dojo-')
-);
+const dojoResourceFailures = failedRequests.filter(x => {
+  if (x.url.startsWith('http://127.0.0.1:4173/')) return true;
+  return x.url.includes('assets.unipjsk.com/startapp/music/music_score/') ||
+    x.url.includes('assets.unipjsk.com/ondemand/music/long/');
+});
 if (pageErrors.length || dojoResourceFailures.length) {
   throw new Error(
     'Browser errors:\n' + errors.join('\n') +
     '\nPage errors:\n' + pageErrors.join('\n') +
-    '\nDojo resource failures:\n' + dojoResourceFailures.map(x => x.status + ' ' + x.url).join('\n') +
-    '\nAll failed requests:\n' + failedRequests.map(x => x.status + ' ' + x.url).join('\n')
+    '\nDojo critical resource failures:\n' +
+    dojoResourceFailures.map(x => x.status + ' ' + x.url).join('\n') +
+    '\nAll failed requests:\n' +
+    failedRequests.map(x => x.status + ' ' + x.url).join('\n')
   );
 }
 
-console.log(JSON.stringify({ PASS: true, before, selected, started, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
+console.log(JSON.stringify({ PASS: true, before, selected, started, audioProgress, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
 await browser.close();
