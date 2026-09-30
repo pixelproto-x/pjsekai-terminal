@@ -781,7 +781,7 @@ function finish(){
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
-    r.innerHTML="<strong>"+rank+"</strong><span>"+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type="button" data-dojo-result-replay>再玩一次</button>";
+    r.innerHTML="<strong>"+rank+"</strong><span>"+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type=\"button\" data-dojo-result-replay>再玩一次</button>";
     r.querySelector("[data-dojo-result-replay]")?.addEventListener("click",()=>{r.hidden=true;start()},{once:true});
   }
   const b=$("dojoOpenPracticeBtn");if(b)b.textContent="↻ 再玩一次";
