@@ -2,11 +2,15 @@ import { chromium } from 'playwright';
 
 const errors = [];
 const pageErrors = [];
+const failedRequests = [];
 const failedResponses = [];
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
 page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
 page.on('pageerror', err => pageErrors.push(err.message));
+page.on('response', response => {
+  if (response.status() >= 400) failedRequests.push({ status: response.status(), url: response.url() });
+});
 page.on('response', response => { if (response.status() >= 400) failedResponses.push({status: response.status(), url: response.url()}); });
 
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -96,7 +100,17 @@ await page.locator('details.dojo-extra').first().click();
 await page.waitForTimeout(100);
 const advanced = await page.locator('details.dojo-extra').first().textContent();
 if (!advanced.includes('Note Speed') || !advanced.includes('Audio Offset')) throw new Error('Advanced settings did not expand');
-if (errors.length || pageErrors.length) throw new Error('Browser errors:\n' + errors.join('\n') + '\nPage errors:\n' + pageErrors.join('\n'));
+const dojoResourceFailures = failedRequests.filter(x =>
+  x.url.includes('assets.unipjsk.com') || x.url.includes('dojo-')
+);
+if (pageErrors.length || dojoResourceFailures.length) {
+  throw new Error(
+    'Browser errors:\n' + errors.join('\n') +
+    '\nPage errors:\n' + pageErrors.join('\n') +
+    '\nDojo resource failures:\n' + dojoResourceFailures.map(x => x.status + ' ' + x.url).join('\n') +
+    '\nAll failed requests:\n' + failedRequests.map(x => x.status + ' ' + x.url).join('\n')
+  );
+}
 
-console.log(JSON.stringify({ PASS: true, before, selected, started, paused, firstNotes, afterInput, errors, pageErrors }, null, 2));
+console.log(JSON.stringify({ PASS: true, before, selected, started, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
 await browser.close();
