@@ -15,21 +15,34 @@ function sus(text){
  const tpb=+(String(meta.get("REQUEST")||"").match(/ticks_per_beat\s+(\d+)/)?.[1]||480),bars=[];
  for(const [h,v] of data)if(/^\d{3}02$/.test(h))bars.push({m:+h.slice(0,3),len:+v||4});
  bars.sort((a,b)=>a.m-b.m);if(!bars.length)bars.push({m:0,len:4});
- let tick=0,prev=bars[0],bm=[];for(const b of bars){if(b!==bars[0])tick+=(b.m-prev.m)*prev.len*tpb;bm.push({m:b.m,t:tick,len:b.len*tpb});prev=b}
- const off=m=>{let z=bm[0];for(const b of bm){if(b.m>m)break;z=b}return z.t+(m-z.m)*z.len};
- const objects=(h,v)=>{const m=+h.slice(0,3),a=String(v).match(/.{2}/g)||[];return a.map((x,i)=>x==="00"?null:{tick:off(m)+i/a.length*(bars.find(b=>b.m===m)?.len||4)*tpb,lane:h[4],type:parseInt(x[0],36),width:Math.max(1,parseInt(x[1],36)||1)}).filter(Boolean)};
- const bp=new Map(),changes=[],taps=[],fl=[],streams=new Map();
- for(const [h,v] of data){if(/^BPM\d{2}$/.test(h)){bp.set(h.slice(3),+v);continue}
-  if(h.length===5&&h[3]==="8"){for(const x of objects(h,v))changes.push({beat:x.tick/tpb,bpm:bp.get(v)||+v||120});continue}
-  if(h.length===5&&h[3]==="1")taps.push(...objects(h,v));
-  if(h.length===5&&h[3]==="5")fl.push(...objects(h,v));
-  if(h.length===6&&(h[3]==="3"||h[3]==="9")){const k=h.slice(3);if(!streams.has(k))streams.set(k,[]);streams.get(k).push(...objects(h,v))}
+ let tick=0,prev=bars[0],bm=[];for(const z of bars){if(z!==bars[0])tick+=(z.m-prev.m)*prev.len*tpb;bm.push({m:z.m,t:tick,len:z.len*tpb});prev=z}
+ const off=m=>{let z=bm[0];for(const q of bm){if(q.m>m)break;z=q}return z.t+(m-z.m)*z.len/(bm.find(v=>v.m===z.m)?.len||4)};
+ const beatAt=t=>t/tpb;
+ const rowPoints=(h,v)=>{const m=+h.slice(0,3),c=h[3],lane=parseInt(h[4],36),channel=h[5]||"",len=bm.find(q=>q.m===m)?.len||4,a=String(v).match(/.{2}/g)||[],out=[];for(let i=0;i<a.length;i++){if(a[i]==="00")continue;out.push({tick:off(m)+i/a.length*len*tpb,lane,width:Math.max(1,parseInt(a[i][1],36)||1),type:parseInt(a[i][0],36),channel});}return out};
+ const bpm=new Map(),changes=[],base=[],flicks=[],slides=new Map(),guides=new Map();
+ for(const [h,v] of data){
+  if(/^BPM[0-9A-Z]{2}$/.test(h)){bpm.set(h.slice(3),+v||120);continue}
+  if(/^\d{3}08$/.test(h)){const key=String(v).trim().toUpperCase();changes.push({beat:0,bpm:bpm.get(key)||+v||120,rawTick:off(+h.slice(0,3))});continue}
+  if(/^\d{3}1[0-9a-z]$/i.test(h))base.push(...rowPoints(h,v));
+  else if(/^\d{3}5[0-9a-z]$/i.test(h))flicks.push(...rowPoints(h,v));
+  else if(/^\d{3}3[0-9a-z][0-9a-z]$/i.test(h)){for(const q of rowPoints(h,v)){const k=q.channel||h.slice(5,6);if(!slides.has(k))slides.set(k,[]);slides.get(k).push(q)}}
+  else if(/^\d{3}9[0-9a-z][0-9a-z]$/i.test(h)){for(const q of rowPoints(h,v)){const k=q.channel||h.slice(5,6);if(!guides.has(k))guides.set(k,[]);guides.get(k).push(q)}}
  }
- changes.sort((a,b)=>a.beat-b.beat);if(!changes.length)changes.push({beat:0,bpm:120});if(changes[0].beat>0)changes.unshift({beat:0,bpm:changes[0].bpm});let sec=0;for(let i=0;i<changes.length;i++){if(i)sec+=(changes[i].beat-changes[i-1].beat)*60/changes[i-1].bpm;changes[i].sec=sec}
- const lane=x=>cl(parseInt(x,36)-2,0,11),fm=new Map(fl.map(x=>[lane(x.lane)+"@"+x.tick,x.type===1?"up":x.type===3?"left":"right"])),notes=[];
- for(const x of taps){const l=lane(x.lane);if(![1,2,5,6].includes(x.type))continue;notes.push({k:"tap",l,w:x.width,b:x.tick/tpb,c:x.type===2||x.type===6,t:x.type===5||x.type===6,f:fm.get(l+"@"+x.tick)||null})}
- for(const a of streams.values()){a.sort((x,y)=>x.tick-y.tick);if(a.length<2)continue;const q=a[0],z=a[a.length-1];if(z.tick<=q.tick)continue;notes.push({k:"hold",l:lane(q.lane),w:q.width,b:q.tick/tpb,e:z.tick/tpb,c:q.type===2,path:a.map(x=>({l:lane(x.lane),b:x.tick/tpb}))})}
- const o=(+meta.get("WAVEOFFSET")||0)/1000;return{changes,notes:notes.map((n,i)=>({...n,id:i,hit:beatSec(n.b,changes)+o,end:n.e==null?0:beatSec(n.e,changes)+o})};
+ changes.sort((x,y)=>x.rawTick-y.rawTick);if(!changes.length)changes.push({beat:0,bpm:120,rawTick:0});if(changes[0].rawTick>0)changes.unshift({beat:0,bpm:changes[0].bpm,rawTick:0});
+ let sec=0;for(let i=0;i<changes.length;i++){if(i)sec+=(changes[i].rawTick-changes[i-1].rawTick)/tpb*60/changes[i-1].bpm;changes[i].sec=sec}
+ const beatSec2=b=>{let q=changes[0];for(const z of changes){if(z.rawTick> b*tpb)break;q=z}return q.sec+(b*tpb-q.rawTick)/tpb*60/q.bpm};
+ const fm=new Map(flicks.map(q=>[q.lane+"@"+q.tick,{dir:q.type===1?"up":q.type===3?"left":q.type===4?"right":"up"}]));
+ const notes=[];
+ for(const q of base){
+  const l=cl(q.lane-2,0,11),f=fm.get(l+"@"+q.tick),typ=q.type;
+  if(typ===1||typ===2)notes.push({k:"tap",l,w:q.width,b:beatAt(q.tick),c:typ===2,f:f?.dir||null,t:!!f});
+  else if(typ===5||typ===6)notes.push({k:"trace",l,w:q.width,b:beatAt(q.tick),c:typ===6,f:f?.dir||null,t:!!f});
+ }
+ const makeSlides=(map,guide)=>{for(const arr of map.values()){arr.sort((x,y)=>x.tick-y.tick);if(arr.length<2)continue;const points=arr.map(q=>({l:cl(q.lane-2,0,11),b:beatAt(q.tick),w:q.width,type:q.type}));const start=points.findIndex(q=>q.type===1);if(start<0)continue;const tail=points.slice(start);const end=tail.findIndex(q=>q.type===2);const pts=end>=0?tail.slice(0,end+1):tail;if(pts.length<2)continue;notes.push({k:guide?"traceHold":"hold",l:pts[0].l,w:pts[0].w,b:pts[0].b,e:pts[pts.length-1].b,c:false,path:pts,guide})}};
+ makeSlides(slides,false);makeSlides(guides,true);
+ notes.sort((x,y)=>x.b-y.b);
+ const o=(+meta.get("WAVEOFFSET")||0)/1000;
+ return{changes,notes:notes.map((n,i)=>({...n,id:i,hit:beatSec2(n.b)+o,end:n.e==null?0:beatSec2(n.e)+o})};
 }
 function setup(){
  const c=$("dojoGameCanvas"),w=$("dojoGameStageWrap");if(!c||!w)throw Error("Dojo 畫面不存在");
