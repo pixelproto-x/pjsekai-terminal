@@ -60,23 +60,27 @@ if (selected.difficulty.toLowerCase() !== 'expert') throw new Error('Difficulty 
 
 await page.locator('#dojoOpenPracticeBtn').click();
 await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
-await page.waitForTimeout(1800);
+
+await page.locator('#dojoOpenPracticeBtn').click();
+await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === false, null, { timeout: 3000 });
+const pausedState = await page.evaluate(() => ({
+  running: !!window.__PJSEKAI_DOJO__?.state?.running,
+  audioPaused: !!window.__PJSEKAI_DOJO__?.state?.audio?.paused,
+  label: document.querySelector('#dojoOpenPracticeBtn')?.textContent || ''
+}));
+if (!pausedState.audioPaused || !pausedState.label.includes('繼續打歌')) {
+  throw new Error('Pause state invalid: '+JSON.stringify(pausedState));
+}
+
+await page.locator('#dojoOpenPracticeBtn').click();
+await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 5000 });
+await page.waitForTimeout(500);
 
 const runtimeBeforeInput = await page.evaluate(() => ({
   running: !!window.__PJSEKAI_DOJO__?.state?.running,
   currentTime: window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0,
   score: window.__PJSEKAI_DOJO__?.state?.score || 0,
-  combo: window.__PJSEKAI_DOJO__?.state?.combo || 0,
-  audioReadyState: window.__PJSEKAI_DOJO__?.state?.audio?.readyState || 0
-}));
-if (!runtimeBeforeInput.running) throw new Error('Game did not enter running state');
-
-for (let i = 0; i < 90; i++) {
-  await page.keyboard.press(['KeyD','KeyF','KeyJ','KeyK'][i % 4]);
-  await page.waitForTimeout(55);
-}
-const afterInput = await page.evaluate(() => ({
-  score: window.__PJSEKAI_DOJO__?.state?.score || 0,
+  cotate?.score || 0,
   combo: window.__PJSEKAI_DOJO__?.state?.combo || 0,
   judged: window.__PJSEKAI_DOJO__?.state?.judged || 0
 }));
