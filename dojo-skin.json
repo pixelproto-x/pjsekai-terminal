@@ -1,11 +1,552 @@
 {
-  "version": 1,
+  "version": 2,
   "source": "https://github.com/qwewqa/sonolus-next-sekai-arc-engine",
   "license": "MIT",
+  "sourceData": "resources/skins/pixel/data.json",
   "textureUrl": "https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/texture.png",
   "width": 128,
   "height": 128,
   "sprites": {
+    "#LANE": {
+      "x": 1,
+      "y": 1,
+      "w": 64,
+      "h": 1
+    },
+    "#LANE_SEAMLESS": {
+      "x": 1,
+      "y": 1,
+      "w": 64,
+      "h": 1
+    },
+    "#LANE_ALTERNATIVE": {
+      "x": 1,
+      "y": 1,
+      "w": 64,
+      "h": 1
+    },
+    "#LANE_ALTERNATIVE_SEAMLESS": {
+      "x": 1,
+      "y": 1,
+      "w": 64,
+      "h": 1
+    },
+    "#DIRECTIONAL_MARKER_BLUE": {
+      "x": 1,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_CYAN": {
+      "x": 19,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_GREEN": {
+      "x": 37,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_NEUTRAL": {
+      "x": 55,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_PURPLE": {
+      "x": 73,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_RED": {
+      "x": 91,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#DIRECTIONAL_MARKER_YELLOW": {
+      "x": 109,
+      "y": 4,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_BLUE": {
+      "x": 1,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_CYAN": {
+      "x": 19,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_GREEN": {
+      "x": 37,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_NEUTRAL": {
+      "x": 55,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_PURPLE": {
+      "x": 73,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_RED": {
+      "x": 91,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#NOTE_TICK_YELLOW": {
+      "x": 109,
+      "y": 22,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_BLUE": {
+      "x": 1,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_CYAN": {
+      "x": 19,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_GREEN": {
+      "x": 37,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_NEUTRAL": {
+      "x": 55,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_PURPLE": {
+      "x": 73,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_RED": {
+      "x": 91,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#SIMULTANEOUS_MARKER_YELLOW": {
+      "x": 109,
+      "y": 40,
+      "w": 16,
+      "h": 16
+    },
+    "#STAGE_BOTTOM_LEFT_CORNER": {
+      "x": 1,
+      "y": 58,
+      "w": 16,
+      "h": 16
+    },
+    "#STAGE_BOTTOM_RIGHT_CORNER": {
+      "x": 19,
+      "y": 58,
+      "w": 16,
+      "h": 16
+    },
+    "#STAGE_TOP_LEFT_CORNER": {
+      "x": 37,
+      "y": 58,
+      "w": 16,
+      "h": 16
+    },
+    "#STAGE_TOP_RIGHT_CORNER": {
+      "x": 55,
+      "y": 58,
+      "w": 16,
+      "h": 16
+    },
+    "#STAGE_LEFT_BORDER": {
+      "x": 73,
+      "y": 58,
+      "w": 16,
+      "h": 1
+    },
+    "#STAGE_LEFT_BORDER_SEAMLESS": {
+      "x": 73,
+      "y": 58,
+      "w": 16,
+      "h": 1
+    },
+    "#STAGE_RIGHT_BORDER": {
+      "x": 91,
+      "y": 58,
+      "w": 16,
+      "h": 1
+    },
+    "#STAGE_RIGHT_BORDER_SEAMLESS": {
+      "x": 91,
+      "y": 58,
+      "w": 16,
+      "h": 1
+    },
+    "#SIMULTANEOUS_CONNECTION_BLUE": {
+      "x": 1,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_BLUE_SEAMLESS": {
+      "x": 1,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_CYAN": {
+      "x": 4,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_CYAN_SEAMLESS": {
+      "x": 4,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_GREEN": {
+      "x": 7,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_GREEN_SEAMLESS": {
+      "x": 7,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_NEUTRAL": {
+      "x": 10,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_NEUTRAL_SEAMLESS": {
+      "x": 10,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_PURPLE": {
+      "x": 13,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_PURPLE_SEAMLESS": {
+      "x": 13,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_RED": {
+      "x": 16,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_RED_SEAMLESS": {
+      "x": 16,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_YELLOW": {
+      "x": 19,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#SIMULTANEOUS_CONNECTION_YELLOW_SEAMLESS": {
+      "x": 19,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#STAGE_BOTTOM_BORDER": {
+      "x": 22,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#STAGE_BOTTOM_BORDER_SEAMLESS": {
+      "x": 22,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#STAGE_TOP_BORDER": {
+      "x": 25,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#STAGE_TOP_BORDER_SEAMLESS": {
+      "x": 25,
+      "y": 76,
+      "w": 1,
+      "h": 16
+    },
+    "#NOTE_HEAD_BLUE": {
+      "x": 28,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_CYAN": {
+      "x": 38,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_GREEN": {
+      "x": 48,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_NEUTRAL": {
+      "x": 58,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_PURPLE": {
+      "x": 68,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_RED": {
+      "x": 78,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_HEAD_YELLOW": {
+      "x": 88,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_SLOT": {
+      "x": 98,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_BLUE": {
+      "x": 108,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_CYAN": {
+      "x": 118,
+      "y": 76,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_GREEN": {
+      "x": 1,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_NEUTRAL": {
+      "x": 11,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_PURPLE": {
+      "x": 21,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_RED": {
+      "x": 31,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_TAIL_YELLOW": {
+      "x": 41,
+      "y": 94,
+      "w": 8,
+      "h": 8
+    },
+    "#NOTE_CONNECTION_BLUE": {
+      "x": 51,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_BLUE_SEAMLESS": {
+      "x": 51,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_CYAN": {
+      "x": 61,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_CYAN_SEAMLESS": {
+      "x": 61,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_GREEN": {
+      "x": 71,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_GREEN_SEAMLESS": {
+      "x": 71,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_NEUTRAL": {
+      "x": 81,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_NEUTRAL_SEAMLESS": {
+      "x": 81,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_PURPLE": {
+      "x": 91,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_PURPLE_SEAMLESS": {
+      "x": 91,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_RED": {
+      "x": 101,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_RED_SEAMLESS": {
+      "x": 101,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_YELLOW": {
+      "x": 111,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#NOTE_CONNECTION_YELLOW_SEAMLESS": {
+      "x": 111,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "#JUDGMENT_LINE": {
+      "x": 1,
+      "y": 104,
+      "w": 1,
+      "h": 8
+    },
+    "#GRID_BLUE": {
+      "x": 4,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_CYAN": {
+      "x": 7,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_GREEN": {
+      "x": 10,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_NEUTRAL": {
+      "x": 13,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_PURPLE": {
+      "x": 16,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_RED": {
+      "x": 19,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#GRID_YELLOW": {
+      "x": 22,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#STAGE_COVER": {
+      "x": 25,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
+    "#STAGE_MIDDLE": {
+      "x": 28,
+      "y": 104,
+      "w": 1,
+      "h": 1
+    },
     "normal": {
       "x": 38,
       "y": 76,
@@ -77,6 +618,18 @@
       "y": 76,
       "w": 8,
       "h": 8
+    },
+    "connection": {
+      "x": 71,
+      "y": 94,
+      "w": 8,
+      "h": 1
+    },
+    "criticalConnection": {
+      "x": 111,
+      "y": 94,
+      "w": 8,
+      "h": 1
     }
   }
 }
