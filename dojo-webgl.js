@@ -1,6 +1,6 @@
 /* Dojo WebGL runtime — browser-native Project SEKAI-style practice engine. */
 (()=>{"use strict";
-const A=window.__PJSEKAI_APP__;if(!A)return;
+const A=window.__PJSEKAI_APP__;if(!A){window.addEventListener("pjsekai-app-ready",()=>location.reload(),{once:true});return;}
 const $=id=>document.getElementById(id),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),N=(v,d=0)=>Number.isFinite(+v)?+v:d;
 const S={songs:null,diffs:null,vocals:null,selDiff:"expert",audio:new Audio(),notes:[],running:false,paused:false,starting:false,lead:2.5,seek:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},timing:0,tn:0,held:new Map(),fx:[],pt:[],gl:null,buf:null,pr:null,geom:null,raf:0,last:0,keys:["D","F","J","K"],ro:null,clockStart:0};
 S.audio.preload="auto";
