@@ -769,10 +769,15 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
   if(jg==="MISS"||jg==="BAD")S.combo=0;else S.combo++;
   S.best=Math.max(S.best,S.combo);
-  const weight=n.c?(n.f?3:2):(n.f?1:1);
   const traceLike=type==="trace"||type==="traceFlick"||type==="slideEndTrace";
-  const base=jg==="PERFECT"?1000:jg==="GREAT"?700:jg==="GOOD"?500:jg==="BAD"?250:0;
-  S.score+=Math.round((traceLike?base*.1:base)*weight);
+  const traceFlick=type==="traceFlick"||type==="slideEndTrace";
+  // Public Next-SEKAI score weights: tap 10, critical tap 20,
+  // flick 10/30, trace 1/2, trace-flick 10/30.
+  const weight=traceLike?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));
+  const multiplier=jg==="PERFECT"?1:jg==="GREAT"?.7:jg==="GOOD"?.5:0;
+  const comboBoost=1+Math.min(Math.max(S.combo-1,0),100)/100;
+  const unit=traceFlick?10:10;
+  S.score+=Math.round(unit*weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="MISS"?-80:jg==="BAD"?-40:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
@@ -905,7 +910,7 @@ function processHeld(now){
         cp.judged=true;S.judged++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
         if(jg==="MISS")S.combo=0;else S.combo++;
         S.best=Math.max(S.best,S.combo);S.counts[jg]++;
-        S.score+=jg==="PERFECT"?(cp.critical?20:10):0;
+        S.score+=jg==="PERFECT"?(cp.critical?20:10):jg==="GREAT"?(cp.critical?14:7):jg==="GOOD"?(cp.critical?10:5):0;
         S.life=cl(S.life+(jg==="MISS"?-40:1),0,1000);
         S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:cp.lane,kind:"tick",judgement:jg,error:d};
         hud(jg);if(jg!=="MISS"){ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);}
