@@ -27,7 +27,8 @@ function sus(text){
  const bpmByMeasure=fill(bpmRef.map(k=>Number.isFinite(bpmDef[k])?bpmDef[k]:undefined),measure,baseBpm).map(v=>v>0?v:baseBpm);
  const beatDef=lineToDef(/^\d{3}02:/,0,3);
  const beats=fill(beatDef,measure,4).map(v=>v>0?v:4);
- const startSec=new Array(measure).fill(0);
+ const startSec=new Array(measure).fill(0),startBeat=new Array(measure).fill(0);
+ for(let i=1;i<measure;i++)startBeat[i]=startBeat[i-1]+beats[i-1];
  for(let i=1;i<measure;i++)startSec[i]=startSec[i-1]+beats[i-1]*60/bpmByMeasure[i-1];
  const parseLines=valid.filter(line=>/^\d{3}[1-5][0-9a-fA-F][0-9a-zA-Z]?:/.test(line));
  const notes=[];
@@ -68,7 +69,7 @@ function sus(text){
      const si=arr.findIndex(n=>n.type===1);if(si<0)continue;
      const tail=arr.slice(si),ei=tail.findIndex(n=>n.type===2),path=ei>=0?tail.slice(0,ei+1):tail;
      if(path.length<2)continue;
-     const points=path.map(n=>({l:cl(n.lane-2,0,11),b:n.sec,w:n.width,type:n.type,diamond:n.type===3}));
+     const points=path.map(n=>({l:cl(n.lane-2,0,11),b:startBeat[n.measure]+n.tick/tpb,w:n.width,type:n.type,diamond:n.type===3,sec:n.sec}));
      out.push({k:guide?"traceHold":kind,l:points[0].l,w:points[0].w,b:points[0].b,e:points[points.length-1].b,c:points[0].type===3||points[0].type===6,path:points,guide});
    }
  };
@@ -84,7 +85,7 @@ function sus(text){
  out.push(...remaining);
  out.sort((a,b)=>a.b-b.b);
  const waveOffset=Number(meta.get("WAVEOFFSET"))/1000||0;
- return{changes:bpmByMeasure.map((b,i)=>({beat:startSec[i],bpm:b,rawTick:i*4*tpb})),notes:out.map((n,i)=>({...n,id:i,hit:n.b+waveOffset,end:n.e==null?0:n.e+waveOffset})),filler:0};
+ return{changes:bpmByMeasure.map((b,i)=>({beat:startBeat[i],bpm:b,sec:startSec[i],rawTick:Math.round(startBeat[i]*tpb)})),notes:out.map((n,i)=>({...n,id:i,hit:n.b+waveOffset,end:n.e==null?0:n.e+waveOffset})),filler:0};
 }
 function setup(){
  const c=$("dojoGameCanvas"),w=$("dojoGameStageWrap");if(!c||!w)throw Error("Dojo 畫面不存在");
