@@ -197,9 +197,9 @@ function buildNotes(score,music,difficulty){
 }
 
 function selectedSong(){
+  const localTitle=$('dojoSelectedTitle')?.textContent?.trim()||'';
   const detailTitle=document.querySelector('#caDetail .ca-detail-title h3')?.textContent?.trim()||'';
-  const legacyTitle=$('dojoSelectedTitle')?.textContent?.trim()||'';
-  const title=(detailTitle && !/選擇|未命名/.test(detailTitle))?detailTitle:legacyTitle;
+  const title=(localTitle && !/尚未選擇/.test(localTitle))?localTitle:(detailTitle&&!/選擇|未命名/.test(detailTitle)?detailTitle:'');
   const activeDiff=document.querySelector('#caDiffTable .selected,[data-ca-diff].selected,.ca-row.selected[data-ca-diff]');
   const chip=document.querySelector('#caDetail .ca-detail-title .ca-chip')?.textContent?.trim()||'';
   const difficulty=(activeDiff?.dataset?.caDiff||chip||'Expert').toLowerCase();
@@ -253,6 +253,55 @@ async function loadData(){
   if(!state.songs.length)throw new Error('歌曲資料載入失敗');
 }
 
+function getDifficultyForMusic(music){
+  const available=DIFFS.filter(d=>{
+    const row=(music?.difficulties&&music.difficulties[d])||null;
+    return !!row;
+  });
+  return available.includes('expert')?'expert':(available[available.length-1]||'expert');
+}
+function renderDojoSelection(){
+  const list=$('dojoSongList');
+  if(!list||!state.songs?.length)return;
+  const q=String($('dojoSongSearch')?.value||'').trim().toLowerCase();
+  const attr=String($('dojoAttrFilter')?.value||'').trim().toLowerCase();
+  const bpm=num($('dojoBpmFilter')?.value,0);
+  const remembered=Number(localStorage.getItem('pjsekai-chart-last-song')||0);
+  if(!state.uiSongId)state.uiSongId=remembered||1;
+  const filtered=state.songs.filter(m=>{
+    const text=[m.title,m.artist,m.composer,m.lyricist,m.unit].join(' ').toLowerCase();
+    const a=String(m.attr||m.attribute||m.unit||'').toLowerCase();
+    return (!q||text.includes(q))&&(!attr||a.includes(attr))&&(Number(m.bpm||m.bpmMin||0)>=bpm);
+  });
+  const shown=filtered.slice(0,120);
+  if($('dojoSongCount'))$('dojoSongCount').textContent=filtered.length.toLocaleString('en-US');
+  list.innerHTML=shown.map(m=>{
+    const active=Number(m.id)===Number(state.uiSongId);
+    return '<button type="button" class="dojo-song-row '+(active?'active':'')+'" data-dojo-local-song="'+String(m.id)+'"><strong>'+escapeHtml(String(m.title||'未命名歌曲'))+'</strong><span>'+escapeHtml(String(m.artist||m.composer||'Project SEKAI'))+'</span><em>'+String(m.bpm||'—')+' BPM</em></button>';
+  }).join('')||'<div class="search-empty">找不到符合條件的歌曲</div>';
+}
+function setUiSelection(id,difficulty){
+  const music=state.songs?.find(x=>Number(x.id)===Number(id));
+  if(!music)return;
+  state.uiSongId=Number(music.id);
+  const next=DIFFS.includes(String(difficulty||''))&&music?.difficulties?.[String(difficulty||'')]?String(difficulty):getDifficultyForMusic(music);
+  if($('dojoSelectedTitle'))$('dojoSelectedTitle').textContent=music.title||'未命名歌曲';
+  if($('dojoSelectedMeta'))$('dojoSelectedMeta').textContent=(music.artist||music.composer||'Project SEKAI')+' · 選擇難度後直接打歌';
+  const row=music?.difficulties?.[next]||{};
+  if($('dojoSelectedBpm'))$('dojoSelectedBpm').textContent=music.bpm||music.bpmMin||'—';
+  if($('dojoSelectedNotes'))$('dojoSelectedNotes').textContent=row.totalNoteCount||row.noteCount||'—';
+  if($('dojoSelectedNps')){
+    const sec=num(music.duration||music.musicTime,0);
+    const notes=num(row.totalNoteCount||row.noteCount,0);
+    $('dojoSelectedNps').textContent=sec>0&&notes>0?(notes/sec).toFixed(2):'—';
+  }
+  const box=$('dojoDifficultyButtons');
+  if(box)box.innerHTML=DIFFS.filter(d=>music?.difficulties?.[d]).map(d=>'<button type="button" class="'+(d===next?'active':'')+'" data-dojo-diff="'+d+'">'+DIFF_LABEL[d]+'</button>').join('');
+  try{localStorage.setItem('pjsekai-chart-last-song',String(music.id));}catch(_){}
+  if(state.prepared && Number(state.prepared.music.id)!==Number(music.id))state.prepared=null;
+  state.uiDifficulty=next;
+  renderDojoSelection();
+}
 async function prepareSelection(){
   await loadData();
   const {music,difficulty}=musicBySelection(state.songs);
@@ -576,6 +625,10 @@ async function boot(){
   };
   bindInputs();bindControls();
   try{
+    await loadData();
+    renderDojoSelection();
+    if(!state.uiSongId)state.uiSongId=Number(localStorage.getItem('pjsekai-chart-last-song')||1)||1;
+    setUiSelection(state.uiSongId,state.uiDifficulty||'expert');
     await initPixi();
     setLoading('正在準備預設歌曲…');
     await prepareSelection();
@@ -583,12 +636,18 @@ async function boot(){
   }catch(e){
     showGameError(e?.message||'Dojo 初始化失敗');
   }
-  $('dojoSongList')?.addEventListener('click',()=>schedulePrepare());
-  $('dojoDifficultyButtons')?.addEventListener('click',()=>schedulePrepare());
-  $('caSongList')?.addEventListener('click',()=>schedulePrepare());
-  $('caDetail')?.addEventListener('click',e=>{
-    if(e.target.closest('[data-ca-diff]'))schedulePrepare();
+  $('dojoSongList')?.addEventListener('click',e=>{
+    const b=e.target.closest('[data-dojo-local-song]');if(!b)return;
+    setUiSelection(b.dataset.dojoLocalSong,state.uiDifficulty||'expert');
   });
+  $('dojoDifficultyButtons')?.addEventListener('click',e=>{
+    const b=e.target.closest('[data-dojo-diff]');if(!b)return;
+    setUiSelection(state.uiSongId,b.dataset.dojoDiff);
+    schedulePrepare();
+  });
+  ['dojoSongSearch','dojoAttrFilter','dojoBpmFilter'].forEach(id=>$(id)?.addEventListener('input',renderDojoSelection));
+  $('caSongList')?.addEventListener('click',()=>schedulePrepare());
+  $('caDetail')?.addEventListener('click',e=>{if(e.target.closest('[data-ca-diff]'))schedulePrepare();});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
