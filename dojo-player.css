@@ -50,8 +50,9 @@
 .dojo-play-page .dojo-game-card{margin:0;border-radius:0;border:0;background:#02040a;box-shadow:none;overflow:hidden}
 .dojo-play-page .dojo-game-stage-wrap{width:100%;height:auto;max-height:none;aspect-ratio:16/9;background:#02040a}
 .dojo-play-page .dojo-game-controls,
-.dojo-play-page .dojo-game-progress,
 .dojo-play-page .dojo-game-message{display:none}
+.dojo-play-page .dojo-game-progress{display:block;position:absolute;left:5%;right:5%;bottom:0;z-index:11;height:4px;background:rgba(255,255,255,.16)}
+.dojo-play-page .dojo-game-progress span{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8);transition:width .08s linear}
 .dojo-play-page .dojo-input-pad{height:31%;left:0;right:0;bottom:0;opacity:0}
 .dojo-play-page .dojo-input-zone{border-left:0;background:transparent}
 .dojo-play-page .dojo-hud-top{left:18px;right:18px;top:14px;align-items:flex-start}
@@ -64,9 +65,9 @@
 .dojo-play-page .dojo-hud-score{font-size:18px;line-height:1;letter-spacing:.02em;text-shadow:0 2px 7px rgba(0,0,0,.7)}
 .dojo-play-page .dojo-life{left:auto;right:18px;top:16px;width:170px;height:9px;border:2px solid rgba(255,255,255,.9);background:rgba(18,24,39,.78);box-shadow:0 2px 8px rgba(0,0,0,.45);transform:skewX(-16deg)}
 .dojo-play-page .dojo-life span{background:linear-gradient(90deg,#8be7c1,#d8f7a2);box-shadow:inset 0 0 5px rgba(255,255,255,.7)}.dojo-play-page .dojo-life:before{content:"LIFE";position:absolute;z-index:2;left:-36px;top:-3px;color:#fff;font:900 7px/10px system-ui;transform:skewX(16deg);text-shadow:0 1px 4px rgba(0,0,0,.8)}
-.dojo-play-page .dojo-hud-combo{left:auto;right:6%;top:27%;transform:none;text-align:right;text-shadow:0 3px 16px rgba(0,0,0,.8)}
-.dojo-play-page .dojo-hud-combo strong{font-size:clamp(30px,5.8vw,64px);line-height:.9;font-weight:900}
-.dojo-play-page .dojo-hud-combo span{font-size:10px;letter-spacing:.12em}
+.dojo-play-page .dojo-hud-combo{left:35.5%;right:auto;top:14%;transform:translateX(-50%);text-align:center;text-shadow:0 3px 16px rgba(0,0,0,.8)}
+.dojo-play-page .dojo-hud-combo strong{font-size:clamp(30px,6vw,68px);line-height:.9;font-weight:950;letter-spacing:-.045em}
+.dojo-play-page .dojo-hud-combo span{font-size:clamp(7px,0.8vw,10px);letter-spacing:.13em}
 .dojo-play-page .dojo-judge-text{left:50%;top:69%;font-size:clamp(16px,3vw,34px);text-shadow:0 2px 12px rgba(0,0,0,.85)}
 .dojo-play-page .dojo-wgl-status{display:none}
 .dojo-play-page .dojo-wgl-pause{right:18px;top:46px;width:38px;height:38px;border-radius:9px;background:rgba(248,249,252,.92);color:#313642;border:2px solid rgba(255,255,255,.95);box-shadow:0 3px 12px rgba(0,0,0,.4)}
