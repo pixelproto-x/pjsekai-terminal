@@ -228,10 +228,13 @@ function jacketUrl(music){
   return name?ASSETS+'/startapp/music/jacket/'+name+'/'+name+'.png':'';
 }
 function vocalFor(music){
-  return (state.vocals||[]).filter(v=>Number(v.musicId)===Number(music.id)).sort((a,b)=>{
+  const found=(state.vocals||[]).filter(v=>Number(v.musicId)===Number(music.id)).sort((a,b)=>{
     const rank=v=>v.musicVocalType==='original_song'?0:(v.musicVocalType==='sekai'?1:2);
     return rank(a)-rank(b)||Number(a.seq||0)-Number(b.seq||0)||Number(a.id||0)-Number(b.id||0);
-  })[0]||null;
+  })[0];
+  if(found?.assetbundleName)return found;
+  const id=String(music?.id||'').padStart(4,'0');
+  return id?{musicId:Number(music.id),musicVocalType:'original_song',assetbundleName:'vs_'+id+'_01',caption:'官方原曲'}:null;
 }
 function audioUrl(vocal,music){
   const name=vocal?.assetbundleName;
