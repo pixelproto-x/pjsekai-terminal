@@ -717,7 +717,9 @@ function release(inputId){
     if(n.done)return;
     const fake={...n,l:tail.l,c:tail.critical,t:tail.trace,f:tail.dir,done:false};
     const endType=tail.dir?(tail.critical?"criticalFlick":"flick"):tail.trace?(tail.critical?"slideEndTrace":"trace"):"slideEnd";
-    const jg=award(fake,d,endType,false);
+    let wrongWay=false;
+    if(tail.dir)wrongWay=!!held.wrongFlick&&!held.flicked;
+    const jg=award(fake,d,endType,false,wrongWay);
     n.done=true;n.judged=true;
     if(jg==="MISS")S.combo=0;
     if(S.judged>=S.total)finish();
@@ -731,7 +733,7 @@ function processHeld(now){
     h.targetLane=expectedLane(n,now);
     for(const cp of n.checkpoints||[]){
       if(cp.judged||now<cp.sec-WINDOWS.slideEndTrace.B)continue;
-      const laneNow=h.lane;
+      const laneNow=expectedLane(n,now);
       const delta=Math.abs(laneNow-cp.lane);
       if(delta<=Math.max(1,(n.w||1)/2)+.35){
         const d=now-cp.sec,jg=classify(d,cp.trace?(cp.critical?"traceFlick":"trace"):"trace");
@@ -762,12 +764,12 @@ function loop(t){
   bg();drawStage();
   if(S.running){
     const rawNow=S.audio.currentTime-S.seek,settings=app().dojo||{};
-    const visualNow=rawNow+N(settings.visualOffset,0)/1000;
+    const visualNow=rawNow-S.chartOffset+N(settings.visualOffset,0)/1000;
     for(const n of S.notes){
       if(n.k==="hold")drawHold(n,visualNow);
       else if(visualNow>n.hit-S.lead&&visualNow<n.hit+.18)drawNote(n,visualNow);
     }
-    const judgeNow=rawNow+N(settings.audioOffset,0)/1000;
+    const judgeNow=rawNow-S.chartOffset+N(settings.audioOffset,0)/1000;
     processHeld(judgeNow);sweep(judgeNow);
     const endBase=S.notes.length?Math.max(...S.notes.map(n=>n.end||n.hit)):0;
     const p=endBase?cl(judgeNow/endBase,0,1):0;
@@ -893,7 +895,7 @@ async function start(){
     await data();const prep=await ensurePrepared();
     S.notes=prep.notes.map(x=>({...x,path:x.path?.map(p=>({...p})),tail:x.tail?{...x.tail}:null,checkpoints:x.checkpoints?.map(p=>({...p}))}));
     S.total=S.notes.reduce((n,x)=>n+((x.k==="hold"?2:1)+(x.checkpoints?.length||0)),0);
-    S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;
+    S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;S.chartOffset=N(prep.offset,0);
     S.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};S.timing=0;S.tn=0;
     S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
@@ -967,9 +969,12 @@ function bind(){
       const w=$("dojoGameStageWrap"),r=w?.getBoundingClientRect();
       if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
       const h=S.held.get("ptr:"+e.pointerId);if(h)h.lane=q.l;
-      if(Math.hypot(dx,dy)>20){
+      if(Math.hypot(dx,dy)>20&&h){
         const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
-        if(h?.note?.tail?.dir&&h.note.tail.dir===dir)h.flicked=true;
+        if(h.note?.tail?.dir){
+          if(dir===h.note.tail.dir)h.flicked=true;
+          else h.wrongFlick=true;
+        }
       }
       return;
     }
@@ -1005,7 +1010,7 @@ function expose(){
       get settings(){const d=app().dojo||{};return{speed:N(d.speed,10),audioOffset:N(d.audioOffset,0),visualOffset:N(d.visualOffset,0),mirror:!!d.mirror,hidden:!!d.hidden,sudden:!!d.sudden};},
       get noteStats(){
         const hits=S.notes.map(n=>n.hit).filter(Number.isFinite);
-        const now=S.audio.currentTime||0;
+        const now=(S.audio.currentTime||0)-S.chartOffset;
         const future=S.notes.filter(n=>Number.isFinite(n.hit)&&n.hit>now+.1).slice(0,12);
         return{count:S.notes.length,finite:hits.length,min:hits.length?Math.min(...hits):null,max:hits.length?Math.max(...hits):null,now,future:future.map(n=>({hit:n.hit,lane:n.l,kind:n.k,end:n.end||0}))};
       }
