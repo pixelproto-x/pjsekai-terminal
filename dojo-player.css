@@ -131,3 +131,18 @@
 .dojo-play-page.active .dojo-game-hud{
   pointer-events:none;
 }
+
+/* SEKAI live HUD */
+.dojo-play-page .dojo-hud-score-block{align-items:flex-start;gap:2px;min-width:176px}
+.dojo-play-page .dojo-score-rank{display:grid;grid-template-columns:22px 1fr 9px 9px 9px 9px;align-items:center;gap:3px;width:176px;height:13px}
+.dojo-play-page .dojo-score-rank>b{font:950 14px/1 system-ui;text-shadow:0 2px 7px rgba(0,0,0,.75)}
+.dojo-play-page .dojo-score-rank>i{display:block;height:7px;border-radius:8px;background:rgba(255,255,255,.16);overflow:hidden;border:1px solid rgba(255,255,255,.55)}
+.dojo-play-page .dojo-score-rank>i>em{display:block;width:0;height:100%;background:linear-gradient(90deg,#d8f7ff,#fff2a1,#ff9fd0);box-shadow:0 0 7px rgba(255,255,255,.75)}
+.dojo-play-page .dojo-score-rank>span{font:900 6px/1 system-ui;text-align:center;color:rgba(255,255,255,.82)}
+.dojo-play-page .dojo-hud-score-block .dojo-hud-score{font-size:18px;margin-top:1px}
+.dojo-play-page .dojo-hud-score-block>small{font:900 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(255,255,255,.88)}
+.dojo-play-page .dojo-hud-score-block>span{display:none!important}
+.dojo-play-page .dojo-hud-combo{left:auto;right:4.5%;top:20%;transform:none;text-align:right}
+.dojo-play-page .dojo-hud-combo strong{font-size:clamp(34px,6vw,72px);text-shadow:0 3px 18px rgba(0,0,0,.82)}
+.dojo-play-page .dojo-hud-combo span{font-size:clamp(8px,.9vw,11px);font-weight:950}
+@media(max-width:640px){.dojo-play-page .dojo-hud-score-block{min-width:146px}.dojo-play-page .dojo-score-rank{width:146px;grid-template-columns:20px 1fr 8px 8px 8px 8px}.dojo-play-page .dojo-hud-combo{right:4%;top:24%}}
