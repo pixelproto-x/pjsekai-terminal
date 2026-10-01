@@ -115,19 +115,23 @@ function tickQuad(lane,travel){
   ];
 }
 function arrowQuad(lane,size,travel,direction,animationProgress){
-  const g=state.geom,w=clamp(size,0,3)/2,bl=logicalPoint(lane-w,travel),br=logicalPoint(lane+w,travel);
-  const up=rotate({x:br.x-bl.x,y:br.y-bl.y},Math.PI/2);
-  const baseTL={x:bl.x+up.x,y:bl.y+up.y},baseTR={x:br.x+up.x,y:br.y+up.y};
-  const dir=String(direction||"up"),down=dir==="down",left=dir==="left",right=dir==="right";
-  const topX=left?-1:right?1:0,offsetScale=down?1-animationProgress:animationProgress;
-  const off=rotate({x:topX*g.ws,y:2*g.ws},Math.atan2(up.y,up.x)-Math.PI/2);
-  const O={x:off.x*offsetScale*travel,y:off.y*offsetScale*travel};
-  let q=[
-    {x:bl.x+O.x,y:bl.y+O.y},{x:br.x+O.x,y:br.y+O.y},
-    {x:baseTR.x+O.x,y:baseTR.y+O.y},{x:baseTL.x+O.x,y:baseTL.y+O.y}
+  const g=state.geom,w=cl(size/2,0.18,3.2);
+  const center=logicalPoint(lane,travel);
+  const dir=String(direction||"up");
+  const angle=({up:-Math.PI/2,down:Math.PI/2,"up-left":-3*Math.PI/4,"up-right":-Math.PI/4,"down-left":3*Math.PI/4,"down-right":Math.PI/4,left:Math.PI,right:0}[dir]??-Math.PI/2);
+  const along={x:Math.cos(angle),y:Math.sin(angle)};
+  const side={x:-along.y,y:along.x};
+  const depth=Math.max(10,g.hs*g.noteH*2.15*travel);
+  const half=Math.max(8,g.fieldW*(w/12)*0.72*travel);
+  const pulse=.82+.18*Math.sin(animationProgress*Math.PI*2);
+  const cx=center.x+along.x*depth*(dir==="down"?-.08:.10)*pulse;
+  const cy=center.y+along.y*depth*(dir==="down"?-.08:.10)*pulse;
+  return[
+    {x:cx-side.x*half-along.x*depth*.35,y:cy-side.y*half-along.y*depth*.35},
+    {x:cx+side.x*half-along.x*depth*.35,y:cy+side.y*half-along.y*depth*.35},
+    {x:cx+side.x*half+along.x*depth*.65,y:cy+side.y*half+along.y*depth*.65},
+    {x:cx-side.x*half+along.x*depth*.65,y:cy-side.y*half+along.y*depth*.65}
   ];
-  if(right)q=[q[1],q[0],q[3],q[2]];
-  return q;
 }
 function rotate(v,a){const c=Math.cos(a),s=Math.sin(a);return{x:v.x*c-v.y*s,y:v.x*s+v.y*c};}
 
@@ -199,24 +203,40 @@ function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
 function drawTick(kind,lane,travel,alpha=1){drawImage(kind==="crtcl"?"notes_long_among_crtcl.png":"notes_long_among.png",tickQuad(lane,travel),alpha)}
-function drawConnection(kind,laneA,travelA,laneB,travelB,thickness=10,alpha=1){
-  const sa=Math.max(.125,thickness/(Math.max(1,state.geom.hs)*2)), sb=sa;
-  let a=travelA,b=travelB,la=laneA,lb=laneB;
-  if(a<b){[a,b]=[b,a];[la,lb]=[lb,la]}
-  const steps=Math.max(1,Math.min(24,Math.ceil(Math.abs(lb-la)*2+Math.abs(b-a)*18)));
-  for(let i=0;i<steps;i++){
-    const u=i/steps,v=(i+1)/steps;
-    const ta=a+(b-a)*u,tb=a+(b-a)*v;
-    const l0=la+(lb-la)*u,l1=la+(lb-la)*v;
-    const w0=sa,w1=sb;
-    const q=persp(l0-w0,l0+w0,1,1,ta);
-    const z=persp(l1-w1,l1+w1,1,1,tb);
-    drawImage("notes_long_middle.png",[
-      q[0],q[1],z[2],z[3]
-    ],alpha*(.82+.18*(1-u)));
+function arcStrip(q,n=12){
+  const count=Math.max(1,Math.min(32,Math.round(n)));
+  const out=[];
+  const a=q[0],b=q[1],c=q[2],d=q[3];
+  for(let i=0;i<count;i++){
+    const u=i/count,v=(i+1)/count;
+    const p0={x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u};
+    const p1={x:a.x+(b.x-a.x)*v,y:a.y+(b.y-a.y)*v};
+    const p2={x:d.x+(c.x-d.x)*v,y:d.y+(c.y-d.y)*v};
+    const p3={x:d.x+(c.x-d.x)*u,y:d.y+(c.y-d.y)*u};
+    out.push([p0,p1,p2,p3].map(x=>rawLogical(arcRaw(x).x,arcRaw(x).y)));
   }
+  return out;
 }
-
+function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,endSize,endTravel,n=12){
+  if(startTravel<endTravel){
+    [startLane,endLane]=[endLane,startLane];
+    [startSize,endSize]=[endSize,startSize];
+    [startTravel,endTravel]=[endTravel,startTravel];
+  }
+  const g=state.geom;
+  const q=[
+    {x:(startLane-startSize)*startTravel*g.ws,y:startTravel*g.hs+g.t},
+    {x:(startLane+startSize)*startTravel*g.ws,y:startTravel*g.hs+g.t},
+    {x:(endLane+endSize)*endTravel*g.ws,y:endTravel*g.hs+g.t},
+    {x:(endLane-endSize)*endTravel*g.ws,y:endTravel*g.hs+g.t}
+  ];
+  return arcStrip(q,n);
+}
+function drawConnection(kind,laneA,sizeA,travelA,laneB,sizeB,travelB,alpha=1){
+  const sprite=kind==="crtcl"?"notes_long_middle.png":"notes_long_middle.png";
+  const qa=layoutSlideConnectorSegment(laneA,sizeA,travelA,laneB,sizeB,travelB,16);
+  for(let i=0;i<qa.length;i++)drawImage(sprite,qa[i],alpha*(.90-.18*(i/Math.max(1,qa.length-1))));
+}
 function drawStage(spriteDraw){
   const g=state.geom;
   if(!g)return;
@@ -229,7 +249,8 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,stagePoint,screenPoint,persp,
-  get geom(){return state.geom}
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
+  get geom(){return state.geom},
+  get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };
 })();
