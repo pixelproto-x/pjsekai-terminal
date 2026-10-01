@@ -1036,7 +1036,21 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd",motion=nul
   const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   const recovered=attachMissedHold(lane,now,exact,inputId);
   if(recovered)return true;
-  const n=findCandidate(lane,now,mode,exact,direction);
+  let n=findCandidate(lane,now,mode,exact,direction);
+  if(!n&&mode==="flick"){
+    // Touch events can arrive a frame late on mobile. Keep the same directional
+    // note semantics but allow a small transport slack before declaring no hit.
+    let best=null,bestAbs=Infinity;
+    for(const candidate of S.notes){
+      if(candidate.done||candidate.started||!candidate.f)continue;
+      const nl=expectedLane(candidate,now);
+      const tol=exact?Math.max(2.0,(candidate.w||1)/2+1.25):1.5;
+      if(Math.abs(nl-lane)>tol)continue;
+      const a=Math.abs(now-candidate.hit);
+      if(a<=0.20&&a<bestAbs){bestAbs=a;best=candidate;}
+    }
+    n=best;
+  }
   if(!n)return false;
   let wrongWay=false;
   if(n.f){
