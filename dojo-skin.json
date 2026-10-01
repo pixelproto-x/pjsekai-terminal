@@ -1,6 +1,6 @@
 {
-  "textureUrl": "https://cdn.jsdelivr.net/gh/Next-SEKAI/sonolus-next-sekai-engine@master/resources/skins/pixel/texture.png",
-  "spritesUrl": "https://cdn.jsdelivr.net/gh/Next-SEKAI/sonolus-next-sekai-engine@master/resources/skins/pixel/data.json",
+  "textureUrl": "https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/texture.png",
+  "spritesUrl": "https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/data.json",
   "width": 128,
   "height": 128,
   "interpolation": false,
