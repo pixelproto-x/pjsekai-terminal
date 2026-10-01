@@ -907,6 +907,22 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   if(allowFinish&&S.judged>=S.total)finish();
   return jg;
 }
+function screenLaneFromClient(x,wrap){
+  const r=wrap?.getBoundingClientRect?.();
+  if(!r)return cl(Math.floor(cl(x,0,.999)*12),0,11);
+  const nx=cl(x-r.left,0,r.width),ref=window.__PJSEKAI_SEKAI_REF__;
+  if(!ref?.screenPoint)return cl(Math.floor(nx/r.width*12),0,11);
+  const scaleX=S.gl?.canvas?.width&&r.width?S.gl.canvas.width/r.width:1;
+  const px=nx*scaleX;
+  const gw=S.gl?.canvas?.height?S.gl.canvas.height:1;
+  const targetY=S.geom?.hit??(gw*.875);
+  let lo=-5.5,hi=5.5;
+  for(let i=0;i<18;i++){
+    const mid=(lo+hi)/2,q=ref.screenPoint(mid,1,1);
+    if(q.x<px)lo=mid;else hi=mid;
+  }
+  return cl(Math.floor(((lo+hi)/2)+5.5),0,11);
+}
 function nowTime(){return Number.isFinite(S.audio.currentTime)?S.audio.currentTime:0;}
 function expectedLane(n,time){
   const z=pointOnPath(n.path,time);
@@ -1306,7 +1322,7 @@ function bind(){
       if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);return;
     }
     const w=$("dojoGameStageWrap");if(!w||!S.running)return;
-    const r=w.getBoundingClientRect(),x=cl((e.clientX-r.left)/r.width,0,.999),lane=cl(Math.floor(x*12),0,11);
+    const lane=screenLaneFromClient(e.clientX,w);
     S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,t:performance.now(),exact:true});
     if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);
   },{passive:false});
@@ -1314,8 +1330,8 @@ function bind(){
     const q=S.touch.get(e.pointerId);if(!q)return;
     const dx=e.clientX-q.x,dy=e.clientY-q.y;
     if(S.held.has("ptr:"+e.pointerId)){
-      const w=$("dojoGameStageWrap"),r=w?.getBoundingClientRect();
-      if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
+      const w=$("dojoGameStageWrap");
+      if(w)q.l=screenLaneFromClient(e.clientX,w);
       const h=S.held.get("ptr:"+e.pointerId);if(h){h.lane=q.l;h.inputLane=q.l;h.exactInput=true;}
       if(Math.hypot(dx,dy)>20&&h){
         const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
@@ -1329,8 +1345,8 @@ function bind(){
     if(Math.hypot(dx,dy)>22&&S.running){
       const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
       const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(dx,dy)/dt;
-      const w=$("dojoGameStageWrap"),r=w?.getBoundingClientRect();
-      if(r)q.l=cl(Math.floor(cl((e.clientX-r.left)/r.width,0,.999)*12),0,11);
+      const w=$("dojoGameStageWrap");
+      if(w)q.l=screenLaneFromClient(e.clientX,w);
       if(speed>120)hit(q.l,"flick",true,dir,"ptr:"+e.pointerId);
       q.x=e.clientX;q.y=e.clientY;q.t=performance.now();
     }
