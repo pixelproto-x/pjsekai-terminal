@@ -246,6 +246,17 @@ function hitboxAtLane(lane,size=0.5){return layoutHitbox(lane-size,lane+size);}
 function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
+function hasSprite(name){return !!images.get(name)?.naturalWidth;}
+function drawEffect(name,x,y,progress=1){
+  const g=state.geom;
+  if(!g)return;
+  const size=Math.max(24,Math.min(g.width,g.height)*.11*(.72+.28*progress));
+  const q=[
+    {x:x-size,y:y-size},{x:x+size,y:y-size},
+    {x:x+size,y:y+size},{x:x-size,y:y+size}
+  ];
+  drawImage(name,q,cl(progress,0,1));
+}
 function drawTick(kind,lane,travel,alpha=1){drawImage(kind==="crtcl"?"notes_long_among_crtcl.png":"notes_long_among.png",tickQuad(lane,travel),alpha)}
 function arcStrip(q,n=12){
   const count=Math.max(1,Math.min(32,Math.round(n)));
