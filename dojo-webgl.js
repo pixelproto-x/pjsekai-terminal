@@ -1413,7 +1413,7 @@ function expose(){
     start,pause,stop,finish,
     state:{
       get prepared(){if(!S.prep)return null;return{music:S.prep.music,difficulty:S.prep.difficulty,audioUrl:S.prep.audioUrl||"",vocal:S.prep.vocal||null,notes:S.prep.notes||[]};},
-      get notes(){return S.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:!!n.done}));},
+      get notes(){return S.notes.map(n=>({lane:n.l,kind:n.k,hit:n.hit,judged:!!n.done,direction:n.f||null,critical:!!n.c,trace:!!n.t,end:n.end||0}));},
       get audio(){return S.audio},
       get running(){return S.running},
       get starting(){return S.starting},
@@ -1430,7 +1430,7 @@ function expose(){
         const hits=S.notes.map(n=>n.hit).filter(Number.isFinite);
         const now=(S.audio.currentTime||0)-S.chartOffset;
         const future=S.notes.filter(n=>Number.isFinite(n.hit)&&n.hit>now+.1).slice(0,12);
-        return{count:S.notes.length,finite:hits.length,min:hits.length?Math.min(...hits):null,max:hits.length?Math.max(...hits):null,now,future:future.map(n=>({hit:n.hit,lane:n.l,kind:n.k,end:n.end||0}))};
+        return{count:S.notes.length,finite:hits.length,min:hits.length?Math.min(...hits):null,max:hits.length?Math.max(...hits):null,now,future:future.map(n=>({hit:n.hit,lane:n.l,kind:n.k,end:n.end||0,direction:n.f||null,critical:!!n.c,trace:!!n.t}))};
       }
     }
   };
