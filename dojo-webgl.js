@@ -916,9 +916,10 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   // flick 10/30, trace 1/2, trace-flick 10/30.
   const weight=traceLike?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));
   const multiplier=jg==="PERFECT"?1:jg==="GREAT"?.7:jg==="GOOD"?.5:0;
+  // Next-SEKAI weighted-combo scoring: the archetype weight already carries
+  // the base tap value (normal tap 10, critical 20, flick 10/30, trace 1/2).
   const comboBoost=1+Math.min(Math.max(S.combo-1,0),100)/100;
-  const unit=10;
-  S.score+=Math.round(unit*weight*multiplier*comboBoost);
+  S.score+=Math.round(weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="MISS"?-80:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
