@@ -7,12 +7,9 @@
 const BASE="https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/";
 const TARGET=16/9, APPROACH_SCALE=Math.pow(1.06,-45);
 const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-const EFFECT_BASE="https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@master/resources/skins/pixel/";
-const EFFECT_NAMES=[
-  "effect_critical_tap.png","effect_critical_flick.png","effect_critical_hold.png",
-  "effect_critical_tick.png","effect_trace.png","effect_critical_trace.png",
-  "effect_tick.png"
-];
+// The public pixel skin contains note/stage atlases; hit effects and particles are
+// separate Sonolus resources, so do not request guessed PNG filenames from the skin CDN.
+const EFFECT_NAMES=[];
 const assets={
   normal:["notes_normal_left.png","notes_normal_middle.png","notes_normal_right.png"],
   crtcl:["notes_crtcl_left.png","notes_crtcl_middle.png","notes_crtcl_right.png"],
@@ -173,7 +170,7 @@ function loadAll(){
     names.add("notes_flick_arrow_"+String(i).padStart(2,"0")+p+".png");
     names.add("notes_flick_arrow_crtcl_"+String(i).padStart(2,"0")+p+".png");
   }
-  EFFECT_NAMES.forEach(x=>{const name="#EFFECT_"+x.replace(/^effect_/,"").replace(/\.png$/,"").toUpperCase(); if(!images.has(name)){const im=new Image();im.crossOrigin="anonymous";im.decoding="async";im.src=EFFECT_BASE+x;images.set(name,im);}});\n  names.forEach(loadImage);
+  names.forEach(loadImage);
   return Promise.all([...names].map(n=>new Promise(r=>{const im=loadImage(n);if(im.complete)return r();im.onload=()=>r();im.onerror=()=>r()})));
 }
 function attach(gl,program,buf,loc){state.gl=gl;state.program=program;state.buf=buf;state.loc=loc}
