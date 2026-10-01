@@ -128,7 +128,7 @@ function arrowQuad(lane,size,travel,direction,animationProgress){
   const d=String(direction||"up");
   const isDown=d==="down"||d==="down-left"||d==="down-right";
   const reverse=d==="right"||d==="down-right";
-  const topOffset=d==="left"?-1:d==="right"?1:d==="down-left"?1:d==="down-right"?-1:0;
+  const topOffset=d==="left"?-1:d==="right"?1:d==="up-left"?-1:d==="up-right"?1:d==="down-left"?1:d==="down-right"?-1:0;
   const w=cl(size,0,3)/2;
   const baseL=arcRaw({x:(lane-w)*travel*g.ws,y:travel*g.hs+g.t});
   const baseR=arcRaw({x:(lane+w)*travel*g.ws,y:travel*g.hs+g.t});
@@ -208,8 +208,8 @@ function drawArrow(kind,lane,size,travel,direction,alpha=1){
   const animationProgress=(performance.now()/1000/.5)%1;
   const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
   const d=String(direction||"up");
-  const diagonal=d==="left"||d==="right";
-  const suffix=diagonal?"_diagonal_"+d:"";
+  const diagonal=d==="up-left"||d==="up-right"||d==="down-left"||d==="down-right";
+  const suffix=diagonal?"_"+d:"";
   const name="notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+suffix+".png";
   const safe=images.has(name)?name:("notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+".png");
   drawImage(safe,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
