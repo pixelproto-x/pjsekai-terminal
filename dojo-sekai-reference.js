@@ -11,6 +11,8 @@ const assets={
   crtcl:["notes_crtcl_left.png","notes_crtcl_middle.png","notes_crtcl_right.png"],
   flick:["notes_flick_left.png","notes_flick_middle.png","notes_flick_right.png"],
   long:["notes_long_left.png","notes_long_middle.png","notes_long_right.png"],
+  trace:["notes_normal_left.png","notes_normal_middle.png","notes_normal_right.png"],
+  traceC:["notes_crtcl_left.png","notes_crtcl_middle.png","notes_crtcl_right.png"],
   among:"notes_long_among.png",
   amongC:"notes_long_among_crtcl.png"
 };
@@ -189,7 +191,7 @@ function drawImage(name,q,alpha=1){
 }
 function toClip(p){const g=state.geom;return[p.x/g.width*2-1,1-p.y/g.height*2]}
 function drawBody(kind,lane,size,travel,alpha=1){
-  const map=assets[kind]||assets.normal,q=noteBodyQuads(lane,size,travel,kind==="trace");
+  const map=assets[kind]||assets.normal,q=noteBodyQuads(lane,size,travel,kind==="trace"||kind==="traceC");
   drawImage(map[0],q.left,alpha);
   for(const seg of q.middle)drawImage(map[1],seg,alpha);
   drawImage(map[2],q.right,alpha);
