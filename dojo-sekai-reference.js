@@ -223,6 +223,18 @@ function screenPoint(x,y,travel=1){
   const g=state.geom,v=arcRaw({x:x*y*travel*g.ws,y:y*travel*g.hs+g.t});
   return rawLogical(v.x,v.y);
 }
+function layoutStageCover(stageCover=0){
+  const b=lerp(approach(0),1,cl(Number(stageCover)||0,0,1));
+  return arcStrip(perspectiveRaw(-6,6,LANE_T,b,1),12);
+}
+function layoutHiddenCover(hidden=0,stageCover=0){
+  const b=1-state.geom.noteH;
+  const t=Math.min(b,Math.max(lerp(1,approach(0),cl(Number(hidden)||0,0,1)),lerp(approach(0),1,cl(Number(stageCover)||0,0,1))));
+  return arcStrip(perspectiveRaw(-6,6,t,b,1),12);
+}
+function layoutLaneEffect(lane,size,n=12){
+  return arcStrip(perspectiveRaw(lane-size,lane+size,LANE_T+.05,1-state.geom.noteH,1),n);
+}
 function layoutHitbox(l,r){
   // Next-SEKAI input hitbox: perspective rectangle from t=.2 to b=30,
   // then the same arc transform used by the gameplay lane.
@@ -288,7 +300,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,layoutStageCover,layoutHiddenCover,layoutLaneEffect,
   get geom(){return state.geom},
   get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };})();
