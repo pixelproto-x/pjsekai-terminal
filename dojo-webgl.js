@@ -796,36 +796,33 @@ function spawnFx(lane,judgeKind,critical=false){
   }
 }
 function effects(dt){
+  const ref=window.__PJSEKAI_SEKAI_REF__;
   for(const e of S.fx){
     e.t+=dt;
-    const k=cl(e.t/.52,0,1),r=8+92*k;
-    const base=e.c?[1,.84,.20]:e.kind.includes("trace")?[.22,1,.70]:[.48,.86,1];
-    circle(e.x,e.y,r,base,(1-k)*.65,28);
-    circle(e.x,e.y,r*.44,e.c?[1,.96,.62]:[.74,.94,1],(1-k)*.24,20);
-
-    // Directional hit burst: the public engine uses separate flick/trace
-    // effects; these layered streaks reproduce the same visual hierarchy.
-    const dir=e.dir==="left"?Math.PI:e.dir==="right"?0:e.dir==="down"?Math.PI/2:e.dir==="up-left"?-3*Math.PI/4:e.dir==="up-right"?-Math.PI/4:e.dir==="down-left"?3*Math.PI/4:e.dir==="down-right"?Math.PI/4:-Math.PI/2;
-    const streaks=e.kind.includes("flick")?8:6;
-    for(let i=0;i<streaks;i++){
-      const fan=(i-(streaks-1)/2)*.16;
-      const a=dir+fan;
-      const inner=r*(.20+.05*Math.sin(i+e.t*10));
-      const outer=r*(.72+.12*(1-k));
-      line([
-        [e.x+Math.cos(a)*inner,e.y+Math.sin(a)*inner],
-        [e.x+Math.cos(a)*outer,e.y+Math.sin(a)*outer]
-      ],e.c?[1,.76,.20]:base,(1-k)*.52);
-    }
-    if(e.kind.includes("trace")){
-      for(let i=0;i<5;i++){
-        const a=(i/5)*Math.PI*2+e.seed;
-        const rr=r*(.55+.10*Math.sin(e.t*9+i));
-        circle(e.x+Math.cos(a)*rr,e.y+Math.sin(a)*rr,2.2,[.55,1,.82],(1-k)*.42,10);
+    const k=cl(e.t/.48,0,1);
+    const p=cl(1-k,0,1);
+    // Keep the hit response anchored to the same projected judge point as
+    // the note skin. The public reference uses distinct critical/flick/trace
+    // effect families; use the corresponding sprite family when available.
+    const g=ref?.geom;
+    const lane=(app().dojo?.mirror?11-e.lane:e.lane)-5.5;
+    if(g?.ws){
+      const sp=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
+      const effectLane=sp;
+      const kind=String(e.kind||"tap");
+      const critical=!!e.c;
+      const effectName=kind.includes("trace")?(critical?"#EFFECT_CRITICAL_TRACE":"#EFFECT_TRACE")
+        :kind.includes("flick")?(critical?"#EFFECT_CRITICAL_FLICK":"#EFFECT_FLICK")
+        :(critical?"#EFFECT_CRITICAL_TAP":"#EFFECT_TAP");
+      if(ref.drawEffect && ref.hasSprite?.(effectName)){
+        ref.drawEffect(effectName,effectLane.x,effectLane.y,p,critical,kind);
+      }else{
+        const rr=10+74*k;
+        circle(effectLane.x,effectLane.y,rr,critical?[1,.84,.2]:kind.includes("trace")?[.2,1,.7]:[.48,.86,1],p*.5,24);
       }
     }
   }
-  S.fx=S.fx.filter(x=>x.t<.52);
+  S.fx=S.fx.filter(x=>x.t<.48);
   for(const p of S.particles){
     p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=135*dt;
     const a=cl(1-p.t/p.life,0,1);
