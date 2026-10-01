@@ -1405,7 +1405,20 @@ function bind(){
       }
     }
   },{passive:false});
-  const endPointer=e=>{const q=S.touch.get(e.pointerId);S.touch.delete(e.pointerId);if(q)release("ptr:"+e.pointerId);};
+  const endPointer=e=>{
+    const q=S.touch.get(e.pointerId);S.touch.delete(e.pointerId);if(!q)return;
+    // Some mobile/WebKit pointer stacks coalesce the final move event. Retry the
+    // flick on pointerup from the original lane so a valid gesture cannot vanish.
+    if(S.running&&!q.fired){
+      const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
+      if(Math.hypot(dx,dy)>22){
+        const dir=gestureDirection(dx,dy);
+        q.fired=true;
+        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx,dy});
+      }
+    }
+    release("ptr:"+e.pointerId);
+  };
   document.addEventListener("pointerup",endPointer);document.addEventListener("pointercancel",endPointer);
   $("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});
   $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");if(st){st.style.backgroundImage="";st.style.backgroundSize="";st.style.backgroundPosition="";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
