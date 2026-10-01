@@ -1150,7 +1150,7 @@ function processHeld(now){
         S.combo++;S.best=Math.max(S.best,S.combo);S.counts.PERFECT++;
         // Next-SEKAI slide ticks use the tick weight (1), including critical ticks.
         const tickMultiplier=1+Math.min(Math.max(S.combo-1,0),100)/100;
-        S.score+=Math.round(10*tickMultiplier);S.life=cl(S.life+1,0,1000);
+        S.score+=Math.round((cp.critical?2:1)*tickMultiplier);S.life=cl(S.life+1,0,1000);
         S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:cp.lane,kind:"tick",judgement:jg,error:d};
         hud(jg);ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);
       }else if(now>cp.sec+early){
