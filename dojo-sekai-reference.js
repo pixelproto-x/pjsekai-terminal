@@ -198,10 +198,13 @@ function drawImage(name,q,alpha=1){
 }
 function toClip(p){const g=state.geom;return[p.x/g.width*2-1,1-p.y/g.height*2]}
 function drawBody(kind,lane,size,travel,alpha=1){
-  const map=assets[kind]||assets.normal,q=noteBodyQuads(lane,size,travel,kind==="trace"||kind==="traceC");
-  drawImage(map[0],q.left,alpha);
-  for(const seg of q.middle)drawImage(map[1],seg,alpha);
-  drawImage(map[2],q.right,alpha);
+  const map=assets[kind]||assets.normal;
+  const slim=kind==="trace"||kind==="traceC"||kind==="traceFlick"||kind==="traceFlickC";
+  const resolved=(kind==="traceFlick"||kind==="traceFlickC")?(kind==="traceFlickC"?"crtcl":"flick"):kind;
+  const sprites=assets[resolved]||assets.normal,q=noteBodyQuads(lane,size,travel,slim);
+  drawImage(sprites[0],q.left,alpha);
+  for(const seg of q.middle)drawImage(sprites[1],seg,alpha);
+  drawImage(sprites[2],q.right,alpha);
 }
 
 function drawArrow(kind,lane,size,travel,direction,alpha=1){
