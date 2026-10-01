@@ -436,7 +436,20 @@ function drawSkinPerspective(name,q,alpha=1){
 
 async function loadSkin(){
   try{
-    const data=await j("dojo-skin.json");
+    // Use the current public Next-SEKAI skin definition when available.
+    // The project keeps the local dojo-skin.json as a deterministic fallback,
+    // while the live definition tracks the upstream MIT engine's sprite atlas.
+    const local=await j("dojo-skin.json");
+    let data=local;
+    if(local?.spritesUrl){
+      try{
+        const upstream=await j(local.spritesUrl);
+        if(Array.isArray(upstream?.sprites)){
+          const sprites=Object.fromEntries(upstream.sprites.map(s=>[s.name,s]));
+          data={...local,width:upstream.width||local.width,height:upstream.height||local.height,interpolation:upstream.interpolation??local.interpolation,sprites};
+        }
+      }catch(e){console.warn("[Dojo skin] upstream metadata unavailable; using fallback",e)}
+    }
     S.skin=data;
     const img=new Image();img.crossOrigin="anonymous";
     img.onload=()=>{
