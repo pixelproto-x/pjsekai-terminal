@@ -489,7 +489,7 @@ function laneX(l,p){
 function laneW(p){const q=stageAt(p);return(q.r-q.l)/12}
 function preemptForSpeed(speed){
   const ref=window.__PJSEKAI_SEKAI_REF__;
-  return ref?ref.preempt(N(speed,10)):(.35+(4-.35)*Math.pow(cl((N(speed,10)-12)/(1-12),0,1),1.31));
+  return ref?ref.preempt(N(speed,6)):(.35+(4-.35)*Math.pow(cl((N(speed,6)-12)/(1-12),0,1),1.31));
 }
 function scrollRateAt(t){
   const ev=S.prep?.timeScaleChanges||[];
@@ -763,6 +763,18 @@ function drawStage(){
     if(S.skin?.sprites?.["#STAGE_BOTTOM_BORDER"])drawSkinPerspective("#STAGE_BOTTOM_BORDER",bottom,.72);
     const top=ref.persp(-6,6,g.laneTop-.045,g.laneTop,1);
     if(S.skin?.sprites?.["#STAGE_TOP_BORDER"])drawSkinPerspective("#STAGE_TOP_BORDER",top,.42);
+
+    // Exact Next-SEKAI cover geometry. Hidden/Sudden are clipped in the same
+    // reference coordinate space rather than approximated in screen space.
+    const settings=app().dojo||{};
+    const stageCover=cl(N(settings.stageCover,0),0,1);
+    const hidden=cl(N(settings.hidden,0),0,1);
+    if(stageCover>0&&ref.layoutStageCover&&S.skin?.sprites?.["#STAGE_COVER"]){
+      for(const q of ref.layoutStageCover(stageCover))drawSkinPerspective("#STAGE_COVER",q,1);
+    }
+    if(hidden>0&&ref.layoutHiddenCover&&S.skin?.sprites?.["#STAGE_COVER"]){
+      for(const q of ref.layoutHiddenCover(hidden,stageCover))drawSkinPerspective("#STAGE_COVER",q,1);
+    }
     return;
   }
   const tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
@@ -1342,7 +1354,7 @@ async function start(){
     S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
     S.audio.pause();S.audio.src="https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav";S.audio.load();
-    const speed=N(app().dojo?.speed,10);
+    const speed=N(app().dojo?.speed,6);
     S.lead=preemptForSpeed(speed);S.seek=0;
     await new Promise((resolve,reject)=>{
       if(S.audio.readyState>=2){resolve();return;}
