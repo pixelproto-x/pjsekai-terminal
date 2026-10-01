@@ -796,15 +796,15 @@ function spawnFx(lane,judgeKind,critical=false){
   }
 }
 function drawJudgeFeedback(judgment){
-  const ref=window.__PJSEKAI_SEKAI_REF__,g=ref?.geom;
-  if(!g)return;
-  const el=$("dojoGameJudgment");
+  const el=$("dojoJudgeText");
   if(!el)return;
   el.textContent=judgment||"";
-  el.dataset.judgment=String(judgment||"").toLowerCase();
+  el.dataset.j=judgment||"";
   el.classList.remove("dojo-judgment-pop");
-  void el.offsetWidth;
-  el.classList.add("dojo-judgment-pop");
+  if(judgment){
+    void el.offsetWidth;
+    el.classList.add("dojo-judgment-pop");
+  }
 }
 function effects(dt){
   const ref=window.__PJSEKAI_SEKAI_REF__;
@@ -864,16 +864,15 @@ function hud(judgment,error=0){
   }
   const jt=$("dojoJudgeText");
   if(jt){
-    jt.textContent=judgment||"";
-    jt.dataset.j=judgment||"";
     jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
+    clearTimeout(S.judgeTimer);
     if(judgment){
+      drawJudgeFeedback(judgment);
       jt.style.opacity="1";
       jt.style.transform="translateX(-50%) translateY(-2px) scale(.05)";
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         jt.style.transform="translateX(-50%) translateY(0) scale(1)";
       }));
-      clearTimeout(S.judgeTimer);
       S.judgeTimer=setTimeout(()=>{
         jt.style.opacity="0";
         jt.style.transform="translateX(-50%) translateY(0) scale(1)";
