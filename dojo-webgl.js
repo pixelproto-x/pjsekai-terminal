@@ -799,7 +799,7 @@ function classify(diff,type){
   const d=N(diff,0);
   const inside=(range)=>Array.isArray(range)?(d>=-range[0]&&d<=range[1]):Math.abs(d)<=range;
   if(inside(w.P))return"PERFECT";
-  if(inside(w.GREAT))return"GREAT";
+  if(inside(w.G))return"GREAT";
   if(inside(w.D))return"GOOD";
   return"MISS";
 }
