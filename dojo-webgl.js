@@ -873,17 +873,14 @@ function hud(judgment,error=0){
   if(jt){
     jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
     clearTimeout(S.judgeTimer);
+    jt.style.opacity=judgment?"1":"0";
     if(judgment){
       drawJudgeFeedback(judgment);
-      jt.style.opacity="1";
-      jt.style.transform="translateX(-50%) translateY(-2px) scale(.05)";
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        jt.style.transform="translateX(-50%) translateY(0) scale(1)";
-      }));
       S.judgeTimer=setTimeout(()=>{
         jt.style.opacity="0";
-        jt.style.transform="translateX(-50%) translateY(0) scale(1)";
       },300);
+    }else{
+      jt.classList.remove("dojo-judgment-pop");
     }
   }
 }
