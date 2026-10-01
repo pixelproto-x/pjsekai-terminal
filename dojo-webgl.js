@@ -1439,7 +1439,7 @@ function bind(){
   // PointerEvent stream. It shares the exact flick judge path.
   let mouseGesture=null;
   document.addEventListener("mousedown",e=>{
-    if(e.button!==0||S.touch.size||!S.running)return;
+    if(e.button!==0||!S.running)return;
     const w=$("dojoGameStageWrap");if(!w)return;
     const lane=screenLaneFromClient(e.clientX,w,e.clientY);
     mouseGesture={lane,sx:e.clientX,sy:e.clientY,fired:false};
