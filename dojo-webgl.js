@@ -572,7 +572,7 @@ function drawNote(n,now){
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1,p=cl(travel,0,1);
   if(ref?.geom?.ws){
     const mirror=!!settings.mirror,lane=(mirror?11-n.l:n.l)-5.5,size=Math.max(.5,(n.w||1)*.5);
-    const kind=n.f?(n.c?"crtcl":"flick"):(n.c?"crtcl":n.t?"long":"normal");
+    const kind=n.f?(n.c?"crtcl":"flick"):(n.t?(n.c?"traceC":"trace"):(n.c?"crtcl":"normal"));
     ref.drawBody(kind,lane,size,p,alpha);
     if(n.f)ref.drawArrow(n.c?"crtcl":"normal",lane,size,p,n.f,alpha);
     if(n.t&&!n.f)ref.drawTick(n.c?"crtcl":"normal",lane,p,alpha*.86);
@@ -616,11 +616,11 @@ function drawSlideRibbon(n,now,tailOnly=false){
   if(tailOnly)return;
   const head=pointOnPath(n.path,Math.max(n.b,now));
   const hp=cl(travelAt(now,head.sec),0,1),hx=(mirror?11-head.l:head.l)-5.5,hs=Math.max(.5,(head.w||n.w)*.5);
-  if(ref?.geom?.ws)ref.drawBody(n.c?"crtcl":"long",hx,hs,hp,hidden?.70:.98);
+  if(ref?.geom?.ws)ref.drawBody(n.c?(head?.trace?"traceC":"crtcl"):(head?.trace?"trace":"long"),hx,hs,hp,hidden?.70:.98);
   const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tx=(mirror?11-tail.l:tail.l)-5.5,ts=Math.max(.5,(tail.w||n.w)*.5);
   if(n.end>=now-S.lead&&ref?.geom?.ws){
     if(tail.dir)ref.drawArrow(n.c?"crtcl":"normal",tx,ts,tp,tail.dir,1);
-    else if(tail.trace)ref.drawBody(n.c?"crtcl":"long",tx,ts,tp,.92);
+    else if(tail.trace)ref.drawBody(n.c?"traceC":"trace",tx,ts,tp,.92);
     else ref.drawBody(n.c?"crtcl":"long",tx,ts,tp,.98);
   }
   if(n.end>=now-S.lead&&tailOnly===false){
