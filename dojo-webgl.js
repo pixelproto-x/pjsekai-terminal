@@ -1042,7 +1042,7 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
     if(inputId.startsWith("ptr:")&&S.touch.has(Number(inputId.slice(4)))){
       const q=S.touch.get(Number(inputId.slice(4)));
       const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
-      wrongWay=!directionMatches(n.f,dx,dy);
+      const wrongWay=!directionMatches(n.f,dx,dy);
     }else{
       wrongWay=direction && direction!=="up" ? !directionMatches(n.f,
         vectorsForDirection(direction)[0],vectorsForDirection(direction)[1]) : false;
