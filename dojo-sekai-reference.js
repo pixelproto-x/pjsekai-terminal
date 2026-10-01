@@ -6,6 +6,7 @@
 (()=>{"use strict";
 const BASE="https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/";
 const TARGET=16/9, APPROACH_SCALE=Math.pow(1.06,-45);
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 const assets={
   normal:["notes_normal_left.png","notes_normal_middle.png","notes_normal_right.png"],
   crtcl:["notes_crtcl_left.png","notes_crtcl_middle.png","notes_crtcl_right.png"],
