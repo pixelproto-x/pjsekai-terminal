@@ -608,7 +608,11 @@ function drawSlideRibbon(n,now,tailOnly=false){
       const sprite=n.c?"#NOTE_CONNECTION_YELLOW":"#NOTE_CONNECTION_GREEN";
       const qa=ref.layoutSlideConnectorSegment(
         (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
-        (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),12
+        (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),
+        ref.connectorN?.(
+          (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
+          (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1)
+        )||12
       );
       if(S.skin?.sprites?.[sprite]){
         for(const q of qa)drawSkinPerspective(sprite,q,alpha);
