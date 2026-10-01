@@ -171,6 +171,41 @@ if (afterInput.judged <= 0 || afterInput.score <= 0) {
   throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
 }
 
+// Exercise the real touch flick path against a future directional note.
+const flick = await page.evaluate(() => {
+  const p = window.__PJSEKAI_DOJO__;
+  const now = p?.state?.audio?.currentTime || 0;
+  return p?.state?.noteStats?.future?.find(n => n.direction && n.kind === 'tap') || null;
+});
+if (flick) {
+  const waitMs = Math.max(0, Math.min(12000, Math.round((flick.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 70)));
+  if (waitMs > 0) await page.waitForTimeout(waitMs);
+  const lane = Math.max(0, Math.min(11, Math.floor(flick.lane)));
+  const zone = page.locator('[data-dojo-lane-zone="'+lane+'"]').first();
+  const box = await zone.boundingBox();
+  if (!box) throw new Error('Touch lane zone has no geometry for flick test');
+  const sx = box.x + box.width / 2, sy = box.y + box.height / 2;
+  const vectors = {
+    up:[0,-90], down:[0,90], left:[-90,0], right:[90,0],
+    'up-left':[-90,-90], 'up-right':[90,-90], 'down-left':[-90,90], 'down-right':[90,90]
+  };
+  const [dx,dy] = vectors[flick.direction] || vectors.up;
+  await page.mouse.move(sx,sy);
+  await page.mouse.down();
+  await page.waitForTimeout(18);
+  await page.mouse.move(sx+dx,sy+dy,{steps:1});
+  await page.mouse.up();
+  await page.waitForTimeout(160);
+  const touchDebug = await page.evaluate(() => ({
+    score: window.__PJSEKAI_DOJO__?.state?.score || 0,
+    judged: window.__PJSEKAI_DOJO__?.state?.judged || 0,
+    lastInput: window.__PJSEKAI_DOJO__?.state?.lastInput || null
+  }));
+  if (!touchDebug.lastInput || !String(touchDebug.lastInput.kind || '').includes('flick')) {
+    throw new Error('Touch flick path did not register: '+JSON.stringify({flick,touchDebug}));
+  }
+}
+
 await page.evaluate(() => document.querySelector('[data-dojo-back="songs"]')?.click());
 await page.waitForFunction(() => document.querySelector('.page[data-page="songs"].active')?.offsetParent, null, { timeout: 10000 });
 const advancedDetails = page.locator('.page[data-page="songs"] details.dojo-extra').first();
