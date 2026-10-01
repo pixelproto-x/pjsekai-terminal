@@ -115,23 +115,31 @@ function tickQuad(lane,travel){
   ];
 }
 function arrowQuad(lane,size,travel,direction,animationProgress){
-  const g=state.geom,w=cl(size/2,0.18,3.2);
-  const center=logicalPoint(lane,travel);
-  const dir=String(direction||"up");
-  const angle=({up:-Math.PI/2,down:Math.PI/2,"up-left":-3*Math.PI/4,"up-right":-Math.PI/4,"down-left":3*Math.PI/4,"down-right":Math.PI/4,left:Math.PI,right:0}[dir]??-Math.PI/2);
-  const along={x:Math.cos(angle),y:Math.sin(angle)};
-  const side={x:-along.y,y:along.x};
-  const depth=Math.max(10,g.hs*g.noteH*2.15*travel);
-  const half=Math.max(8,g.fieldW*(w/12)*0.72*travel);
-  const pulse=.82+.18*Math.sin(animationProgress*Math.PI*2);
-  const cx=center.x+along.x*depth*(dir==="down"?-.08:.10)*pulse;
-  const cy=center.y+along.y*depth*(dir==="down"?-.08:.10)*pulse;
-  return[
-    {x:cx-side.x*half-along.x*depth*.35,y:cy-side.y*half-along.y*depth*.35},
-    {x:cx+side.x*half-along.x*depth*.35,y:cy+side.y*half-along.y*depth*.35},
-    {x:cx+side.x*half+along.x*depth*.65,y:cy+side.y*half+along.y*depth*.65},
-    {x:cx-side.x*half+along.x*depth*.65,y:cy-side.y*half+along.y*depth*.65}
+  const g=state.geom;
+  const d=String(direction||"up");
+  const isDown=d==="down"||d==="down-left"||d==="down-right";
+  const reverse=d==="right"||d==="down-right";
+  const topOffset=d==="left"?-1:d==="right"?1:d==="down-left"?1:d==="down-right"?-1:0;
+  const w=cl(size,0,3)/2;
+  const baseL=arcRaw({x:(lane-w)*travel*g.ws,y:travel*g.hs+g.t});
+  const baseR=arcRaw({x:(lane+w)*travel*g.ws,y:travel*g.hs+g.t});
+  const dx=baseR.x-baseL.x,dy=baseR.y-baseL.y;
+  const up=rotate({x:dx,y:dy},Math.PI/2);
+  const baseTL={x:baseL.x+up.x,y:baseL.y+up.y};
+  const baseTR={x:baseR.x+up.x,y:baseR.y+up.y};
+  const offsetScale=isDown?1-animationProgress:animationProgress;
+  const oa=rotate({x:topOffset*g.ws,y:2*g.ws},Math.atan2(up.y,up.x)-Math.PI/2);
+  const offset={x:oa.x*offsetScale*travel,y:oa.y*offsetScale*travel};
+  let q=[
+    {x:baseL.x+offset.x,y:baseL.y+offset.y},
+    {x:baseR.x+offset.x,y:baseR.y+offset.y},
+    {x:baseTR.x+offset.x,y:baseTR.y+offset.y},
+    {x:baseTL.x+offset.x,y:baseTL.y+offset.y}
   ];
+  if(reverse){
+    q=[q[1],q[0],q[3],q[2]];
+  }
+  return q.map(v=>rawLogical(v.x,v.y));
 }
 function rotate(v,a){const c=Math.cos(a),s=Math.sin(a);return{x:v.x*c-v.y*s,y:v.x*s+v.y*c};}
 
