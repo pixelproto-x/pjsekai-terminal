@@ -205,7 +205,8 @@ function drawBody(kind,lane,size,travel,alpha=1){
 }
 
 function drawArrow(kind,lane,size,travel,direction,alpha=1){
-  const animationProgress=(performance.now()/1000/.5)%1;
+  const markerAnimation=!!(window.__PJSEKAI_APP__?.getState?.()?.dojo?.markerAnimation);
+  const animationProgress=markerAnimation?(performance.now()/1000/.5)%1:(String(direction||"up").startsWith("down")?.8:.2);
   const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
   const d=String(direction||"up");
   const diagonal=d==="up-left"||d==="up-right"||d==="down-left"||d==="down-right";
