@@ -585,7 +585,7 @@ function drawNote(n,now){
     const mirror=!!settings.mirror,lane=(mirror?11-n.l:n.l)-5.5,size=Math.max(.5,(n.w||1)*.5);
     const kind=n.f?(n.t?(n.c?"traceFlickC":"traceFlick"):(n.c?"crtcl":"flick")):(n.t?(n.c?"traceC":"trace"):(n.c?"crtcl":"normal"));
     ref.drawBody(kind,lane,size,p,alpha);
-    if(n.f)ref.drawArrow(n.c?"crtcl":"normal",lane,size,p,n.f,alpha);
+    if(n.f)ref.drawArrow(n.c?"crtcl":"normal",lane,size,p,mirroredDirection(n.f,mirror),alpha);
     if(n.t&&!n.f)ref.drawTick(n.c?"crtcl":"normal",lane,p,alpha*.86);
     return;
   }
@@ -981,6 +981,15 @@ function expectedLane(n,time){
   const raw=z?z.l:n.l;
   return app().dojo?.mirror?11-raw:raw;
 }
+function mirroredDirection(direction,mirror=false){
+  if(!mirror)return direction;
+  return ({
+    left:"right",right:"left",
+    "up-left":"up-right","up-right":"up-left",
+    "down-left":"down-right","down-right":"down-left",
+    up:"up",down:"down"
+  })[direction]||direction;
+}
 function directionMatches(direction,dx,dy){
   const len=Math.hypot(dx,dy);
   if(len<1)return true;
@@ -1065,10 +1074,10 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd",motion=nul
     // For keyboard/group input we do not have a gesture vector; the requested
     // semantic direction is checked explicitly where available.
     if(motion&&Number.isFinite(motion.dx)&&Number.isFinite(motion.dy)){
-      wrongWay=!directionMatches(n.f,motion.dx,motion.dy);
+      wrongWay=!directionMatches(mirroredDirection(n.f,!!settings.mirror),motion.dx,motion.dy);
     }else if(direction&&direction!=="up"){
       const v=vectorsForDirection(direction);
-      wrongWay=!directionMatches(n.f,v[0],v[1]);
+      wrongWay=!directionMatches(mirroredDirection(n.f,!!settings.mirror),v[0],v[1]);
     }
   }
   if(n.k==="hold"){
