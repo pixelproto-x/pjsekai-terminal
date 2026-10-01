@@ -1416,16 +1416,21 @@ function bind(){
   });
   document.addEventListener("pointerdown",e=>{
     const z=e.target.closest("[data-dojo-lane-zone]");
-    if(z){
-      e.preventDefault();const lane=cl(+z.dataset.dojoLaneZone|0,0,11);
-      try{z.setPointerCapture(e.pointerId)}catch(_){}
-      S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false});
-      if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);return;
-    }
-    const w=$("dojoGameStageWrap");if(!w||!S.running)return;
-    const lane=screenLaneFromClient(e.clientX,w,e.clientY);
-    S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false});
-    if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);
+    const w=$("dojoGameStageWrap");
+    if(!z&&!w)return;
+    if(!S.running)return;
+    e.preventDefault();
+    const lane=z?cl(+z.dataset.dojoLaneZone|0,0,11):screenLaneFromClient(e.clientX,w,e.clientY);
+    if(z)try{z.setPointerCapture(e.pointerId)}catch(_){}
+    // Keep a normal tap provisional whenever a flick candidate is currently in
+    // the same touch lane. This prevents the down-event from consuming another
+    // moving note before the player's swipe direction is known.
+    const flickCandidate=findCandidate(lane,
+      S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).audioOffset,0)/1000,
+      "flick",true);
+    const tapHit=!flickCandidate&&hit(lane,"tap",true,"up","ptr:"+e.pointerId);
+    if(!tapHit&&!flickCandidate)spawnLaneFx(lane);
+    S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false,tapHit:!!tapHit});
   },{passive:false});
   document.addEventListener("pointermove",e=>{
     const q=S.touch.get(e.pointerId);if(!q)return;
@@ -1460,12 +1465,13 @@ function bind(){
     const q=S.touch.get(e.pointerId);S.touch.delete(e.pointerId);if(!q)return;
     // Some mobile/WebKit pointer stacks coalesce the final move event. Retry the
     // flick on pointerup from the original lane so a valid gesture cannot vanish.
-    if(S.running&&!q.fired){
+    if(S.running&&!q.fired&&!q.tapHit){
       const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
       if(Math.hypot(dx,dy)>22){
         const dir=gestureDirection(dx,dy);
-        q.fired=true;
-        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx,dy});
+        q.fired=hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx,dy})||q.fired;
+      }else{
+        q.tapHit=hit(q.l,"tap",true,"up","ptr:"+e.pointerId)||q.tapHit;
       }
     }
     release("ptr:"+e.pointerId);
