@@ -209,7 +209,7 @@ function drawArrow(kind,lane,size,travel,direction,alpha=1){
   const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
   const d=String(direction||"up");
   const diagonal=d==="up-left"||d==="up-right"||d==="down-left"||d==="down-right";
-  const suffix=diagonal?"_"+d:"";
+  const suffix=d==="down"?"_diagonal":(d==="up-left"||d==="down-right"?"_diagonal_left":(d==="up-right"||d==="down-left"?"_diagonal_right":""));
   const name="notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+suffix+".png";
   const safe=images.has(name)?name:("notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+".png");
   drawImage(safe,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
@@ -251,17 +251,6 @@ function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,end
     {x:(endLane-endSize)*endTravel*g.ws,y:endTravel*g.hs+g.t}
   ];
   return arcStrip(q,Number.isFinite(n)?n:arcN(q[0],q[1],1));
-}
-function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
-  let sl=startLane,ss=startSize,st=startTravel,el=endLane,es=endSize,et=endTravel;
-  if(st<et){[sl,el]=[el,sl];[ss,es]=[es,ss];[st,et]=[et,st]}
-  const g=state.geom;
-  const bl={x:(sl-ss)*st*g.ws,y:st*g.hs+g.t};
-  const br={x:(sl+ss)*st*g.ws,y:st*g.hs+g.t};
-  const radius=Math.abs(g.t-br.y)||1;
-  const wScale=Math.abs(br.x-bl.x)*20;
-  const hAdj=wScale/radius*.5;
-  return Math.max(1,Math.ceil(Math.min(wScale,Math.abs(hAdj))));
 }
 function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
   let sl=startLane,ss=startSize,st=startTravel,el=endLane,es=endSize,et=endTravel;
