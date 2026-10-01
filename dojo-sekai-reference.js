@@ -237,7 +237,7 @@ function arcStrip(q,n=12){
   }
   return out;
 }
-function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,endSize,endTravel,n=12){
+function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,endSize,endTravel,n){
   if(startTravel<endTravel){
     [startLane,endLane]=[endLane,startLane];
     [startSize,endSize]=[endSize,startSize];
@@ -250,7 +250,7 @@ function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,end
     {x:(endLane+endSize)*endTravel*g.ws,y:endTravel*g.hs+g.t},
     {x:(endLane-endSize)*endTravel*g.ws,y:endTravel*g.hs+g.t}
   ];
-  return arcStrip(q,n);
+  return arcStrip(q,Number.isFinite(n)?n:arcN(q[0],q[1],1));
 }
 function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
   let sl=startLane,ss=startSize,st=startTravel,el=endLane,es=endSize,et=endTravel;
