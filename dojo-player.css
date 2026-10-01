@@ -102,3 +102,32 @@
 .dojo-play-page #dojoJudgeText[data-timing]:after{display:block;position:absolute;left:50%;top:-1.25em;transform:translateX(-50%);font:900 .42em/1 system-ui;letter-spacing:.12em;opacity:.82}
 .dojo-play-page #dojoJudgeText[data-timing="FAST"]:after{content:"FAST"}
 .dojo-play-page #dojoJudgeText[data-timing="LATE"]:after{content:"LATE"}
+
+/* Dedicated gameplay route: remove toolbox chrome so the play surface is the game. */
+.dojo-play-page.active .dojo-game-card{
+  width:min(100vw,1920px);
+  max-width:none;
+  margin:0 auto;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.dojo-play-page.active .dojo-game-head,
+.dojo-play-page.active .dojo-game-progress,
+.dojo-play-page.active .dojo-game-controls,
+.dojo-play-page.active .dojo-game-message{
+  display:none;
+}
+.dojo-play-page.active .dojo-game-stage-wrap{
+  width:100%;
+  max-width:none;
+  min-height:0;
+  border-radius:0;
+}
+.dojo-play-page.active .dojo-game-stage-wrap:fullscreen{
+  width:100vw;
+  height:100vh;
+}
+.dojo-play-page.active .dojo-game-hud{
+  pointer-events:none;
+}
