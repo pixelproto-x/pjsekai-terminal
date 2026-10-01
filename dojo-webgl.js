@@ -1455,15 +1455,6 @@ function bind(){
     release("ptr:"+e.pointerId);
   };
   document.addEventListener("pointerup",endPointer);document.addEventListener("pointercancel",endPointer);
-  const stageWrap=$("dojoGameStageWrap");
-  if(stageWrap&&!stageWrap.__dojoInputBound){
-    stageWrap.__dojoInputBound=true;
-    const direct=new Map();
-    stageWrap.addEventListener("pointerdown",e=>{const z=e.target.closest?.("[data-dojo-lane-zone]");if(!z||!S.running)return;e.preventDefault();direct.set(e.pointerId,{lane:cl(+z.dataset.dojoLaneZone|0,0,11),sx:e.clientX,sy:e.clientY,fired:false});},{passive:false});
-    stageWrap.addEventListener("pointermove",e=>{const q=direct.get(e.pointerId);if(!q||q.fired||!S.running)return;const dx=e.clientX-q.sx,dy=e.clientY-q.sy;if(Math.hypot(dx,dy)<=22)return;const dir=gestureDirection(dx,dy);q.fired=true;hit(q.lane,"flick",true,dir,"direct:"+e.pointerId,{dx,dy});},{passive:false});
-    stageWrap.addEventListener("pointerup",e=>{const q=direct.get(e.pointerId);if(!q)return;direct.delete(e.pointerId);if(!q.fired&&S.running){const dx=e.clientX-q.sx,dy=e.clientY-q.sy;if(Math.hypot(dx,dy)>22){const dir=gestureDirection(dx,dy);hit(q.lane,"flick",true,dir,"direct:"+e.pointerId,{dx,dy});}}},{passive:false});
-    stageWrap.addEventListener("pointercancel",e=>direct.delete(e.pointerId),{passive:false});
-  }
   // Mouse fallback for browsers that expose mouse input without a usable
   // PointerEvent stream. It shares the exact flick judge path.
   let mouseGesture=null;
