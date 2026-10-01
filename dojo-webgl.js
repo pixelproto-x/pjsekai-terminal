@@ -219,7 +219,7 @@ function susToPlayable(text,baseBpm=120){
   const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
   const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set(),easeIn=new Set(),easeOut=new Set();
-  const directionName=t=>({1:"up",3:"left",4:"right"}[Number(t)]||null);
+  const directionName=t=>({1:"up",2:"down",3:"up-left",4:"up-right",5:"down-left",6:"down-right"}[Number(t)]||null);
   for(const n of score.directionalNotes){
     const k=key(n);
     if(n.type===1||n.type===3||n.type===4)flick.set(k,directionName(n.type));
@@ -561,6 +561,16 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
   switch(dir){
     case"left":pts.push([x+w*.42,y],[x-w*.16,y-s*.72],[x-w*.05,y-s*.72],[x-w*.05,y-s],[x-w*.58,y],[x-w*.05,y+s],[x-w*.05,y+s*.72],[x-w*.16,y+s*.72]);break;
     case"right":pts.push([x-w*.42,y],[x+w*.16,y-s*.72],[x+w*.05,y-s*.72],[x+w*.05,y-s],[x+w*.58,y],[x+w*.05,y+s],[x+w*.05,y+s*.72],[x+w*.16,y+s*.72]);break;
+    case"up-left":
+    case"down-right":{
+      const sg=dir==="up-left"?-1:1,dy=sg*s*.85;
+      pts.push([x+w*.38,y+dy*.12],[x-w*.10,y-dy*.72],[x-w*.52,y-dy*.28],[x-w*.10,y+dy*.18],[x-w*.42,y+dy*.72],[x+w*.14,y+dy*.08]);break;
+    }
+    case"up-right":
+    case"down-left":{
+      const sg=dir==="up-right"?-1:1,dy=sg*s*.85;
+      pts.push([x-w*.38,y+dy*.12],[x+w*.10,y-dy*.72],[x+w*.52,y-dy*.28],[x+w*.10,y+dy*.18],[x+w*.42,y+dy*.72],[x-w*.14,y+dy*.08]);break;
+    }
     case"down":pts.push([x,y+w*.34],[x-s*.72,y-w*.02],[x-s*.72,y-.1*w],[x-s,y-.1*w],[x,y-w*.46],[x+s,y-.1*w],[x+s*.72,y-.1*w],[x+s*.72,y-w*.02]);break;
     default:pts.push([x,y-w*.34],[x-s*.72,y+.02*w],[x-s*.72,y+.1*w],[x-s,y+.1*w],[x,y+w*.46],[x+s,y+.1*w],[x+s*.72,y+.1*w],[x+s*.72,y+.02*w]);
   }
@@ -782,7 +792,7 @@ function effects(dt){
 
     // Directional hit burst: the public engine uses separate flick/trace
     // effects; these layered streaks reproduce the same visual hierarchy.
-    const dir=e.dir==="left"?Math.PI:e.dir==="right"?0:e.dir==="down"?Math.PI/2:-Math.PI/2;
+    const dir=e.dir==="left"?Math.PI:e.dir==="right"?0:e.dir==="down"?Math.PI/2:e.dir==="up-left"?-3*Math.PI/4:e.dir==="up-right"?-Math.PI/4:e.dir==="down-left"?3*Math.PI/4:e.dir==="down-right"?Math.PI/4:-Math.PI/2;
     const streaks=e.kind.includes("flick")?8:6;
     for(let i=0;i<streaks;i++){
       const fan=(i-(streaks-1)/2)*.16;
