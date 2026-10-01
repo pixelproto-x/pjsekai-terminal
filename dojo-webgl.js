@@ -1035,12 +1035,13 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   if(!n)return false;
   let wrongWay=false;
   if(n.f){
+    S.lastInput={lane:n.l,kind:mode==="flick"?"flick":n.f?"flick":"tap",direction,directionRequired:n.f,error:now-n.hit};
     wrongWay=!flickDirectionOk(n.f,{dx:n.f==="left"?-1:n.f==="right"?1:0,dy:n.f==="up"?-1:n.f==="down"?1:0});
     // For keyboard/group input we do not have a gesture vector; the requested
     // semantic direction is checked explicitly where available.
     if(inputId.startsWith("ptr:")&&S.touch.has(Number(inputId.slice(4)))){
       const q=S.touch.get(Number(inputId.slice(4)));
-      const dx=q.x-q.sx,dy=q.y-q.sy;
+      const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
       wrongWay=!directionMatches(n.f,dx,dy);
     }else{
       wrongWay=direction && direction!=="up" ? !directionMatches(n.f,
@@ -1386,7 +1387,7 @@ function bind(){
       return;
     }
     if(Math.hypot(dx,dy)>22&&S.running){
-      const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
+      const dir=gestureDirection(dx,dy);
       const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(dx,dy)/dt;
       const w=$("dojoGameStageWrap");
       if(w)q.l=screenLaneFromClient(e.clientX,w);
