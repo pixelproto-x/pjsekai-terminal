@@ -670,18 +670,8 @@ function drawHold(n,now){
   drawSlideRibbon(n,now);
 }
 function bg(){
-  const h=S.geom,tm=S.audio.currentTime||0,p=.5+.5*Math.sin(tm*Math.PI*2*1.75);
+  S.gl.clearColor(0,0,0,0);
   S.gl.clear(S.gl.COLOR_BUFFER_BIT);
-  poly([[0,0],[h.w,0],[h.w,h.h],[0,h.h]],[.002,.004,.014],.20);
-  // layered stage lights
-  poly([[h.w*.05,0],[h.w*.34,0],[h.bl,h.hit],[h.w*.43,h.hit]],[.12,.34,1],.065+.026*p);
-  poly([[h.w*.95,0],[h.w*.66,0],[h.br,h.hit],[h.w*.57,h.hit]],[1,.10,.42],.055+.022*p);
-  poly([[h.w*.30,0],[h.w*.47,0],[h.w*.49,h.hit],[h.w*.40,h.hit]],[.08,.62,1],.028+.012*p);
-  poly([[h.w*.70,0],[h.w*.53,0],[h.w*.51,h.hit],[h.w*.60,h.hit]],[1,.18,.55],.025+.012*p);
-  for(let i=0;i<14;i++){
-    const t=(tm*.08+i*.071)%1,yy=h.h*.12+t*h.h*.70,xx=h.w*(.10+.80*((i*37)%101)/100);
-    circle(xx,yy,2.5+(i%3)*1.6,[.55,.80,1],.08,12);
-  }
 }
 function drawGuideSlides(now){
   const guides=S.prep?.guides||[];
@@ -848,7 +838,9 @@ function effects(dt){
 }
 function hud(judgment,error=0){
   const put=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  const ratio=cl(S.score/Math.max(1,S.total*20),0,1),rank=ratio>=.9?"S":ratio>=.8?"A":ratio>=.7?"B":"C";
   put("dojoGameScore",String(Math.max(0,Math.floor(S.score))).padStart(7,"0"));
+  put("dojoScoreRank",rank);put("dojoScoreRankFill",(ratio*100).toFixed(1)+"%");put("dojoGameScoreDelta","+"+Math.max(0,Math.floor(S.score-(S.lastHudScore||0))));S.lastHudScore=S.score;
   put("dojoGameCombo",S.combo);
   const acc=S.tn?cl(100-(S.timing/S.tn)*120,0,100):100;
   put("dojoGameAccuracy",acc.toFixed(2)+"%");
@@ -1501,7 +1493,8 @@ function bind(){
     release("mouse");mouseGesture=null;
   },{passive:false});
   $("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});
-  $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");if(st){st.style.backgroundImage="";st.style.backgroundSize="";st.style.backgroundPosition="";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
+  $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");
+    if(st&&prep.jacket){st.style.backgroundImage='linear-gradient(rgba(3,5,14,.18),rgba(3,5,14,.58)),url("'+prep.jacket+'")';st.style.backgroundSize="cover";st.style.backgroundPosition="center";}if(st){st.style.backgroundImage="";st.style.backgroundSize="";st.style.backgroundPosition="";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
 }
 function expose(){
   window.__PJSEKAI_DOJO__={
