@@ -1179,7 +1179,7 @@ function sweep(now){
       n.done=true;n.judged=true;S.judged++;hud("MISS",now-n.hit);spawnFx(n.l,"MISS",!!n.c);
     }
   }
-  if(S.life<=0){S.life=0;hud("");}
+  if(S.life<=0){S.life=0;hud("");finish(true);}
 }
 function attachMissedHold(inputLane,now,exact,inputId){
   for(const n of S.notes){
@@ -1240,12 +1240,13 @@ function finalizePending(){
     }
   }
 }
-function finish(){
+function finish(failed=false){
   if(!S.running)return;
   finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
-  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0,rank=ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
+  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0;
+  const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
