@@ -609,6 +609,8 @@ function drawSlideRibbon(n,now,tailOnly=false){
   }
   if(samples.length<2)return;
   const base=n.c?[1,.80,.16]:[.16,.92,.62],glow=n.c?[1,.86,.26]:[.18,1,.70];
+  // Canonical Next-SEKAI particle families: cyan tap, green slide/trace, red flick, yellow critical.
+  const particleColor=n.c?[1,.82,.16]:n.f?[1,.20,.28]:n.t?[.20,1,.70]:[.20,.86,1];
   for(let i=0;i<samples.length-1;i++){
     const a=samples[i],b=samples[i+1],alpha=(hidden?.40:.78)*(0.44+0.56*(i/(samples.length-1)));
     if(ref?.geom?.ws){
@@ -778,7 +780,7 @@ function spawnFx(lane,judgeKind,critical=false){
     S.particles.push({
       x,y,vx:Math.cos(a)*v*spread,vy:Math.sin(a)*v,
       t:0,life:.34+Math.random()*.30,size:1.2+Math.random()*3.2,
-      c:critical?[1,.82,.18]:kind.includes("trace")?[.20,1,.72]:[.55,.92,1]
+      c:critical?[1,.82,.16]:kind.includes("flick")?[1,.20,.28]:kind.includes("trace")?[.20,1,.70]:[.20,.86,1]
     });
   }
 }
