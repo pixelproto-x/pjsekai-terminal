@@ -200,12 +200,21 @@ function stagePoint(lane,travel){
 }
 function drawTick(kind,lane,travel,alpha=1){drawImage(kind==="crtcl"?"notes_long_among_crtcl.png":"notes_long_among.png",tickQuad(lane,travel),alpha)}
 function drawConnection(kind,laneA,travelA,laneB,travelB,thickness=10,alpha=1){
-  const a=stagePoint(laneA,travelA),b=stagePoint(laneB,travelB);
-  const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len*thickness*.5,ny=dx/len*thickness*.5;
-  drawImage(kind==="crtcl"?"notes_long_middle.png":"notes_long_middle.png",[
-    {x:a.x+nx,y:a.y+ny},{x:b.x+nx,y:b.y+ny},
-    {x:b.x-nx,y:b.y-ny},{x:a.x-nx,y:a.y-ny}
-  ],alpha);
+  const sa=Math.max(.125,thickness/(Math.max(1,state.geom.hs)*2)), sb=sa;
+  let a=travelA,b=travelB,la=laneA,lb=laneB;
+  if(a<b){[a,b]=[b,a];[la,lb]=[lb,la]}
+  const steps=Math.max(1,Math.min(24,Math.ceil(Math.abs(lb-la)*2+Math.abs(b-a)*18)));
+  for(let i=0;i<steps;i++){
+    const u=i/steps,v=(i+1)/steps;
+    const ta=a+(b-a)*u,tb=a+(b-a)*v;
+    const l0=la+(lb-la)*u,l1=la+(lb-la)*v;
+    const w0=sa,w1=sb;
+    const q=persp(l0-w0,l0+w0,1,1,ta);
+    const z=persp(l1-w1,l1+w1,1,1,tb);
+    drawImage("notes_long_middle.png",[
+      q[0],q[1],z[2],z[3]
+    ],alpha*(.82+.18*(1-u)));
+  }
 }
 
 function drawStage(spriteDraw){
