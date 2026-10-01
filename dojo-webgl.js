@@ -1425,9 +1425,14 @@ function bind(){
     // Keep a normal tap provisional whenever a flick candidate is currently in
     // the same touch lane. This prevents the down-event from consuming another
     // moving note before the player's swipe direction is known.
-    const flickCandidate=findCandidate(lane,
-      S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).audioOffset,0)/1000,
-      "flick",true);
+    const inputNow=S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).audioOffset,0)/1000;
+    // Decide whether this touch is a directional flick before consuming a tap.
+    // The down event precedes the swipe vector, so use a wider pre-hit window.
+    const flickCandidate=S.notes
+      .filter(n=>!n.done&&!n.started&&n.f&&Number.isFinite(n.hit))
+      .map(n=>({n,d:inputNow-n.hit,l:expectedLane(n,inputNow)}))
+      .filter(x=>Math.abs(x.l-lane)<=Math.max(2.25,(x.n.w||1)/2+1.25)&&Math.abs(x.d)<=0.25)
+      .sort((a,b)=>Math.abs(a.d)-Math.abs(b.d))[0]?.n||null;
     const tapHit=!flickCandidate&&hit(lane,"tap",true,"up","ptr:"+e.pointerId);
     if(!tapHit&&!flickCandidate)spawnLaneFx(lane);
     S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false,tapHit:!!tapHit});
