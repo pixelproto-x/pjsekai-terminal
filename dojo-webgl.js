@@ -604,14 +604,24 @@ function drawSlideRibbon(n,now,tailOnly=false){
     if(ref?.geom?.ws){
       const sa=Math.max(.12,(a.w/Math.max(1,ref.geom.ws))*1.35);
       const sb=Math.max(.12,(b.w/Math.max(1,ref.geom.ws))*1.35);
-      ref.drawConnection(n.c?"crtcl":"normal",
+      const kind=n.c?"crtcl":"normal";
+      const sprite=n.c?"#NOTE_CONNECTION_YELLOW":"#NOTE_CONNECTION_GREEN";
+      const qa=ref.layoutSlideConnectorSegment(
         (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
-        (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),
-        alpha);
+        (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),12
+      );
+      if(S.skin?.sprites?.[sprite]){
+        for(const q of qa)drawSkinPerspective(sprite,q,alpha);
+      }else{
+        ref.drawConnection(kind,
+          (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
+          (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),alpha);
+      }
+    }else{
+      poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.22);
+      line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.24*alpha);
+      line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.24*alpha);
     }
-    poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.22);
-    line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.24*alpha);
-    line([[a.x+a.w*.72,a.y],[b.x+b.w*.72,b.y]],glow,.24*alpha);
   }
   if(tailOnly)return;
   const head=pointOnPath(n.path,Math.max(n.b,now));
@@ -663,7 +673,19 @@ function drawGuideSlides(now){
       const a=path[i],b=path[i+1],pa=cl(travelAt(now,a.sec),0,1),pb=cl(travelAt(now,b.sec),0,1);
       const ax=(mirror?11-a.l:a.l)-5.5,bx=(mirror?11-b.l:b.l)-5.5;
       if(ref?.geom?.ws){
-        ref.drawConnection("normal",ax,.20,pa,bx,.20,pb,.20);
+        const qa=ref.layoutSlideConnectorSegment(ax,.20,pa,bx,.20,pb,8);
+        const gname={
+          0:"#NOTE_CONNECTION_NEUTRAL",
+          1:"#NOTE_CONNECTION_RED",
+          2:"#NOTE_CONNECTION_GREEN",
+          3:"#NOTE_CONNECTION_BLUE",
+          4:"#NOTE_CONNECTION_YELLOW",
+          5:"#NOTE_CONNECTION_PURPLE",
+          6:"#NOTE_CONNECTION_CYAN",
+          7:"#NOTE_CONNECTION_NEUTRAL"
+        }[guide.color||0]||"#NOTE_CONNECTION_NEUTRAL";
+        if(S.skin?.sprites?.[gname])for(const q of qa)drawSkinPerspective(gname,q,.20);
+        else ref.drawConnection("normal",ax,.20,pa,bx,.20,pb,.20);
       }else{
         const aa=stageAt(pa),bb=stageAt(pb);
         line([[laneX(a.l,pa),aa.y],[laneX(b.l,pb),bb.y]],[.78,.58,1],.18);
