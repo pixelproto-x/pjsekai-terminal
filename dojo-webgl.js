@@ -247,22 +247,27 @@ function susToPlayable(text,baseBpm=120){
   const lane12=n=>cl(n.lane-2+Math.max(0,(n.width||1)-1)*.5,0,11);
   const pushSingle=n=>{
     const k=key(n);if(preventSingles.has(k)||used.has(k))return;
-    if(![1,2,5,6].includes(n.type))return;
+    if(![1,2,3,5,6].includes(n.type))return;
     used.add(k);
     notes.push({
       id:notes.length,k:"tap",l:lane12(n),w:Math.max(1,n.width||1),
       b:atTick(n.tick),hit:atTick(n.tick),end:0,c:n.type===2||n.type===6,
       f:flick.get(k)||null,t:trace.has(k)||n.type===5||n.type===6,
-      dir:flick.get(k)||null,tick:n.tick,ease:ease.get(k)||"linear"
+      dir:flick.get(k)||null,tick:n.tick,ease:"linear"
     });
   };
   for(const n of score.tapNotes)pushSingle(n);
   for(const n of score.directionalNotes){
-    const k=key(n);if([1].includes(n.type)){if(!critical.has(k)&&!trace.has(k))pushSingle(n);}
-    else if(!used.has(k)&&n.type===3){
-      pushSingle({...n,type:1});const x=notes[notes.length-1];if(x)x.f="left";
-    }else if(!used.has(k)&&n.type===4){
-      pushSingle({...n,type:1});const x=notes[notes.length-1];if(x)x.f="right";
+    const k=key(n),dir=directionName(n.type);
+    const existing=notes.find(x=>Math.round(x.tick)===Math.round(n.tick)&&Math.abs(x.l-lane12(n))<0.51);
+    if(existing){
+      existing.f=dir;existing.dir=dir;
+      continue;
+    }
+    if(n.type>=1&&n.type<=6&&!used.has(k)){
+      pushSingle({...n,type:1});
+      const x=notes[notes.length-1];
+      if(x){x.f=dir;x.dir=dir;x.c=critical.has(k);x.t=trace.has(k);}
     }
   }
   for(const slide of score.slides){
