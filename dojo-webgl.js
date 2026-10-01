@@ -795,6 +795,17 @@ function spawnFx(lane,judgeKind,critical=false){
     });
   }
 }
+function drawJudgeFeedback(judgment){
+  const ref=window.__PJSEKAI_SEKAI_REF__,g=ref?.geom;
+  if(!g)return;
+  const el=$("dojoGameJudgment");
+  if(!el)return;
+  el.textContent=judgment||"";
+  el.dataset.judgment=String(judgment||"").toLowerCase();
+  el.classList.remove("dojo-judgment-pop");
+  void el.offsetWidth;
+  el.classList.add("dojo-judgment-pop");
+}
 function effects(dt){
   const ref=window.__PJSEKAI_SEKAI_REF__;
   for(const e of S.fx){
