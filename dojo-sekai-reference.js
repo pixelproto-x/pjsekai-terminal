@@ -245,10 +245,20 @@ function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,end
   ];
   return arcStrip(q,n);
 }
-function drawConnection(kind,laneA,sizeA,travelA,laneB,sizeB,travelB,alpha=1){
-  const sprite=kind==="crtcl"?"notes_long_middle.png":"notes_long_middle.png";
-  const qa=layoutSlideConnectorSegment(laneA,sizeA,travelA,laneB,sizeB,travelB,16);
-  for(let i=0;i<qa.length;i++)drawImage(sprite,qa[i],alpha*(.90-.18*(i/Math.max(1,qa.length-1))));
+function drawConnection(kind,laneA,travelA,laneB,travelB,thickness=10,alpha=1){
+  const g=state.geom;
+  if(!g)return;
+  const size=Math.max(.125,thickness/(Math.max(1,g.hs)*2));
+  const topTravel=Math.max(travelA,travelB),bottomTravel=Math.min(travelA,travelB);
+  const bottomLane=travelA<=travelB?laneA:laneB;
+  const bl={x:(bottomLane-size)*bottomTravel*g.ws,y:bottomTravel*g.hs+g.t};
+  const br={x:(bottomLane+size)*bottomTravel*g.ws,y:bottomTravel*g.hs+g.t};
+  const r=Math.abs(g.t-(topTravel*g.hs+g.t))||1;
+  const width=Math.abs(br.x-bl.x);
+  const n=Math.max(1,Math.min(32,Math.ceil(Math.min(width*20,(width/r)*10))));
+  const qa=layoutSlideConnectorSegment(laneA,size,travelA,laneB,size,travelB,n);
+  const sprite=kind==="crtcl"?"notes_crtcl_middle.png":"notes_long_middle.png";
+  for(const q of qa)drawImage(sprite,q,alpha);
 }
 function drawStage(spriteDraw){
   const g=state.geom;
@@ -262,7 +272,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcStrip,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
   get geom(){return state.geom},
   get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };
