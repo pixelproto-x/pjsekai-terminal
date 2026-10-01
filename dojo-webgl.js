@@ -1001,7 +1001,8 @@ function findCandidate(inputLane,now,mode="tap",exact=false,direction="up"){
     if(mode==="flick"&&!n.f)continue;
     if(mode!=="flick"&&n.f)continue;
     const nl=expectedLane(n,now);
-    const match=exact?Math.abs(nl-inputLane)<=Math.max(.75,(n.w||1)/2+.75):Math.floor(nl/3)===inputLane;
+    const laneTolerance=mode==="flick"&&exact?Math.max(1.5,(n.w||1)/2+1.0):Math.max(.75,(n.w||1)/2+.75);
+    const match=exact?Math.abs(nl-inputLane)<=laneTolerance:Math.floor(nl/3)===inputLane;
     if(!match)continue;
     const d=now-n.hit,a=Math.abs(d),w=n.f?(n.c?WINDOWS.criticalFlick.B:WINDOWS.flick.B):(n.c?WINDOWS.critical.B:WINDOWS.tap.B);
     if(a<=w&&a<bestAbs){bestAbs=a;best=n;}
@@ -1035,8 +1036,7 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd",motion=nul
   const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   const recovered=attachMissedHold(lane,now,exact,inputId);
   if(recovered)return true;
-  let n=findCandidate(lane,now,mode,exact,direction);
-  if(!n&&mode==="flick")n=findCandidate(lane,now,"tap",exact,direction);
+  const n=findCandidate(lane,now,mode,exact,direction);
   if(!n)return false;
   let wrongWay=false;
   if(n.f){
