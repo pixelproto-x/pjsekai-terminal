@@ -81,10 +81,16 @@ function noteBodyQuads(lane,size,travel,slim=false){
   const left=rect(l,ml),right=rect(mr,r),mid=rect(ml,mr);
   return{left:arcQuad(left),middle:arcMiddle(mid,g),right:arcQuad(right),whole:arcQuad(rect(l,r))};
 }
+function arcN(bl,br,quality=1){
+  const g=state.geom;if(!g)return 1;
+  const radius=Math.abs(g.t-br.y)||1;
+  const wScale=Math.abs(br.x-bl.x)*20;
+  const hAdj=wScale/radius*.5;
+  return Math.max(1,Math.ceil(Math.min(wScale,Math.abs(hAdj))*quality));
+}
 function arcMiddle(q,g){
   const a=q[0],b=q[1],c=q[2],d=q[3];
-  const r0=Math.hypot(b.x-a.x,b.y-a.y),r1=Math.hypot(c.x-d.x,c.y-d.y);
-  const span=Math.max(1,Math.min(18,Math.ceil(Math.min(r0,r1)*20/Math.max(20,Math.abs(a.y)))));
+  const span=arcN(a,b,1);
   const out=[];
   for(let i=0;i<span;i++){
     const l=i/span,r=(i+1)/span;
@@ -281,7 +287,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
   get geom(){return state.geom},
   get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };})();
