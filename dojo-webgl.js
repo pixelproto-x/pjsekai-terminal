@@ -1028,7 +1028,7 @@ function vectorsForDirection(direction){
   }[direction];
   return v||[0,-1];
 }
-function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
+function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd",motion=null){
   if(!S.running||S.paused)return false;
   const group=exact?Math.floor(lane/3):lane;
   S.keyFlash[cl(group,0,3)]=performance.now()+180;
@@ -1044,13 +1044,11 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
     wrongWay=false;
     // For keyboard/group input we do not have a gesture vector; the requested
     // semantic direction is checked explicitly where available.
-    if(inputId.startsWith("ptr:")&&S.touch.has(Number(inputId.slice(4)))){
-      const q=S.touch.get(Number(inputId.slice(4)));
-      const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
-      const wrongWay=!directionMatches(n.f,dx,dy);
-    }else{
-      wrongWay=direction && direction!=="up" ? !directionMatches(n.f,
-        vectorsForDirection(direction)[0],vectorsForDirection(direction)[1]) : false;
+    if(motion&&Number.isFinite(motion.dx)&&Number.isFinite(motion.dy)){
+      wrongWay=!directionMatches(n.f,motion.dx,motion.dy);
+    }else if(direction&&direction!=="up"){
+      const v=vectorsForDirection(direction);
+      wrongWay=!directionMatches(n.f,v[0],v[1]);
     }
   }
   if(n.k==="hold"){
@@ -1401,7 +1399,7 @@ function bind(){
       if(w)q.l=screenLaneFromClient(e.clientX,w);
       if(speed>120){
         q.fired=true;
-        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId);
+        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx:totalDx,dy:totalDy});
       }
     }
   },{passive:false});
