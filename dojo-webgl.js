@@ -20,7 +20,7 @@ const S={
   audio:new Audio(),notes:[],running:false,paused:false,starting:false,
   lead:2.5,seek:0,chartOffset:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,
   counts:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},
-  timing:0,tn:0,held:new Map(),fx:[],particles:[],keyFlash:[0,0,0,0],
+  timing:0,tn:0,held:new Map(),fx:[],particles:[],keyFlash:Array(12).fill(0),
   gl:null,buf:null,program:null,pp:null,cc:null,geom:null,raf:0,last:0,
   keys:["D","F","J","K"],ro:null,status:null,pause:null,error:"",
   inputFlash:[],lastJudge:"",lastJudgeAt:0,backdrop:new Image(),backdropReady:false,
@@ -744,6 +744,13 @@ function drawStage(){
     }
     const judge=ref.persp(-6,6,1-g.noteH,1+g.noteH,1);
     drawSkinPerspective("#JUDGMENT_LINE",judge,.98);
+    const flashNow=performance.now();
+    for(let i=0;i<12;i++){
+      const left=-6+i,right=left+1;
+      const q=ref.persp(left+.025,right-.025,1-g.noteH*1.8,1+g.noteH*1.8,1);
+      const a=cl((S.keyFlash[i]-flashNow)/150,0,1);
+      if(a>0)drawSkinPerspective(S.skin?.sprites?.["#LANE_SEAMLESS"]?"#LANE_SEAMLESS":"#LANE",q,.18+.58*a);
+    }
     for(let i=1;i<12;i++){
       const q=ref.persp(-6+i-0.015,-6+i+0.015,g.laneTop,g.laneBottom,1);
       if(!laneSprite)continue;
@@ -1058,8 +1065,13 @@ function vectorsForDirection(direction){
 }
 function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd",motion=null){
   if(!S.running||S.paused)return false;
-  const group=exact?Math.floor(lane/3):lane;
-  S.keyFlash[cl(group,0,3)]=performance.now()+180;
+  const flashUntil=performance.now()+150;
+  if(exact){
+    S.keyFlash[cl(lane,0,11)]=flashUntil;
+  }else{
+    const group=cl(lane,0,3);
+    for(let i=0;i<3;i++)S.keyFlash[group*3+i]=flashUntil;
+  }
   const settings=app().dojo||{},now=S.audio.currentTime-S.seek+S.chartOffset+N(settings.audioOffset,0)/1000;
   const recovered=attachMissedHold(lane,now,exact,inputId);
   if(recovered)return true;
