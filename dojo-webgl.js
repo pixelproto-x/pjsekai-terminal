@@ -847,10 +847,11 @@ function hud(judgment,error=0){
   const life=$("dojoGameLifeBar");if(life)life.style.width=cl(S.life/10,0,100)+"%";
   const combo=$("dojoGameCombo");
   if(combo&&judgment){
-    combo.style.transform="translateX(-50%) scale(.6)";
+    const inPlayPage=!!document.querySelector(".dojo-play-page.active");
+    combo.style.transform=inPlayPage?"scale(.6)":"translateX(-50%) scale(.6)";
     combo.style.opacity="1";
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      combo.style.transform="translateX(-50%) scale(1)";
+      combo.style.transform=inPlayPage?"scale(1)":"translateX(-50%) scale(1)";
     }));
   }
   const jt=$("dojoJudgeText");
