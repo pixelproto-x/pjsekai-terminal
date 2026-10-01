@@ -1395,8 +1395,10 @@ function bind(){
       const totalDx=e.clientX-q.sx,totalDy=e.clientY-q.sy;
       const dir=gestureDirection(totalDx,totalDy);
       const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(totalDx,totalDy)/dt;
-      const w=$("dojoGameStageWrap");
-      if(w)q.l=screenLaneFromClient(e.clientX,w);
+      // Flicks are judged against the lane where the gesture started; the
+      // gesture vector itself carries the directional intent. Do not remap the
+      // lane to the gesture endpoint, otherwise diagonal/horizontal flicks can
+      // jump into a neighbouring lane before the chart bucket is evaluated.
       if(speed>120){
         q.fired=true;
         hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx:totalDx,dy:totalDy});
