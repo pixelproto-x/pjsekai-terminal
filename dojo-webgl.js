@@ -940,7 +940,8 @@ function directionMatches(direction,dx,dy){
     "down-right":[Math.SQRT1_2,Math.SQRT1_2]
   };
   const v=vectors[direction]||vectors.up;
-  return (dx/len)*v[0]+(dy/len)*v[1]>=Math.cos(Math.PI/4);
+  // Public Next-SEKAI uses a ±90° directional leniency window.
+  return (dx/len)*v[0]+(dy/len)*v[1]>=Math.cos(Math.PI/2);
 }
 function flickDirectionOk(required,motion){
   if(!required)return true;
