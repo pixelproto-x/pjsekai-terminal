@@ -1455,35 +1455,39 @@ function bind(){
     release("ptr:"+e.pointerId);
   };
   document.addEventListener("pointerup",endPointer);document.addEventListener("pointercancel",endPointer);
-  // Mouse fallback for browsers that expose mouse input without a usable
-  // PointerEvent stream. It shares the exact flick judge path.
-  let mouseGesture=null;
-  document.addEventListener("mousedown",e=>{
-    if(e.button!==0||!S.running)return;
-    const w=$("dojoGameStageWrap");if(!w)return;
-    const lane=screenLaneFromClient(e.clientX,w,e.clientY);
-    mouseGesture={lane,sx:e.clientX,sy:e.clientY,fired:false};
-  },{passive:false});
-  document.addEventListener("mousemove",e=>{
-    const q=mouseGesture;if(!q||q.fired||!S.running)return;
-    const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
-    if(Math.hypot(dx,dy)<=22)return;
-    const dir=gestureDirection(dx,dy);
-    q.fired=true;
-    hit(q.lane,"flick",true,dir,"mouse",{dx,dy});
-  },{passive:false});
-  document.addEventListener("mouseup",e=>{
-    if(!mouseGesture)return;
-    if(!mouseGesture.fired){
-      const dx=e.clientX-mouseGesture.sx,dy=e.clientY-mouseGesture.sy;
-      if(Math.hypot(dx,dy)>22){
-        const dir=gestureDirection(dx,dy);
-        mouseGesture.fired=true;
-        hit(mouseGesture.lane,"flick",true,dir,"mouse",{dx,dy});
+  // Mouse fallback is only needed on legacy browsers without PointerEvent;
+  // modern browsers must not receive both pointer and synthetic mouse hits.
+  if(!window.PointerEvent){
+    // Mouse fallback for browsers that expose mouse input without a usable
+    // PointerEvent stream. It shares the exact flick judge path.
+    let mouseGesture=null;
+    document.addEventListener("mousedown",e=>{
+      if(e.button!==0||!S.running)return;
+      const w=$("dojoGameStageWrap");if(!w)return;
+      const lane=screenLaneFromClient(e.clientX,w,e.clientY);
+      mouseGesture={lane,sx:e.clientX,sy:e.clientY,fired:false};
+    },{passive:false});
+    document.addEventListener("mousemove",e=>{
+      const q=mouseGesture;if(!q||q.fired||!S.running)return;
+      const dx=e.clientX-q.sx,dy=e.clientY-q.sy;
+      if(Math.hypot(dx,dy)<=22)return;
+      const dir=gestureDirection(dx,dy);
+      q.fired=true;
+      hit(q.lane,"flick",true,dir,"mouse",{dx,dy});
+    },{passive:false});
+    document.addEventListener("mouseup",e=>{
+      if(!mouseGesture)return;
+      if(!mouseGesture.fired){
+        const dx=e.clientX-mouseGesture.sx,dy=e.clientY-mouseGesture.sy;
+        if(Math.hypot(dx,dy)>22){
+          const dir=gestureDirection(dx,dy);
+          mouseGesture.fired=true;
+          hit(mouseGesture.lane,"flick",true,dir,"mouse",{dx,dy});
+        }
       }
+      release("mouse");mouseGesture=null;
+    },{passive:false});
     }
-    release("mouse");mouseGesture=null;
-  },{passive:false});
   $("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});
   $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");
     if(st&&prep.jacket){st.style.backgroundImage='linear-gradient(rgba(3,5,14,.18),rgba(3,5,14,.58)),url("'+prep.jacket+'")';st.style.backgroundSize="cover";st.style.backgroundPosition="center";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
