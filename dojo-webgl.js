@@ -1452,8 +1452,7 @@ function bind(){
       // lane to the gesture endpoint, otherwise diagonal/horizontal flicks can
       // jump into a neighbouring lane before the chart bucket is evaluated.
       if(speed>120){
-        q.fired=true;
-        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx:totalDx,dy:totalDy});
+        q.fired=hit(q.l,"flick",true,dir,"ptr:"+e.pointerId,{dx:totalDx,dy:totalDy})||q.fired;
       }
     }
   },{passive:false});
