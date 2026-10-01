@@ -256,7 +256,14 @@ function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
   const hAdj=wScale/radius*.5;
   return Math.max(1,Math.ceil(Math.min(wScale,Math.abs(hAdj))));
 }
-function drawConnection(kind,laneA,travelA,laneB,travelB,sizeA,sizeB,alpha=1){
+function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
+  let sl=startLane,ss=startSize,st=startTravel,el=endLane,es=endSize,et=endTravel;
+  if(st<et){[sl,el]=[el,sl];[ss,es]=[es,ss];[st,et]=[et,st]}
+  const g=state.geom,bl={x:(sl-ss)*st*g.ws,y:st*g.hs+g.t},br={x:(sl+ss)*st*g.ws,y:st*g.hs+g.t};
+  const radius=Math.abs(g.t-br.y)||1,wScale=Math.abs(br.x-bl.x)*20,hAdj=wScale/radius*.5;
+  return Math.max(1,Math.ceil(Math.min(wScale,Math.abs(hAdj))));
+}
+function drawConnection(kind,laneA,sizeA,travelA,laneB,sizeB,travelB,alpha=1){
   const n=connectorN(laneA,sizeA,travelA,laneB,sizeB,travelB);
   const qa=layoutSlideConnectorSegment(laneA,sizeA,travelA,laneB,sizeB,travelB,n);
   const sprite=kind==="crtcl"?"notes_crtcl_middle.png":"notes_long_middle.png";
