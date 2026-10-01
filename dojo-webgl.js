@@ -218,17 +218,13 @@ function susToPlayable(text,baseBpm=120){
   }
   const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
-  const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set();
-  const directionName=t=>({
-    1:"up",
-    2:"down",
-    3:"up-left",
-    4:"up-right",
-    5:"down-left",
-    6:"down-right"
-  }[Number(t)]||"up");
+  const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set(),easeIn=new Set(),easeOut=new Set();
+  const directionName=t=>({1:"up",3:"left",4:"right"}[Number(t)]||null);
   for(const n of score.directionalNotes){
-    flick.set(key(n),directionName(n.type));
+    const k=key(n);
+    if(n.type===1||n.type===3||n.type===4)flick.set(k,directionName(n.type));
+    else if(n.type===2)easeIn.add(k);
+    else if(n.type===5||n.type===6)easeOut.add(k);
   }
   for(const n of score.tapNotes){
     const k=key(n);
@@ -259,12 +255,13 @@ function susToPlayable(text,baseBpm=120){
   for(const n of score.tapNotes)pushSingle(n);
   for(const n of score.directionalNotes){
     const k=key(n),dir=directionName(n.type);
+    if(!dir)continue;
     const existing=notes.find(x=>Math.round(x.tick)===Math.round(n.tick)&&Math.abs(x.l-lane12(n))<0.51);
     if(existing){
       existing.f=dir;existing.dir=dir;
       continue;
     }
-    if(n.type>=1&&n.type<=6&&!used.has(k)){
+    if(!used.has(k)){
       pushSingle({...n,type:1});
       const x=notes[notes.length-1];
       if(x){x.f=dir;x.dir=dir;x.c=critical.has(k);x.t=trace.has(k);}
@@ -279,7 +276,7 @@ function susToPlayable(text,baseBpm=120){
       l:lane12(n),rawLane:n.lane,b:n.tick/score.ticksPerBeat,sec:atTick(n.tick),
       w:Math.max(1,n.width||1),type:n.type,
       trace:trace.has(key(n)),critical:critical.has(key(n))||critical.has(sk),
-      ease:"linear",dir:flick.get(key(n))||null
+      ease:easeIn.has(key(n))?"in":easeOut.has(key(n))?"out":"linear",dir:flick.get(key(n))||null
     }));
     if(slide.type===9){
       guides.push({
@@ -523,9 +520,14 @@ function pointOnPath(path,sec){
   for(let i=0;i<path.length-1;i++){
     const a=path[i],b=path[i+1];
     if(sec>=a.sec&&sec<=b.sec){
-      const d=Math.max(1e-5,b.sec-a.sec),u=(sec-a.sec)/d;
-      const eased=b.ease==="in"?u*u:b.ease==="out"?1-(1-u)*(1-u):u;
-      return{l:a.l+(b.l-a.l)*eased,w:a.w+(b.w-a.w)*eased,sec,trace:a.trace||b.trace,critical:a.critical||b.critical};
+      const d=Math.max(1e-5,b.sec-a.sec),u=cl((sec-a.sec)/d,0,1);
+      const mode=b.ease||a.ease||"linear";
+      const ei=mode==="in"?.5:0,eo=mode==="out"?.5:0;
+      const t0=u,t1=u*u*(3-2*u);
+      const t3=Math.pow(1-u,3)*a.l+3*Math.pow(1-u,2)*u*(a.l+(b.l-a.l)*ei)+3*(1-u)*u*u*(b.l+(a.l-b.l)*eo)+Math.pow(u,3)*b.l;
+      const tw=mode==="linear"?u:t1;
+      const ww=a.w+(b.w-a.w)*tw;
+      return{l:t3,w:ww,sec,trace:a.trace||b.trace,critical:a.critical||b.critical,ease:mode,dir:b.dir||a.dir||null};
     }
   }
   return{...path[path.length-1]};
@@ -600,10 +602,12 @@ function drawSlideRibbon(n,now,tailOnly=false){
   for(let i=0;i<samples.length-1;i++){
     const a=samples[i],b=samples[i+1],alpha=(hidden?.40:.78)*(0.44+0.56*(i/(samples.length-1)));
     if(ref?.geom?.ws){
+      const sa=Math.max(.12,(a.w/Math.max(1,ref.geom.ws))*1.35);
+      const sb=Math.max(.12,(b.w/Math.max(1,ref.geom.ws))*1.35);
       ref.drawConnection(n.c?"crtcl":"normal",
-        (mirror?11-a.l:a.l)-5.5,cl(a.p,0,1),
-        (mirror?11-b.l:b.l)-5.5,cl(b.p,0,1),
-        Math.max(5,(a.w+b.w)*.42),alpha);
+        (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
+        (mirror?11-b.l:b.l)-5.5,sb,cl(b.p,0,1),
+        alpha);
     }
     poly([[a.x-a.w,a.y],[a.x+a.w,a.y],[b.x+b.w,b.y],[b.x-b.w,b.y]],base,alpha*.22);
     line([[a.x-a.w*.72,a.y],[b.x-b.w*.72,b.y]],glow,.24*alpha);
