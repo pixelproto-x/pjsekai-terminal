@@ -219,20 +219,21 @@ function susToPlayable(text,baseBpm=120){
   const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
   const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set(),easeIn=new Set(),easeOut=new Set();
-  const directionName=t=>({1:"up",2:"down",3:"up-left",4:"up-right",5:"down-left",6:"down-right"}[Number(t)]||null);
+  // Public Next-SEKAI SUS semantics: directional types are 1=up, 3=left, 4=right.
+  // Types 2/5/6 are easing modifiers and are not flick directions.
+  const directionName=t=>({1:"up",3:"left",4:"right"}[Number(t)]||null);
   for(const n of score.directionalNotes){
-    const k=key(n);
-    if(n.type===1||n.type===3||n.type===4)flick.set(k,directionName(n.type));
+    const k=key(n),dir=directionName(n.type);
+    if(dir)flick.set(k,dir);
     else if(n.type===2)easeIn.add(k);
     else if(n.type===5||n.type===6)easeOut.add(k);
   }
   for(const n of score.tapNotes){
     const k=key(n);
     if(n.type===2)critical.add(k);
-    else if(n.type===3)flick.set(k,"up");
     else if(n.type===5)trace.add(k);
     else if(n.type===6){trace.add(k);critical.add(k);}
-    else if(n.type===7||n.type===8)removeSE.add(k);
+    else if(n.type===3||n.type===7||n.type===8)removeSE.add(k);
     if(n.type===8)critical.add(k);
   }
   const preventSingles=new Set();
@@ -758,6 +759,10 @@ function drawStage(){
       if(!laneSprite)continue;
       drawSkinPerspective("#LANE",q,.20);
     }
+    const bottom=ref.persp(-6,6,g.laneBottom,g.laneBottom+.06,1);
+    if(S.skin?.sprites?.["#STAGE_BOTTOM_BORDER"])drawSkinPerspective("#STAGE_BOTTOM_BORDER",bottom,.72);
+    const top=ref.persp(-6,6,g.laneTop-.045,g.laneTop,1);
+    if(S.skin?.sprites?.["#STAGE_TOP_BORDER"])drawSkinPerspective("#STAGE_TOP_BORDER",top,.42);
     return;
   }
   const tm=S.audio.currentTime||0,pulse=.5+.5*Math.sin(tm*Math.PI*2*2.2);
