@@ -982,8 +982,9 @@ function directionMatches(direction,dx,dy){
     "down-right":[Math.SQRT1_2,Math.SQRT1_2]
   };
   const v=vectors[direction]||vectors.up;
-  // Public Next-SEKAI uses a ±90° directional leniency window.
-  return (dx/len)*v[0]+(dy/len)*v[1]>=Math.cos(Math.PI/2);
+  // Match the public engine's directional intent while rejecting clearly
+  // sideways/reversed gestures.  Diagonal arrows remain usable on touch.
+  return (dx/len)*v[0]+(dy/len)*v[1]>=Math.cos(Math.PI*3/8);
 }
 function flickDirectionOk(required,motion){
   if(!required)return true;
@@ -1362,12 +1363,12 @@ function bind(){
     if(z){
       e.preventDefault();const lane=cl(+z.dataset.dojoLaneZone|0,0,11);
       try{z.setPointerCapture(e.pointerId)}catch(_){}
-      S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true});
+      S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false});
       if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);return;
     }
     const w=$("dojoGameStageWrap");if(!w||!S.running)return;
     const lane=screenLaneFromClient(e.clientX,w,e.clientY);
-    S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,t:performance.now(),exact:true});
+    S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),exact:true,fired:false});
     if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);
   },{passive:false});
   document.addEventListener("pointermove",e=>{
@@ -1386,13 +1387,16 @@ function bind(){
       }
       return;
     }
-    if(Math.hypot(dx,dy)>22&&S.running){
-      const dir=gestureDirection(dx,dy);
-      const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(dx,dy)/dt;
+    if(Math.hypot(e.clientX-q.sx,e.clientY-q.sy)>22&&S.running&&!q.fired){
+      const totalDx=e.clientX-q.sx,totalDy=e.clientY-q.sy;
+      const dir=gestureDirection(totalDx,totalDy);
+      const dt=Math.max(.008,(performance.now()-q.t)/1000),speed=Math.hypot(totalDx,totalDy)/dt;
       const w=$("dojoGameStageWrap");
       if(w)q.l=screenLaneFromClient(e.clientX,w);
-      if(speed>120)hit(q.l,"flick",true,dir,"ptr:"+e.pointerId);
-      q.x=e.clientX;q.y=e.clientY;q.t=performance.now();
+      if(speed>120){
+        q.fired=true;
+        hit(q.l,"flick",true,dir,"ptr:"+e.pointerId);
+      }
     }
   },{passive:false});
   const endPointer=e=>{const q=S.touch.get(e.pointerId);S.touch.delete(e.pointerId);if(q)release("ptr:"+e.pointerId);};
