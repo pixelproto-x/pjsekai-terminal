@@ -218,29 +218,32 @@ function susToPlayable(text,baseBpm=120){
   }
   const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
-  const flick=new Map(),trace=new Set(),critical=new Set(),removeTick=new Set(),removeSE=new Set(),ease=new Map();
+  const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set();
+  const directionName=t=>({
+    1:"up",
+    2:"down",
+    3:"up-left",
+    4:"up-right",
+    5:"down-left",
+    6:"down-right"
+  }[Number(t)]||"up");
   for(const n of score.directionalNotes){
-    const k=key(n);
-    if(n.type===1)flick.set(k,"up");
-    else if(n.type===3)flick.set(k,"left");
-    else if(n.type===4)flick.set(k,"right");
-    else if(n.type===2)ease.set(k,"in");
-    else if(n.type===5||n.type===6)ease.set(k,"out");
+    flick.set(key(n),directionName(n.type));
   }
   for(const n of score.tapNotes){
     const k=key(n);
     if(n.type===2)critical.add(k);
+    else if(n.type===3)flick.set(k,"up");
     else if(n.type===5)trace.add(k);
     else if(n.type===6){trace.add(k);critical.add(k);}
-    else if(n.type===3)removeTick.add(k);
-    else if(n.type===7)removeSE.add(k);
-    else if(n.type===8){critical.add(k);removeSE.add(k);}
+    else if(n.type===7||n.type===8)removeSE.add(k);
+    if(n.type===8)critical.add(k);
   }
   const preventSingles=new Set();
   for(const slide of score.slides)if(slide.type===3){
     for(const n of slide.notes)if([1,2,3,5].includes(n.type))preventSingles.add(key(n));
   }
-  const notes=[],used=new Set(),slideHeads=new Map();
+  const notes=[],guides=[],used=new Set(),slideHeads=new Map();
   const lane12=n=>cl(n.lane-2+Math.max(0,(n.width||1)-1)*.5,0,11);
   const pushSingle=n=>{
     const k=key(n);if(preventSingles.has(k)||used.has(k))return;
@@ -271,8 +274,16 @@ function susToPlayable(text,baseBpm=120){
       l:lane12(n),rawLane:n.lane,b:n.tick/score.ticksPerBeat,sec:atTick(n.tick),
       w:Math.max(1,n.width||1),type:n.type,
       trace:trace.has(key(n)),critical:critical.has(key(n))||critical.has(sk),
-      ease:ease.get(key(n))||"linear",dir:flick.get(key(n))||null
+      ease:"linear",dir:flick.get(key(n))||null
     }));
+    if(slide.type===9){
+      guides.push({
+        start:path[0]?.sec||0,
+        end:path[path.length-1]?.sec||path[0]?.sec||0,
+        path
+      });
+      continue;
+    }
     const last=path[path.length-1];
     if(path.length>=2){
       const slideNote={
@@ -283,7 +294,7 @@ function susToPlayable(text,baseBpm=120){
       };
       for(let i=1;i<path.length-1;i++){
         const p=path[i];
-        if(!removeTick.has(key(ns[i]))){
+        if(p.type!==5 && p.type!==4 && !removeSE.has(key(ns[i]))){
           slideNote.checkpoints.push({sec:p.sec,lane:p.l,type:p.type,critical:p.critical,trace:p.trace,judged:false});
         }
       }
@@ -314,6 +325,7 @@ function susToPlayable(text,baseBpm=120){
   return{
     changes:changes.map(c=>({beat:c.beat,bpm:c.bpm,sec:c.sec,rawTick:Math.round(c.beat*score.ticksPerBeat)})),
     notes,
+    guides,
     filler:0,
     offset:score.offset,
     ticksPerBeat:score.ticksPerBeat
@@ -631,6 +643,25 @@ function bg(){
     circle(xx,yy,2.5+(i%3)*1.6,[.55,.80,1],.08,12);
   }
 }
+function drawGuideSlides(now){
+  const guides=S.prep?.guides||[];
+  if(!guides.length)return;
+  const ref=window.__PJSEKAI_SEKAI_REF__,settings=app().dojo||{},mirror=!!settings.mirror;
+  for(const guide of guides){
+    const path=guide.path;
+    if(!path?.length||guide.start>now+S.lead||guide.end<now-S.lead)continue;
+    for(let i=0;i<path.length-1;i++){
+      const a=path[i],b=path[i+1],pa=cl(travelAt(now,a.sec),0,1),pb=cl(travelAt(now,b.sec),0,1);
+      const ax=(mirror?11-a.l:a.l)-5.5,bx=(mirror?11-b.l:b.l)-5.5;
+      if(ref?.geom?.ws){
+        ref.drawConnection("normal",ax,.20,pa,bx,.20,pb,.20);
+      }else{
+        const aa=stageAt(pa),bb=stageAt(pb);
+        line([[laneX(a.l,pa),aa.y],[laneX(b.l,pb),bb.y]],[.78,.58,1],.18);
+      }
+    }
+  }
+}
 function drawMultiTapGuide(now){
   const groups=new Map();
   for(const n of S.notes){
@@ -852,12 +883,17 @@ function expectedLane(n,time){
   return app().dojo?.mirror?11-raw:raw;
 }
 function directionMatches(direction,dx,dy){
-  if(Math.hypot(dx,dy)<1)return true;
-  const a=Math.atan2(-dy,dx); // screen y is inverted to gameplay angle.
-  const targets={up:Math.PI/2,down:-Math.PI/2,left:Math.PI,right:0};
-  const t=targets[direction]??Math.PI/2;
-  const diff=Math.abs(Math.atan2(Math.sin(a-t),Math.cos(a-t)));
-  return diff<=Math.PI/2;
+  const len=Math.hypot(dx,dy);
+  if(len<1)return true;
+  const vectors={
+    up:[0,-1],down:[0,1],left:[-1,0],right:[1,0],
+    "up-left":[-Math.SQRT1_2,-Math.SQRT1_2],
+    "up-right":[Math.SQRT1_2,-Math.SQRT1_2],
+    "down-left":[-Math.SQRT1_2,Math.SQRT1_2],
+    "down-right":[Math.SQRT1_2,Math.SQRT1_2]
+  };
+  const v=vectors[direction]||vectors.up;
+  return (dx/len)*v[0]+(dy/len)*v[1]>=Math.cos(Math.PI/4);
 }
 function flickDirectionOk(required,motion){
   if(!required)return true;
@@ -890,6 +926,13 @@ function startHold(n,inputId,now){
   for(const cp of n.checkpoints||[])cp.judged=false;
   return head;
 }
+function vectorsForDirection(direction){
+  const v={
+    up:[0,-1],down:[0,1],left:[-1,0],right:[1,0],
+    "up-left":[-1,-1],"up-right":[1,-1],"down-left":[-1,1],"down-right":[1,1]
+  }[direction];
+  return v||[0,-1];
+}
 function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   if(!S.running||S.paused)return false;
   const group=exact?Math.floor(lane/3):lane;
@@ -910,7 +953,8 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
       const dx=q.x-q.sx,dy=q.y-q.sy;
       wrongWay=!directionMatches(n.f,dx,dy);
     }else{
-      wrongWay=direction!=="up"&&direction!==n.f;
+      wrongWay=direction && direction!=="up" ? !directionMatches(n.f,
+        vectorsForDirection(direction)[0],vectorsForDirection(direction)[1]) : false;
     }
   }
   if(n.k==="hold"){
@@ -1018,7 +1062,11 @@ function loop(t){
   S.raf=requestAnimationFrame(loop);
   const dt=Math.min(.05,(t-(S.last||t))/1000);S.last=t;
   bg();drawStage();
-  if(S.running)drawMultiTapGuide(S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).visualOffset,0)/1000);
+  if(S.running){
+    const guideNow=S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).visualOffset,0)/1000;
+    drawGuideSlides(guideNow);
+    drawMultiTapGuide(guideNow);
+  }
   if(S.running){
     const rawNow=S.audio.currentTime-S.seek,settings=app().dojo||{};
     const visualNow=rawNow+S.chartOffset+N(settings.visualOffset,0)/1000;
