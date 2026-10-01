@@ -1338,6 +1338,7 @@ async function start(){
     });
     await S.audio.play();
     S.running=true;S.paused=false;
+    const loading=$("dojoGameLoading");if(loading)loading.classList.add("hidden");
     S.endAt=Math.max(...S.notes.map(x=>x.end||x.hit),0)+.8;
     if(S.pause)S.pause.hidden=false;
     if(S.status)S.status.textContent="PLAY · "+LAB[q.d];
