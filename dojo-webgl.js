@@ -1036,7 +1036,7 @@ function hit(lane,mode="tap",exact=false,direction="up",inputId="kbd"){
   let wrongWay=false;
   if(n.f){
     S.lastInput={lane:n.l,kind:mode==="flick"?"flick":n.f?"flick":"tap",direction,directionRequired:n.f,error:now-n.hit};
-    wrongWay=!flickDirectionOk(n.f,{dx:n.f==="left"?-1:n.f==="right"?1:0,dy:n.f==="up"?-1:n.f==="down"?1:0});
+    wrongWay=false;
     // For keyboard/group input we do not have a gesture vector; the requested
     // semantic direction is checked explicitly where available.
     if(inputId.startsWith("ptr:")&&S.touch.has(Number(inputId.slice(4)))){
