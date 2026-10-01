@@ -190,9 +190,12 @@ function drawBody(kind,lane,size,travel,alpha=1){
 function drawArrow(kind,lane,size,travel,direction,alpha=1){
   const animationProgress=(performance.now()/1000/.5)%1;
   const nameKind=kind==="crtcl"?"crtcl":"normal",n=Math.max(1,Math.min(6,Math.round(Math.max(1,size)*2)));
-  const d=String(direction||"up"),diagonal=d==="left"||d==="right",suffix=diagonal?"_diagonal_"+d:"";
+  const d=String(direction||"up");
+  const diagonal=d==="left"||d==="right";
+  const suffix=diagonal?"_diagonal_"+d:"";
   const name="notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+suffix+".png";
-  drawImage(name,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
+  const safe=images.has(name)?name:("notes_flick_arrow_"+(nameKind==="crtcl"?"crtcl_":"")+String(n).padStart(2,"0")+".png");
+  drawImage(safe,arrowQuad(lane,size,travel,d,animationProgress),alpha*(1-Math.pow(animationProgress,3)*.9));
 }
 
 function screenPoint(x,y,travel=1){
