@@ -921,21 +921,47 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   if(allowFinish&&S.judged>=S.total)finish();
   return jg;
 }
-function screenLaneFromClient(x,wrap){
+function pointInQuad(x,y,q){
+  if(!Array.isArray(q)||q.length<3)return false;
+  let inside=false;
+  for(let i=0,j=q.length-1;i<q.length;j=i++){
+    const xi=q[i].x,yi=q[i].y,xj=q[j].x,yj=q[j].y;
+    const cross=((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/((yj-yi)||1e-9)+xi);
+    if(cross)inside=!inside;
+  }
+  return inside;
+}
+function screenLaneFromClient(x,wrap,y=null){
   const r=wrap?.getBoundingClientRect?.();
   if(!r)return cl(Math.floor(cl(x,0,.999)*12),0,11);
-  const nx=cl(x-r.left,0,r.width),ref=window.__PJSEKAI_SEKAI_REF__;
-  if(!ref?.screenPoint)return cl(Math.floor(nx/r.width*12),0,11);
+  const nx=cl(x-r.left,0,r.width),ny=cl((y==null?r.height*.88:y-r.top),0,r.height),ref=window.__PJSEKAI_SEKAI_REF__;
   const scaleX=S.gl?.canvas?.width&&r.width?S.gl.canvas.width/r.width:1;
-  const px=nx*scaleX;
-  const gw=S.gl?.canvas?.height?S.gl.canvas.height:1;
-  const targetY=S.geom?.hit??(gw*.875);
+  const scaleY=S.gl?.canvas?.height&&r.height?S.gl.canvas.height/r.height:1;
+  const px=nx*scaleX,py=ny*scaleY;
+  if(ref?.hitboxAtLane){
+    const gw=S.gl?.canvas?.height||r.height*scaleY;
+    const laneY=cl(py,0,gw);
+    for(let lane=0;lane<12;lane++){
+      const center=(lane-5.5);
+      const mirror=!!app().dojo?.mirror;
+      const logical=mirror?-center:center;
+      const polys=ref.hitboxAtLane(logical,.5);
+      if(polys.some(q=>pointInQuad(px,py,q)))return lane;
+    }
+  }
+  if(!ref?.screenPoint)return cl(Math.floor(nx/r.width*12),0,11);
+  const targetY=S.geom?.hit??(S.gl?.canvas?.height||1)*.875;
   let lo=-5.5,hi=5.5;
   for(let i=0;i<18;i++){
     const mid=(lo+hi)/2,q=ref.screenPoint(mid,1,1);
     if(q.x<px)lo=mid;else hi=mid;
   }
   return cl(Math.floor(((lo+hi)/2)+5.5),0,11);
+}
+function gestureDirection(dx,dy){
+  const a=Math.atan2(dy,dx),pi=Math.PI;
+  const dirs=["right","down-right","down","down-left","left","up-left","up","up-right"];
+  return dirs[Math.round(a/(pi/4)+8)%8];
 }
 function nowTime(){return Number.isFinite(S.audio.currentTime)?S.audio.currentTime:0;}
 function expectedLane(n,time){
@@ -1337,7 +1363,7 @@ function bind(){
       if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);return;
     }
     const w=$("dojoGameStageWrap");if(!w||!S.running)return;
-    const lane=screenLaneFromClient(e.clientX,w);
+    const lane=screenLaneFromClient(e.clientX,w,e.clientY);
     S.touch.set(e.pointerId,{l:lane,x:e.clientX,y:e.clientY,t:performance.now(),exact:true});
     if(!hit(lane,"tap",true,"up","ptr:"+e.pointerId))spawnLaneFx(lane);
   },{passive:false});
@@ -1349,7 +1375,7 @@ function bind(){
       if(w)q.l=screenLaneFromClient(e.clientX,w);
       const h=S.held.get("ptr:"+e.pointerId);if(h){h.lane=q.l;h.inputLane=q.l;h.exactInput=true;}
       if(Math.hypot(dx,dy)>20&&h){
-        const dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"up":"down");
+        const dir=gestureDirection(dx,dy);
         if(h.note?.tail?.dir){
           if(dir===h.note.tail.dir)h.flicked=true;
           else h.wrongFlick=true;
