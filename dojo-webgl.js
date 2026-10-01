@@ -832,7 +832,7 @@ const WINDOWS={
   slideEnd:{P:[3.5/60,4/60],G:[6.5/60,8/60],D:[7.5/60,8.5/60],B:[7.5/60,8.5/60]},
   slideEndTrace:{P:[6.5/60,8/60],G:[6.5/60,8/60],D:[6.5/60,8/60],B:[6.5/60,8/60]},
   slideEndFlick:{P:[3.5/60,4/60],G:[6.5/60,8/60],D:[7.5/60,8.5/60],B:[7.5/60,8.5/60]},
-  slideTick:{P:5/60,G:5/60,D:5/60,B:5/60}
+  slideTick:{P:[7.5/60,0],G:[7.5/60,0],D:[7.5/60,0],B:[7.5/60,0]}
 };
 function classify(diff,type){
   const w=type==="criticalFlick"?WINDOWS.criticalFlick:type==="traceFlick"?WINDOWS.traceFlick:type==="trace"?WINDOWS.trace:type==="slideEndFlick"?WINDOWS.slideEndFlick:type==="slideEndTrace"?WINDOWS.slideEndTrace:type==="slideEnd"?WINDOWS.slideEnd:type==="critical"?WINDOWS.critical:WINDOWS.tap;
@@ -1011,20 +1011,21 @@ function processHeld(now){
       return h.exactInput ? Math.abs(inputLane-target)<=span : Math.floor(inputLane/3)===Math.floor(target/3);
     };
     for(const cp of n.checkpoints||[]){
-      if(cp.judged||now<cp.sec-WINDOWS.slideTick.P)continue;
+      if(cp.judged)continue;
+      const early=7.5/60,late=0;
+      if(now<cp.sec-early)continue;
       const laneNow=expectedLane(n,cp.sec);
-      if(laneMatches(laneNow)){
-        const d=now-cp.sec;
-        // Project SEKAI/Next-SEKAI slide ticks are binary: on-time hold = PERFECT, otherwise MISS.
-        const jg=Math.abs(d)<=WINDOWS.slideTick.P?"PERFECT":"MISS";
+      const d=now-cp.sec;
+      if(laneMatches(laneNow)&&d<=late+1e-4){
+        // Next-SEKAI's slide ticks use a one-sided 7.5-frame window: early input is
+        // accepted, late input is not. A held finger is evaluated at the tick time.
+        const jg="PERFECT";
         cp.judged=true;S.judged++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
-        if(jg==="MISS")S.combo=0;else S.combo++;
-        S.best=Math.max(S.best,S.combo);S.counts[jg]++;
-        S.score+=jg==="PERFECT"?(cp.critical?20:10):jg==="GREAT"?(cp.critical?14:7):jg==="GOOD"?(cp.critical?10:5):0;
-        S.life=cl(S.life+(jg==="MISS"?-40:1),0,1000);
+        S.combo++;S.best=Math.max(S.best,S.combo);S.counts.PERFECT++;
+        S.score+=cp.critical?20:10;S.life=cl(S.life+1,0,1000);
         S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:cp.lane,kind:"tick",judgement:jg,error:d};
-        hud(jg);if(jg!=="MISS"){ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);}
-      }else{
+        hud(jg);ensureSfx();sfx(jg,!!cp.critical);spawnFx(cp.lane,jg,!!cp.critical);
+      }else if(now>cp.sec+early){
         cp.judged=true;S.judged++;S.tn++;S.combo=0;S.life=cl(S.life-40,0,1000);S.counts.MISS++;hud("MISS");spawnFx(cp.lane,"MISS",!!cp.critical);
       }
     }
