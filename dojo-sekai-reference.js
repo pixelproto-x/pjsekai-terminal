@@ -220,6 +220,13 @@ function screenPoint(x,y,travel=1){
   const g=state.geom,v=arcRaw({x:x*y*travel*g.ws,y:y*travel*g.hs+g.t});
   return rawLogical(v.x,v.y);
 }
+function layoutHitbox(l,r){
+  // Next-SEKAI input hitbox: perspective rectangle from t=.2 to b=30,
+  // then the same arc transform used by the gameplay lane.
+  const q=perspRaw(l,r,.2,30,1);
+  return arcStrip(q,12);
+}
+function hitboxAtLane(lane,size=0.5){return layoutHitbox(lane-size,lane+size);}
 function stagePoint(lane,travel){
   const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
 }
@@ -278,7 +285,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,
   get geom(){return state.geom},
   get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };})();
