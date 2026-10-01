@@ -608,7 +608,7 @@ function drawSlideRibbon(n,now,tailOnly=false){
     samples.push({sec,l:z.l,x,y:q.y,w,p,trace:z.trace||n.t,critical:z.critical||n.c});
   }
   if(samples.length<2)return;
-  const base=n.c?[1,.80,.16]:[.16,.92,.62],glow=n.c?[1,.86,.26]:[.18,1,.70];
+  const base=n.c?[1,.80,.16]:n.f?[1,.20,.28]:n.t?[.16,1,.62]:[.16,.86,1],glow=n.c?[1,.86,.26]:n.f?[1,.28,.34]:n.t?[.22,1,.70]:[.42,.94,1];
   // Canonical Next-SEKAI particle families: cyan tap, green slide/trace, red flick, yellow critical.
   const particleColor=n.c?[1,.82,.16]:n.f?[1,.20,.28]:n.t?[.20,1,.70]:[.20,.86,1];
   for(let i=0;i<samples.length-1;i++){
