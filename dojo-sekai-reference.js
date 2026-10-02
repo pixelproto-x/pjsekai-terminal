@@ -9,7 +9,11 @@ const TARGET=16/9, APPROACH_SCALE=Math.pow(1.06,-45);
 const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 // The public pixel skin contains note/stage atlases; hit effects and particles are
 // separate Sonolus resources, so do not request guessed PNG filenames from the skin CDN.
-const EFFECT_NAMES=[];
+const EFFECT_NAMES=[
+  "#EFFECT_TAP","#EFFECT_CRITICAL_TAP","#EFFECT_FLICK","#EFFECT_CRITICAL_FLICK",
+  "#EFFECT_TRACE","#EFFECT_CRITICAL_TRACE","#EFFECT_HOLD","#EFFECT_CRITICAL_HOLD",
+  "#EFFECT_TICK","#EFFECT_CRITICAL_TICK"
+];
 const assets={
   normal:["notes_normal_left.png","notes_normal_middle.png","notes_normal_right.png"],
   crtcl:["notes_crtcl_left.png","notes_crtcl_middle.png","notes_crtcl_right.png"],
