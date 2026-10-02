@@ -295,3 +295,17 @@
 #dojoGameCard.dojo-live .dojo-score-rank>span:nth-of-type(3){left:131px}
 #dojoGameCard.dojo-live .dojo-score-rank>span:nth-of-type(4){left:174px}
 }
+
+/* Keep the rank gauge as the top-left score module, then place score beneath it */
+#dojoGameCard.dojo-live .dojo-hud-score-block{display:block;min-width:340px;padding:0;background:transparent;text-align:left}
+#dojoGameCard.dojo-live .dojo-score-rank{margin:0 0 4px 0}
+#dojoGameCard.dojo-live #dojoGameScore{margin-left:45px}
+#dojoGameCard.dojo-live #dojoGameScoreDelta{margin-left:46px;margin-top:2px}
+#dojoGameCard.dojo-live .dojo-hud-score-block>span{display:block;margin-left:46px;margin-top:2px}
+@media(max-width:700px){
+#dojoGameCard.dojo-live .dojo-hud-score-block{min-width:215px}
+#dojoGameCard.dojo-live .dojo-score-rank{margin-bottom:2px}
+#dojoGameCard.dojo-live #dojoGameScore{margin-left:35px}
+#dojoGameCard.dojo-live #dojoGameScoreDelta{margin-left:36px}
+#dojoGameCard.dojo-live .dojo-hud-score-block>span{margin-left:36px}
+}
