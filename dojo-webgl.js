@@ -866,7 +866,7 @@ function effects(dt){
 }
 function hud(judgment,error=0){
   const put=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
-  const ratio=cl(S.score/Math.max(1,S.total*20),0,1),rank=ratio>=.9?"S":ratio>=.8?"A":ratio>=.7?"B":"C";
+  const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2),ratio=cl(S.score/maxScore,0,1),rank=ratio>=.90?"S":ratio>=.80?"A":ratio>=.70?"B":ratio>=.60?"C":"D";
   put("dojoGameScore",String(Math.max(0,Math.floor(S.score))).padStart(7,"0"));
   put("dojoScoreRank",rank);put("dojoScoreRankFill",(ratio*100).toFixed(1)+"%");put("dojoGameScoreDelta","+"+Math.max(0,Math.floor(S.score-(S.lastHudScore||0))));S.lastHudScore=S.score;
   put("dojoGameCombo",S.combo);
@@ -1221,7 +1221,7 @@ function attachMissedHold(inputLane,now,exact,inputId){
 function loop(t){
   S.raf=requestAnimationFrame(loop);
   const dt=Math.min(.05,(t-(S.last||t))/1000);S.last=t;
-  bg();drawStage();
+  bg();drawStage();\n  if(S.running&&S.life<250){poly([[0,0],[S.geom.w,0],[S.geom.w,S.geom.h],[0,S.geom.h]],[1,.08,.16],cl((250-S.life)/250*.22,0,.22));}
   if(S.running){
     const guideNow=S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).visualOffset,0)/1000;
     drawGuideSlides(guideNow);
@@ -1268,11 +1268,11 @@ function finish(failed=false){
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
   const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0;
-  const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
+  const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";\n  const scoreRank=(()=>{const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);const r=S.score/maxScore;return r>=.90?"S":r>=.80?"A":r>=.70?"B":r>=.60?"C":"D"})();
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
-    r.innerHTML="<strong>"+rank+"</strong><span>"+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type=\"button\" data-dojo-result-replay>再玩一次</button>";
+    r.innerHTML="<strong>"+scoreRank+"</strong><span>"+rank+" · "+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type=\"button\" data-dojo-result-replay>再玩一次</button>";
     r.querySelector("[data-dojo-result-replay]")?.addEventListener("click",()=>{r.hidden=true;start()},{once:true});
   }
   const b=$("dojoOpenPracticeBtn");if(b)b.textContent="↻ 再玩一次";
