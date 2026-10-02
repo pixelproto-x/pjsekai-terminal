@@ -784,6 +784,11 @@ function drawStage(){
   if(ref?.geom?.ws){
     const g=ref.geom,laneQuad=(l,r)=>ref.perspRaw?ref.perspRaw(l,r,g.laneTop,g.laneBottom,1).map(v=>{const a=ref.arcPoint(v);return a}):ref.persp(l,r,g.laneTop,g.laneBottom,1);
     poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.96);
+    const middleSprite=S.skin?.sprites?.["#STAGE_MIDDLE"];
+    if(middleSprite){
+      const mid=ref.persp(-6,6,g.laneTop,g.laneBottom,1);
+      drawSkinPerspective("#STAGE_MIDDLE",mid,.72);
+    }
     const left=ref.persp(-6.5,-6,g.laneTop,g.laneBottom,1);
     const right=ref.persp(6,6.5,g.laneTop,g.laneBottom,1);
     drawSkinPerspective("#STAGE_LEFT_BORDER",left,.98);
@@ -1457,8 +1462,8 @@ async function start(){
     if($("dojoHudSongMeta"))$("dojoHudSongMeta").textContent=LAB[q.d];
     const cover=$("dojoGameCover");if(cover){cover.src=prep.jacket||"";cover.alt=q.m.title;}
     const stage=$("dojoGameStageWrap");if(stage&&prep.jacket){
-      stage.style.backgroundImage="linear-gradient(180deg,#02030a 0%,#050713 58%,#02030a 100%)";
-      stage.style.backgroundSize="cover";stage.style.backgroundPosition="center";
+      stage.style.backgroundImage='linear-gradient(180deg,rgba(2,4,12,.72) 0%,rgba(4,8,24,.28) 42%,rgba(1,2,8,.74) 100%),linear-gradient(90deg,rgba(24,38,92,.35),rgba(5,10,28,.08),rgba(62,24,100,.28)),url("'+prep.jacket+'")';
+      stage.style.backgroundSize="cover,cover,cover";stage.style.backgroundPosition="center,center,center";
     }
     hud("");
   }catch(e){
