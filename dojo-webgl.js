@@ -943,7 +943,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   let jg=classify(d,kind);
   if(wrongWay&&jg==="PERFECT")jg="GREAT";
   S.counts[jg]++;S.timing+=Math.min(Math.abs(d),.2);S.tn++;
-  if(jg==="MISS")S.combo=0;else S.combo++;
+  if(jg==="PERFECT"||jg==="GREAT")S.combo++;else S.combo=0;
   S.best=Math.max(S.best,S.combo);
   const traceLike=type==="trace"||type==="traceFlick"||type==="slideEndTrace";
   // Public Next-SEKAI score weights: tap 10, critical tap 20,
@@ -952,7 +952,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   const multiplier=jg==="PERFECT"?1:jg==="GREAT"?.7:jg==="GOOD"?.5:0;
   // Next-SEKAI weighted-combo scoring: the archetype weight already carries
   // the base tap value (normal tap 10, critical 20, flick 10/30, trace 1/2).
-  const comboBoost=1+Math.min(Math.max(S.combo-1,0),100)/100;
+  const comboBoost=1+Math.min(Math.floor(Math.max(S.combo-1,0)/100),10)/100;
   S.score+=Math.round(weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="MISS"?-80:1),0,1000);
   n.done=true;n.judged=true;S.judged++;
