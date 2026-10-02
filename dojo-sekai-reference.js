@@ -321,5 +321,7 @@ function drawStage(spriteDraw){
 window.__PJSEKAI_SEKAI_REF__={
   BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,layoutStageCover,layoutHiddenCover,layoutLaneEffect,
   get geom(){return state.geom},
+  logicalPoint,
+  hasSprite,
   get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
 };})();
