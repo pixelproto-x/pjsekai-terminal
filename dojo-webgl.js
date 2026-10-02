@@ -1221,7 +1221,8 @@ function attachMissedHold(inputLane,now,exact,inputId){
 function loop(t){
   S.raf=requestAnimationFrame(loop);
   const dt=Math.min(.05,(t-(S.last||t))/1000);S.last=t;
-  bg();drawStage();\n  if(S.running&&S.life<250){poly([[0,0],[S.geom.w,0],[S.geom.w,S.geom.h],[0,S.geom.h]],[1,.08,.16],cl((250-S.life)/250*.22,0,.22));}
+  bg();drawStage();
+  if(S.running&&S.life<250){poly([[0,0],[S.geom.w,0],[S.geom.w,S.geom.h],[0,S.geom.h]],[1,.08,.16],cl((250-S.life)/250*.22,0,.22));}
   if(S.running){
     const guideNow=S.audio.currentTime-S.seek+S.chartOffset+N((app().dojo||{}).visualOffset,0)/1000;
     drawGuideSlides(guideNow);
@@ -1268,7 +1269,8 @@ function finish(failed=false){
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
   const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0;
-  const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";\n  const scoreRank=(()=>{const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);const r=S.score/maxScore;return r>=.90?"S":r>=.80?"A":r>=.70?"B":r>=.60?"C":"D"})();
+  const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
+  const scoreRank=(()=>{const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);const r=S.score/maxScore;return r>=.90?"S":r>=.80?"A":r>=.70?"B":r>=.60?"C":"D"})();
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
