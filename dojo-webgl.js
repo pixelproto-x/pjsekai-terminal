@@ -869,36 +869,50 @@ function effects(dt){
   const ref=window.__PJSEKAI_SEKAI_REF__;
   for(const e of S.fx){
     e.t+=dt;
-    const k=cl(e.t/.48,0,1);
-    const p=cl(1-k,0,1);
-    // Keep the hit response anchored to the same projected judge point as
-    // the note skin. The public reference uses distinct critical/flick/trace
-    // effect families; use the corresponding sprite family when available.
+    const k=cl(e.t/.52,0,1),p=1-k;
     const g=ref?.geom;
     const lane=(app().dojo?.mirror?11-e.lane:e.lane)-5.5;
-    if(g?.ws){
-      const sp=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
-      const effectLane=sp;
-      const kind=String(e.kind||"tap");
-      const critical=!!e.c;
+    if(!g?.ws)continue;
+    const effectLane=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
+    const kind=String(e.kind||"tap"),critical=!!e.c;
+    const palette=critical?[1,.78,.08]:kind.includes("flick")?[1,.18,.30]:kind.includes("trace")?[.15,1,.66]:[.16,.82,1];
+    const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
+    // The public Next-SEKAI effect model is layered: linear lane burst,
+    // circular impact and a short-lived directional burst. Reproduce those
+    // layers in the browser renderer when the separate Sonolus effect clips
+    // are not available.
+    circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
+    circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
+    const rays=critical?14:kind.includes("flick")?11:9;
+    for(let i=0;i<rays;i++){
+      const a=e.seed+i*Math.PI*2/rays+(kind.includes("flick")?Math.PI/8:0);
+      const r0=rr*.35,r1=rr*(1.15+.65*(1-p));
+      line([[effectLane.x+Math.cos(a)*r0,effectLane.y+Math.sin(a)*r0],
+            [effectLane.x+Math.cos(a)*r1,effectLane.y+Math.sin(a)*r1]],palette,p*.46);
+    }
+    if(kind.includes("flick")){
+      const dir=String(e.dir||"up");
+      const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0],"up-left":[-.707,-.707],"up-right":[.707,-.707],"down-left":[-.707,.707],"down-right":[.707,.707]}[dir]||[0,-1];
+      for(let j=0;j<3;j++){
+        const d=rr*(.45+j*.23),len=rr*(.8-j*.12);
+        line([[effectLane.x+v[0]*d-v[1]*len*.25,effectLane.y+v[1]*d+v[0]*len*.25],
+              [effectLane.x+v[0]*(d+len)-v[1]*len*.05,effectLane.y+v[1]*(d+len)+v[0]*len*.05]],palette,p*(.42-j*.08));
+      }
+    }
+    if(ref.hasSprite){
       const effectName=kind.includes("trace")?(critical?"#EFFECT_CRITICAL_TRACE":"#EFFECT_TRACE")
         :kind.includes("flick")?(critical?"#EFFECT_CRITICAL_FLICK":"#EFFECT_FLICK")
         :(critical?"#EFFECT_CRITICAL_TAP":"#EFFECT_TAP");
-      if(ref.drawEffect && ref.hasSprite?.(effectName)){
-        ref.drawEffect(effectName,effectLane.x,effectLane.y,p,critical,kind);
-      }else{
-        const rr=10+74*k;
-        circle(effectLane.x,effectLane.y,rr,critical?[1,.84,.2]:kind.includes("trace")?[.2,1,.7]:[.48,.86,1],p*.5,24);
-      }
+      if(ref.hasSprite(effectName)&&ref.drawEffect)ref.drawEffect(effectName,effectLane.x,effectLane.y,p);
     }
   }
-  S.fx=S.fx.filter(x=>x.t<.48);
+  S.fx=S.fx.filter(x=>x.t<.52);
   for(const p of S.particles){
-    p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=135*dt;
+    p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.035,dt);p.vy+=135*dt;
     const a=cl(1-p.t/p.life,0,1);
     if(a>0){
-      const s=p.size*(.7+1.1*(1-a));
-      poly([[p.x-s,p.y-s],[p.x+s,p.y-s],[p.x+s,p.y+s],[p.x-s,p.y+s]],p.c,a*.92);
+      const s=p.size*(.65+1.35*(1-a));
+      poly([[p.x-s,p.y-s],[p.x+s,p.y-s],[p.x+s,p.y+s],[p.x-s,p.y+s]],p.c,a*.88);
     }
   }
   S.particles=S.particles.filter(p=>p.t<p.life);
@@ -1416,7 +1430,7 @@ async function start(){
     S.notes=prep.notes.map(x=>({...x,path:x.path?.map(p=>({...p})),tail:x.tail?{...x.tail}:null,checkpoints:x.checkpoints?.map(p=>({...p}))}));
     S.total=S.notes.reduce((n,x)=>n+((x.k==="hold"?2:1)+(x.checkpoints?.length||0)),0);
     S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;S.chartOffset=N(prep.offset,0);
-    S.counts={PERFECT:0,GREAT:0,GOOD:0,MISS:0};S.timing=0;S.tn=0;
+    S.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};S.timing=0;S.tn=0;
     S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
     S.audio.pause();S.audio.src="https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav";S.audio.load();
