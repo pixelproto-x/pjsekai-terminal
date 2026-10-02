@@ -1310,7 +1310,7 @@ function finish(failed=false){
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
-    r.innerHTML="<strong>"+scoreRank+"</strong><span>"+rank+" · "+S.best+" COMBO · "+String(Math.floor(S.score)).padStart(7,"0")+"</span><small>"+resultCounts()+"</small><em>"+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+"% ACC</em><button type=\"button\" data-dojo-result-replay>再玩一次</button>";
+    r.innerHTML='<div class="dojo-result-rank">'+scoreRank+'</div><strong>'+rank+'</strong><span>'+String(Math.floor(S.score)).padStart(7,"0")+'</span><em>'+S.best+' COMBO</em><small>PERFECT '+S.counts.PERFECT+'　GREAT '+S.counts.GREAT+'　GOOD '+S.counts.GOOD+'　BAD '+S.counts.BAD+'　MISS '+S.counts.MISS+'</small><small>'+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+'% ACC</small><button type="button" data-dojo-result-replay>再玩一次</button>';
     r.querySelector("[data-dojo-result-replay]")?.addEventListener("click",()=>{r.hidden=true;start()},{once:true});
   }
   const b=$("dojoOpenPracticeBtn");if(b)b.textContent="↻ 再玩一次";
