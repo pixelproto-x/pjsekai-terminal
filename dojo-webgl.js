@@ -1,5 +1,5 @@
 /* Dojo WebGL runtime — Project SEKAI-style browser practice engine. */
-/* renderer revision: 2026-09-30 */
+/* renderer revision: 2026-10-02 parity-pass */
 /*
  * Chart conversion logic follows the public Next-SEKAI SUS concepts:
  * ticks/measure lengths, directional notes, active slide streams and
@@ -90,6 +90,12 @@ liveStyle.textContent=`
 #dojoGameCard.dojo-live .dojo-wgl-status{display:none}
 #dojoGameCard.dojo-live .dojo-wgl-pause{top:3%;left:2.5%;right:auto;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.35);border-color:rgba(255,255,255,.35)}
 #dojoGameCard.dojo-live #dojoJudgeText[data-j="BAD"]{color:#ffb84d}
+#dojoGameCard.dojo-live .dojo-life-danger span{background:linear-gradient(90deg,#ff9d5c,#ff405d,#ff9d5c);box-shadow:0 0 14px rgba(255,64,93,.95);animation:dojo-life-pulse .46s ease-in-out infinite alternate}
+#dojoGameCard.dojo-live .dojo-life-critical{animation:dojo-life-frame .46s ease-in-out infinite alternate}
+#dojoGameCard.dojo-live .dojo-life-critical span{background:#ff3658;box-shadow:0 0 18px rgba(255,54,88,1)}
+@keyframes dojo-life-pulse{from{filter:brightness(.9)}to{filter:brightness(1.35)}}
+@keyframes dojo-life-frame{from{opacity:.72}to{opacity:1}}
+#dojoGameCard.dojo-live .dojo-hud-combo strong{font-variant-numeric:tabular-nums;letter-spacing:.015em}
 `;
 document.head.appendChild(liveStyle);
 
@@ -930,7 +936,7 @@ function hud(judgment,error=0){
   put("dojoGameCombo",S.combo);
   const acc=S.tn?cl(100-(S.timing/S.tn)*120,0,100):100;
   put("dojoGameAccuracy",acc.toFixed(2)+"%");
-  const life=$("dojoGameLifeBar");if(life)life.style.width=cl(S.life/10,0,100)+"%";
+  const life=$("dojoGameLifeBar");if(life){life.style.width=cl(S.life/10,0,100)+"%";life.parentElement?.classList.toggle("dojo-life-danger",S.life<=300);life.parentElement?.classList.toggle("dojo-life-critical",S.life<=100);}
   const combo=$("dojoGameCombo");
   if(combo&&judgment){
     const inPlayPage=!!document.querySelector(".dojo-play-page.active");
@@ -1011,7 +1017,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   const multiplier=jg==="PERFECT"?1:jg==="GREAT"?.7:jg==="GOOD"?.5:0;
   // Next-SEKAI weighted-combo scoring: the archetype weight already carries
   // the base tap value (normal tap 10, critical 20, flick 10/30, trace 1/2).
-  const comboBoost=1+Math.min(Math.floor(Math.max(S.combo-1,0)/100),10)/100;
+  const comboBoost=1+Math.min(Math.floor(Math.max(S.combo-1,0)/100),10)*0.1;
   S.score+=Math.round(weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="BAD"?-50:jg==="MISS"?-80:0),0,1000);
   n.done=true;n.judged=true;S.judged++;
