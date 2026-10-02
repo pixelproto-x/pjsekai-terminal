@@ -19,7 +19,7 @@ const S={
   songs:null,diffs:null,vocals:null,selDiff:"expert",prep:null,
   audio:new Audio(),notes:[],running:false,paused:false,starting:false,
   lead:2.5,seek:0,chartOffset:0,score:0,combo:0,best:0,life:1000,judged:0,total:0,
-  counts:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},
+  counts:{PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0},
   timing:0,tn:0,held:new Map(),fx:[],particles:[],keyFlash:Array(12).fill(0),
   gl:null,buf:null,program:null,pp:null,cc:null,geom:null,raf:0,last:0,
   keys:["D","F","J","K"],ro:null,status:null,pause:null,error:"",
@@ -917,6 +917,7 @@ function classify(diff,type){
   if(inside(w.P))return"PERFECT";
   if(inside(w.G))return"GREAT";
   if(inside(w.D))return"GOOD";
+  if(inside(w.B))return"BAD";
   return"MISS";
 }
 function ensureSfx(){
@@ -954,7 +955,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   // the base tap value (normal tap 10, critical 20, flick 10/30, trace 1/2).
   const comboBoost=1+Math.min(Math.floor(Math.max(S.combo-1,0)/100),10)/100;
   S.score+=Math.round(weight*multiplier*comboBoost);
-  S.life=cl(S.life+(jg==="MISS"?-80:1),0,1000);
+  S.life=cl(S.life+(jg==="BAD"?-50:jg==="MISS"?-80:0),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
   S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:n.l,kind:type,judgement:jg,error:d};
@@ -1246,7 +1247,7 @@ function loop(t){
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&S.running)pause()},{passive:true});
 function resultCounts(){
-  return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　MISS "+S.counts.MISS;
+  return"PERFECT "+S.counts.PERFECT+"　GREAT "+S.counts.GREAT+"　GOOD "+S.counts.GOOD+"　BAD "+S.counts.BAD+"　MISS "+S.counts.MISS;
 }
 function finalizePending(){
   for(const n of S.notes){
@@ -1268,7 +1269,7 @@ function finish(failed=false){
   finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
   if(S.pause)S.pause.hidden=true;
-  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.MISS===0,fc=S.counts.MISS===0;
+  const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0,fc=S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0;
   const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
   const scoreRank=(()=>{const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);const r=S.score/maxScore;return r>=.90?"S":r>=.80?"A":r>=.70?"B":r>=.60?"C":"D"})();
   const r=$("dojoGameResult");
