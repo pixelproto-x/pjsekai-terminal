@@ -783,11 +783,11 @@ function drawStage(){
   const ref=window.__PJSEKAI_SEKAI_REF__,h=S.geom;
   if(ref?.geom?.ws){
     const g=ref.geom,laneQuad=(l,r)=>ref.perspRaw?ref.perspRaw(l,r,g.laneTop,g.laneBottom,1).map(v=>{const a=ref.arcPoint(v);return a}):ref.persp(l,r,g.laneTop,g.laneBottom,1);
-    poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.96);
+    poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.48);
     const middleSprite=S.skin?.sprites?.["#STAGE_MIDDLE"];
     if(middleSprite){
       const mid=ref.persp(-6,6,g.laneTop,g.laneBottom,1);
-      drawSkinPerspective("#STAGE_MIDDLE",mid,.72);
+      drawSkinPerspective("#STAGE_MIDDLE",mid,.38);
     }
     const left=ref.persp(-6.5,-6,g.laneTop,g.laneBottom,1);
     const right=ref.persp(6,6.5,g.laneTop,g.laneBottom,1);
