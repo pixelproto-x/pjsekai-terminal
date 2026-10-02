@@ -78,7 +78,11 @@ liveStyle.textContent=`
 #dojoGameCard.dojo-live .dojo-judge-text{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);min-width:170px;text-align:center;font-size:clamp(22px,3.5vw,52px);line-height:1;font-weight:1000;text-shadow:0 0 18px currentColor,0 3px 12px #000}
 #dojoGameCard.dojo-live .dojo-game-result{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;background:rgba(1,3,10,.78);backdrop-filter:blur(8px);color:#fff;text-align:center;pointer-events:auto}
 #dojoGameCard.dojo-live .dojo-game-result[hidden]{display:none}
-#dojoGameCard.dojo-live .dojo-game-result strong{font-size:clamp(64px,11vw,150px);line-height:.8;font-weight:1000}
+#dojoGameCard.dojo-live .dojo-game-result .dojo-result-rank{font-size:clamp(20px,3vw,42px);font-weight:1000;letter-spacing:.12em;opacity:.82}
+#dojoGameCard.dojo-live .dojo-game-result strong{font-size:clamp(52px,10vw,140px);line-height:.75;font-weight:1000;text-shadow:0 0 24px rgba(255,255,255,.28)}
+#dojoGameCard.dojo-live .dojo-game-result span{font-size:clamp(28px,4vw,54px);font-weight:1000;letter-spacing:.08em}
+#dojoGameCard.dojo-live .dojo-game-result em{font-size:clamp(20px,2.5vw,34px);opacity:.9}
+#dojoGameCard.dojo-live .dojo-game-result small{font-size:12px;line-height:1.8}
 #dojoGameCard.dojo-live .dojo-game-result span{font-size:clamp(18px,2vw,30px);font-weight:900}
 #dojoGameCard.dojo-live .dojo-input-pad{height:34%;z-index:12}
 #dojoGameCard.dojo-live .dojo-input-zone span{display:none}
