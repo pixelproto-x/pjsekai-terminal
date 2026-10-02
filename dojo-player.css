@@ -205,4 +205,40 @@
 #dojoGameCard.dojo-live .dojo-wgl-overlay{background:linear-gradient(180deg,rgba(0,0,0,.24),transparent 20%,transparent 72%,rgba(0,0,0,.3));z-index:3}
 #dojoGameCard.dojo-live .dojo-wgl-status{display:none}
 #dojoGameCard.dojo-live .dojo-wgl-pause{top:3%;left:2.5%;right:auto;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.35);border-color:rgba(255,255,255,.35)}
+
+/* Dojo final live-pass: compact official-style HUD hierarchy and responsive playfield */
+#dojoGameCard.dojo-live .dojo-game-hud{font-family:Arial,"Noto Sans JP","Noto Sans",sans-serif;pointer-events:none}
+#dojoGameCard.dojo-live .dojo-hud-top{top:2.6%;left:2.6%;right:2.6%;align-items:flex-start}
+#dojoGameCard.dojo-live .dojo-hud-song{max-width:46%;padding:7px 12px;border-radius:6px;background:linear-gradient(90deg,rgba(0,0,0,.58),rgba(0,0,0,.08));font-size:clamp(10px,1.05vw,15px);font-weight:900;letter-spacing:.035em;text-shadow:0 2px 5px #000}
+#dojoGameCard.dojo-live .dojo-hud-score-block{min-width:205px;padding:6px 12px 8px;border-radius:7px;background:linear-gradient(90deg,rgba(0,0,0,.08),rgba(0,0,0,.58));text-align:right}
+#dojoGameCard.dojo-live .dojo-score-rank{display:flex;align-items:center;justify-content:flex-end;gap:7px;font-size:11px;font-weight:900;letter-spacing:.12em}
+#dojoGameCard.dojo-live .dojo-score-rank b{font-size:clamp(18px,2.2vw,30px);line-height:1;text-shadow:0 2px 9px #000}
+#dojoGameCard.dojo-live #dojoGameScore{display:block;font-size:clamp(20px,2.5vw,36px);line-height:1.05;letter-spacing:.08em;font-variant-numeric:tabular-nums;text-shadow:0 2px 8px #000}
+#dojoGameCard.dojo-live #dojoGameScoreDelta{display:block;min-height:12px;font-size:9px;opacity:.75}
+#dojoGameCard.dojo-live .dojo-life{height:9px;top:10.2%;left:15%;right:15%;padding:1px;border:1px solid rgba(255,255,255,.48);background:rgba(0,0,0,.55);box-shadow:0 1px 7px #000}
+#dojoGameCard.dojo-live .dojo-life span{border-radius:4px;box-shadow:0 0 8px rgba(255,255,255,.6)}
+#dojoGameCard.dojo-live .dojo-judge-text{top:61%;font-family:Arial,"Noto Sans JP",sans-serif;letter-spacing:.04em}
+#dojoGameCard.dojo-live .dojo-judge-text[data-timing="FAST"]{transform:translate(-50%,-50%) translateX(-10px)}
+#dojoGameCard.dojo-live .dojo-judge-text[data-timing="LATE"]{transform:translate(-50%,-50%) translateX(10px)}
+#dojoGameCard.dojo-live .dojo-wgl-pause{font-size:15px;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+#dojoGameCard.dojo-live .dojo-input-pad{touch-action:none}
+#dojoGameCard.dojo-live .dojo-input-zone{border-left:1px solid rgba(255,255,255,.035)}
+#dojoGameCard.dojo-live .dojo-input-zone:active{background:rgba(255,255,255,.035)}
+#dojoGameCard.dojo-live .dojo-game-result{background:rgba(1,2,8,.88)}
+#dojoGameCard.dojo-live .dojo-game-result .dojo-result-rank{font-size:clamp(76px,13vw,180px);font-weight:1000;line-height:.72;letter-spacing:-.08em;text-shadow:0 8px 30px rgba(0,0,0,.65)}
+#dojoGameCard.dojo-live .dojo-game-result strong{text-transform:uppercase;letter-spacing:.02em;text-shadow:0 5px 18px #000}
+#dojoGameCard.dojo-live .dojo-game-result span{font-variant-numeric:tabular-nums;letter-spacing:.12em}
+#dojoGameCard.dojo-live .dojo-game-result small{font-size:clamp(9px,1vw,13px);letter-spacing:.04em}
+#dojoGameCard.dojo-live .dojo-game-result button{min-width:150px;padding:12px 28px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);font-size:12px}
+@media(max-width:700px){
+  #dojoGameCard.dojo-live .dojo-hud-top{top:2.2%;left:3%;right:3%}
+  #dojoGameCard.dojo-live .dojo-hud-song{max-width:42%;font-size:9px}
+  #dojoGameCard.dojo-live .dojo-hud-score-block{min-width:145px;padding:4px 8px}
+  #dojoGameCard.dojo-live #dojoGameScore{font-size:20px}
+  #dojoGameCard.dojo-live .dojo-score-rank b{font-size:20px}
+  #dojoGameCard.dojo-live .dojo-life{top:9.8%;left:13%;right:13%;height:8px}
+  #dojoGameCard.dojo-live .dojo-hud-combo{top:18%;right:4%}
+  #dojoGameCard.dojo-live .dojo-hud-combo strong{font-size:42px}
+}
+
 @media(max-width:700px){#dojoGameCard.dojo-live .dojo-hud-score-block{min-width:150px}#dojoGameCard.dojo-live .dojo-life{left:12%;right:12%;top:10%}#dojoGameCard.dojo-live .dojo-hud-combo{right:5%;top:17%}#dojoGameCard.dojo-live .dojo-input-pad{height:39%}}
