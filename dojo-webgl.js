@@ -892,6 +892,12 @@ function effects(dt){
     // circular impact and a short-lived directional burst. Reproduce those
     // layers in the browser renderer when the separate Sonolus effect clips
     // are not available.
+
+    // Layered lane flash, matching the separate linear lane effect used by Next-SEKAI.
+    const laneAlpha=p*(critical?.78:.42);
+    const laneY=effectLane.y;
+    const laneH=Math.max(10,g.height*.018);
+    rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);
     circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
     circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
     const rays=critical?14:kind.includes("flick")?11:9;
@@ -947,6 +953,12 @@ function hud(judgment,error=0){
     }));
   }
   const jt=$("dojoJudgeText");
+  const card=$("dojoGameCard");
+  if(card){
+    card.dataset.lastJudgment=judgment||"";
+    card.classList.toggle("dojo-hit-critical",!!judgment&&judgment!=="MISS"&&judgment!=="BAD"&&judgment!=="GOOD");
+    card.classList.toggle("dojo-hit-miss",judgment==="MISS"||judgment==="BAD");
+  }
   if(jt){
     jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
     clearTimeout(S.judgeTimer);
