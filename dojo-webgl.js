@@ -1333,8 +1333,29 @@ function finish(failed=false){
   const r=$("dojoGameResult");
   if(r){
     r.hidden=false;
-    r.innerHTML='<div class="dojo-result-rank">'+scoreRank+'</div><strong>'+rank+'</strong><span>'+String(Math.floor(S.score)).padStart(7,"0")+'</span><em>'+S.best+' COMBO</em><small>PERFECT '+S.counts.PERFECT+'　GREAT '+S.counts.GREAT+'　GOOD '+S.counts.GOOD+'　BAD '+S.counts.BAD+'　MISS '+S.counts.MISS+'</small><small>'+(S.tn?((100-(S.timing/S.tn)*120).toFixed(2)):"100.00")+'% ACC</small><button type="button" data-dojo-result-replay>再玩一次</button>';
-    r.querySelector("[data-dojo-result-replay]")?.addEventListener("click",()=>{r.hidden=true;start()},{once:true});
+    const q=selection(),title=q?.m?.title||$("dojoGameSongTitle")?.textContent||"",diff=q?.d?LAB[q.d]:"";
+    const acc=S.tn?cl(100-(S.timing/S.tn)*120,0,100).toFixed(2):"100.00";
+    const jacket=S.prep?.jacket||"";
+    const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);
+    const ratio=Math.round(cl(S.score/maxScore,0,1)*100);
+    r.innerHTML='<div class="dojo-result-shell">'
+      +'<div class="dojo-result-left">'
+      +'<div class="dojo-result-song"><strong>'+title+'</strong><span>'+diff+'</span></div>'
+      +'<div class="dojo-result-score-label">SCORE</div><div class="dojo-result-score">'+String(Math.floor(S.score)).padStart(7,"0")+'</div>'
+      +'<div class="dojo-result-rankbar"><b>'+scoreRank+'</b><i><em style="width:'+ratio+'%"></em></i><span>C</span><span>B</span><span>A</span><span>S</span></div>'
+      +'<div class="dojo-result-combo"><span>COMBO</span><strong>'+S.best+'</strong></div>'
+      +'<div class="dojo-result-judgments">'
+      +'<div><span>PERFECT</span><b>'+String(S.counts.PERFECT).padStart(4,"0")+'</b></div>'
+      +'<div><span>GREAT</span><b>'+String(S.counts.GREAT).padStart(4,"0")+'</b></div>'
+      +'<div><span>GOOD</span><b>'+String(S.counts.GOOD).padStart(4,"0")+'</b></div>'
+      +'<div><span>BAD</span><b>'+String(S.counts.BAD).padStart(4,"0")+'</b></div>'
+      +'<div><span>MISS</span><b>'+String(S.counts.MISS).padStart(4,"0")+'</b></div>'
+      +'<div><span>ACCURACY</span><b>'+acc+'%</b></div>'
+      +'</div></div>'
+      +'<div class="dojo-result-right">'+(jacket?'<img src="'+jacket+'" alt="">':'')+'<strong class="dojo-result-clear">'+rank+'</strong>'
+      +'<div class="dojo-result-actions"><button type="button" data-dojo-result-replay>↻ 再玩一次</button><button type="button" data-dojo-result-exit>‹ 返回歌曲選擇</button></div></div></div>';
+    r.querySelectorAll("[data-dojo-result-replay]").forEach(btn=>btn.addEventListener("click",()=>{r.hidden=true;start()},{once:true}));
+    r.querySelector("[data-dojo-result-exit]")?.addEventListener("click",()=>stop(),{once:true});
   }
   const b=$("dojoOpenPracticeBtn");if(b)b.textContent="↻ 再玩一次";
   const m=$("dojoGameMessage");if(m)m.textContent=rank+" · "+S.best+" COMBO";
