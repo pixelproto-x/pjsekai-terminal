@@ -687,6 +687,13 @@ function drawSlideRibbon(n,now,tailOnly=false){
       );
       if(S.skin?.sprites?.[sprite]){
         for(const q of qa)drawSkinPerspective(sprite,q,alpha);
+        const active=[...S.held.values()].some(h=>h.note===n);
+        if(active){
+          const pulse=.55+.45*Math.sin(performance.now()/1000*10);
+          for(let qi=0;qi<qa.length;qi+=2)drawSkinPerspective(sprite,qa[qi],Math.min(1,alpha+.20));
+          const ac=n.c?[1,.92,.34]:[.25,1,.72];
+          for(const seg of qa)line([[seg[0].x,seg[0].y],[seg[2].x,seg[2].y]],ac,.55*pulse);
+        }
       }else{
         ref.drawConnection(kind,
           (mirror?11-a.l:a.l)-5.5,sa,cl(a.p,0,1),
@@ -910,7 +917,10 @@ function effects(dt){
     const laneAlpha=p*(critical?.78:.42);
     const laneY=effectLane.y;
     const laneH=Math.max(10,g.height*.018);
-    rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);
+    rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);\n    const diamond=rr*1.15; const diamondAlpha=p*(critical?.72:.38);
+    line([[effectLane.x,laneY-diamond],[effectLane.x+diamond*.72,laneY],[effectLane.x,laneY+diamond],[effectLane.x-diamond*.72,laneY],[effectLane.x,laneY-diamond]],palette,diamondAlpha);
+    if(critical){const d2=diamond*.62;line([[effectLane.x,laneY-d2],[effectLane.x+d2*.72,laneY],[effectLane.x,laneY+d2],[effectLane.x-d2*.72,laneY],[effectLane.x,laneY-d2]],[1,1,1],p*.38);}
+
 
     if(!usedPublicParticles){
       const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
