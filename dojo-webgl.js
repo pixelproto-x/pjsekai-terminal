@@ -887,40 +887,51 @@ function effects(dt){
     const effectLane=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
     const kind=String(e.kind||"tap"),critical=!!e.c;
     const palette=critical?[1,.78,.08]:kind.includes("flick")?[1,.18,.30]:kind.includes("trace")?[.15,1,.66]:[.16,.82,1];
-    const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
-    // The public Next-SEKAI effect model is layered: linear lane burst,
-    // circular impact and a short-lived directional burst. Reproduce those
-    // layers in the browser renderer when the separate Sonolus effect clips
-    // are not available.
 
-    // Layered lane flash, matching the separate linear lane effect used by Next-SEKAI.
+    // Public Next-SEKAI uses dedicated particle resources for note hit feedback.
+    // Prefer the actual public particle definitions; fall back to the local
+    // procedural burst only when those resources are unavailable.
+    const particleKind=kind.includes("flick")
+      ?(critical?"#NOTE_CIRCULAR_ALTERNATIVE_YELLOW":"#NOTE_CIRCULAR_ALTERNATIVE_RED")
+      :kind.includes("trace")
+        ?(critical?"#NOTE_CIRCULAR_TAP_YELLOW":"#NOTE_CIRCULAR_TAP_GREEN")
+        :(critical?"#NOTE_CIRCULAR_TAP_YELLOW":"#NOTE_CIRCULAR_TAP_CYAN");
+    const particleLinear=kind.includes("flick")
+      ?(critical?"#NOTE_LINEAR_ALTERNATIVE_YELLOW":"#NOTE_LINEAR_ALTERNATIVE_RED")
+      :kind.includes("trace")
+        ?(critical?"#NOTE_LINEAR_TAP_YELLOW":"#NOTE_LINEAR_TAP_GREEN")
+        :(critical?"#NOTE_LINEAR_TAP_YELLOW":"#NOTE_LINEAR_TAP_CYAN");
+    let usedPublicParticles=false;
+    if(ref?.particleLoaded&&ref.drawParticleEffect){
+      usedPublicParticles=ref.drawParticleEffect(particleKind,effectLane.x,effectLane.y,p,.72,0);
+      usedPublicParticles=ref.drawParticleEffect(particleLinear,effectLane.x,effectLane.y,p,.56,kind.includes("flick")?.18:0)||usedPublicParticles;
+    }
+
     const laneAlpha=p*(critical?.78:.42);
     const laneY=effectLane.y;
     const laneH=Math.max(10,g.height*.018);
     rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);
-    circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
-    circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
-    const rays=critical?14:kind.includes("flick")?11:9;
-    for(let i=0;i<rays;i++){
-      const a=e.seed+i*Math.PI*2/rays+(kind.includes("flick")?Math.PI/8:0);
-      const r0=rr*.35,r1=rr*(1.15+.65*(1-p));
-      line([[effectLane.x+Math.cos(a)*r0,effectLane.y+Math.sin(a)*r0],
-            [effectLane.x+Math.cos(a)*r1,effectLane.y+Math.sin(a)*r1]],palette,p*.46);
-    }
-    if(kind.includes("flick")){
-      const dir=String(e.dir||"up");
-      const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0],"up-left":[-.707,-.707],"up-right":[.707,-.707],"down-left":[-.707,.707],"down-right":[.707,.707]}[dir]||[0,-1];
-      for(let j=0;j<3;j++){
-        const d=rr*(.45+j*.23),len=rr*(.8-j*.12);
-        line([[effectLane.x+v[0]*d-v[1]*len*.25,effectLane.y+v[1]*d+v[0]*len*.25],
-              [effectLane.x+v[0]*(d+len)-v[1]*len*.05,effectLane.y+v[1]*(d+len)+v[0]*len*.05]],palette,p*(.42-j*.08));
+
+    if(!usedPublicParticles){
+      const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
+      circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
+      circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
+      const rays=critical?14:kind.includes("flick")?11:9;
+      for(let i=0;i<rays;i++){
+        const a=e.seed+i*Math.PI*2/rays+(kind.includes("flick")?Math.PI/8:0);
+        const r0=rr*.35,r1=rr*(1.15+.65*(1-p));
+        line([[effectLane.x+Math.cos(a)*r0,effectLane.y+Math.sin(a)*r0],
+              [effectLane.x+Math.cos(a)*r1,effectLane.y+Math.sin(a)*r1]],palette,p*.46);
       }
-    }
-    if(ref.hasSprite){
-      const effectName=kind.includes("trace")?(critical?"#EFFECT_CRITICAL_TRACE":"#EFFECT_TRACE")
-        :kind.includes("flick")?(critical?"#EFFECT_CRITICAL_FLICK":"#EFFECT_FLICK")
-        :(critical?"#EFFECT_CRITICAL_TAP":"#EFFECT_TAP");
-      if(ref.hasSprite(effectName)&&ref.drawEffect)ref.drawEffect(effectName,effectLane.x,effectLane.y,p);
+      if(kind.includes("flick")){
+        const dir=String(e.dir||"up");
+        const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0],"up-left":[-.707,-.707],"up-right":[.707,-.707],"down-left":[-.707,.707],"down-right":[.707,.707]}[dir]||[0,-1];
+        for(let j=0;j<3;j++){
+          const d=rr*(.45+j*.23),len=rr*(.8-j*.12);
+          line([[effectLane.x+v[0]*d-v[1]*len*.25,effectLane.y+v[1]*d+v[0]*len*.25],
+                [effectLane.x+v[0]*(d+len)-v[1]*len*.05,effectLane.y+v[1]*(d+len)+v[0]*len*.05]],palette,p*(.42-j*.08));
+        }
+      }
     }
   }
   S.fx=S.fx.filter(x=>x.t<.52);
