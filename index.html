@@ -1028,10 +1028,18 @@ body[data-sekai-theme] .theme-choice.active{
       <div class="dojo-hud-top">
         <div class="dojo-hud-song"><strong id="dojoHudSongTitle">Tell Your World</strong><span id="dojoHudSongMeta">Expert</span></div>
         <div class="dojo-hud-score-block">
-          <div class="dojo-score-rank" aria-hidden="true"><b id="dojoScoreRank">C</b><i><em id="dojoScoreRankFill"></em></i><span>C</span><span>B</span><span>A</span><span>S</span></div>
-          <strong class="dojo-hud-score" id="dojoGameScore">0000000</strong>
-          <small id="dojoGameScoreDelta">+0</small>
-          <span>ACC <b id="dojoGameAccuracy">100.00%</b></span>
+          <div class="dojo-score-rank" aria-hidden="true">
+            <b id="dojoScoreRank">C</b>
+            <span class="dojo-score-rank-caption">SCORE<br>RANK</span>
+            <i><em id="dojoScoreRankFill"></em></i>
+            <span>C</span><span>B</span><span>A</span><span>S</span>
+          </div>
+          <div class="dojo-score-main">
+            <span class="dojo-score-caption">SCORE</span>
+            <strong class="dojo-hud-score" id="dojoGameScore">0000000</strong>
+            <small id="dojoGameScoreDelta">+0</small>
+          </div>
+          <span class="dojo-accuracy-hidden">ACC <b id="dojoGameAccuracy">100.00%</b></span>
         </div>
       </div>
       <div class="dojo-life"><span id="dojoGameLifeBar"></span></div>
