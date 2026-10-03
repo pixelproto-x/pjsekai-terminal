@@ -679,3 +679,46 @@
   #dojoGameCard.dojo-live .dojo-hud-combo{right:4.5%;top:46%}
   #dojoGameCard.dojo-live .dojo-hud-combo strong{font-size:clamp(30px,10vw,52px)}
 }
+
+
+/* FINAL LIVE STAGE LAYER — keep the song artwork behind the chart like the
+   dimensional live-stage presentation, while the actual note highway remains
+   rendered by the reference renderer above it. */
+#dojoGameCard.dojo-live .dojo-live-backdrop{
+  position:absolute;inset:-5%;
+  z-index:0;pointer-events:none;
+  background-position:center;background-size:cover;background-repeat:no-repeat;
+  filter:blur(14px) saturate(1.16) brightness(.56) contrast(1.08);
+  transform:scale(1.06);
+  opacity:.92;
+  animation:dojo-live-bg-drift 18s ease-in-out infinite alternate;
+}
+#dojoGameCard.dojo-live .dojo-live-backdrop::after{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 50% 43%,rgba(48,108,180,.16),transparent 43%),
+    linear-gradient(180deg,rgba(2,3,10,.30) 0%,rgba(2,4,13,.02) 39%,rgba(2,3,10,.56) 100%);
+}
+#dojoGameCard.dojo-live .dojo-live-lighting{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 30% 55% at 18% 80%,rgba(45,208,255,.10),transparent 70%),
+    radial-gradient(ellipse 30% 55% at 82% 80%,rgba(255,70,184,.10),transparent 70%),
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 18%,transparent 80%,rgba(111,61,255,.08));
+  mix-blend-mode:screen;
+}
+#dojoGameCard.dojo-live #dojoGameCanvas{z-index:1}
+#dojoGameCard.dojo-live .dojo-wgl-overlay{z-index:3}
+#dojoGameCard.dojo-live .dojo-game-hud{z-index:8}
+#dojoGameCard.dojo-live .dojo-input-pad{z-index:12}
+#dojoGameCard.dojo-live .dojo-life{
+  clip-path:polygon(1.5% 0,98.5% 0,100% 50%,98.5% 100%,1.5% 100%,0 50%);
+}
+#dojoGameCard.dojo-live .dojo-hud-score-block:before,
+#dojoGameCard.dojo-live .dojo-life:before{
+  text-shadow:0 1px 5px rgba(0,0,0,.9);
+}
+@keyframes dojo-live-bg-drift{
+  from{transform:scale(1.06) translate3d(-.7%,0,0)}
+  to{transform:scale(1.10) translate3d(.7%,-.4%,0)}
+}
