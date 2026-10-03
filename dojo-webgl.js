@@ -969,6 +969,8 @@ function hud(judgment,error=0){
     card.dataset.lastJudgment=judgment||"";
     card.classList.toggle("dojo-hit-critical",!!judgment&&judgment!=="MISS"&&judgment!=="BAD"&&judgment!=="GOOD");
     card.classList.toggle("dojo-hit-miss",judgment==="MISS"||judgment==="BAD");
+    const apActive=S.judged>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0;
+    card.classList.toggle("dojo-ap-active",apActive);
   }
   if(jt){
     jt.dataset.timing=judgment&&judgment!=="MISS"?(error<-.012?"FAST":error>.012?"LATE":""):"";
