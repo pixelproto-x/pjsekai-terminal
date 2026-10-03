@@ -424,7 +424,12 @@ function setup(){
         tl:ox+fw*.28,tr:ox+fw*.72,bl:ox+fw*.035,br:ox+fw*.965};
     }
   };
-  rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});loadSkin();
+  rs();g.clear(g.COLOR_BUFFER_BIT);addEventListener("resize",rs,{passive:true});
+  const liveBackdrop=w.querySelector("#dojoLiveBackdrop");
+  const liveLighting=w.querySelector(".dojo-live-lighting");
+  if(liveBackdrop){liveBackdrop.style.backgroundImage="none";}
+  if(liveLighting){liveLighting.style.pointerEvents="none";}
+  loadSkin();
   if(window.__PJSEKAI_SEKAI_REF__){
     try{
       window.__PJSEKAI_SEKAI_REF__.attach(g,S.texProgram,S.texBuf,S.texLoc);
@@ -796,7 +801,13 @@ function drawStage(){
   const ref=window.__PJSEKAI_SEKAI_REF__,h=S.geom;
   if(ref?.geom?.ws){
     const g=ref.geom,laneQuad=(l,r)=>ref.perspRaw?ref.perspRaw(l,r,g.laneTop,g.laneBottom,1).map(v=>{const a=ref.arcPoint(v);return a}):ref.persp(l,r,g.laneTop,g.laneBottom,1);
-    poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.48);
+    poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.64);
+    // Reference-style floor plane and perspective grid: keep it subtle so the
+    // actual public note/stage sprites remain the visual authority.
+    for(let gi=1;gi<8;gi++){
+      const tt=cl(gi/8,0,1),qg=ref.persp(-6,6,g.laneTop+(g.laneBottom-g.laneTop)*tt,g.laneTop+(g.laneBottom-g.laneTop)*tt,1);
+      line([[qg[0].x,qg[0].y],[qg[1].x,qg[1].y]],[.52,.46,1],.10+.05*(1-tt));
+    }
     const middleSprite=S.skin?.sprites?.["#STAGE_MIDDLE"];
     if(middleSprite){
       const mid=ref.persp(-6,6,g.laneTop,g.laneBottom,1);
@@ -923,6 +934,13 @@ function effects(dt){
     if(critical){const d2=diamond*.62;line([[effectLane.x,laneY-d2],[effectLane.x+d2*.72,laneY],[effectLane.x,laneY+d2],[effectLane.x-d2*.72,laneY],[effectLane.x,laneY-d2]],[1,1,1],p*.38);}
 
 
+    const slotName=critical?"#SIMULTANEOUS_MARKER_YELLOW":"#SIMULTANEOUS_MARKER_NEUTRAL";
+    if(S.skin?.sprites?.[slotName]){
+      const slotW=Math.max(18,g.ws*2.35),slotH=Math.max(18,g.height*.020);
+      const slotAlpha=p*(critical?.34:.18);
+      const lanePoint=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
+      drawSkinSprite(slotName,lanePoint.x,lanePoint.y,slotW,slotH,slotAlpha);
+    }
     if(!usedPublicParticles){
       const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
       circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
@@ -1419,7 +1437,9 @@ function pause(){
 }
 function stop(){
   S.running=false;S.paused=false;S.starting=false;S.audio.pause();
-  const gameCard=$("dojoGameCard");if(gameCard)gameCard.classList.remove("dojo-live");
+  const gameCard=$("dojoGameCard");
+  if(gameCard)gameCard.classList.remove("dojo-live");
+  const liveBackdrop=$("dojoLiveBackdrop");if(liveBackdrop){liveBackdrop.style.backgroundImage="none";liveBackdrop.style.opacity="0";}
   try{S.audio.currentTime=0}catch(_){}
   S.held.clear();S.touch.clear();S.fx=[];S.particles=[];S.judgementHistory=[];S.lastInput=null;
   if(S.pause)S.pause.hidden=true;
@@ -1526,9 +1546,13 @@ async function start(){
     if($("dojoGameSongMeta"))$("dojoGameSongMeta").textContent="官方音源 · "+LAB[q.d];
     if($("dojoHudSongMeta"))$("dojoHudSongMeta").textContent=LAB[q.d];
     const cover=$("dojoGameCover");if(cover){cover.src=prep.jacket||"";cover.alt=q.m.title;}
-    const stage=$("dojoGameStageWrap");if(stage&&prep.jacket){
-      stage.style.backgroundImage='linear-gradient(180deg,rgba(2,4,12,.72) 0%,rgba(4,8,24,.28) 42%,rgba(1,2,8,.74) 100%),linear-gradient(90deg,rgba(24,38,92,.35),rgba(5,10,28,.08),rgba(62,24,100,.28)),url("'+prep.jacket+'")';
-      stage.style.backgroundSize="cover,cover,cover";stage.style.backgroundPosition="center,center,center";
+    const stage=$("dojoGameStageWrap");
+    const liveBackdrop=$("dojoLiveBackdrop");
+    if(stage&&liveBackdrop){
+      liveBackdrop.style.backgroundImage=prep.jacket?'url("'+prep.jacket+'")':"none";
+      liveBackdrop.style.backgroundPosition="center center";
+      liveBackdrop.style.backgroundSize="cover";
+      liveBackdrop.style.opacity=prep.jacket?".92":".0";
     }
     hud("");
   }catch(e){
@@ -1659,7 +1683,9 @@ function bind(){
   $("dojoGameFullscreenBtn")?.addEventListener("click",async()=>{try{await $("dojoGameStageWrap")?.requestFullscreen?.()}catch(_){}});
   $("dojoGameResetBtn")?.addEventListener("click",()=>{S.running=false;S.paused=false;S.audio.pause();S.audio.currentTime=0;S.held.clear();S.touch.clear();S.fx=[];S.particles=[];const st=$("dojoGameStageWrap");
     const gameCard=$("dojoGameCard");if(gameCard)gameCard.classList.remove("dojo-live");
-    if(st){st.style.backgroundImage="linear-gradient(180deg,#02030a 0%,#050713 58%,#02030a 100%)";st.style.backgroundSize="cover";st.style.backgroundPosition="center";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
+    const liveBackdrop=$("dojoLiveBackdrop");
+    if(liveBackdrop){liveBackdrop.style.backgroundImage="none";liveBackdrop.style.opacity="0";}
+    if(st){st.style.backgroundImage="none";st.style.backgroundSize="cover";st.style.backgroundPosition="center";}S.judgementHistory=[];S.lastInput=null;if(S.pause)S.pause.hidden=true;if($("dojoGameResult"))$("dojoGameResult").hidden=true;if($("dojoOpenPracticeBtn"))$("dojoOpenPracticeBtn").textContent="▶ 開始打歌";});
 }
 function expose(){
   window.__PJSEKAI_DOJO__={
