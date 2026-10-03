@@ -264,14 +264,17 @@ function loadImage(name){
 }
 function loadAll(){
   const names=new Set();
-  loadParticles();
+  const particlesPromise=loadParticles();
   Object.values(assets).flat().forEach(x=>x&&names.add(x));
   for(let i=1;i<=6;i++)for(const p of ["","_diagonal","_diagonal_left","_diagonal_right"]){
     names.add("notes_flick_arrow_"+String(i).padStart(2,"0")+p+".png");
     names.add("notes_flick_arrow_crtcl_"+String(i).padStart(2,"0")+p+".png");
   }
   names.forEach(loadImage);
-  return Promise.all([...names].map(n=>new Promise(r=>{const im=loadImage(n);if(im.complete)return r();im.onload=()=>r();im.onerror=()=>r()})));
+  return Promise.all([
+    ...[...names].map(n=>new Promise(r=>{const im=loadImage(n);if(im.complete)return r();im.onload=()=>r();im.onerror=()=>r()})),
+    particlesPromise
+  ]);
 }
 function attach(gl,program,buf,loc){state.gl=gl;state.program=program;state.buf=buf;state.loc=loc}
 function textureFor(name){
