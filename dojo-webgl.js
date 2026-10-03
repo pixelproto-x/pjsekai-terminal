@@ -925,6 +925,7 @@ function effects(dt){
       usedPublicParticles=ref.drawParticleEffect(particleLinear,effectLane.x,effectLane.y,k,.56,kind.includes("flick")?.18:0)||usedPublicParticles;
     }
 
+    const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
     const laneAlpha=p*(critical?.78:.42);
     const laneY=effectLane.y;
     const laneH=Math.max(10,g.height*.018);
@@ -942,7 +943,6 @@ function effects(dt){
       drawSkinSprite(slotName,lanePoint.x,lanePoint.y,slotW,slotH,slotAlpha);
     }
     if(!usedPublicParticles){
-      const rr=8+Math.min(g.width,g.height)*(.018+.095*k);
       circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
       circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
       const rays=critical?14:kind.includes("flick")?11:9;
@@ -1571,10 +1571,12 @@ async function start(){
     const stage=$("dojoGameStageWrap");
     const liveBackdrop=$("dojoLiveBackdrop");
     if(stage&&liveBackdrop){
-      liveBackdrop.style.backgroundImage=prep.jacket?'url("'+prep.jacket+'")':"none";
+      // Live gameplay must never use the song jacket as the playfield background.
+      // Keep the stage unobstructed and use the neutral live-stage treatment.
+      liveBackdrop.style.backgroundImage="none";
       liveBackdrop.style.backgroundPosition="center center";
       liveBackdrop.style.backgroundSize="cover";
-      liveBackdrop.style.opacity=prep.jacket?".92":".0";
+      liveBackdrop.style.opacity="0";
     }
     hud("");
   }catch(e){
