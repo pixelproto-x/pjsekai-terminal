@@ -903,8 +903,8 @@ function effects(dt){
         :(critical?"#NOTE_LINEAR_TAP_YELLOW":"#NOTE_LINEAR_TAP_CYAN");
     let usedPublicParticles=false;
     if(ref?.particleLoaded&&ref.drawParticleEffect){
-      usedPublicParticles=ref.drawParticleEffect(particleKind,effectLane.x,effectLane.y,p,.72,0);
-      usedPublicParticles=ref.drawParticleEffect(particleLinear,effectLane.x,effectLane.y,p,.56,kind.includes("flick")?.18:0)||usedPublicParticles;
+      usedPublicParticles=ref.drawParticleEffect(particleKind,effectLane.x,effectLane.y,k,.72,0);
+      usedPublicParticles=ref.drawParticleEffect(particleLinear,effectLane.x,effectLane.y,k,.56,kind.includes("flick")?.18:0)||usedPublicParticles;
     }
 
     const laneAlpha=p*(critical?.78:.42);
@@ -967,6 +967,7 @@ function hud(judgment,error=0){
   const card=$("dojoGameCard");
   if(card){
     card.dataset.lastJudgment=judgment||"";
+    card.dataset.flickWarning=(S.lastInput?.kind||"")==="flick"&&(S.lastInput?.wrongWay?"FLICK":"");
     card.classList.toggle("dojo-hit-critical",!!judgment&&judgment!=="MISS"&&judgment!=="BAD"&&judgment!=="GOOD");
     card.classList.toggle("dojo-hit-miss",judgment==="MISS"||judgment==="BAD");
     const apActive=S.judged>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0;
@@ -1047,7 +1048,8 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   S.life=cl(S.life+(jg==="BAD"?-50:jg==="MISS"?-80:0),0,1000);
   n.done=true;n.judged=true;S.judged++;
   S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
-  S.lastJudge=jg;S.lastJudgeAt=performance.now();S.lastInput={lane:n.l,kind:type,judgement:jg,error:d};
+  S.lastJudge=jg;S.lastJudgeAt=performance.now();
+  S.lastInput={lane:n.l,kind:type,judgement:jg,error:d,wrongWay:!!wrongWay,direction:n.f||null};
   hud(jg,d);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS"){sfx(jg,!!n.c);try{navigator.vibrate?.(jg==="PERFECT"&&n.c?8:5)}catch(_){}}
   if(allowFinish&&S.judged>=S.total)finish();
   return jg;
