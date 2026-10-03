@@ -1076,7 +1076,7 @@ function award(n,d,type="tap",allowFinish=true,wrongWay=false){
   S.score+=Math.round(weight*multiplier*comboBoost);
   S.life=cl(S.life+(jg==="BAD"?-50:jg==="MISS"?-80:0),0,1000);
   n.done=true;n.judged=true;S.judged++;
-  S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d});
+  S.judgementHistory.push({time:nowTime(),lane:n.l,kind:jg,error:d,wrongWay:!!wrongWay});
   S.lastJudge=jg;S.lastJudgeAt=performance.now();
   S.lastInput={lane:n.l,kind:type,judgement:jg,error:d,wrongWay:!!wrongWay,direction:n.f||null};
   hud(jg,d);spawnFx(n.l,jg,!!n.c);ensureSfx();if(jg!=="MISS"){sfx(jg,!!n.c);try{navigator.vibrate?.(jg==="PERFECT"&&n.c?8:5)}catch(_){}}
@@ -1400,22 +1400,36 @@ function finish(failed=false){
     const jacket=S.prep?.jacket||"";
     const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);
     const ratio=Math.round(cl(S.score/maxScore,0,1)*100);
-    r.innerHTML='<div class="dojo-result-shell">'
-      +'<div class="dojo-result-left">'
-      +'<div class="dojo-result-song"><strong>'+title+'</strong><span>'+diff+'</span></div>'
-      +'<div class="dojo-result-score-label">SCORE</div><div class="dojo-result-score">'+String(Math.floor(S.score)).padStart(7,"0")+'</div>'
-      +'<div class="dojo-result-rankbar"><b>'+scoreRank+'</b><i><em style="width:'+ratio+'%"></em></i><span>C</span><span>B</span><span>A</span><span>S</span></div>'
-      +'<div class="dojo-result-combo"><span>COMBO</span><strong>'+S.best+'</strong></div>'
-      +'<div class="dojo-result-judgments">'
+    const scoreKey="pjsekai-dojo-highscore-"+String(q?.m?.id||"")+"-"+String(q?.d||"");
+    const oldHigh=Number(localStorage.getItem(scoreKey)||0);
+    const highScore=Math.max(oldHigh,S.score);
+    try{localStorage.setItem(scoreKey,String(Math.floor(highScore)));}catch(_){}
+    const level=String(q?.d&&q?.m?.difficulties?.[q.d]?.playLevel!=null?q.m.difficulties[q.d].playLevel:"");
+    const late=S.judgementHistory.filter(x=>x.error>.012).length;
+    const fast=S.judgementHistory.filter(x=>x.error<-.012).length;
+    const flickWrong=S.judgementHistory.filter(x=>x.wrongWay).length;
+    r.innerHTML='<div class="dojo-result-official">'
+      +'<div class="dojo-result-top"><div class="dojo-result-song-mini">'+(jacket?'<img src="'+jacket+'" alt="">':'')
+      +'<div><strong>'+title+'</strong><span>'+diff+(level?' · Lv.'+level:"")+'</span></div></div>'
+      +'<div class="dojo-result-rank-gauge"><span>C</span><span>B</span><span>A</span><span>S</span></div></div>'
+      +'<div class="dojo-result-content">'
+      +'<div class="dojo-result-info">'
+      +'<div class="dojo-result-label">スコア</div><div class="dojo-result-big-score">'+String(Math.floor(S.score)).padStart(7,"0")+'</div>'
+      +'<div class="dojo-result-high">ハイスコア <b>'+String(Math.floor(highScore)).padStart(7,"0")+'</b></div>'
+      +'<div class="dojo-result-counts">'
       +'<div><span>PERFECT</span><b>'+String(S.counts.PERFECT).padStart(4,"0")+'</b></div>'
       +'<div><span>GREAT</span><b>'+String(S.counts.GREAT).padStart(4,"0")+'</b></div>'
       +'<div><span>GOOD</span><b>'+String(S.counts.GOOD).padStart(4,"0")+'</b></div>'
       +'<div><span>BAD</span><b>'+String(S.counts.BAD).padStart(4,"0")+'</b></div>'
       +'<div><span>MISS</span><b>'+String(S.counts.MISS).padStart(4,"0")+'</b></div>'
-      +'<div><span>ACCURACY</span><b>'+acc+'%</b></div>'
       +'</div></div>'
-      +'<div class="dojo-result-right">'+(jacket?'<img src="'+jacket+'" alt="">':'')+'<strong class="dojo-result-clear">'+rank+'</strong>'
-      +'<div class="dojo-result-actions"><button type="button" data-dojo-result-replay>↻ 再玩一次</button><button type="button" data-dojo-result-exit>‹ 返回歌曲選擇</button></div></div></div>';
+      +'<div class="dojo-result-side"><div class="dojo-result-clear">'+rank+'</div>'
+      +'<div class="dojo-result-combo-official"><span>COMBO</span><b>'+S.best+'</b></div>'
+      +'<div class="dojo-result-timing"><div><span>LATE</span><b>'+late+'</b></div><div><span>FAST</span><b>'+fast+'</b></div><div><span>⚠ FLICK</span><b>'+flickWrong+'</b></div></div>'
+      +'<div class="dojo-result-ap">'+(ap?'✦ ALL PERFECT!':fc?'FULL COMBO!':'')+'</div>'
+      +'</div></div>'
+      +'<div class="dojo-result-bottom"><button type="button" data-dojo-result-exit>‹ 返回歌曲選擇</button><button type="button" data-dojo-result-replay>↻ 再玩一次</button></div>'
+      +'</div>';
     r.querySelectorAll("[data-dojo-result-replay]").forEach(btn=>btn.addEventListener("click",()=>{r.hidden=true;start()},{once:true}));
     r.querySelector("[data-dojo-result-exit]")?.addEventListener("click",()=>stop(),{once:true});
   }
