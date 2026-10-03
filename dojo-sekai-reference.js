@@ -78,7 +78,7 @@ function particleScalar(spec,t,def=0){
   if(spec.c!=null)return c(spec);
   const hasFrom=spec.from!=null,hasTo=spec.to!=null;
   if(!hasFrom&&!hasTo)return def;
-  const from=hasFrom?c(spec.from):0,to=hasTo?c(spec.to):from;
+  const from=hasFrom?c(spec.from):0,to=hasTo?c(spec.to):0;
   return from+(to-from)*easeParticle(spec.ease,t);
 }
 function rotateParticle(p,cx,cy,a){
