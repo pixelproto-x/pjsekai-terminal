@@ -560,3 +560,20 @@
   .dojo-play-page.active .dojo-life{width:150px;top:2.7%;right:2.4%}
   .dojo-play-page.active .dojo-hud-combo{right:5%;top:46%}
 }
+
+/* Life value placement: keep the bar visual separate from the numeric readout. */
+.dojo-play-page.active .dojo-life:after{
+  content:attr(data-life);
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-56%) skewX(15deg);
+  z-index:4;
+  color:rgba(25,40,42,.92);
+  font:1000 clamp(6px,.58vw,9px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-shadow:0 1px 0 rgba(255,255,255,.55);
+  pointer-events:none;
+  box-shadow:none;
+  border-radius:0;
+  inset:auto 6px auto auto;
+}
