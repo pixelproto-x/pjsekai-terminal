@@ -30,6 +30,101 @@ const arrowSize={
 };
 const images=new Map(),textures=new Map(),state={gl:null,program:null,buf:null,loc:null,geom:null};
 
+const PARTICLE_BASE="https://cdn.jsdelivr.net/gh/qwewqa/sonolus-next-sekai-arc-engine@0f14c712163d5804d904ddad7a5b1cf3666a436d/resources/particles/pixel/";
+const particleImages=new Map(),particleTextures=new Map(),particleEffects=new Map(),particleSprites=[];
+let particleReady=Promise.resolve(),particleData=null;
+function loadParticleImage(){
+  if(particleImages.has("texture"))return particleImages.get("texture");
+  const im=new Image();im.crossOrigin="anonymous";im.decoding="async";im.src=PARTICLE_BASE+"texture.png";
+  particleImages.set("texture",im);return im;
+}
+async function loadParticles(){
+  if(particleData)return particleReady;
+  try{
+    const resp=await fetch(PARTICLE_BASE+"data.json",{cache:"force-cache"});
+    particleData=await resp.json();
+    particleSprites.splice(0,particleSprites.length,...(particleData.sprites||[]));
+    for(const e of (particleData.effects||[]))particleEffects.set(e.name,e);
+    const im=loadParticleImage();
+    particleReady=im.complete?Promise.resolve():new Promise(resolve=>{im.onload=resolve;im.onerror=resolve;});
+    await particleReady;
+  }catch(_){particleData=null;}
+}
+function particleTexture(){
+  const g=state.gl,im=particleImages.get("texture");
+  if(!g||!im?.complete||!im.naturalWidth)return null;
+  let t=particleTextures.get("texture");if(t)return t;
+  t=g.createTexture();g.bindTexture(g.TEXTURE_2D,t);
+  g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL,false);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);
+  g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+  g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,im);
+  g.bindTexture(g.TEXTURE_2D,null);particleTextures.set("texture",t);return t;
+}
+function easeParticle(name,t){
+  t=clamp(t,0,1);
+  if(name==="inCubic")return t*t*t;
+  if(name==="outCubic"){const u=1-t;return 1-u*u*u;}
+  if(name==="inQuad")return t*t;
+  if(name==="outQuad")return 1-(1-t)*(1-t);
+  if(name==="inOutCubic")return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  return t;
+}
+function particleScalar(spec,t,def=0){
+  if(!spec||typeof spec!=="object")return Number.isFinite(+spec)?+spec:def;
+  const c=v=>Number.isFinite(+v?.c)?+v.c:(Number.isFinite(+v)?+v:0);
+  if(spec.c!=null)return c(spec);
+  const hasFrom=spec.from!=null,hasTo=spec.to!=null;
+  if(!hasFrom&&!hasTo)return def;
+  const from=hasFrom?c(spec.from):0,to=hasTo?c(spec.to):from;
+  return from+(to-from)*easeParticle(spec.ease,t);
+}
+function rotateParticle(p,cx,cy,a){
+  const c=Math.cos(a),s=Math.sin(a),dx=p.x-cx,dy=p.y-cy;
+  return{x:cx+dx*c-dy*s,y:cy+dx*s+dy*c};
+}
+function drawParticleSprite(sprite,x,y,w,h,alpha,rotation=0){
+  const g=state.gl,loc=state.loc,t=particleTexture();if(!g||!loc||!t||!sprite)return false;
+  const W=particleData?.width||1024,H=particleData?.height||1024;
+  const u0=sprite.x/W,u1=(sprite.x+sprite.w)/W,v0=1-(sprite.y+sprite.h)/H,v1=1-sprite.y/H;
+  let q=[{x:x-w/2,y:y-h/2},{x:x+w/2,y:y-h/2},{x:x+w/2,y:y+h/2},{x:x-w/2,y:y+h/2}];
+  if(rotation)q=q.map(p=>rotateParticle(p,x,y,rotation));
+  const d=[...toClip(q[0]),0,v1,...toClip(q[1]),1,v1,...toClip(q[3]),0,v0,...toClip(q[2]),1,v0];
+  g.bindBuffer(g.ARRAY_BUFFER,state.buf);g.bufferData(g.ARRAY_BUFFER,new Float32Array(d),g.STREAM_DRAW);
+  g.useProgram(state.program);g.enableVertexAttribArray(loc.p);g.enableVertexAttribArray(loc.uv);
+  g.vertexAttribPointer(loc.p,2,g.FLOAT,false,16,0);g.vertexAttribPointer(loc.uv,2,g.FLOAT,false,16,8);
+  g.activeTexture(g.TEXTURE0);g.bindTexture(g.TEXTURE_2D,t);g.uniform1i(loc.tex,0);
+  if(loc.alpha)g.uniform1f(loc.alpha,alpha);
+  g.drawArrays(g.TRIANGLE_STRIP,0,4);return true;
+}
+function drawParticleEffect(name,x,y,progress=0.5,scale=1,rotation=0){
+  const e=particleEffects.get(name),g=state.geom;if(!e||!g)return false;
+  const base=Math.max(22,Math.min(g.width,g.height)*.13*scale);
+  let drew=false;
+  for(const group of (e.groups||[])){
+    const count=Math.max(1,Math.min(16,group.count||1));
+    for(let n=0;n<count;n++){
+      const angle=count===1?0:(n/count)*Math.PI*2;
+      for(const p of (group.particles||[])){
+        const st=Number(p.start)||0,dur=Math.max(.0001,Number(p.duration)||1);
+        if(progress<st||progress>st+dur)continue;
+        const t=cl((progress-st)/dur,0,1);
+        const sp=particleSprites[p.sprite];if(!sp)continue;
+        const px=particleScalar(p.x,t,0),py=particleScalar(p.y,t,0);
+        const ww=Math.max(.01,particleScalar(p.w,t,1)),hh=Math.max(.01,particleScalar(p.h,t,1));
+        const aa=cl(particleScalar(p.a,t,1),0,1);
+        const rr=particleScalar(p.r,t,0)+angle;
+        const spread=base*.62;
+        drew=drawParticleSprite(sp,x+px*spread,y+py*spread,base*ww,base*hh,aa,rr)||drew;
+      }
+    }
+  }
+  return drew;
+}
+
+
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function approach(progress){return Math.pow(APPROACH_SCALE,1-clamp(progress,0,1))}
 function preempt(speed){const u=clamp((speed-12)/(1-12),0,1);return .35+3.65*Math.pow(u,1.31)}
@@ -169,6 +264,7 @@ function loadImage(name){
 }
 function loadAll(){
   const names=new Set();
+  loadParticles();
   Object.values(assets).flat().forEach(x=>x&&names.add(x));
   for(let i=1;i<=6;i++)for(const p of ["","_diagonal","_diagonal_left","_diagonal_right"]){
     names.add("notes_flick_arrow_"+String(i).padStart(2,"0")+p+".png");
@@ -323,5 +419,7 @@ window.__PJSEKAI_SEKAI_REF__={
   get geom(){return state.geom},
   logicalPoint,
   hasSprite,
-  get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length}
+  get ready(){return [...images.values()].filter(im=>im.complete&&im.naturalWidth).length},
+  particleReady,loadParticles,drawParticleEffect,
+  get particleLoaded(){return !!particleData&&!!particleTexture()}
 };})();
