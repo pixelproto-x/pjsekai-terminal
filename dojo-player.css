@@ -403,10 +403,10 @@
   box-shadow:inset 0 0 7px rgba(255,255,255,.65);
   pointer-events:none;
 }
-.dojo-play-page.active.dojo-ap-active .dojo-hud-combo{
+.dojo-play-page.active #dojoGameCard.dojo-ap-active .dojo-hud-combo{
   filter:drop-shadow(0 0 9px rgba(255,255,255,.5));
 }
-.dojo-play-page.active.dojo-ap-active .dojo-hud-combo:after{
+.dojo-play-page.active #dojoGameCard.dojo-ap-active .dojo-hud-combo:after{
   content:"ALL PERFECT";
   display:block;
   margin-top:3px;
@@ -479,4 +479,22 @@
 }
 @media(max-width:640px){
   .dojo-play-page .dojo-hud-combo{right:4%;top:24%;left:auto;transform:none}
+}
+
+/* Live judgment indicators */
+.dojo-play-page.active #dojoGameCard[data-flick-warning="FLICK"] #dojoJudgeText{
+  color:#ff5570;
+  text-shadow:0 2px 4px rgba(0,0,0,.9),0 0 12px rgba(255,64,92,.9),0 0 30px rgba(255,64,92,.45);
+}
+.dojo-play-page.active #dojoGameCard[data-flick-warning="FLICK"] #dojoJudgeText:after{
+  content:"FLICK";
+  display:block;
+  margin-top:3px;
+  font:1000 .42em/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.16em;
+  color:#ff7186;
+  text-shadow:0 0 10px rgba(255,54,88,.9);
+}
+.dojo-play-page.active #dojoGameCard.dojo-hit-miss #dojoJudgeText{
+  color:#ff7186;
 }
