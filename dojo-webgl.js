@@ -953,7 +953,7 @@ function hud(judgment,error=0){
   put("dojoGameCombo",S.combo);
   const acc=S.tn?cl(100-(S.timing/S.tn)*120,0,100):100;
   put("dojoGameAccuracy",acc.toFixed(2)+"%");
-  const life=$("dojoGameLifeBar");if(life){life.style.width=cl(S.life/10,0,100)+"%";life.parentElement?.classList.toggle("dojo-life-danger",S.life<=300);life.parentElement?.classList.toggle("dojo-life-critical",S.life<=100);}
+  const life=$("dojoGameLifeBar");if(life){life.style.width=cl(S.life/10,0,100)+"%";life.parentElement?.classList.toggle("dojo-life-danger",S.life<=300);life.parentElement?.classList.toggle("dojo-life-critical",S.life<=100);life.parentElement?.setAttribute("data-life",String(Math.max(0,Math.round(S.life))));}
   const combo=$("dojoGameCombo");
   if(combo&&judgment){
     const inPlayPage=!!document.querySelector(".dojo-play-page.active");
@@ -1359,7 +1359,7 @@ function finish(failed=false){
   if(!S.running)return;
   finalizePending();
   S.running=false;S.audio.pause();S.held.clear();
-  if(S.pause)S.pause.hidden=true;
+  if(S.pause)S.pause.hidden=true;const gameCard=$("dojoGameCard");if(gameCard){gameCard.classList.remove("dojo-hit-critical","dojo-hit-miss","dojo-ap-active");gameCard.removeAttribute("data-flick-warning");}
   const ap=S.counts.PERFECT>0&&S.counts.GREAT===0&&S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0,fc=S.counts.GOOD===0&&S.counts.BAD===0&&S.counts.MISS===0;
   const rank=failed?"GAME OVER":ap?"ALL PERFECT":fc?"FULL COMBO":"CLEAR";
   const scoreRank=(()=>{const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2);const r=S.score/maxScore;return r>=.90?"S":r>=.80?"A":r>=.70?"B":r>=.60?"C":"D"})();
@@ -1490,7 +1490,7 @@ async function start(){
     S.total=S.notes.reduce((n,x)=>n+((x.k==="hold"?2:1)+(x.checkpoints?.length||0)),0);
     S.score=0;S.combo=0;S.best=0;S.life=1000;S.judged=0;S.chartOffset=N(prep.offset,0);
     S.counts={PERFECT:0,GREAT:0,GOOD:0,BAD:0,MISS:0};S.timing=0;S.tn=0;
-    S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";
+    S.held.clear();S.fx=[];S.particles=[];S.lastJudge="";S.error="";S.lastInput=null;
     const vn=prep.vocal?.assetbundleName||String(q.m.id).padStart(4,"0")+"_01";
     S.audio.pause();S.audio.src="https://storage.sekai.best/sekai-jp-assets/music/long/"+vn+"/"+vn+".wav";S.audio.load();
     const speed=N(app().dojo?.speed,6);
