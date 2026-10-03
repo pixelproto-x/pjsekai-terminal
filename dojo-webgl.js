@@ -1324,7 +1324,13 @@ function sweep(now){
       n.done=true;n.judged=true;S.judged++;hud("MISS",now-n.hit);spawnFx(n.l,"MISS",!!n.c);
     }
   }
-  if(S.life<=0){S.life=0;hud("");finish(true);}
+  if(S.life<=0){
+    // Official Project SEKAI live behavior: LIFE reaching 0 does not stop the
+    // live. Keep the chart/audio running and expose the zero-life danger state.
+    S.life=0;hud("");
+    const card=$("dojoGameCard");
+    if(card)card.dataset.lifeZero="1";
+  }
 }
 function attachMissedHold(inputLane,now,exact,inputId){
   for(const n of S.notes){
