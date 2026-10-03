@@ -1000,3 +1000,22 @@
   #dojoGameCard.dojo-live .dojo-result-bottom{padding:5px 10px 9px}
   #dojoGameCard.dojo-live .dojo-result-bottom button{min-width:0;flex:1}
 }
+
+/* Rank badge + live gauge state */
+#dojoGameCard.dojo-live .dojo-hud-score-block{--dojo-rank-progress:0%}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="S"] .dojo-score-rank{background:linear-gradient(160deg,#ff78bb,#a957d9)}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="A"] .dojo-score-rank{background:linear-gradient(160deg,#ba79ec,#7959d5)}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="B"] .dojo-score-rank{background:linear-gradient(160deg,#63d9ed,#3d86cf)}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="C"] .dojo-score-rank{background:linear-gradient(160deg,#68dbc9,#438fbd)}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="D"] .dojo-score-rank{background:linear-gradient(160deg,#8793a6,#515b6c)}
+#dojoGameCard.dojo-live .dojo-hud-score-block:after{
+  background:linear-gradient(90deg,
+    rgba(89,227,209,.98) 0 25%,
+    rgba(105,198,237,.96) 25% 50%,
+    rgba(177,144,240,.96) 50% 75%,
+    rgba(255,229,151,.98) 75% 100%);
+}
+#dojoGameCard.dojo-live .dojo-hud-score-block:before{
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));
+}
+#dojoGameCard.dojo-live .dojo-wgl-pause{top:3.0%;right:2.8%}
