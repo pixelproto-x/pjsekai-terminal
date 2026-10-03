@@ -440,8 +440,8 @@ function setup(){
   if(!w.querySelector(".dojo-wgl-overlay")){
     const o=document.createElement("div");o.className="dojo-wgl-overlay";w.appendChild(o);
     const q=document.createElement("div");q.className="dojo-wgl-status";q.textContent="DOJO · WEBGL";w.appendChild(q);S.status=q;
-    const p=document.createElement("button");p.className="dojo-wgl-pause";p.type="button";p.textContent="Ⅱ";p.hidden=true;p.setAttribute("aria-label","暫停");p.onclick=pause;w.appendChild(p);S.pause=p;
-    const menu=document.createElement("div");menu.className="dojo-wgl-pause-menu";menu.hidden=true;menu.innerHTML="<div class=\"dojo-wgl-pause-panel\"><strong>遊戲暫停</strong><span>選擇要繼續、重開或離開打歌。</span><div><button type=\"button\" data-dojo-resume>▶ 繼續</button><button type=\"button\" data-dojo-retry>↻ 重開</button><button type=\"button\" data-dojo-exit>‹ 離開</button></div></div>";w.appendChild(menu);
+    const p=document.createElement("button");p.className="dojo-wgl-pause";p.type="button";p.textContent="Ⅱ";p.hidden=true;p.setAttribute("aria-label","一時停止");p.onclick=pause;w.appendChild(p);S.pause=p;
+    const menu=document.createElement("div");menu.className="dojo-wgl-pause-menu";menu.hidden=true;menu.innerHTML="<div class=\"dojo-wgl-pause-panel\"><strong>一時停止</strong><span>ライブを一時停止しました。<br>ライブに戻りますか？</span><div><button type=\"button\" data-dojo-exit>リタイア</button><button type=\"button\" data-dojo-retry>リトライ</button><button type=\"button\" data-dojo-resume>ライブに戻る</button></div></div>";w.appendChild(menu);
     menu.addEventListener("click",e=>{
       if(e.target.closest("[data-dojo-resume]")){pause();return;}
       if(e.target.closest("[data-dojo-retry]")){menu.hidden=true;S.paused=false;S.running=false;S.audio.pause();S.audio.currentTime=0;start();return;}
@@ -1723,3 +1723,13 @@ function startBoot(){A=window.__PJSEKAI_APP__||A;if(appRoot())boot();}
 window.addEventListener("pjsekai-app-ready",startBoot);
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startBoot,{once:true});else queueMicrotask(startBoot);
 })();
+
+/* Official pause dialog */
+#dojoGameCard.dojo-live .dojo-wgl-pause-menu{background:rgba(0,0,0,.36);backdrop-filter:none}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel{width:min(680px,88vw);padding:0 0 12px;border:0;border-radius:0;background:rgba(248,249,252,.98);box-shadow:0 22px 80px rgba(0,0,0,.46);color:#343845;overflow:hidden}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel strong{display:block;padding:12px 18px 10px;background:#11c9bd;color:#fff;font-size:16px;letter-spacing:.06em}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel>span{display:block;margin:18px 14px;color:#4c5362;font-size:11px;line-height:1.7;font-weight:800}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel>div{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 12px 8px}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel button{min-height:48px;border:3px solid #9aa2b2;border-radius:11px;background:#fff;color:#343845;font-size:13px;font-weight:1000;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+#dojoGameCard.dojo-live .dojo-wgl-pause-panel button[data-dojo-resume]{border-color:#12c8bb;background:#12c8bb;color:#fff}
+@media(max-width:640px){#dojoGameCard.dojo-live .dojo-wgl-pause-panel>div{grid-template-columns:1fr}.#dojoGameCard.dojo-live .dojo-wgl-pause-panel button{min-height:42px}}
