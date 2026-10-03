@@ -722,3 +722,142 @@
   from{transform:scale(1.06) translate3d(-.7%,0,0)}
   to{transform:scale(1.10) translate3d(.7%,-.4%,0)}
 }
+
+
+/* Final Project SEKAI live HUD geometry */
+#dojoGameCard.dojo-live .dojo-hud-score-block{
+  position:absolute;left:0;top:0;
+  width:min(300px,36vw);min-width:0;
+  display:flex;align-items:flex-start;gap:10px;
+}
+#dojoGameCard.dojo-live .dojo-score-rank{
+  position:relative;flex:0 0 62px;width:62px;height:58px;
+  display:grid;grid-template-columns:1fr;grid-template-rows:39px 13px;
+  gap:1px;align-items:center;justify-items:center;
+  color:#fff;padding:3px 4px;
+  background:linear-gradient(160deg,rgba(92,215,238,.92),rgba(68,101,191,.86));
+  clip-path:polygon(7% 0,100% 0,92% 100%,0 100%);
+  box-shadow:0 4px 12px rgba(0,0,0,.45);
+}
+#dojoGameCard.dojo-live .dojo-score-rank>b{
+  position:static;display:block;grid-row:1;
+  font-size:clamp(31px,4vw,49px);line-height:.78;
+  font-weight:1000;text-align:center;
+  text-shadow:0 2px 5px rgba(0,0,0,.38);
+}
+#dojoGameCard.dojo-live .dojo-score-rank-caption{
+  display:block!important;grid-row:2;
+  font:1000 6px/1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  letter-spacing:.05em;text-align:center;
+  color:rgba(255,255,255,.92)!important;
+  text-shadow:none!important;
+}
+#dojoGameCard.dojo-live .dojo-score-rank>i{
+  display:none!important;
+}
+#dojoGameCard.dojo-live .dojo-score-rank>span:not(.dojo-score-rank-caption){
+  display:none!important;
+}
+#dojoGameCard.dojo-live .dojo-score-main{
+  min-width:0;display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:10px 29px 11px;
+  column-gap:8px;align-items:end;
+  padding-top:1px;
+}
+#dojoGameCard.dojo-live .dojo-score-caption{
+  grid-column:1 / span 2;grid-row:1;
+  font:1000 8px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.08em;color:#fff;
+  text-shadow:0 1px 5px rgba(0,0,0,.85);
+}
+#dojoGameCard.dojo-live .dojo-score-main .dojo-hud-score{
+  grid-column:1 / span 2;grid-row:2;
+  font:1000 clamp(22px,2.8vw,43px)/.9 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.035em;text-shadow:0 2px 9px rgba(0,0,0,.85);
+}
+#dojoGameCard.dojo-live .dojo-score-main #dojoGameScoreDelta{
+  grid-column:1 / span 2;grid-row:3;
+  position:static!important;
+  font:900 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:rgba(255,255,255,.86);
+  text-align:left;
+}
+#dojoGameCard.dojo-live .dojo-hud-score-block:after{
+  content:"C      B      A      S";
+  position:absolute;
+  left:72px;top:43px;
+  width:min(196px,24vw);height:11px;
+  padding:1px 9px;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.80);
+  clip-path:polygon(2% 0,98% 0,100% 50%,98% 100%,2% 100%,0 50%);
+  background:linear-gradient(90deg,rgba(90,220,200,.78) 0 27%,rgba(112,198,235,.76) 27% 52%,rgba(172,142,239,.76) 52% 76%,rgba(255,232,152,.82) 76%);
+  color:#fff;
+  font:1000 6px/7px system-ui,sans-serif;
+  letter-spacing:.18em;word-spacing:7px;
+  text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+#dojoGameCard.dojo-live .dojo-accuracy-hidden{display:none!important}
+
+#dojoGameCard.dojo-live .dojo-life{
+  top:3.0%;right:7.2%;left:auto;
+  width:min(285px,29vw);height:12px;
+  box-sizing:border-box;
+  transform:none;
+  clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);
+  border:2px solid rgba(255,255,255,.92);
+}
+#dojoGameCard.dojo-live .dojo-life:before{
+  content:"LIFE";position:absolute;left:-37px;top:0;
+  font:1000 8px/10px system-ui,sans-serif;
+  color:#fff;transform:none;
+}
+#dojoGameCard.dojo-live .dojo-life:after{
+  content:attr(data-life);position:absolute;right:7px;top:50%;
+  transform:translateY(-53%);
+  color:#17212a;font:1000 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-shadow:0 1px 0 rgba(255,255,255,.6);
+  box-shadow:none;inset:auto 7px auto auto;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo{
+  right:3.9%;top:48%;
+  align-items:flex-end;text-align:right;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo strong{
+  font:1000 clamp(39px,6.6vw,83px)/.80 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:-.055em;
+  text-shadow:0 3px 18px rgba(0,0,0,.86),0 0 18px rgba(255,255,255,.20);
+}
+#dojoGameCard.dojo-live .dojo-hud-combo span{
+  margin-top:4px;font:1000 clamp(7px,.85vw,11px)/1 system-ui,sans-serif;
+  letter-spacing:.16em;color:#fff;
+}
+#dojoGameCard.dojo-live .dojo-judge-text{
+  left:50%;top:70%;
+  font:1000 clamp(19px,3vw,39px)/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.01em;
+}
+#dojoGameCard.dojo-live .dojo-wgl-pause{
+  right:2.8%;top:10.3%;
+  width:44px;height:44px;border-radius:9px;
+  background:rgba(248,249,252,.94);color:#2e3441;
+  border:2px solid rgba(255,255,255,.98);
+  box-shadow:0 3px 13px rgba(0,0,0,.46);
+  font-size:18px;
+}
+@media(max-width:640px){
+  #dojoGameCard.dojo-live .dojo-hud-score-block{width:214px;gap:7px}
+  #dojoGameCard.dojo-live .dojo-score-rank{flex-basis:48px;width:48px;height:46px;grid-template-rows:31px 10px}
+  #dojoGameCard.dojo-live .dojo-score-rank>b{font-size:27px}
+  #dojoGameCard.dojo-live .dojo-score-rank-caption{font-size:5px!important}
+  #dojoGameCard.dojo-live .dojo-score-main{grid-template-rows:9px 23px 9px}
+  #dojoGameCard.dojo-live .dojo-score-main .dojo-hud-score{font-size:clamp(17px,4.8vw,24px)}
+  #dojoGameCard.dojo-live .dojo-hud-score-block:after{left:55px;top:35px;width:145px}
+  #dojoGameCard.dojo-live .dojo-life{right:11%;width:160px;height:9px}
+  #dojoGameCard.dojo-live .dojo-life:before{left:-29px;font-size:6px}
+  #dojoGameCard.dojo-live .dojo-hud-combo{right:4%;top:45%}
+  #dojoGameCard.dojo-live .dojo-hud-combo strong{font-size:clamp(30px,10vw,53px)}
+  #dojoGameCard.dojo-live .dojo-wgl-pause{right:2.8%;top:9.5%;width:36px;height:36px}
+}
+
