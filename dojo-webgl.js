@@ -917,7 +917,8 @@ function effects(dt){
     const laneAlpha=p*(critical?.78:.42);
     const laneY=effectLane.y;
     const laneH=Math.max(10,g.height*.018);
-    rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);\n    const diamond=rr*1.15; const diamondAlpha=p*(critical?.72:.38);
+    rect(effectLane.x-g.ws*1.55,laneY-laneH*.5,g.ws*3.1,laneH,palette,laneAlpha);
+    const diamond=rr*1.15; const diamondAlpha=p*(critical?.72:.38);
     line([[effectLane.x,laneY-diamond],[effectLane.x+diamond*.72,laneY],[effectLane.x,laneY+diamond],[effectLane.x-diamond*.72,laneY],[effectLane.x,laneY-diamond]],palette,diamondAlpha);
     if(critical){const d2=diamond*.62;line([[effectLane.x,laneY-d2],[effectLane.x+d2*.72,laneY],[effectLane.x,laneY+d2],[effectLane.x-d2*.72,laneY],[effectLane.x,laneY-d2]],[1,1,1],p*.38);}
 
