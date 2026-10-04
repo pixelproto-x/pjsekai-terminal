@@ -1213,3 +1213,70 @@
   #dojoGameCard.dojo-live .dojo-hud-combo strong{font-size:clamp(32px,11vw,54px)!important}
   #dojoGameCard.dojo-live .dojo-judge-text{top:69%!important;font-size:clamp(17px,4.4vw,25px)!important}
 }
+
+/* FINAL HUD SHAPE MATCH PASS 2026-10-04 */
+#dojoGameCard.dojo-live .dojo-score-rank>b{
+  position:relative!important;
+  width:39px!important;height:39px!important;
+  display:grid!important;place-items:center!important;
+  font-size:22px!important;
+  line-height:1!important;
+  background:linear-gradient(145deg,rgba(36,45,74,.96),rgba(18,24,48,.96))!important;
+  border:2px solid rgba(255,255,255,.92)!important;
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.75)!important;
+}
+#dojoGameCard.dojo-live .dojo-score-rank>b:after{
+  content:"";position:absolute;inset:4px;
+  border:1px solid rgba(255,255,255,.24);
+  clip-path:inherit;
+}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="S"] .dojo-score-rank>b{background:linear-gradient(145deg,#f76fb7,#8f56d8)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="A"] .dojo-score-rank>b{background:linear-gradient(145deg,#b978e8,#725bd1)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="B"] .dojo-score-rank>b{background:linear-gradient(145deg,#65d9ef,#3f82ca)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="C"] .dojo-score-rank>b{background:linear-gradient(145deg,#62d7c4,#438db9)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="D"] .dojo-score-rank>b{background:linear-gradient(145deg,#8793a6,#515b6c)!important}
+#dojoGameCard.dojo-live .dojo-score-main{
+  grid-template-rows:10px 29px!important;
+}
+#dojoGameCard.dojo-live .dojo-score-caption{
+  font-size:8px!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-score-block:after{
+  box-shadow:0 1px 7px rgba(0,0,0,.46)!important;
+}
+#dojoGameCard.dojo-live .dojo-life{
+  display:flex!important;align-items:stretch!important;
+}
+#dojoGameCard.dojo-live .dojo-life:before{
+  content:"♥ LIFE"!important;
+  left:-49px!important;
+  top:0!important;
+  font-size:8px!important;
+  color:#fff!important;
+  letter-spacing:.02em!important;
+}
+#dojoGameCard.dojo-live .dojo-life:after{
+  right:5px!important;
+  font-size:7px!important;
+}
+#dojoGameCard.dojo-live .dojo-life span{
+  transform:skewX(12deg)!important;
+  transform-origin:right center!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo{
+  top:44%!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo strong{
+  color:#fff!important;
+  text-shadow:0 0 3px rgba(255,255,255,.9),0 3px 18px rgba(0,0,0,.88)!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo span{
+  color:#ff9fd4!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.85)!important;
+}
+@media(max-width:640px){
+  #dojoGameCard.dojo-live .dojo-score-rank>b{width:31px!important;height:31px!important;font-size:18px!important}
+  #dojoGameCard.dojo-live .dojo-score-rank>i{margin-top:0!important}
+  #dojoGameCard.dojo-live .dojo-life:before{left:-40px!important;font-size:7px!important}
+}
