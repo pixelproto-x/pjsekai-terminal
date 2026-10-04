@@ -1022,33 +1022,12 @@ body[data-sekai-theme] .theme-choice.active{
       <button id="dojoGameResetBtn" type="button">↻ 重設</button>
     </div>
   </div>
-  <div class="dojo-game-stage-wrap" id="dojoGameStageWrap">
-    <canvas class="dojo-game-canvas" id="dojoGameCanvas" aria-label="Project SEKAI Dojo 遊戲畫面"></canvas><div class="dojo-live-backdrop" id="dojoLiveBackdrop" aria-hidden="true"></div><div class="dojo-live-lighting" aria-hidden="true"></div>
-    <div class="dojo-game-hud" aria-hidden="true">
-      <div class="dojo-hud-top">
-        <div class="dojo-hud-song"><strong id="dojoHudSongTitle">Tell Your World</strong><span id="dojoHudSongMeta">Expert</span></div>
-        <div class="dojo-hud-score-block">
-          <div class="dojo-score-rank" aria-hidden="true">
-            <b id="dojoScoreRank">C</b>
-            <span class="dojo-score-rank-caption">SCORE<br>RANK</span>
-            <i><em id="dojoScoreRankFill"></em></i>
-            <span>C</span><span>B</span><span>A</span><span>S</span>
-          </div>
-          <div class="dojo-score-main">
-            <span class="dojo-score-caption">SCORE</span>
-            <strong class="dojo-hud-score" id="dojoGameScore">0000000</strong>
-            <small id="dojoGameScoreDelta">+0</small>
-          </div>
-          <span class="dojo-accuracy-hidden">ACC <b id="dojoGameAccuracy">100.00%</b></span>
-        </div>
-      </div>
-      <div class="dojo-life"><span id="dojoGameLifeBar"></span></div>
-      <div class="dojo-hud-combo"><strong id="dojoGameCombo">0</strong><span>COMBO</span></div>
-      <div class="dojo-judge-text" id="dojoJudgeText"></div>
-      <div class="dojo-game-result" id="dojoGameResult" hidden></div>
-    </div>
-    <div class="dojo-input-pad" aria-label="12 軌觸控區"><div class="dojo-input-zone" data-dojo-lane-zone="0"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="1"><span>D</span></div><div class="dojo-input-zone" data-dojo-lane-zone="2"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="3"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="4"><span>F</span></div><div class="dojo-input-zone" data-dojo-lane-zone="5"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="6"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="7"><span>J</span></div><div class="dojo-input-zone" data-dojo-lane-zone="8"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="9"><span></span></div><div class="dojo-input-zone" data-dojo-lane-zone="10"><span>K</span></div><div class="dojo-input-zone" data-dojo-lane-zone="11"><span></span></div></div>
-    <div class="dojo-game-loading" id="dojoGameLoading"><div><strong>正在準備譜面</strong><span>載入歌曲與譜面資料…</span></div></div>
+  <div class="w-full aspect-video rounded-2xl overflow-hidden border-2 border-cyan-400/80 shadow-[0_0_30px_rgba(6,182,212,0.4)] bg-black">
+    <iframe
+      src="https://sonolus.com/web/#server=https%3A%2F%2Fsonolus.sevenc7c.com"
+      class="w-full h-full border-none"
+      allow="autoplay; fullscreen; cross-origin-isolated">
+    </iframe>
   </div>
   <div class="dojo-game-progress"><span id="dojoGameProgressBar"></span></div>
   <div class="dojo-game-controls">
@@ -3357,7 +3336,5 @@ try{syncBottomBarIndicator();}catch(e){console.warn("[Route] indicator sync fail
 <script src="story-resource.js" defer></script>
 <script src="system-settings.js" defer></script>
 <script src="dojo-catalog.js?v=20260930-final1" defer></script>
-<script src="dojo-sekai-reference.js?v=20261004-final20"></script>
-<script src="dojo-webgl.js?v=20261004-final20"></script>
 </body>
 </html>
