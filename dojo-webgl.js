@@ -264,9 +264,12 @@ function susToPlayable(text,baseBpm=120){
   const atTick=t=>beatToSec(t/score.ticksPerBeat,changes,baseBpm);  const timeScaleChanges=score.timeScaleChanges.map(x=>({tick:x.tick,sec:atTick(x.tick),timeScale:N(x.timeScale,1)})).sort((a,b)=>a.sec-b.sec);
   const key=n=>n.lane+"-"+Math.round(n.tick);
   const flick=new Map(),trace=new Set(),critical=new Set(),removeSE=new Set(),easeIn=new Set(),easeOut=new Set();
-  // Public Next-SEKAI SUS semantics: directional types are 1=up, 3=left, 4=right.
-  // Types 2/5/6 are easing modifiers and are not flick directions.
-  const directionName=t=>({1:"up",3:"left",4:"right"}[Number(t)]||null);
+  // Project SEKAI SUS directional overlaps:
+  // 1 = up, 2 = down, 3 = left-up, 4 = right-up,
+  // 5 = left-down, 6 = right-down.
+  const directionName=t=>({
+    1:"up",2:"down",3:"up-left",4:"up-right",5:"down-left",6:"down-right"
+  }[Number(t)]||null);
   for(const n of score.directionalNotes){
     const k=key(n),dir=directionName(n.type);
     if(dir)flick.set(k,dir);
@@ -640,9 +643,23 @@ function drawDirectionalArrow(x,y,w,dir,col,a=1){
   }
   poly(pts,col,a);
 }
+function drawNoteSlot(lane,size,critical=false,type="tap",alpha=1){
+  const ref=window.__PJSEKAI_SEKAI_REF__,g=ref?.geom;
+  if(!ref?.persp||!g)return;
+  const m=app().dojo||{},logical=(m.mirror?11-lane:lane)-5.5;
+  const s=Math.max(.36,Math.min(1.5,size||.5));
+  const q=ref.persp(logical-s,logical+s,1-(g.noteH||.033),1+(g.noteH||.033),1);
+  const col=critical?[1,.84,.20]:type==="flick"?[1,.22,.38]:type==="trace"?[.20,1,.70]:[.28,.90,1];
+  const fillA=alpha*.12,edgeA=alpha*.92;
+  poly(q.map(p=>[p.x,p.y]),col,fillA);
+  line([[q[0].x,q[0].y],[q[1].x,q[1].y],[q[2].x,q[2].y],[q[3].x,q[3].y],[q[0].x,q[0].y]],col,edgeA);
+}
 function drawNote(n,now){
   const travel=travelAt(now,n.hit),settings=app().dojo||{},ref=window.__PJSEKAI_SEKAI_REF__;
   if(settings.sudden&&travel<0.34)return;
+  if(ref?.geom?.ws&&travel>.72){
+    drawNoteSlot(n.l,Math.max(.5,(n.w||1)*.5),!!n.c,n.f?"flick":n.t?"trace":"tap",cl((travel-.72)/.28,0,1)*.82);
+  }
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1,p=cl(travel,0,1);
   if(ref?.geom?.ws){
     const mirror=!!settings.mirror,lane=(mirror?11-n.l:n.l)-5.5,size=Math.max(.5,(n.w||1)*.5);
@@ -718,6 +735,9 @@ function drawSlideRibbon(n,now,tailOnly=false){
     ref.drawBody(headKind,hx,hs,hp,hidden?.70:.98);
   }
   const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tx=(mirror?11-tail.l:tail.l)-5.5,ts=Math.max(.5,(tail.w||n.w)*.5);
+  if(ref?.geom?.ws&&tp>.72){
+    drawNoteSlot(tail.l,ts,!!tail.critical,tail.dir?"flick":tail.trace?"trace":"tap",cl((tp-.72)/.28,0,1)*.86);
+  }
   if(n.end>=now-S.lead&&ref?.geom?.ws){
     if(tail.dir)ref.drawArrow(n.c?"crtcl":"normal",tx,ts,tp,tail.dir,1);
     else if(tail.trace&&tail.dir)ref.drawBody(tail.critical?"traceFlickC":"traceFlick",tx,ts,tp,.92);
