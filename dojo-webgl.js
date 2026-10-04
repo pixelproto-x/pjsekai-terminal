@@ -1019,7 +1019,9 @@ function hud(judgment,error=0){
   const put=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
   const maxScore=Math.max(1,S.notes.reduce((sum,n)=>{const base=n.t==="trace"?(n.c?2:1):(n.f?(n.c?30:10):(n.c?20:10));return sum+base},0)*2),ratio=cl(S.score/maxScore,0,1),rank=ratio>=.90?"S":ratio>=.80?"A":ratio>=.70?"B":ratio>=.60?"C":"D";
   put("dojoGameScore",String(Math.max(0,Math.floor(S.score))).padStart(7,"0"));
-  put("dojoScoreRank",rank);put("dojoScoreRankFill",(ratio*100).toFixed(1)+"%");put("dojoGameScoreDelta","+"+Math.max(0,Math.floor(S.score-(S.lastHudScore||0))));
+  put("dojoScoreRank",rank);
+  const rankFill=$("dojoScoreRankFill");if(rankFill)rankFill.style.width=(ratio*100).toFixed(1)+"%";
+  put("dojoGameScoreDelta","+"+Math.max(0,Math.floor(S.score-(S.lastHudScore||0))));
   const scoreBlock=document.querySelector("#dojoGameCard .dojo-hud-score-block");
   if(scoreBlock)scoreBlock.style.setProperty("--dojo-rank-progress",(ratio*100).toFixed(2)+"%");scoreBlock?.setAttribute("data-rank",rank);S.lastHudScore=S.score;
   put("dojoGameCombo",S.combo);
