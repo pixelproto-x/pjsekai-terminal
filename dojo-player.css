@@ -1319,3 +1319,33 @@
 #dojoGameCard.dojo-live #dojoGameCanvas{z-index:4!important}
 #dojoGameCard.dojo-live .dojo-input-pad{z-index:12!important}
 #dojoGameCard.dojo-live .dojo-game-hud{z-index:20!important}
+
+/* OFFICIAL HUD RECTANGULAR SCORE BADGE PASS 2026-10-04 */
+#dojoGameCard.dojo-live .dojo-score-rank>b{
+  width:43px!important;height:43px!important;
+  display:grid!important;place-items:center!important;
+  clip-path:polygon(0 0,91% 0,100% 14%,100% 100%,7% 100%,0 86%)!important;
+  border:0!important;border-radius:0!important;
+  background:linear-gradient(145deg,#73d9eb,#4d74bf)!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.55)!important;
+  font:1000 25px/1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  letter-spacing:-.02em!important;
+}
+#dojoGameCard.dojo-live .dojo-score-rank>b:after{display:none!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="S"] .dojo-score-rank>b{background:linear-gradient(145deg,#ff78bf,#9258d5)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="A"] .dojo-score-rank>b{background:linear-gradient(145deg,#c27aef,#695bd1)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="B"] .dojo-score-rank>b{background:linear-gradient(145deg,#70dcef,#4c77c4)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="C"] .dojo-score-rank>b{background:linear-gradient(145deg,#72e2e8,#4f83c6)!important}
+#dojoGameCard.dojo-live .dojo-hud-score-block[data-rank="D"] .dojo-score-rank>b{background:linear-gradient(145deg,#8a96a7,#596274)!important}
+#dojoGameCard.dojo-live .dojo-score-rank>i{
+  margin-top:2px!important;width:40px!important;height:5px!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-score{
+  font-variant-numeric:tabular-nums!important;
+  text-shadow:0 2px 9px rgba(0,0,0,.86)!important;
+}
+#dojoGameCard.dojo-live .dojo-hud-combo{top:42%!important}
+@media(max-width:640px){
+  #dojoGameCard.dojo-live .dojo-score-rank>b{width:34px!important;height:34px!important;font-size:20px!important}
+  #dojoGameCard.dojo-live .dojo-score-rank>i{width:32px!important;height:4px!important}
+}
