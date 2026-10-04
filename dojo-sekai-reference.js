@@ -378,6 +378,21 @@ function arcStrip(q,n=12){
   }
   return out;
 }
+function layoutSimLine(leftLane,leftTravel,rightLane,rightTravel){
+  let ll=leftLane,rr=rightLane,lt=leftTravel,rt=rightTravel;
+  if(ll>rr){[ll,rr]=[rr,ll];[lt,rt]=[rt,lt]}
+  const g=state.geom;
+  const ml=arcRaw({x:ll*lt*g.ws,y:lt*g.hs+g.t});
+  const mr=arcRaw({x:rr*rt*g.ws,y:rt*g.hs+g.t});
+  const dx=mr.x-ml.x,dy=mr.y-ml.y,mag=Math.hypot(dx,dy)||1,ux=-dy/mag,uy=dx/mag;
+  const h=g.noteH*g.hs;
+  return arcStrip([
+    {x:ml.x+ux*h*lt,y:ml.y+uy*h*lt},
+    {x:mr.x+ux*h*rt,y:mr.y+uy*h*rt},
+    {x:mr.x-ux*h*rt,y:mr.y-uy*h*rt},
+    {x:ml.x-ux*h*lt,y:ml.y-uy*h*lt}
+  ],12);
+}
 function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,endSize,endTravel,n){
   if(startTravel<endTravel){
     [startLane,endLane]=[endLane,startLane];
@@ -418,7 +433,7 @@ function drawStage(spriteDraw){
   }
 }
 window.__PJSEKAI_SEKAI_REF__={
-  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,layoutStageCover,layoutHiddenCover,layoutLaneEffect,
+  BASE,assets,arrowSize,layout,approach,preempt,noteBodyQuads,tickQuad,arcN,arcStrip,connectorN,loadAll,attach,drawImage,drawBody,drawArrow,drawTick,drawConnection,layoutSlideConnectorSegment,layoutSimLine,stagePoint,screenPoint,persp,layoutHitbox,hitboxAtLane,layoutStageCover,layoutHiddenCover,layoutLaneEffect,
   get geom(){return state.geom},
   logicalPoint,
   hasSprite,
