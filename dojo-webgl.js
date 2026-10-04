@@ -657,9 +657,6 @@ function drawNoteSlot(lane,size,critical=false,type="tap",alpha=1){
 function drawNote(n,now){
   const travel=travelAt(now,n.hit),settings=app().dojo||{},ref=window.__PJSEKAI_SEKAI_REF__;
   if(settings.sudden&&travel<0.34)return;
-  if(ref?.geom?.ws&&travel>.72){
-    drawNoteSlot(n.l,Math.max(.5,(n.w||1)*.5),!!n.c,n.f?"flick":n.t?"trace":"tap",cl((travel-.72)/.28,0,1)*.82);
-  }
   const alpha=settings.hidden?cl((travel-0.14)/0.40,0.025,1):1,p=cl(travel,0,1);
   if(ref?.geom?.ws){
     const mirror=!!settings.mirror,lane=(mirror?11-n.l:n.l)-5.5,size=Math.max(.5,(n.w||1)*.5);
@@ -735,9 +732,6 @@ function drawSlideRibbon(n,now,tailOnly=false){
     ref.drawBody(headKind,hx,hs,hp,hidden?.70:.98);
   }
   const tail=n.tail||n.path[n.path.length-1],tp=cl(travelAt(now,n.end),0,1),tx=(mirror?11-tail.l:tail.l)-5.5,ts=Math.max(.5,(tail.w||n.w)*.5);
-  if(ref?.geom?.ws&&tp>.72){
-    drawNoteSlot(tail.l,ts,!!tail.critical,tail.dir?"flick":tail.trace?"trace":"tap",cl((tp-.72)/.28,0,1)*.86);
-  }
   if(n.end>=now-S.lead&&ref?.geom?.ws){
     if(tail.dir)ref.drawArrow(n.c?"crtcl":"normal",tx,ts,tp,tail.dir,1);
     else if(tail.trace&&tail.dir)ref.drawBody(tail.critical?"traceFlickC":"traceFlick",tx,ts,tp,.92);
@@ -834,7 +828,7 @@ function drawMultiTapGuide(now){
 function drawStage(){
   const ref=window.__PJSEKAI_SEKAI_REF__,h=S.geom;
   if(ref?.geom?.ws){
-    const g=ref.geom,laneQuad=(l,r)=>ref.perspRaw?ref.perspRaw(l,r,g.laneTop,g.laneBottom,1).map(v=>{const a=ref.arcPoint(v);return a}):ref.persp(l,r,g.laneTop,g.laneBottom,1);
+    const g=ref.geom;
     poly([[h.tl,h.far],[h.tr,h.far],[h.br,h.hit+30],[h.bl,h.hit+30]],[.012,.025,.065],.64);
     // Reference-style floor plane and perspective grid: keep it subtle so the
     // actual public note/stage sprites remain the visual authority.
@@ -852,13 +846,28 @@ function drawStage(){
     drawSkinPerspective("#STAGE_LEFT_BORDER",left,.98);
     drawSkinPerspective("#STAGE_RIGHT_BORDER",right,.98);
     const laneSprite=S.skin?.sprites?.["#LANE"];
-    for(const lane of [-5,-3,-1,1,3,5]){
-      const q=ref.persp(lane-1,lane+1,g.laneTop,g.laneBottom,1);
-      if(laneSprite)drawSkinPerspective("#LANE",q,.88);
+    // Six continuous 2-lane lane-background panels reproduce the public
+    // Next-SEKAI stage texture while the per-lane seams are drawn separately.
+    for(const panel of [-5,-3,-1,1,3,5]){
+      const q=ref.persp(panel-1,panel+1,g.laneTop,g.laneBottom,1);
+      if(laneSprite)drawSkinPerspective("#LANE",q,.86);
       else poly(q.map(p=>[p.x,p.y]),[.08,.13,.24],.055);
     }
+    // Twelve lane divisions meet the judgment line exactly at the canonical
+    // lane coordinates instead of relying on the width of the texture atlas.
+    for(let i=1;i<12;i++){
+      const x=-6+i;
+      const q=ref.persp(x-.0105,x+.0105,g.laneTop,1+g.noteH,1);
+      if(laneSprite)drawSkinPerspective("#LANE",q,.16);
+      else line([[q[0].x,q[0].y],[q[2].x,q[2].y]],[.86,.90,1],.12);
+    }
     const judge=ref.persp(-6,6,1-g.noteH,1+g.noteH,1);
-    drawSkinPerspective("#JUDGMENT_LINE",judge,.98);
+    drawSkinPerspective("#JUDGMENT_LINE",judge,1);
+    // Soft judge-line bloom; the sprite remains the primary line.
+    const jc=ref.logicalPoint?ref.logicalPoint(0,1):ref.screenPoint(0,1,1);
+    if(jc?.x!=null){
+      for(let z=3;z>=1;z--)line([[h.bl+(h.br-h.bl)*.04,h.hit-z],[h.br-(h.br-h.bl)*.04,h.hit-z]],[.82,.94,1],.06*z);
+    }
     const flashNow=performance.now();
     for(let i=0;i<12;i++){
       const left=-6+i,right=left+1;
@@ -976,13 +985,6 @@ function effects(dt){
     if(critical){const d2=diamond*.62;line([[effectLane.x,laneY-d2],[effectLane.x+d2*.72,laneY],[effectLane.x,laneY+d2],[effectLane.x-d2*.72,laneY],[effectLane.x,laneY-d2]],[1,1,1],p*.38);}
 
 
-    const slotName=critical?"#SIMULTANEOUS_MARKER_YELLOW":"#SIMULTANEOUS_MARKER_NEUTRAL";
-    if(S.skin?.sprites?.[slotName]){
-      const slotW=Math.max(18,g.ws*2.35),slotH=Math.max(18,g.height*.020);
-      const slotAlpha=p*(critical?.34:.18);
-      const lanePoint=ref.logicalPoint?ref.logicalPoint(lane,1):ref.screenPoint(lane,1,1);
-      drawSkinSprite(slotName,lanePoint.x,lanePoint.y,slotW,slotH,slotAlpha);
-    }
     if(!usedPublicParticles){
       circle(effectLane.x,effectLane.y,rr,palette,p*.48,28);
       circle(effectLane.x,effectLane.y,Math.max(3,rr*.42),[1,1,1],p*.72,20);
