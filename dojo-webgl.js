@@ -807,18 +807,18 @@ function drawMultiTapGuide(now){
     if(group.length<2)continue;
     const ref=window.__PJSEKAI_SEKAI_REF__;
     const ordered=group.slice().sort((a,b)=>a.l-b.l);
+    let pts=ordered.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return{n,x:laneX(n.l,p),y:q.y,p}}).sort((a,b)=>a.x-b.x);
     if(ref?.layoutSimLine&&ordered.length>=2){
       const a=ordered[0],b=ordered[ordered.length-1];
       const pa=cl(travelAt(now,a.hit),0,1),pb=cl(travelAt(now,b.hit),0,1);
       const qa=ref.layoutSimLine((app().dojo?.mirror?11-a.l:a.l)-5.5,pa,(app().dojo?.mirror?11-b.l:b.l)-5.5,pb);
       const simKind=ordered.some(n=>n.c)?"#SIMULTANEOUS_CONNECTION_YELLOW":"#SIMULTANEOUS_CONNECTION_NEUTRAL";
-      if(S.skin?.sprites?.[simKind])for(const q of qa)drawSkinPerspective(simKind,q,.88);
-      else{
-        const pts=ordered.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return{n,x:laneX(n.l,p),y:q.y}}); 
+      if(S.skin?.sprites?.[simKind]){
+        for(const q of qa)drawSkinPerspective(simKind,q,.88);
+      }else{
         for(let i=0;i<pts.length-1;i++)line([[pts[i].x,pts[i].y],[pts[i+1].x,pts[i+1].y]],[.82,.92,1],.28);
       }
     }else{
-      const pts=group.map(n=>{const p=cl(travelAt(now,n.hit),0,1),q=stageAt(p);return{n,x:laneX(n.l,p),y:q.y,p}}).sort((a,b)=>a.x-b.x);
       for(let i=0;i<pts.length-1;i++){
         line([[pts[i].x,pts[i].y],[pts[i+1].x,pts[i+1].y]],[.82,.92,1],.28);
         line([[pts[i].x,pts[i].y-2],[pts[i+1].x,pts[i+1].y-2]],[1,1,1],.14);
