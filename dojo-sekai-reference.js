@@ -171,8 +171,8 @@ function perspRaw(l,r,t,b,travel){
   const g=state.geom,cv=(x,y)=>transformPoint(x*y*travel*g.ws,y*travel*g.hs+g.t);
   return[cv(l,t),cv(r,t),cv(r,b),cv(l,b)];
 }
-function persp(l,r,t,b,travel){
-  return perspRaw(l,r,t,b,travel).map(arcRaw).map(rawLogical);
+function persp(l,r,t,b,progress){
+  return perspRaw(l,r,t,b,approach(progress)).map(arcRaw).map(rawLogical);
 }
 function arcQuad(q){
   return q.map(v=>rawLogical(arcRaw(v).x,arcRaw(v).y));
@@ -180,7 +180,7 @@ function arcQuad(q){
 function noteBodyQuads(lane,size,travel,slim=false){
   const g=state.geom,margin=0,edge=slim?.125:.25,h=g.noteH;
   const l=lane-size+margin,r=lane+size-margin,m=(l+r)/2,ml=Math.min(l+edge,m),mr=Math.max(r-edge,m);
-  const rect=(a,b)=>perspRaw(a,b,1-h,1+h,travel);
+  const rect=(a,b)=>perspRaw(a,b,1-h,1+h,approach(travel));
   const left=rect(l,ml),right=rect(mr,r),mid=rect(ml,mr);
   return{left:arcQuad(left),middle:arcMiddle(mid,g),right:arcQuad(right),whole:arcQuad(rect(l,r))};
 }
@@ -207,15 +207,15 @@ function arcMiddle(q,g){
   }
   return out;
 }
-function logicalPoint(lane,travel){
-  const g=state.geom,v={x:lane*travel*g.ws,y:travel*g.hs+g.t},a=arcRaw(v);
+function logicalPoint(lane,progress){
+  const g=state.geom,travel=approach(progress),v={x:lane*travel*g.ws,y:travel*g.hs+g.t},a=arcRaw(v);
   return rawLogical(a.x,a.y);
 }
 function mapLogical(v){
   return v;
 }
-function tickQuad(lane,travel){
-  const g=state.geom,raw={x:lane*travel*g.ws,y:travel*g.hs+g.t};
+function tickQuad(lane,progress){
+  const g=state.geom,travel=approach(progress),raw={x:lane*travel*g.ws,y:travel*g.hs+g.t};
   const center=arcRaw(raw);
   const l=arcRaw({x:raw.x-g.scaledNoteH*travel,y:raw.y});
   const rr=arcRaw({x:raw.x+g.scaledNoteH*travel,y:raw.y});
@@ -231,16 +231,17 @@ function arrowQuad(lane,size,travel,direction,animationProgress){
   const isDown=d==="down"||d==="down-left"||d==="down-right";
   const reverse=d==="right"||d==="down-right";
   const topOffset=d==="left"?-1:d==="right"?1:d==="up-left"?-1:d==="up-right"?1:d==="down-left"?1:d==="down-right"?-1:0;
+  const travelDepth=approach(travel);
   const w=cl(size,0,3)/2;
-  const baseL=arcRaw({x:(lane-w)*travel*g.ws,y:travel*g.hs+g.t});
-  const baseR=arcRaw({x:(lane+w)*travel*g.ws,y:travel*g.hs+g.t});
+  const baseL=arcRaw({x:(lane-w)*travelDepth*g.ws,y:travelDepth*g.hs+g.t});
+  const baseR=arcRaw({x:(lane+w)*travelDepth*g.ws,y:travelDepth*g.hs+g.t});
   const dx=baseR.x-baseL.x,dy=baseR.y-baseL.y;
   const up=rotate({x:dx,y:dy},Math.PI/2);
   const baseTL={x:baseL.x+up.x,y:baseL.y+up.y};
   const baseTR={x:baseR.x+up.x,y:baseR.y+up.y};
   const offsetScale=isDown?1-animationProgress:animationProgress;
   const oa=rotate({x:topOffset*g.ws,y:2*g.ws},Math.atan2(up.y,up.x)-Math.PI/2);
-  const offset={x:oa.x*offsetScale*travel,y:oa.y*offsetScale*travel};
+  const offset={x:oa.x*offsetScale*travelDepth,y:oa.y*offsetScale*travelDepth};
   let q=[
     {x:baseL.x+offset.x,y:baseL.y+offset.y},
     {x:baseR.x+offset.x,y:baseR.y+offset.y},
@@ -349,8 +350,8 @@ function layoutHitbox(l,r){
   return arcStrip(q,12);
 }
 function hitboxAtLane(lane,size=0.5){return layoutHitbox(lane-size,lane+size);}
-function stagePoint(lane,travel){
-  const g=state.geom,p=persp(lane+.0,lane+.0,1,1,travel),a=p[0];return {x:a.x,y:a.y};
+function stagePoint(lane,progress){
+  const g=state.geom,p=persp(lane+.0,lane+.0,1,1,progress),a=p[0];return {x:a.x,y:a.y};
 }
 function hasSprite(name){return !!images.get(name)?.naturalWidth;}
 function drawEffect(name,x,y,progress=1){
@@ -382,6 +383,7 @@ function layoutSimLine(leftLane,leftTravel,rightLane,rightTravel){
   let ll=leftLane,rr=rightLane,lt=leftTravel,rt=rightTravel;
   if(ll>rr){[ll,rr]=[rr,ll];[lt,rt]=[rt,lt]}
   const g=state.geom;
+  lt=approach(lt);rt=approach(rt);
   const ml=arcRaw({x:ll*lt*g.ws,y:lt*g.hs+g.t});
   const mr=arcRaw({x:rr*rt*g.ws,y:rt*g.hs+g.t});
   const dx=mr.x-ml.x,dy=mr.y-ml.y,mag=Math.hypot(dx,dy)||1,ux=-dy/mag,uy=dx/mag;
@@ -399,6 +401,7 @@ function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,end
     [startSize,endSize]=[endSize,startSize];
     [startTravel,endTravel]=[endTravel,startTravel];
   }
+  startTravel=approach(startTravel);endTravel=approach(endTravel);
   const g=state.geom;
   const q=[
     {x:(startLane-startSize)*startTravel*g.ws,y:startTravel*g.hs+g.t},
@@ -411,6 +414,7 @@ function layoutSlideConnectorSegment(startLane,startSize,startTravel,endLane,end
 function connectorN(startLane,startSize,startTravel,endLane,endSize,endTravel){
   let sl=startLane,ss=startSize,st=startTravel,el=endLane,es=endSize,et=endTravel;
   if(st<et){[sl,el]=[el,sl];[ss,es]=[es,ss];[st,et]=[et,st]}
+  st=approach(st);et=approach(et);
   const g=state.geom,bl={x:(sl-ss)*st*g.ws,y:st*g.hs+g.t},br={x:(sl+ss)*st*g.ws,y:st*g.hs+g.t};
   const radius=Math.abs(g.t-br.y)||1,wScale=Math.abs(br.x-bl.x)*20,hAdj=wScale/radius*.5;
   return Math.max(1,Math.ceil(Math.min(wScale,Math.abs(hAdj))));
