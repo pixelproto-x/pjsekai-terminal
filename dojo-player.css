@@ -1280,3 +1280,42 @@
   #dojoGameCard.dojo-live .dojo-score-rank>i{margin-top:0!important}
   #dojoGameCard.dojo-live .dojo-life:before{left:-40px!important;font-size:7px!important}
 }
+
+/* FINAL LIVE-STAGE DEPTH PASS 2026-10-04 */
+#dojoGameCard.dojo-live .dojo-live-backdrop{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(ellipse at 50% 100%,rgba(24,75,124,.34),transparent 43%),
+    radial-gradient(ellipse at 10% 55%,rgba(34,71,150,.16),transparent 31%),
+    radial-gradient(ellipse at 90% 55%,rgba(132,30,119,.16),transparent 33%),
+    linear-gradient(180deg,#050919 0%,#0b1024 46%,#080817 100%)!important;
+  transform:scale(1.04);
+  filter:saturate(1.05);
+}
+#dojoGameCard.dojo-live .dojo-live-lighting{
+  z-index:1!important;
+  opacity:.52!important;
+  background:
+    radial-gradient(ellipse at 50% 88%,rgba(159,111,255,.10),transparent 34%),
+    linear-gradient(105deg,transparent 0 35%,rgba(83,174,255,.045) 43%,transparent 49%),
+    linear-gradient(75deg,transparent 0 51%,rgba(255,92,211,.045) 57%,transparent 65%)!important;
+  animation:dojoStageLightBreath 5.5s ease-in-out infinite alternate!important;
+}
+#dojoGameCard.dojo-live .dojo-wgl-overlay{
+  z-index:2!important;
+  background:
+    linear-gradient(180deg,rgba(2,5,14,.12),transparent 22%,transparent 68%,rgba(0,0,0,.30)),
+    radial-gradient(ellipse at center,transparent 38%,rgba(0,0,0,.34) 100%)!important;
+}
+@keyframes dojoStageLightBreath{
+  from{opacity:.38;transform:scale(1)}
+  to{opacity:.62;transform:scale(1.025)}
+}
+#dojoGameCard.dojo-live #dojoGameCanvas{z-index:4!important}
+#dojoGameCard.dojo-live .dojo-input-pad{z-index:12!important}
+#dojoGameCard.dojo-live .dojo-game-hud{z-index:20!important}
