@@ -397,13 +397,12 @@ function wireDetail(){
 function loadVotes(){
   try{state.votes=JSON.parse(localStorage.getItem('pjsekai-chart-votes')||'{}')||{};}catch(_){state.votes={};}
 }
-async function selectSong(id,notify=true){
+async function selectSong(id){
   const s=state.songs.find(x=>x.id===Number(id));if(!s)return;
   state.selected=s;
   if(!levelOf(s,state.selectedDiff) || state.selectedDiff==='')state.selectedDiff=DIFFS.find(d=>levelOf(s,d))||'expert';
   renderList();renderDetail();
   try{localStorage.setItem('pjsekai-chart-last-song',String(s.id));}catch(_){}
-  if(notify)APP?.toast?.('已選擇：'+(s.title||'歌曲'));
 }
 function bind(){
   $('caSearch')?.addEventListener('input',e=>{state.search=e.target.value;filterSongs();});
