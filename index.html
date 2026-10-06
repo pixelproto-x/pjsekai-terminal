@@ -1065,7 +1065,6 @@ body[data-sekai-theme] .theme-choice.active{
     <div id="cardGalleryMount"></div>
     <div id="gachaSimulatorMount"></div>
     <div class="catalog-grid">
-      <button class="catalog-card" data-gacha-scroll type="button"><span class="tiny-icon" style="background:var(--violet)">✦</span><span class="arrow">⌃</span><h3>抽卡模擬器</h3><p>最新卡池、十連、Spark 與紀錄。</p></button>
       <button class="catalog-card" data-sheet="card-favorite"><span class="tiny-icon" style="background:var(--pink)">♡</span><span class="arrow">⌃</span><h3>我的收藏</h3><p>集中你保存的卡片。</p></button>
       <button class="catalog-card" data-sheet="card-trained"><span class="tiny-icon" style="background:var(--cyan)">★</span><span class="arrow">⌃</span><h3>特訓狀態</h3><p>查看卡片進度相關入口。</p></button>
       <button class="catalog-card" data-sheet="card-unit"><span class="tiny-icon" style="background:var(--orange)">◎</span><span class="arrow">⌃</span><h3>團體分類</h3><p>依角色團體快速瀏覽。</p></button>
@@ -2619,17 +2618,36 @@ function toggleHomeAccordion(card){
   
 }
 
-const homeActionRoutes={
-  "home-songs-0":"songs",
-  "home-sekai-0":"sekai",
-  "home-characters-0":"characters",
-  "home-cards-0":"cards",
-  "home-events-0":"events",
-  "home-tools-0":"tools",
-  "home-tools-2":"tools",
-  "home-tools-4":"songs",
-  "home-profile-0":"profile"
-};
+function resolveHomeActionRoute(key){
+  const k=String(key||"");
+  if(k.startsWith("home-songs-"))return"songs";
+  if(k.startsWith("home-sekai-"))return"sekai";
+  if(k.startsWith("home-characters-"))return"characters";
+  if(k.startsWith("home-cards-"))return"cards";
+  if(k.startsWith("home-events-"))return"events";
+  if(k.startsWith("home-tools-")){
+    const i=Number(k.split("-").pop());
+    return i===4?"songs":"tools";
+  }
+  if(k.startsWith("home-profile-"))return"profile";
+  return"home";
+}
+function resolveAccordionRoute(key){
+  const k=String(key||"");
+  const root=k.split("-")[0];
+  if(["classroom","stage","street","wonderland","empty","virtual"].includes(root))return"sekai";
+  if(root==="unit"||k.startsWith("unit-"))return"characters";
+  if(root==="song"||k.startsWith("song-"))return"songs";
+  if(root==="card"||k.startsWith("card-"))return"cards";
+  if(root==="event"||k.startsWith("event-"))return k.startsWith("event-calc-")?"tools":"events";
+  if(k.startsWith("player-profile")||k.startsWith("rhythm-lab")||k.startsWith("recent"))return k.startsWith("rhythm-lab")?"songs":"profile";
+  if(k.startsWith("event-tool"))return"tools";
+  if(k.startsWith("music-tool"))return"songs";
+  if(k.startsWith("card-tool"))return"cards";
+  if(k.startsWith("settings"))return"tools";
+  if(k.startsWith("news")||k.startsWith("about")||k.startsWith("favorites"))return"home";
+  return"home";
+}
 document.addEventListener("click",e=>{
   const home=e.target.closest(".app-card[data-home-sheet]");
   if(home){toggleHomeAccordion(home);return;}
@@ -2637,25 +2655,16 @@ document.addEventListener("click",e=>{
   if(s){toggleAccordion(s);return;}
   const action=e.target.closest("[data-accordion-action]");
   if(action){
-    action.querySelector("span").textContent="✓";
-    const label=action.querySelector("strong")?.textContent||"此功能";
-    showToast("「"+label+"」"+t("功能即將推出"));
-    setTimeout(()=>{ action.querySelector("span").textContent="›"; },650);
+    const key=String(action.dataset.accordionAction||"");
+    const target=resolveAccordionRoute(key);
+    if(target)go(target);
     return;
   }
   const homeAction=e.target.closest("[data-home-action]");
   if(homeAction){
-    const key=homeAction.dataset.homeAction;
-    homeAction.querySelector("span").textContent="✓";
-    const target=homeActionRoutes[key] || (key.startsWith("event-calc-")?"tools":null);
-    if(target){
-      showToast(t("正在開啟")+" "+(homeAction.querySelector("strong")?.textContent||t("入口")));
-      setTimeout(()=>go(target),140);
-    }else{
-      const label=homeAction.querySelector("strong")?.textContent||"此功能";
-      showToast("「"+label+"」功能即將推出");
-    }
-    setTimeout(()=>{ homeAction.querySelector("span").textContent="›"; },650);
+    const key=String(homeAction.dataset.homeAction||"");
+    const target=resolveHomeActionRoute(key);
+    if(target)go(target);
   }
 });
 
@@ -3289,7 +3298,7 @@ window.__PJSEKAI_APP__ = {
 <script src="my-sekai.js" defer></script>
 <script src="dojo-controls.js" defer></script>
 <script src="event-calc.js" defer></script>
-<script src="chart-analyzer.js?v=20261006-ui-text-fix" defer></script>
+<script src="chart-analyzer.js?v=20261006-button-audit" defer></script>
 <script src="system-settings.js" defer></script>
 </body>
 </html>
