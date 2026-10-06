@@ -4,7 +4,10 @@ const errors = [];
 const pageErrors = [];
 const failedLocalRequests = [];
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  args: ['--autoplay-policy=no-user-gesture-required'],
+});
 const page = await browser.newPage({
   viewport: { width: 1280, height: 720 },
   deviceScaleFactor: 1,
