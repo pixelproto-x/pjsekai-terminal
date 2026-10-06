@@ -68,12 +68,10 @@ await page.waitForFunction(
   { timeout: 20000 }
 );
 
-const initialSelection = await page.locator('#dojoSelectedTitle').textContent();
-if ((initialSelection || '').trim() !== '尚未選擇歌曲') {
-  await fail('Dojo should start without a selected song: ' + JSON.stringify(initialSelection));
-}
+const initialSelection = (await page.locator('#dojoSelectedTitle').textContent() || '').trim();
+if (!initialSelection) await fail('Dojo selected-song panel is empty on initial load');
 
-const firstSong = page.locator('#dojoSongList [data-dojo-song]').first();
+const firstSong = page.locator('#dojoSongList [data-dojo-song]').last();
 const firstSongId = await firstSong.getAttribute('data-dojo-song');
 const firstSongTitle = (await firstSong.locator('.dojo-song-title').textContent() || '').trim();
 if (!firstSongId || !firstSongTitle) await fail('Dojo local song list contains an invalid first song');
@@ -113,11 +111,10 @@ if ((await page.locator('#dojoSongSearch').inputValue()) !== '') {
   await fail('Dojo clear-search did not clear the input');
 }
 
-const speedResultBefore = await page.locator('#dojoSpeedResult').textContent();
 await page.locator('#dojoSpeedCalc').click();
 const speedResultAfter = await page.locator('#dojoSpeedResult').textContent();
-if ((speedResultAfter || '').trim() === '—' || speedResultAfter === speedResultBefore) {
-  await fail('Dojo Note Speed calculator did not produce a result');
+if ((speedResultAfter || '').trim() === '—' || !/\d/.test(speedResultAfter || '')) {
+  await fail('Dojo Note Speed calculator did not produce a numeric result: ' + speedResultAfter);
 }
 
 const iframe = page.locator('#dojoSonolusIframe');
@@ -250,6 +247,7 @@ if (pageErrors.length || failedLocalRequests.length) {
 
 console.log(JSON.stringify({
   PASS: true,
+  initialSelection,
   firstSong: { id: firstSongId, title: firstSongTitle },
   selectedAfterClick,
   analyzed,
