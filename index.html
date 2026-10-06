@@ -2573,8 +2573,11 @@ function toggleAccordion(card){
   if(!data || !container)return;
   const old=card.nextElementSibling;
   if(old && old.classList.contains("accordion-panel")){
-    animatePanelClose(old,card,"expanded",card.querySelector(".arrow"));
+    old.remove();
+    card.classList.remove("expanded");
     card.setAttribute("aria-expanded","false");
+    const arrow=card.querySelector(".arrow");
+    if(arrow)arrow.textContent="⌃";
     return;
   }
   container.querySelectorAll(".catalog-card.expanded").forEach(open=>{
@@ -2607,8 +2610,11 @@ function toggleHomeAccordion(card){
   if(!data || !container)return;
   const old=card.nextElementSibling;
   if(old && old.classList.contains("home-accordion-panel")){
-    animatePanelClose(old,card,"home-card-expanded",card.querySelector(".chev"));
+    old.remove();
+    card.classList.remove("home-card-expanded");
     card.setAttribute("aria-expanded","false");
+    const chev=card.querySelector(".chev");
+    if(chev)chev.textContent="⌃";
     return;
   }
   container.querySelectorAll(".app-card.home-card-expanded").forEach(open=>{
