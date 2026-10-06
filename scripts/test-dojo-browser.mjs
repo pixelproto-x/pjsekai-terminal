@@ -88,7 +88,9 @@ await page.locator('#homeBrand').click();
 await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 
 // Switching to Cards leaves Characters collapsed and only the clicked Cards card expanded.
-await page.locator('.home-grid .app-card[data-home-sheet="home-cards"]').click();
+const cardsAccordionCard = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
+await cardsAccordionCard.scrollIntoViewIfNeeded();
+await cardsAccordionCard.click();
 const accordionAfterCards = await page.evaluate(() => ({
   characterClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]')?.className || '',
   cardsClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]')?.className || '',
@@ -102,7 +104,8 @@ if (!accordionAfterCards.cardsClass.includes('home-card-expanded') || accordionA
 }
 
 // Close Cards by clicking the same card; no adjacent card may be toggled.
-await page.locator('.home-grid .app-card[data-home-sheet="home-cards"]').click();
+await cardsAccordionCard.scrollIntoViewIfNeeded();
+await cardsAccordionCard.click();
 const accordionClosed = await page.evaluate(() => ({
   characterClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]')?.className || '',
   cardsClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]')?.className || '',
