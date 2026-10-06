@@ -2691,28 +2691,20 @@ function toggleHomeAccordion(card){
   const data=homeData[key];
   const container=card.closest(".home-grid");
   if(!data || !container)return;
-  const old=card.nextElementSibling;
-  if(old && old.classList.contains("home-accordion-panel")){
-    old.remove();
-    card.classList.remove("home-card-expanded");
-    card.setAttribute("aria-expanded","false");
-    const chev=card.querySelector(".chev");
+
+  // Home accordions are mutually exclusive: always reset every other card
+  // and remove every stale panel before deciding whether to open this card.
+  const wasOpen=card.classList.contains("home-card-expanded");
+  container.querySelectorAll(".home-accordion-panel").forEach(panel=>panel.remove());
+  container.querySelectorAll(".app-card[data-home-sheet]").forEach(other=>{
+    other.classList.remove("home-card-expanded");
+    other.setAttribute("aria-expanded","false");
+    const chev=other.querySelector(".chev");
     if(chev)chev.textContent="⌃";
-    return;
-  }
-  container.querySelectorAll(".app-card.home-card-expanded").forEach(open=>{
-    if(open===card)return;
-    const panel=open.nextElementSibling;
-    if(panel && panel.classList.contains("home-accordion-panel")){
-      // Switching cards is a state change: remove the old panel now so only
-      // the clicked card owns an open panel in this grid.
-      panel.remove();
-      open.classList.remove("home-card-expanded");
-      open.setAttribute("aria-expanded","false");
-      const chev=open.querySelector(".chev");
-      if(chev)chev.textContent="⌃";
-    }
   });
+
+  if(wasOpen)return;
+
   const panel=document.createElement("div");
   panel.className="home-accordion-panel";
   panel.innerHTML=data[1].map((x,i)=>'<button class="home-accordion-item" data-home-action="'+key+'-'+i+'"><strong>'+x+'</strong><span>›</span></button>').join("");
@@ -2720,7 +2712,8 @@ function toggleHomeAccordion(card){
   rememberAndTranslate(panel);
   card.classList.add("home-card-expanded");
   card.setAttribute("aria-expanded","true");
-  card.querySelector(".chev").textContent="⌄";
+  const chev=card.querySelector(".chev");
+  if(chev)chev.textContent="⌄";
 }
 
 function resolveHomeActionRoute(key){
