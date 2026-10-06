@@ -3,233 +3,294 @@ import { chromium } from 'playwright';
 const errors = [];
 const pageErrors = [];
 const failedRequests = [];
-const failedResponses = [];
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
-page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+const page = await browser.newPage({
+  viewport: { width: 1280, height: 720 },
+  deviceScaleFactor: 1,
+});
+
+page.on('console', msg => {
+  if (msg.type() === 'error') errors.push(msg.text());
+});
 page.on('pageerror', err => pageErrors.push(err.stack || err.message));
 page.on('response', response => {
-  if (response.status() >= 400) failedRequests.push({ status: response.status(), url: response.url() });
+  if (response.status() >= 400) {
+    failedRequests.push({ status: response.status(), url: response.url() });
+  }
 });
-page.on('response', response => { if (response.status() >= 400) failedResponses.push({status: response.status(), url: response.url()}); });
 
-await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.goto('http://127.0.0.1:4173/', {
+  waitUntil: 'domcontentloaded',
+  timeout: 30000,
+});
 
-for (const asset of ['dojo-musics.json','dojo-difficulties.json']) {
+for (const asset of ['dojo-musics.json', 'dojo-difficulties.json']) {
   const response = await page.request.get('http://127.0.0.1:4173/' + asset);
-  if (!response.ok()) throw new Error('Committed Dojo static asset missing: ' + asset + ' HTTP ' + response.status());
-}
-const vocalResponse = await page.request.get('http://127.0.0.1:4173/dojo-vocals.json');
-const hasCommittedVocals = vocalResponse.ok();
-await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
-await page.waitForSelector('#dojoGameCard', { state: 'visible', timeout: 30000 });
-await page.waitForSelector('#dojoGameCanvas', { state: 'attached', timeout: 30000 });
-const dojoStructure = await page.evaluate(() => ({
-  laneZones: document.querySelectorAll('[data-dojo-lane-zone]').length,
-  dedicatedPage: !!document.querySelector('.dojo-play-page'),
-  runtime: !!window.__PJSEKAI_DOJO__,
-}));
-if (dojoStructure.laneZones !== 12) throw new Error('Dojo must expose 12 touch lanes: ' + JSON.stringify(dojoStructure));
-if (!dojoStructure.dedicatedPage || !dojoStructure.runtime) throw new Error('Dojo gameplay runtime/page missing');
-const referenceReady = await page.evaluate(() => !!window.__PJSEKAI_SEKAI_REF__ &&
-  typeof window.__PJSEKAI_SEKAI_REF__.drawBody === 'function' &&
-  typeof window.__PJSEKAI_SEKAI_REF__.layoutSlideConnectorSegment === 'function');
-if (!referenceReady) throw new Error('Modular Project SEKAI reference renderer did not load');
-for (const asset of [
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_normal_left.png',
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_crtcl_left.png',
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_crtcl_03.png',
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_03_diagonal_left.png',
-  'https://cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/notes_flick_arrow_03_diagonal_right.png'
-]) {
-  const response = await page.request.get(asset);
-  if (!response.ok()) throw new Error('Reference chart asset unavailable: '+asset+' HTTP '+response.status());
-}
-await page.waitForTimeout(3000);
-
-await page.waitForFunction(() => !!document.querySelector('#dojoGameCard')?.offsetParent, null, { timeout: 30000 });
-await page.waitForFunction(() => !!window.__PJSEKAI_DOJO__ || !!window.__PJSEKAI_APP__, null, { timeout: 30000 });
-const before = await page.evaluate(() => {
-  const p = window.__PJSEKAI_DOJO__;
-  return {
-    prepared: !!p?.state?.prepared,
-    title: p?.state?.prepared?.music?.title || '',
-    difficulty: p?.state?.prepared?.difficulty || '',
-    audioUrl: p?.state?.prepared?.audioUrl || '',
-    audioFallback: !p?.state?.prepared?.vocal,
-    hasCommittedVocals: !!window.__dojoHasCommittedVocals,
-    notes: p?.state?.prepared?.notes?.length || 0,
-    canvasWidth: document.querySelector('#dojoGameCanvas')?.clientWidth || 0,
-    canvasHeight: document.querySelector('#dojoGameCanvas')?.clientHeight || 0
-  };
-});
-if (!before.canvasWidth || !before.canvasHeight) throw new Error('Dojo canvas has no rendered size: ' + JSON.stringify(before));
-
-await page.locator('#dojoDifficultyFilter').selectOption('Expert');
-const filteredCount = await page.locator('#dojoSongList [data-dojo-local-song]').count();
-if (filteredCount <= 0) throw new Error('Difficulty filter returned no songs');
-
-await page.locator('#dojoSongSearch').fill('Tell Your World');
-await page.waitForTimeout(250);
-await page.locator('#dojoClearSearch').click();
-const clearedValue = await page.locator('#dojoSongSearch').inputValue();
-if (clearedValue !== '') throw new Error('Clear search did not clear the input');
-await page.locator('#dojoSongSearch').fill('Tell Your World');
-await page.waitForTimeout(250);
-await page.locator('#dojoSongList [data-dojo-local-song]').first().click();
-await page.waitForTimeout(150);
-await page.locator('#dojoDifficultyButtons [data-dojo-diff="expert"]').click();
-await page.waitForTimeout(700);
-
-const selected = await page.evaluate(() => ({
-  title: document.querySelector('#dojoSelectedTitle')?.textContent?.trim() || '',
-  difficulty: document.querySelector('#dojoDifficultyButtons .active')?.dataset?.dojoDiff || ''
-}));
-if (!selected.title.toLowerCase().includes('tell your world')) throw new Error('Song selection did not update: ' + JSON.stringify(selected));
-if (selected.difficulty.toLowerCase() !== 'expert') throw new Error('Difficulty selection did not update: ' + JSON.stringify(selected));
-
-await page.locator('#dojoOpenPracticeBtn').click();
-await page.waitForFunction(() => document.body.dataset.page === 'dojo-play' || document.querySelector('.dojo-play-page.active')?.offsetParent, null, { timeout: 10000 });
-const playRoute = await page.evaluate(() => ({
-  route: document.body.dataset.page || '',
-  pageVisible: !!document.querySelector('.dojo-play-page.active')?.offsetParent,
-  gameMounted: !!document.querySelector('#dojoPlayMount #dojoGameCard')
-}));
-if (!playRoute.pageVisible || !playRoute.gameMounted) throw new Error('Dojo did not enter dedicated gameplay page: ' + JSON.stringify(playRoute));
-try{
-  await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 30000 });
-const gameplayFeatures = await page.evaluate(() => ({
-  canvas: !!document.querySelector('#dojoGameCanvas'),
-  pause: !!document.querySelector('.dojo-wgl-pause'),
-  inputLanes: document.querySelectorAll('[data-dojo-lane-zone]').length,
-  score: !!document.querySelector('#dojoGameScore'),
-  life: !!document.querySelector('#dojoGameLifeBar'),
-  combo: !!document.querySelector('#dojoGameCombo'),
-}));
-for (const [key, ok] of Object.entries(gameplayFeatures)) if (!ok) throw new Error('Missing gameplay feature: ' + key);
-}catch(error){
-  const debug=await page.evaluate(()=>({
-    running:!!window.__PJSEKAI_DOJO__?.state?.running,
-    starting:!!window.__PJSEKAI_DOJO__?.state?.starting,
-    prepared:!!window.__PJSEKAI_DOJO__?.state?.prepared,
-    audioSrc:window.__PJSEKAI_DOJO__?.state?.audio?.src||'',
-    audioError:window.__PJSEKAI_DOJO__?.state?.audio?.error?.message||'',
-    button:document.querySelector('#dojoOpenPracticeBtn')?.textContent||'',
-    message:document.querySelector('#dojoGameMessage')?.textContent||'',error:window.__PJSEKAI_DOJO__?.state?.error||''
-  }));
-  throw new Error('Dojo did not enter running state: '+JSON.stringify(debug)+'; '+error.message);
-}
-await page.waitForTimeout(350);
-
-const started = await page.evaluate(() => ({
-  running: !!window.__PJSEKAI_DOJO__?.state?.running,
-  audioPaused: !!window.__PJSEKAI_DOJO__?.state?.audio?.paused,
-  currentTime: window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0
-}));
-if (!started.running) throw new Error('Dojo did not enter running state: ' + JSON.stringify(started));
-await page.waitForTimeout(700);
-const audioProgress = await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0);
-if (audioProgress <= started.currentTime + 0.2) {
-  throw new Error('Dojo audio did not advance: started='+started.currentTime+' current='+audioProgress);
-}
-
-await page.evaluate(() => document.querySelector('#dojoOpenPracticeBtn')?.click());
-const paused = await page.evaluate(() => ({
-  running: !!window.__PJSEKAI_DOJO__?.state?.running,
-  audioPaused: !!window.__PJSEKAI_DOJO__?.state?.audio?.paused,
-  label: document.querySelector('#dojoOpenPracticeBtn')?.textContent || ''
-}));
-if (paused.running || !paused.audioPaused || !paused.label.includes('繼續打歌')) {
-  throw new Error('Pause state invalid: ' + JSON.stringify(paused));
-}
-
-await page.evaluate(() => document.querySelector('#dojoOpenPracticeBtn')?.click());
-await page.waitForFunction(() => window.__PJSEKAI_DOJO__?.state?.running === true, null, { timeout: 5000 });
-
-await page.evaluate(() => document.body.focus());
-const firstNotes = await page.evaluate(() => {
-  const p = window.__PJSEKAI_DOJO__;
-  const now = p.state.audio.currentTime || 0;
-  const future = p.state.noteStats?.future || [];
-  return future.filter(n => Number.isFinite(n.lane) && !n.direction).slice(0, 8).map(n => ({ lane: n.lane, kind: n.kind, hit: n.hit, now, key: ['D','F','J','K'][Math.max(0, Math.min(3, Math.floor(n.lane / 3)))] }));
-});
-if (!firstNotes.length) throw new Error('Dojo produced no future playable notes after resume: ' + JSON.stringify(await page.evaluate(()=>window.__PJSEKAI_DOJO__?.state?.noteStats||null)));
-for (const n of firstNotes) {
-  await page.waitForTimeout(Math.max(0, Math.round((n.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 12)));
-  await page.keyboard.press(n.key);
-}
-await page.waitForTimeout(250);
-
-const afterInput = await page.evaluate(() => ({
-  score: window.__PJSEKAI_DOJO__?.state?.score || 0,
-  combo: window.__PJSEKAI_DOJO__?.state?.combo || 0,
-  judged: window.__PJSEKAI_DOJO__?.state?.judged || 0,
-  running: !!window.__PJSEKAI_DOJO__?.state?.running
-}));
-if (afterInput.judged <= 0 || afterInput.score <= 0) {
-  const postInputDebug=await page.evaluate(()=>({now:window.__PJSEKAI_DOJO__?.state?.audio?.currentTime||0,lastInput:window.__PJSEKAI_DOJO__?.state?.lastInput||null}));
-  throw new Error('Keyboard input produced no judgement/score change: ' + JSON.stringify({afterInput,firstNotes,...postInputDebug}));
-}
-
-// Exercise the real touch flick path against a future directional note.
-const flick = await page.evaluate(() => {
-  const p = window.__PJSEKAI_DOJO__;
-  const now = p?.state?.audio?.currentTime || 0;
-  return p?.state?.noteStats?.future?.find(n => n.direction && n.kind === 'tap') || null;
-});
-if (flick) {
-  const waitMs = Math.max(0, Math.min(12000, Math.round((flick.hit - (await page.evaluate(() => window.__PJSEKAI_DOJO__?.state?.audio?.currentTime || 0))) * 1000 - 70)));
-  if (waitMs > 0) await page.waitForTimeout(waitMs);
-  const lane = Math.max(0, Math.min(11, Math.floor(flick.lane)));
-  const zone = page.locator('[data-dojo-lane-zone="'+lane+'"]').first();
-  const box = await zone.boundingBox();
-  if (!box) throw new Error('Touch lane zone has no geometry for flick test');
-  const sx = box.x + box.width / 2, sy = box.y + box.height / 2;
-  const vectors = {
-    up:[0,-90], down:[0,90], left:[-90,0], right:[90,0],
-    'up-left':[-90,-90], 'up-right':[90,-90], 'down-left':[-90,90], 'down-right':[90,90]
-  };
-  const [dx,dy] = vectors[flick.direction] || vectors.up;
-  await page.mouse.move(sx,sy);
-  await page.mouse.down();
-  await page.waitForTimeout(18);
-  await page.mouse.move(sx+dx,sy+dy,{steps:1});
-  await page.mouse.up();
-  await page.waitForTimeout(160);
-  const touchDebug = await page.evaluate(() => ({
-    score: window.__PJSEKAI_DOJO__?.state?.score || 0,
-    judged: window.__PJSEKAI_DOJO__?.state?.judged || 0,
-    lastInput: window.__PJSEKAI_DOJO__?.state?.lastInput || null
-  }));
-  if (!touchDebug.lastInput || !String(touchDebug.lastInput.kind || '').includes('flick')) {
-    throw new Error('Touch flick path did not register: '+JSON.stringify({flick,touchDebug}));
+  if (!response.ok()) {
+    throw new Error(
+      'Committed Dojo static asset missing: ' + asset + ' HTTP ' + response.status()
+    );
   }
 }
 
-await page.evaluate(() => document.querySelector('[data-dojo-back="songs"]')?.click());
-await page.waitForFunction(() => document.querySelector('.page[data-page="songs"].active')?.offsetParent, null, { timeout: 10000 });
-const advancedDetails = page.locator('.page[data-page="songs"] details.dojo-extra').first();
-await advancedDetails.scrollIntoViewIfNeeded();
-await advancedDetails.locator('summary').click();
-await page.waitForTimeout(100);
-const advanced = await advancedDetails.textContent();
-if (!advanced.includes('Note Speed') || !advanced.includes('Audio Offset')) throw new Error('Advanced settings did not expand');
-const dojoResourceFailures = failedRequests.filter(x => {
-  if (x.url.startsWith('http://127.0.0.1:4173/')) return true;
-  return x.url.includes('assets.unipjsk.com/startapp/music/music_score/') ||
-    x.url.includes('assets.unipjsk.com/ondemand/music/long/') ||
-    x.url.includes('cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/');
+const vocalResponse = await page.request.get('http://127.0.0.1:4173/dojo-vocals.json');
+const hasCommittedVocals = vocalResponse.ok();
+
+await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
+await page.waitForSelector('.page[data-page="songs"].active', {
+  state: 'visible',
+  timeout: 10000,
 });
-if (pageErrors.length || dojoResourceFailures.length) {
+await page.waitForSelector('#dojoSongList .dojo-song', {
+  state: 'visible',
+  timeout: 30000,
+});
+
+const dojoPage = await page.evaluate(() => ({
+  songsPage: !!document.querySelector('.page[data-page="songs"].active'),
+  songList: document.querySelectorAll('#dojoSongList .dojo-song').length,
+  iframe: !!document.querySelector('#dojoSonolusIframe'),
+  iframeShell: !!document.querySelector('#dojoFrameShell'),
+  bridgeStatus: !!document.querySelector('#dojoBridgeStatus'),
+  practiceControls: !!document.querySelector('#dojoLoopA') &&
+    !!document.querySelector('#dojoLoopB') &&
+    !!document.querySelector('#dojoLoopToggle') &&
+    !!document.querySelector('#dojoPracticeResetBtn'),
+  analyzer: !!document.querySelector('#chartAnalyzerMount'),
+}));
+if (!dojoPage.songsPage || !dojoPage.iframe || !dojoPage.iframeShell || !dojoPage.practiceControls) {
+  throw new Error('Current Dojo page structure is incomplete: ' + JSON.stringify(dojoPage));
+}
+if (dojoPage.songList <= 0) {
+  throw new Error('Current Dojo song database rendered no songs');
+}
+
+const localSongs = await page.locator('#dojoSongList .dojo-song').count();
+if (localSongs <= 0) throw new Error('Dojo song database is empty');
+
+await page.locator('#dojoDifficultyFilter').selectOption('Expert');
+await page.waitForTimeout(150);
+const expertCount = await page.locator('#dojoSongList .dojo-song').count();
+if (expertCount <= 0) throw new Error('Expert difficulty filter returned no songs');
+
+await page.locator('#dojoSongSearch').fill('Tell Your World');
+await page.waitForTimeout(250);
+const tellCount = await page.locator('#dojoSongList .dojo-song').count();
+if (tellCount <= 0) throw new Error('Tell Your World search returned no songs');
+
+await page.locator('#dojoClearSearch').click();
+const cleared = await page.locator('#dojoSongSearch').inputValue();
+if (cleared !== '') throw new Error('Clear search did not clear the input');
+
+await page.locator('#dojoSongSearch').fill('Tell Your World');
+await page.waitForTimeout(250);
+await page.locator('#dojoSongList .dojo-song').first().click();
+await page.waitForTimeout(200);
+
+const selected = await page.evaluate(() => ({
+  title: document.querySelector('#dojoSelectedTitle')?.textContent?.trim() || '',
+  difficulty: document.querySelector('#dojoSelectedDifficulty')?.textContent?.trim() || '',
+  difficultyButtons: document.querySelectorAll('#dojoDifficultyButtons [data-dojo-diff]').length,
+  notes: document.querySelector('#dojoSelectedNotes')?.textContent?.trim() || '',
+}));
+if (!selected.title.toLowerCase().includes('tell your world')) {
+  throw new Error('Song selection did not update: ' + JSON.stringify(selected));
+}
+if (selected.difficultyButtons <= 0) {
+  throw new Error('Selected song rendered no difficulty buttons');
+}
+
+const expertButton = page.locator('#dojoDifficultyButtons [data-dojo-diff="Expert"]');
+if (await expertButton.count()) {
+  await expertButton.click();
+  await page.waitForTimeout(100);
+}
+
+const iframe = page.locator('#dojoSonolusIframe');
+await page.locator('#dojoOpenPracticeBtn').click();
+
+await page.waitForFunction(
+  () => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    return !!frame && !!frame.src && frame.src.includes('/sonolus-web/');
+  },
+  null,
+  { timeout: 10000 }
+);
+
+const iframeUrl = await iframe.getAttribute('src');
+if (!iframeUrl || !iframeUrl.includes('/sonolus-web/')) {
+  throw new Error('Dojo did not load the local Sonolus iframe: ' + iframeUrl);
+}
+
+await page.waitForFunction(
+  () => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    try {
+      return !!frame?.contentWindow?.__pjPracticeRuntime;
+    } catch (_) {
+      return false;
+    }
+  },
+  null,
+  { timeout: 30000 }
+);
+
+const runtimeInfo = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  const r = frame?.contentWindow?.__pjPracticeRuntime;
+  return {
+    exists: !!r,
+    methods: {
+      getTime: typeof r?.getTime === 'function',
+      getDuration: typeof r?.getDuration === 'function',
+      seek: typeof r?.seek === 'function',
+      setRate: typeof r?.setRate === 'function',
+      reset: typeof r?.reset === 'function',
+    },
+  };
+});
+for (const [name, ok] of Object.entries(runtimeInfo.methods)) {
+  if (!ok) throw new Error('Current local Sonolus runtime is missing ' + name);
+}
+
+const initialBridge = await page.evaluate(() => ({
+  src: document.querySelector('#dojoSonolusIframe')?.getAttribute('src') || '',
+  status: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
+  log: document.querySelector('#dojoApiLog')?.textContent?.trim() || '',
+}));
+if (!initialBridge.src.includes('/sonolus-web/')) {
+  throw new Error('Local Sonolus iframe source is invalid: ' + JSON.stringify(initialBridge));
+}
+
+const duration = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  return Number(frame?.contentWindow?.__pjPracticeRuntime?.getDuration?.() || 0);
+});
+if (!(duration > 0)) {
+  throw new Error('Local Sonolus runtime reported no playable duration: ' + duration);
+}
+
+const speedRange = page.locator('#dojoSpeedRange');
+await speedRange.fill('8.5');
+await page.waitForTimeout(100);
+const speedState = await page.evaluate(() => ({
+  value: document.querySelector('#dojoSpeedRange')?.value || '',
+  label: document.querySelector('#dojoSpeedValue')?.textContent?.trim() || '',
+}));
+if (speedState.value !== '8.5' || speedState.label !== '8.5') {
+  throw new Error('Dojo Note Speed control did not update: ' + JSON.stringify(speedState));
+}
+
+const mirror = page.locator('#dojoToggle_mirror');
+const mirrorBefore = await mirror.getAttribute('aria-pressed');
+await mirror.click();
+const mirrorAfter = await mirror.getAttribute('aria-pressed');
+if (mirrorBefore === mirrorAfter) {
+  throw new Error('Mirror toggle did not change state');
+}
+await mirror.click();
+if ((await mirror.getAttribute('aria-pressed')) !== mirrorBefore) {
+  throw new Error('Mirror toggle did not restore its original state');
+}
+
+const rateCheck = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  const r = frame?.contentWindow?.__pjPracticeRuntime;
+  try {
+    r?.setRate?.(0.75);
+    return {
+      value: Number(r?.getTime?.() || 0),
+      ok: true,
+    };
+  } catch (error) {
+    return { ok: false, error: error?.message || String(error) };
+  }
+});
+if (!rateCheck.ok) throw new Error('Local runtime setRate() failed: ' + JSON.stringify(rateCheck));
+
+const seekCheck = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  const r = frame?.contentWindow?.__pjPracticeRuntime;
+  try {
+    r?.seek?.(0.5);
+    const time = Number(r?.getTime?.() || 0);
+    return { ok: Math.abs(time - 0.5) < 0.35, time };
+  } catch (error) {
+    return { ok: false, error: error?.message || String(error) };
+  }
+});
+if (!seekCheck.ok) {
+  throw new Error('Local runtime seek() failed: ' + JSON.stringify(seekCheck));
+}
+
+await page.locator('#dojoPracticeResetBtn').click();
+await page.waitForTimeout(150);
+const resetCheck = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  const r = frame?.contentWindow?.__pjPracticeRuntime;
+  return {
+    time: Number(r?.getTime?.() || 0),
+    duration: Number(r?.getDuration?.() || 0),
+  };
+});
+if (resetCheck.time > 0.35) {
+  throw new Error('Practice reset did not return near the beginning: ' + JSON.stringify(resetCheck));
+}
+
+const loopToggle = page.locator('#dojoLoopToggle');
+const loopBefore = await loopToggle.getAttribute('aria-pressed');
+await loopToggle.click();
+const loopAfter = await loopToggle.getAttribute('aria-pressed');
+if (loopBefore === loopAfter) {
+  throw new Error('A-B loop toggle did not change state');
+}
+await loopToggle.click();
+if ((await loopToggle.getAttribute('aria-pressed')) !== loopBefore) {
+  throw new Error('A-B loop toggle did not restore its original state');
+}
+
+await page.evaluate(() => document.querySelector('#dojoOpenServerWebBtn')?.blur());
+await page.waitForTimeout(100);
+
+const criticalFailures = failedRequests.filter(({ url }) =>
+  url.startsWith('http://127.0.0.1:4173/') ||
+  url.includes('assets.unipjsk.com/startapp/music/music_score/') ||
+  url.includes('assets.unipjsk.com/ondemand/music/long/') ||
+  url.includes('cdn.jsdelivr.net/gh/pjsek-ai/pjsekai-web@master/public/images/song/chart/')
+);
+
+if (pageErrors.length || criticalFailures.length) {
   throw new Error(
-    'Browser errors:\n' + errors.join('\n') +
-    '\nPage errors:\n' + pageErrors.join('\n') +
-    '\nDojo critical resource failures:\n' +
-    dojoResourceFailures.map(x => x.status + ' ' + x.url).join('\n') +
+    'Browser errors:\n' +
+    errors.join('\n') +
+    '\nPage errors:\n' +
+    pageErrors.join('\n') +
+    '\nCritical resource failures:\n' +
+    criticalFailures.map(x => x.status + ' ' + x.url).join('\n') +
     '\nAll failed requests:\n' +
     failedRequests.map(x => x.status + ' ' + x.url).join('\n')
   );
 }
 
-console.log(JSON.stringify({ PASS: true, before, selected, playRoute, started, audioProgress, paused, firstNotes, afterInput, errors, pageErrors, failedRequests }, null, 2));
+console.log(JSON.stringify({
+  PASS: true,
+  dojoPage,
+  localSongs,
+  expertCount,
+  tellCount,
+  selected,
+  hasCommittedVocals,
+  iframeUrl,
+  runtimeInfo,
+  initialBridge,
+  duration,
+  speedState,
+  seekCheck,
+  resetCheck,
+  errors,
+  pageErrors,
+  failedRequests,
+}, null, 2));
+
 await browser.close();
