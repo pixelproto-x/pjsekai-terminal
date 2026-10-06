@@ -136,7 +136,35 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
 const startButton = sonolusFrame.getByText('START!', { exact: true }).first();
 await startButton.waitFor({ state: 'visible', timeout: 20000 });
-await startButton.click();
+
+const startInfo = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  try {
+    const nodes = [...(frame?.contentDocument?.querySelectorAll('*') || [])]
+      .filter(el => (el.textContent || '').trim() === 'START!')
+      .slice(0, 5)
+      .map(el => ({
+        tag: el.tagName,
+        className: el.className || '',
+        role: el.getAttribute('role') || '',
+        aria: el.getAttribute('aria-label') || '',
+        outer: el.outerHTML.slice(0, 500),
+      }));
+    return nodes;
+  } catch (_) {
+    return [];
+  }
+});
+
+await startButton.click({ force: true });
+try {
+  await startButton.press('Enter');
+} catch (_) {}
+const startBox = await startButton.boundingBox();
+if (startBox) {
+  await page.mouse.click(startBox.x + startBox.width / 2, startBox.y + startBox.height / 2);
+}
+await page.waitForTimeout(500);
 
 try {
   await page.waitForFunction(
@@ -183,6 +211,7 @@ try {
     'Local Sonolus runtime did not become playable within 60s: ' +
     JSON.stringify({
       debug,
+      startInfo,
       consoleErrors: errors,
       pageErrors,
       failedLocalRequests,
