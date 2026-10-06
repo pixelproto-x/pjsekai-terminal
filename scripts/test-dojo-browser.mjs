@@ -136,23 +136,57 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
   await fail('Dojo practice button did not open the local Sonolus core: ' + frameUrl);
 }
 
-await page.waitForFunction(
-  () => {
+try {
+  await page.waitForFunction(
+    () => {
+      try {
+        const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
+        return !!runtime &&
+          typeof runtime.getTime === 'function' &&
+          typeof runtime.getDuration === 'function' &&
+          typeof runtime.seek === 'function' &&
+          typeof runtime.setRate === 'function' &&
+          typeof runtime.reset === 'function';
+      } catch (_) {
+        return false;
+      }
+    },
+    null,
+    { timeout: 45000 }
+  );
+} catch (error) {
+  const debug = await page.evaluate(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    let child = {};
     try {
-      const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
-      return !!runtime &&
-        typeof runtime.getTime === 'function' &&
-        typeof runtime.getDuration === 'function' &&
-        typeof runtime.seek === 'function' &&
-        typeof runtime.setRate === 'function' &&
-        typeof runtime.reset === 'function';
-    } catch (_) {
-      return false;
+      child = {
+        href: frame?.contentWindow?.location?.href || '',
+        readyState: frame?.contentDocument?.readyState || '',
+        runtime: !!frame?.contentWindow?.__pjPracticeRuntime,
+        bodyText: frame?.contentDocument?.body?.innerText?.slice(0, 2000) || '',
+        rootText: frame?.contentDocument?.querySelector('#root')?.innerText?.slice(0, 1500) || '',
+      };
+    } catch (e) {
+      child = { accessError: e?.message || String(e) };
     }
-  },
-  null,
-  { timeout: 45000 }
-);
+    return {
+      iframeSrc: frame?.src || '',
+      bridgeStatus: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
+      apiLog: document.querySelector('#dojoApiLog')?.textContent?.trim() || '',
+      child,
+    };
+  });
+  throw new Error(
+    'Local Sonolus runtime did not expose within 45s: ' +
+    JSON.stringify({
+      debug,
+      consoleErrors: errors,
+      pageErrors,
+      failedLocalRequests,
+      timeout: error?.message || String(error),
+    })
+  );
+}
 
 const runtimeState = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
