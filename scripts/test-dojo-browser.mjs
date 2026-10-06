@@ -186,6 +186,19 @@ try {
   );
 }
 
+await page.waitForFunction(
+  () => {
+    try {
+      const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
+      return Number(runtime?.getDuration?.() || 0) > 0;
+    } catch (_) {
+      return false;
+    }
+  },
+  null,
+  { timeout: 60000 }
+);
+
 const runtimeState = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   const runtime = frame?.contentWindow?.__pjPracticeRuntime;
