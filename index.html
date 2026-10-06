@@ -149,7 +149,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
   width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:18px;color:#fff;
   box-shadow:0 7px 16px rgba(0,0,0,.11);flex:none
 }
-.app-card h3{font-size:15px;letter-spacing:-.025em;margin:0 0 3px;font-weight:850}
+.app-card h3{font-size:15px;letter-spacing:-.025em;margin:0 0 3px;font-weight:850;color:var(--ink)!important;display:block!important;visibility:visible!important;opacity:1!important;line-height:1.25}
 .app-card > span:not(.icon):not(.chev){min-width:0;display:block}
 .app-card p{font-size:10px;color:var(--muted);line-height:1.5;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-card .chev{position:absolute;right:17px;top:50%;transform:translateY(-50%);color:#9ca0aa;font-size:17px;font-weight:700}
@@ -2588,7 +2588,7 @@ function toggleAccordion(card){
   card.classList.add("expanded");
   card.setAttribute("aria-expanded","true");
   card.querySelector(".arrow").textContent="⌄";
-  showToast(t(data[0])+" "+t("已展開"));
+  
 }
 
 function toggleHomeAccordion(card){
@@ -2616,7 +2616,7 @@ function toggleHomeAccordion(card){
   card.classList.add("home-card-expanded");
   card.setAttribute("aria-expanded","true");
   card.querySelector(".chev").textContent="⌄";
-  showToast(t(data[0])+" "+t("已展開"));
+  
 }
 
 const homeActionRoutes={
@@ -3289,7 +3289,7 @@ window.__PJSEKAI_APP__ = {
 <script src="my-sekai.js" defer></script>
 <script src="dojo-controls.js" defer></script>
 <script src="event-calc.js" defer></script>
-<script src="chart-analyzer.js?v=20261006-no-toast-2" defer></script>
+<script src="chart-analyzer.js?v=20261006-ui-text-fix" defer></script>
 <script src="system-settings.js" defer></script>
 </body>
 </html>
