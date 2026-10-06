@@ -932,60 +932,48 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   .home-grid > .home-feature{width:100%;flex-basis:100%}
   .home-grid .app-card{min-height:84px !important;padding:14px 18px !important}
 }
-/* HOME ACCORDION PANEL FIX */
+/* HOME ACCORDION FLOW FIX */
 .home-grid > .home-feature{
-  position:relative;
-}
-.home-grid > .home-feature > .home-accordion-panel{
-  display:none;
-  position:absolute;
-  top:calc(100% - 6px);
-  left:0;
-  width:100%;
+  min-height:0;
   height:auto;
-  max-height:500px;
-  margin:0;
-  overflow:hidden;
+  max-height:none;
+  overflow:visible;
+  align-self:flex-start;
+}
+.home-grid .app-card,
+.home-grid .app-card.feature,
+.home-grid .app-card.wide{
+  height:auto !important;
+  max-height:none !important;
+}
+.home-grid .home-accordion-panel{
+  position:static !important;
+  display:none !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  margin:0 !important;
+  overflow:hidden !important;
   opacity:0;
   pointer-events:none;
-  z-index:30;
   box-sizing:border-box;
-}
-.home-grid > .home-feature > .home-card-expanded + .home-accordion-panel{
-  display:grid;
-  opacity:1;
-  pointer-events:auto;
-}
-/* GLOBAL ACCORDION COLLAPSE GUARD */
-.home-grid .home-accordion-panel,
-.catalog-grid .accordion-panel{
-  display:none !important;
 }
 .home-grid .home-card-expanded + .home-accordion-panel{
   display:grid !important;
+  opacity:1;
+  pointer-events:auto;
+}
+.catalog-grid .accordion-panel{
+  position:static !important;
+  display:none !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:hidden !important;
 }
 .catalog-grid .catalog-card.expanded + .accordion-panel{
   display:grid !important;
-}
-.home-grid .home-accordion-panel{
-  position:absolute;
-  left:0;
-  top:calc(100% - 6px);
-  width:100%;
-  max-height:500px;
-  overflow:hidden;
-  opacity:1;
-  pointer-events:auto;
-  z-index:30;
-}
-.home-grid .home-feature{
-  position:relative;
-}
-.home-grid .home-card-expanded + .home-accordion-panel{
-  opacity:1;
-  pointer-events:auto;
-}
-</style>
+}</style>
 </head>
 <body>
 <div class="top-accent"></div>
