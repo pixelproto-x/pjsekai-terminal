@@ -884,29 +884,38 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   .home-grid .app-card.wide,
   .app-card{min-height:84px !important;padding:14px 18px !important}
 }
-/* HOME CARD LAYOUT FIX */
+/* HOME TWO-COLUMN INDEPENDENT LAYOUT */
 .home-grid{
   width:92%;
   max-width:1200px;
   margin:0 auto;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:flex-start;
-  align-content:flex-start;
-  justify-content:center;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start !important;
+  align-content:start !important;
   gap:12px;
 }
-.home-grid > .home-feature{
-  width:calc(50% - 6px);
+.home-column{
   min-width:0;
-  min-height:0;
-  height:auto;
-  max-height:none;
-  overflow:visible;
-  align-self:flex-start;
-  flex:0 0 calc(50% - 6px);
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  align-self:start !important;
+  gap:12px;
 }
-.home-grid .app-card{
+.home-feature{
+  position:relative;
+  width:100%;
+  min-width:0;
+  height:auto !important;
+  max-height:none !important;
+  align-self:start !important;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+.home-feature .app-card{
   width:100%;
   min-width:0;
   min-height:88px !important;
@@ -914,39 +923,10 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   max-height:none !important;
   padding:18px 24px !important;
   margin:0;
-  display:flex !important;
-  align-items:center !important;
+  align-self:start !important;
+  flex:none;
 }
-.home-grid .home-accordion-panel{
-  width:100%;
-  height:auto;
-  margin:0;
-}
-@media(max-width:900px){
-  .home-grid{width:94%;gap:10px}
-  .home-grid > .home-feature,
-  .home-grid > .home-feature{flex-basis:calc(50% - 5px);width:calc(50% - 5px)}
-}
-@media(max-width:640px){
-  .home-grid{width:100%;display:flex;flex-direction:column;gap:10px}
-  .home-grid > .home-feature{width:100%;flex-basis:100%}
-  .home-grid .app-card{min-height:84px !important;padding:14px 18px !important}
-}
-/* HOME ACCORDION FLOW FIX */
-.home-grid > .home-feature{
-  min-height:0;
-  height:auto;
-  max-height:none;
-  overflow:visible;
-  align-self:flex-start;
-}
-.home-grid .app-card,
-.home-grid .app-card.feature,
-.home-grid .app-card.wide{
-  height:auto !important;
-  max-height:none !important;
-}
-.home-grid .home-accordion-panel{
+.home-accordion-panel{
   position:static !important;
   display:none !important;
   width:100% !important;
@@ -958,47 +938,30 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   pointer-events:none;
   box-sizing:border-box;
 }
-.home-grid .home-card-expanded + .home-accordion-panel{
+.home-card-expanded + .home-accordion-panel{
   display:grid !important;
   opacity:1;
   pointer-events:auto;
 }
-.catalog-grid .accordion-panel{
-  position:static !important;
-  display:none !important;
-  width:100% !important;
-  height:auto !important;
-  max-height:none !important;
-  overflow:hidden !important;
+@media(max-width:900px){
+  .home-grid{
+    width:94%;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .home-column{gap:10px}
 }
-.catalog-grid .catalog-card.expanded + .accordion-panel{
-  display:grid !important;
-}/* HOME CARD STRETCH LOCK */
-.home-grid{
-  align-items:flex-start !important;
-  align-content:flex-start !important;
-}
-.home-grid > .home-feature{
-  align-self:flex-start !important;
-  height:auto !important;
-}
-.home-grid > .home-feature > .app-card,
-.home-grid .app-card,
-.home-grid .app-card.feature,
-.home-grid .app-card.wide{
-  align-self:flex-start !important;
-  height:auto !important;
-  max-height:none !important;
-}
-.catalog-grid{
-  align-items:start !important;
-}
-.catalog-grid > .catalog-card,
-.catalog-grid .catalog-card{
-  align-self:start !important;
-  height:auto !important;
-}
-</style>
+@media(max-width:640px){
+  .home-grid{
+    width:100%;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .home-feature .app-card{
+    min-height:84px !important;
+    padding:14px 18px !important;
+  }
+}</style>
 </head>
 <body>
 <div class="top-accent"></div>
@@ -1029,50 +992,53 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
 
     <div class="home-grid">
-      <div class="home-feature">
-      <button class="app-card card-cyan" data-home-sheet="home-songs">
-        <span class="icon">♫</span><span class="chev">⌃</span>
-        <span><h3>歌曲 Music</h3><p>歌曲、難度、收藏、MV、搜尋</p></span>
-      </button>
+      <div class="home-column">
+        <div class="home-feature">
+          <button class="app-card card-cyan" data-home-sheet="home-songs">
+            <span class="icon">♫</span><span class="chev">⌃</span>
+            <span><h3>歌曲 Music</h3><p>歌曲、難度、收藏、MV、搜尋</p></span>
+          </button>
+        </div>
+        <div class="home-feature">
+          <button class="app-card card-violet" data-home-sheet="home-characters">
+            <span class="icon">☆</span><span class="chev">⌃</span>
+            <span><h3>角色 Characters</h3><p>團體、成員、角色資料</p></span>
+          </button>
+        </div>
+        <div class="home-feature">
+          <button class="app-card card-orange" data-home-sheet="home-events">
+            <span class="icon">✦</span><span class="chev">⌃</span>
+            <span><h3>活動 Events</h3><p>目前活動、歷史、排名、計算器</p></span>
+          </button>
+        </div>
+        <div class="home-feature">
+          <button class="app-card card-green" data-home-sheet="home-profile">
+            <span class="icon">♙</span><span class="chev">⌃</span>
+            <span><h3>我的 Profile</h3><p>玩家資料、收藏、最近使用、設定</p></span>
+          </button>
+        </div>
       </div>
-      <div class="home-feature">
-      <button class="app-card card-pink" data-home-sheet="home-sekai">
-        <span class="icon">◎</span><span class="chev">⌃</span>
-        <span><h3>SEKAI</h3><p>六大世界、世界資訊、相關內容</p></span>
-      </button>
-      </div>
-      <div class="home-feature">
-      <button class="app-card card-violet" data-home-sheet="home-characters">
-        <span class="icon">☆</span><span class="chev">⌃</span>
-        <span><h3>角色 Characters</h3><p>團體、成員、角色資料</p></span>
-      </button>
-      </div>
-      <div class="home-feature">
-      <button class="app-card card-yellow" data-home-sheet="home-cards">
-        <span class="icon">▣</span><span class="chev">⌃</span>
-        <span><h3>卡片 Cards</h3><p>圖鑑、收藏、特訓、稀有度</p></span>
-      </button>
-      </div>
-      <div class="home-feature">
-      <button class="app-card card-orange" data-home-sheet="home-events">
-        <span class="icon">✦</span><span class="chev">⌃</span>
-        <span><h3>活動 Events</h3><p>目前活動、歷史、排名、計算器</p></span>
-      </button>
-      </div>
-      <div class="home-feature">
-      <button class="app-card card-dark" data-home-sheet="home-tools">
-        <span class="icon">⌘</span><span class="chev">⌃</span>
-        <span><h3>工具 Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
-      </button>
-      </div>
-      <div class="home-feature">
-      <button class="app-card card-green" data-home-sheet="home-profile">
-        <span class="icon">♙</span><span class="chev">⌃</span>
-        <span><h3>我的 Profile</h3><p>玩家資料、收藏、最近使用、設定</p></span>
-      </button>
+      <div class="home-column">
+        <div class="home-feature">
+          <button class="app-card card-pink" data-home-sheet="home-sekai">
+            <span class="icon">◎</span><span class="chev">⌃</span>
+            <span><h3>SEKAI</h3><p>六大世界、世界資訊、相關內容</p></span>
+          </button>
+        </div>
+        <div class="home-feature">
+          <button class="app-card card-yellow" data-home-sheet="home-cards">
+            <span class="icon">▣</span><span class="chev">⌃</span>
+            <span><h3>卡片 Cards</h3><p>圖鑑、收藏、特訓、稀有度</p></span>
+          </button>
+        </div>
+        <div class="home-feature">
+          <button class="app-card card-dark" data-home-sheet="home-tools">
+            <span class="icon">⌘</span><span class="chev">⌃</span>
+            <span><h3>工具 Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
+          </button>
+        </div>
       </div>
     </div>
-
 
   </section>
 
