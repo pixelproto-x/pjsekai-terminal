@@ -973,7 +973,32 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 }
 .catalog-grid .catalog-card.expanded + .accordion-panel{
   display:grid !important;
-}</style>
+}/* HOME CARD STRETCH LOCK */
+.home-grid{
+  align-items:flex-start !important;
+  align-content:flex-start !important;
+}
+.home-grid > .home-feature{
+  align-self:flex-start !important;
+  height:auto !important;
+}
+.home-grid > .home-feature > .app-card,
+.home-grid .app-card,
+.home-grid .app-card.feature,
+.home-grid .app-card.wide{
+  align-self:flex-start !important;
+  height:auto !important;
+  max-height:none !important;
+}
+.catalog-grid{
+  align-items:start !important;
+}
+.catalog-grid > .catalog-card,
+.catalog-grid .catalog-card{
+  align-self:start !important;
+  height:auto !important;
+}
+</style>
 </head>
 <body>
 <div class="top-accent"></div>
