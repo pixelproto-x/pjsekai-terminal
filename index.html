@@ -884,33 +884,44 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   .home-grid .app-card.wide,
   .app-card{min-height:84px !important;padding:14px 18px !important}
 }
-/* HOME TWO-COLUMN INDEPENDENT LAYOUT */
+/* HOME INDEPENDENT COLUMNS */
 .home-grid{
   width:92%;
   max-width:1200px;
   margin:0 auto;
-  display:grid !important;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  align-items:start !important;
-  align-content:start !important;
+  display:flex !important;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:flex-start !important;
+  align-content:flex-start !important;
+  justify-content:stretch;
   gap:12px;
 }
 .home-column{
+  width:calc(50% - 6px) !important;
   min-width:0;
-  width:100%;
+  min-height:0;
+  height:max-content !important;
+  max-height:none !important;
+  margin:0;
+  padding:0;
+  flex:0 0 calc(50% - 6px) !important;
+  align-self:flex-start !important;
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  align-self:start !important;
   gap:12px;
 }
 .home-feature{
   position:relative;
   width:100%;
   min-width:0;
+  min-height:0;
   height:auto !important;
   max-height:none !important;
-  align-self:start !important;
+  margin:0;
+  padding:0;
+  align-self:flex-start !important;
   display:flex;
   flex-direction:column;
   gap:0;
@@ -923,8 +934,8 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   max-height:none !important;
   padding:18px 24px !important;
   margin:0;
-  align-self:start !important;
-  flex:none;
+  align-self:flex-start !important;
+  flex:none !important;
 }
 .home-accordion-panel{
   position:static !important;
@@ -944,17 +955,19 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   pointer-events:auto;
 }
 @media(max-width:900px){
-  .home-grid{
-    width:94%;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
-  }
-  .home-column{gap:10px}
+  .home-grid{width:94%;gap:10px}
+  .home-column{width:calc(50% - 5px) !important;flex-basis:calc(50% - 5px) !important;gap:10px}
 }
 @media(max-width:640px){
   .home-grid{
     width:100%;
-    grid-template-columns:1fr;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    gap:10px;
+  }
+  .home-column{
+    width:100% !important;
+    flex-basis:100% !important;
     gap:10px;
   }
   .home-feature .app-card{
