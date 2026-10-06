@@ -829,82 +829,60 @@ body[data-sekai-theme] .theme-choice.active{
 </style>
 
 <style id="card-layout-dock-fix">
-/* Restore full card breathing room and prevent the fixed Dock from squeezing content. */
-html,body{
-  min-height:100%;
-  height:auto;
-  overflow-y:auto;
-}
-.app-shell{
-  height:auto;
-  max-height:none;
-  overflow:visible;
-}
-main{
-  height:auto;
-  min-height:0;
-  max-height:none;
-  overflow-y:visible;
-  overflow-x:visible;
-  padding-bottom:var(--bottom-nav-clearance);
-}
-.page{
-  height:auto;
-  max-height:none;
-  overflow:visible;
-}
+/* Home card layout: full desktop breathing room while the bottom Dock remains fixed. */
+html,body{min-height:100%;height:auto;overflow-y:auto}
+.app-shell{height:auto;max-height:none;overflow:visible}
+main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visible;padding-bottom:var(--bottom-nav-clearance)}
+.page{height:auto;max-height:none;overflow:visible}
 .home-grid{
-  width:92%;
-  max-width:1080px;
+  width:94%;
+  max-width:1180px;
   margin-left:auto;
   margin-right:auto;
   align-items:start;
   grid-auto-rows:max-content;
+  column-gap:14px;
+  row-gap:14px;
 }
 .home-grid > .home-feature{
+  min-width:0;
   min-height:0;
   height:max-content;
   max-height:none;
   overflow:visible;
   align-self:start;
 }
-.app-card{
-  min-height:80px !important;
+.home-grid .app-card,
+.home-grid .app-card.feature,
+.home-grid .app-card.wide{
+  min-height:84px !important;
   height:auto !important;
   max-height:none !important;
-  padding:14px 18px !important;
+  padding:16px 20px !important;
   display:flex !important;
   align-items:center !important;
   flex:none;
 }
-.app-card > span:not(.icon):not(.chev){
-  padding-right:28px;
-}
-.app-card .icon{
-  flex:none;
-}
-.home-grid .app-card,
-.home-grid .app-card.feature,
-.home-grid .app-card.wide{
-  min-height:80px !important;
+.app-card{
+  min-height:84px !important;
   height:auto !important;
+  max-height:none !important;
+  padding:16px 20px !important;
+  display:flex !important;
+  align-items:center !important;
 }
 .home-grid .home-accordion-panel{
   height:auto;
   max-height:none;
   overflow:visible;
 }
+.quick-row{max-width:1180px;margin-left:auto;margin-right:auto}
 @media(max-width:640px){
-  .home-grid{
-    width:100%;
-    max-width:none;
-  }
-  .app-card,
+  .home-grid{width:100%;max-width:none;column-gap:10px;row-gap:10px}
   .home-grid .app-card,
   .home-grid .app-card.feature,
-  .home-grid .app-card.wide{
-    min-height:80px !important;
-  }
+  .home-grid .app-card.wide,
+  .app-card{min-height:84px !important;padding:14px 18px !important}
 }
 </style>
 </head>
@@ -930,25 +908,9 @@ main{
 
 <main>
   <section class="page active" data-page="home">
-    <div class="hero">
-      <div class="hero-official-art" aria-hidden="true"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt=""></div>
-      <div class="hero-worlds" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div>
-      <div class="hero-content">
-        <div class="kicker">PROJECT SEKAI · 2.0</div>
-        <h1>COLORFUL<br>STAGE!<span>YOUR SEKAI STARTS HERE</span></h1>
-        <p>把大型遊戲網站改成像 iOS App 一樣的資訊架構。首頁只負責導航，點進每個入口，再用更多卡片探索內容。</p>
-        <div class="hero-actions">
-          <button class="primary-btn" data-go="sekai">探索 SEKAI</button>
-          <button class="secondary-btn" data-go="tools">開啟工具</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="official-gallery" aria-label="Project SEKAI 各團體官方視覺">
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt="Leo/need 全隊官方視覺"></div>
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite03_1.png" alt="Vivid BAD SQUAD 全隊官方視覺"></div>
-      <div><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite05_1.png" alt="25時、ナイトコードで。全隊官方視覺"></div>
-    </div>
+
+
 
     <div class="section-head"><div><div class="kicker">EXPLORE</div><h2>選擇一個入口</h2></div><button class="section-link" data-go="profile">我的 ›</button></div>
 
@@ -997,12 +959,7 @@ main{
       </div>
     </div>
 
-    <div class="section-head"><div><div class="kicker">RECENT</div><h2>快速進入</h2></div></div>
-    <div class="quick-row">
-      <button class="quick" data-go="home"><span class="qicon">◷</span><span><strong>最新情報</strong><span>查看近期更新</span></span></button>
-      <button class="quick" data-go="profile"><span class="qicon">♡</span><span><strong>我的收藏</strong><span>歌曲與卡片</span></span></button>
-      <button class="quick" data-go="tools"><span class="qicon">⌘</span><span><strong>工具中心</strong><span>快速開啟常用工具</span></span></button>
-    </div>
+
   </section>
 
   <section class="page" data-page="sekai">
