@@ -133,6 +133,11 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
   await fail('Dojo practice button did not open the local Sonolus core: ' + frameUrl);
 }
 
+const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
+const startButton = sonolusFrame.getByText('START!', { exact: true }).first();
+await startButton.waitFor({ state: 'visible', timeout: 20000 });
+await startButton.click();
+
 try {
   await page.waitForFunction(
     () => {
