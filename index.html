@@ -2581,8 +2581,13 @@ function toggleAccordion(card){
     if(open===card)return;
     const panel=open.nextElementSibling;
     if(panel && panel.classList.contains("accordion-panel")){
-      animatePanelClose(panel,open,"expanded",open.querySelector(".arrow"));
+      // Switching cards is a state change: remove the old panel now so two
+      // accordion panels can never coexist in the same grid.
+      panel.remove();
+      open.classList.remove("expanded");
       open.setAttribute("aria-expanded","false");
+      const arrow=open.querySelector(".arrow");
+      if(arrow)arrow.textContent="⌃";
     }
   });
   const panel=document.createElement("div");
@@ -2610,8 +2615,13 @@ function toggleHomeAccordion(card){
     if(open===card)return;
     const panel=open.nextElementSibling;
     if(panel && panel.classList.contains("home-accordion-panel")){
-      animatePanelClose(panel,open,"home-card-expanded",open.querySelector(".chev"));
+      // Switching cards is a state change: remove the old panel now so only
+      // the clicked card owns an open panel in this grid.
+      panel.remove();
+      open.classList.remove("home-card-expanded");
       open.setAttribute("aria-expanded","false");
+      const chev=open.querySelector(".chev");
+      if(chev)chev.textContent="⌃";
     }
   });
   const panel=document.createElement("div");
