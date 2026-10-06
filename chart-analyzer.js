@@ -12,7 +12,7 @@ const CACHE_TTL=24*60*60*1000;
 const SOURCES={
   musics:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musics.json',
   diffs:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musicDifficulties.json',
-  apiList:'https://api.sekai.best/api/v1/musics/jp/list'
+  local:'dojo-musics.json'
 };
 
 const state={
@@ -202,11 +202,26 @@ function renderList(){
 }
 async function getDetail(song){
   if(state.details.has(song.id))return state.details.get(song.id);
-  let detail=null;
-  try{detail=await fetchJson('https://api.sekai.best/api/v1/musics/jp/'+song.id+'/detail');}catch(_){}
-  let diffs=null;
-  try{diffs=await fetchJson('https://api.sekai.best/api/v1/musics/jp/'+song.id+'/difficulties');}catch(_){}
-  const merged={song,detail,diffs};
+  // Dojo 已經在本機提供歌曲與難度 metadata；分析器直接使用同一份資料，
+  // 不再依賴 api.sekai.best 的 /detail 與 /difficulties 端點。
+  const merged={
+    song,
+    detail:{
+      id:song.id,
+      title:song.title,
+      artist:song.artist,
+      composer:song.composer,
+      arranger:song.arranger,
+      lyricist:song.lyricist,
+      releaseAt:song.releaseAt,
+      duration:song.duration,
+      bpm:song.bpm,
+      bpmMax:song.bpmMax,
+      assetbundleName:song.assetbundleName,
+      jacket:song.jacket
+    },
+    diffs:song.difficulties||{}
+  };
   state.details.set(song.id,merged);
   return merged;
 }
