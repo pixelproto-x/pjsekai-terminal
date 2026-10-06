@@ -827,6 +827,86 @@ body[data-sekai-theme] .theme-choice.active{
 <style>
 .dojo-practice-loop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.dojo-practice-point{border:1px solid var(--line);border-radius:14px;padding:11px;background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px)}.dojo-practice-point-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;color:var(--muted)}.dojo-practice-point-head output{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:900}.dojo-practice-point input{width:100%;margin-top:7px;accent-color:var(--cyan)}.dojo-practice-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:9px}.dojo-speed-chip.active{box-shadow:0 0 0 2px var(--cyan) inset}.dojo-practice-runtime-status{font-size:8px;color:var(--muted);margin-left:auto}.dojo-practice-runtime-status.ready{color:var(--green)}@media(max-width:700px){.dojo-practice-loop-grid{grid-template-columns:1fr}.dojo-practice-runtime-status{width:100%;margin-left:0}}
 </style>
+
+<style id="card-layout-dock-fix">
+/* Restore full card breathing room and prevent the fixed Dock from squeezing content. */
+html,body{
+  min-height:100%;
+  height:auto;
+  overflow-y:auto;
+}
+.app-shell{
+  height:auto;
+  max-height:none;
+  overflow:visible;
+}
+main{
+  height:auto;
+  min-height:0;
+  max-height:none;
+  overflow-y:visible;
+  overflow-x:visible;
+  padding-bottom:var(--bottom-nav-clearance);
+}
+.page{
+  height:auto;
+  max-height:none;
+  overflow:visible;
+}
+.home-grid{
+  width:92%;
+  max-width:1080px;
+  margin-left:auto;
+  margin-right:auto;
+  align-items:start;
+  grid-auto-rows:max-content;
+}
+.home-grid > .home-feature{
+  min-height:0;
+  height:max-content;
+  max-height:none;
+  overflow:visible;
+  align-self:start;
+}
+.app-card{
+  min-height:80px !important;
+  height:auto !important;
+  max-height:none !important;
+  padding:14px 18px !important;
+  display:flex !important;
+  align-items:center !important;
+  flex:none;
+}
+.app-card > span:not(.icon):not(.chev){
+  padding-right:28px;
+}
+.app-card .icon{
+  flex:none;
+}
+.home-grid .app-card,
+.home-grid .app-card.feature,
+.home-grid .app-card.wide{
+  min-height:80px !important;
+  height:auto !important;
+}
+.home-grid .home-accordion-panel{
+  height:auto;
+  max-height:none;
+  overflow:visible;
+}
+@media(max-width:640px){
+  .home-grid{
+    width:100%;
+    max-width:none;
+  }
+  .app-card,
+  .home-grid .app-card,
+  .home-grid .app-card.feature,
+  .home-grid .app-card.wide{
+    min-height:80px !important;
+  }
+}
+</style>
 </head>
 <body>
 <div class="top-accent"></div>
