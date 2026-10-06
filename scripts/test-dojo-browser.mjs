@@ -143,13 +143,14 @@ try {
           typeof runtime.getDuration === 'function' &&
           typeof runtime.seek === 'function' &&
           typeof runtime.setRate === 'function' &&
-          typeof runtime.reset === 'function';
+          typeof runtime.reset === 'function' &&
+          Number(runtime.getDuration?.() || 0) > 0;
       } catch (_) {
         return false;
       }
     },
     null,
-    { timeout: 45000 }
+    { timeout: 60000 }
   );
 } catch (error) {
   const debug = await page.evaluate(() => {
@@ -174,7 +175,7 @@ try {
     };
   });
   throw new Error(
-    'Local Sonolus runtime did not expose within 45s: ' +
+    'Local Sonolus runtime did not become playable within 60s: ' +
     JSON.stringify({
       debug,
       consoleErrors: errors,
