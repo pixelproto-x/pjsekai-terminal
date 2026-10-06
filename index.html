@@ -835,14 +835,14 @@ html,body{min-height:100%;height:auto;overflow-y:auto}
 main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visible;padding-bottom:var(--bottom-nav-clearance)}
 .page{height:auto;max-height:none;overflow:visible}
 .home-grid{
-  width:90%;
-  max-width:1200px;
+  width:94%;
+  max-width:1180px;
   margin-left:auto;
   margin-right:auto;
   align-items:start;
   grid-auto-rows:max-content;
-  column-gap:16px;
-  row-gap:16px;
+  column-gap:14px;
+  row-gap:14px;
 }
 .home-grid > .home-feature{
   min-width:0;
@@ -855,17 +855,19 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 .home-grid .app-card,
 .home-grid .app-card.feature,
 .home-grid .app-card.wide{
-  min-height:88px !important;
+  min-height:84px !important;
+  height:auto !important;
   max-height:none !important;
-  padding:18px 24px !important;
+  padding:16px 20px !important;
   display:flex !important;
   align-items:center !important;
   flex:none;
 }
 .app-card{
-  min-height:88px !important;
+  min-height:84px !important;
+  height:auto !important;
   max-height:none !important;
-  padding:18px 24px !important;
+  padding:16px 20px !important;
   display:flex !important;
   align-items:center !important;
 }
@@ -874,7 +876,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   max-height:none;
   overflow:visible;
 }
-.quick-row{max-width:1200px;width:90%;margin-left:auto;margin-right:auto}
+.quick-row{max-width:1180px;margin-left:auto;margin-right:auto}
 @media(max-width:640px){
   .home-grid{width:100%;max-width:none;column-gap:10px;row-gap:10px}
   .home-grid .app-card,
@@ -882,8 +884,6 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   .home-grid .app-card.wide,
   .app-card{min-height:84px !important;padding:14px 18px !important}
 }
-.page[data-page="home"] .section-head{margin-top:28px}
-main{overflow-y:visible}
 </style>
 </head>
 <body>
@@ -895,6 +895,16 @@ main{overflow-y:visible}
 </div>
 
 <div class="app-shell">
+<header class="topbar">
+  <button class="brand" id="homeBrand" aria-label="回到首頁">
+    <span class="brand-mark"></span>
+    <span class="brand-text"><strong>PROJECT SEKAI</strong><span>PROJECT SEKAI</span></span>
+  </button>
+  <div class="top-actions">
+    <button class="top-icon" id="globalSearchBtn" aria-label="搜尋">⌕</button>
+    <button class="top-icon" id="scrollTopBtn" aria-label="置頂">↑</button>
+  </div>
+</header>
 
 <main>
   <section class="page active" data-page="home">
