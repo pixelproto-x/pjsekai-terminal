@@ -397,13 +397,13 @@ function wireDetail(){
 function loadVotes(){
   try{state.votes=JSON.parse(localStorage.getItem('pjsekai-chart-votes')||'{}')||{};}catch(_){state.votes={};}
 }
-async function selectSong(id){
+async function selectSong(id,notify=true){
   const s=state.songs.find(x=>x.id===Number(id));if(!s)return;
   state.selected=s;
   if(!levelOf(s,state.selectedDiff) || state.selectedDiff==='')state.selectedDiff=DIFFS.find(d=>levelOf(s,d))||'expert';
   renderList();renderDetail();
   try{localStorage.setItem('pjsekai-chart-last-song',String(s.id));}catch(_){}
-  APP?.toast?.('已選擇：'+(s.title||'歌曲'));
+  if(notify)APP?.toast?.('已選擇：'+(s.title||'歌曲'));
 }
 function bind(){
   $('caSearch')?.addEventListener('input',e=>{state.search=e.target.value;filterSongs();});
@@ -423,7 +423,7 @@ async function boot(){
     state.songs=await loadSongs();
     populateUnits();filterSongs();
     const remembered=num(localStorage.getItem('pjsekai-chart-last-song'),0);
-    if(remembered)await selectSong(remembered);
+    if(remembered)await selectSong(remembered,false);
     setStatus('已載入 '+state.songs.length.toLocaleString('en-US')+' 首歌曲資料',true);
   }catch(err){
     console.error('[Chart Analyzer]',err);
