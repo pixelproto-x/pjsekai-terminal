@@ -956,6 +956,35 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   opacity:1;
   pointer-events:auto;
 }
+/* GLOBAL ACCORDION COLLAPSE GUARD */
+.home-grid .home-accordion-panel,
+.catalog-grid .accordion-panel{
+  display:none !important;
+}
+.home-grid .home-card-expanded + .home-accordion-panel{
+  display:grid !important;
+}
+.catalog-grid .catalog-card.expanded + .accordion-panel{
+  display:grid !important;
+}
+.home-grid .home-accordion-panel{
+  position:absolute;
+  left:0;
+  top:calc(100% - 6px);
+  width:100%;
+  max-height:500px;
+  overflow:hidden;
+  opacity:1;
+  pointer-events:auto;
+  z-index:30;
+}
+.home-grid .home-feature{
+  position:relative;
+}
+.home-grid .home-card-expanded + .home-accordion-panel{
+  opacity:1;
+  pointer-events:auto;
+}
 </style>
 </head>
 <body>
@@ -2741,6 +2770,23 @@ function toggleHomeAccordion(card){
   const chev=card.querySelector(".chev");
   if(chev)chev.textContent="⌄";
 }
+
+function normalizeAccordionInitialState(){
+  document.querySelectorAll(".home-grid .app-card[data-home-sheet]").forEach(card=>{
+    card.classList.remove("active","expanded","open","home-card-expanded");
+    card.setAttribute("aria-expanded","false");
+    const chev=card.querySelector(".chev");
+    if(chev)chev.textContent="⌃";
+  });
+  document.querySelectorAll(".catalog-grid .catalog-card[data-sheet]").forEach(card=>{
+    card.classList.remove("active","expanded","open");
+    card.setAttribute("aria-expanded","false");
+    const arrow=card.querySelector(".arrow");
+    if(arrow)arrow.textContent="⌃";
+  });
+  document.querySelectorAll(".home-grid .home-accordion-panel,.catalog-grid .accordion-panel").forEach(panel=>panel.remove());
+}
+normalizeAccordionInitialState();
 
 function resolveHomeActionRoute(key){
   const k=String(key||"");
