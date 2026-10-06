@@ -41,6 +41,77 @@ for (const asset of ['dojo-musics.json', 'dojo-difficulties.json', 'dojo-vocals.
 const home = page.locator('.page[data-page="home"]');
 if (!await home.isVisible()) await fail('Home page is not visible on initial load');
 
+// Homepage accordion regression test: expanding Characters must not stretch the Cards card.
+const characterCard = page.locator('.home-grid .app-card[data-home-sheet="home-characters"]');
+const cardsCard = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
+if (!(await characterCard.count()) || !(await cardsCard.count())) {
+  await fail('Homepage Character/Cards accordion cards are missing');
+}
+const cardsBefore = await cardsCard.evaluate(el => {
+  const r = el.getBoundingClientRect();
+  return { height: r.height, top: r.top, bottom: r.bottom };
+});
+await characterCard.click();
+await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
+const accordionAfterCharacters = await page.evaluate(() => {
+  const character = document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]');
+  const cards = document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]');
+  const characterFeature = character?.closest('.home-feature');
+  const cardsFeature = cards?.closest('.home-feature');
+  const rect = el => {
+    const r = el?.getBoundingClientRect();
+    return r ? { height: r.height, top: r.top, bottom: r.bottom } : null;
+  };
+  return {
+    characterClass: character?.className || '',
+    cardsClass: cards?.className || '',
+    characterRect: rect(character),
+    cardsRect: rect(cards),
+    characterFeatureRect: rect(characterFeature),
+    cardsFeatureRect: rect(cardsFeature),
+  };
+});
+if (!accordionAfterCharacters.characterClass.includes('home-card-expanded')) {
+  await fail('Characters card did not enter home-card-expanded state');
+}
+if (accordionAfterCharacters.cardsClass.includes('home-card-expanded')) {
+  await fail('Cards card was also marked home-card-expanded when Characters opened');
+}
+if (!accordionAfterCharacters.cardsRect || Math.abs(accordionAfterCharacters.cardsRect.height - cardsBefore.height) > 2) {
+  await fail('Cards card height changed after opening Characters: ' + JSON.stringify({ cardsBefore, accordionAfterCharacters }));
+}
+
+// Clicking a generated child action must navigate only; it must not toggle the parent card again.
+await page.locator('.home-grid .home-accordion-item').first().click();
+await page.waitForSelector('.page[data-page="characters"].active', { state: 'visible', timeout: 10000 });
+await page.locator('#homeBrand').click();
+await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
+
+// Switching to Cards leaves Characters collapsed and only the clicked Cards card expanded.
+await page.locator('.home-grid .app-card[data-home-sheet="home-cards"]').click();
+const accordionAfterCards = await page.evaluate(() => ({
+  characterClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]')?.className || '',
+  cardsClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]')?.className || '',
+  openPanels: document.querySelectorAll('.home-grid > .home-feature > .home-accordion-panel').length,
+}));
+if (accordionAfterCards.characterClass.includes('home-card-expanded')) {
+  await fail('Characters remained expanded after Cards was opened: ' + JSON.stringify(accordionAfterCards));
+}
+if (!accordionAfterCards.cardsClass.includes('home-card-expanded') || accordionAfterCards.openPanels !== 1) {
+  await fail('Cards accordion did not become the single expanded homepage card: ' + JSON.stringify(accordionAfterCards));
+}
+
+// Close Cards by clicking the same card; no adjacent card may be toggled.
+await page.locator('.home-grid .app-card[data-home-sheet="home-cards"]').click();
+const accordionClosed = await page.evaluate(() => ({
+  characterClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]')?.className || '',
+  cardsClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]')?.className || '',
+  openPanels: document.querySelectorAll('.home-grid > .home-feature > .home-accordion-panel').length,
+}));
+if (accordionClosed.characterClass.includes('home-card-expanded') || accordionClosed.cardsClass.includes('home-card-expanded') || accordionClosed.openPanels !== 0) {
+  await fail('Closing Cards did not leave all homepage accordion cards collapsed: ' + JSON.stringify(accordionClosed));
+}
+
 const routes = ['sekai', 'songs', 'tools', 'profile'];
 for (const route of routes) {
   const tab = page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]');
