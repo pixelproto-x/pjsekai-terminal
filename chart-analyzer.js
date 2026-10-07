@@ -216,6 +216,12 @@ function filterSongs(){
   });
   renderList();
 }
+function jacketProxyUrl(song){
+  const asset=String(song?.assetbundleName||song?.jacket||'').trim();
+  if(!asset)return '';
+  const origin='https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+asset+'_normal.webp';
+  return 'https://images.weserv.nl/?url='+encodeURIComponent('ssl:'+origin)+'&w=96&h=96&fit=cover&output=webp';
+}
 function renderList(){
   const box=$('caSongList'),count=$('caCount');if(!box)return;
   count.textContent=state.filtered.length.toLocaleString('en-US')+' 首';
@@ -223,7 +229,7 @@ function renderList(){
     const master=levelOf(s,'master'),expert=levelOf(s,'expert');
     const active=state.selected?.id===s.id;
     return '<button type="button" class="ca-song '+(active?'active':'')+'" data-ca-song="'+s.id+'">'+
-      '<span class="ca-jacket" style="background-image:url(\'https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+esc(s.assetbundleName||s.jacket)+'_normal.webp\')"></span>'+
+      '<span class="ca-jacket" style="background-image:url(\''+jacketProxyUrl(s)+'\')"></span>'+
       '<span class="ca-song-copy"><strong>'+esc(s.title||('Music #'+s.id))+'</strong><span>'+esc(s.artist||s.composer||'Project SEKAI')+'</span></span>'+
       '<span class="ca-mini-level">EX '+(expert||'—')+'<br>MAS '+(master||'—')+'</span>'+
     '</button>';
