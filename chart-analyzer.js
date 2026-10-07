@@ -391,7 +391,7 @@ function renderDetail(){
   const box=$('caDetail'),song=state.selected,diff=state.selectedDiff;if(!box||!song)return;
   box.innerHTML='<div class="ca-detail-inner">'+
     '<div class="ca-detail-hero">'+
-      '<div class="ca-detail-jacket" style="background-image:url(\'https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+esc(song.assetbundleName||song.jacket)+'_normal.webp\')"></div>'+
+      '<div class="ca-detail-jacket" style="background-image:url(\''+jacketProxyUrl(song)+'\')"></div>'+
       '<div class="ca-detail-title"><div class="ca-chip">'+LABELS[diff]+'</div><h3>'+esc(song.title||'未命名歌曲')+'</h3><p>'+esc(song.artist||song.composer||'')+'</p><small>ID '+song.id+'</small></div>'+
       '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+bpmLabel+'</b></div><div><small>時長</small><b>'+durationLabel+'</b></div><div><small>Notes</small><b>'+notesLabel+'</b></div><div><small>NPS</small><b>'+nps+'</b></div></div>'+
     '</div>'+
