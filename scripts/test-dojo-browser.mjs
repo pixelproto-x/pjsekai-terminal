@@ -166,6 +166,15 @@ if (selectedAfterClick.title !== firstSongTitle) {
 }
 if (!selectedAfterClick.buttons) await fail('Selected Dojo song has no available difficulty buttons');
 
+await page.locator('#dojoSongSearch').fill(firstSongTitle.slice(0, Math.min(8, firstSongTitle.length)));
+await page.waitForTimeout(100);
+const filtered = await page.locator('#dojoSongList [data-dojo-song]').count();
+if (!filtered) await fail('Dojo song search returned no result for the selected title');
+await page.locator('#dojoClearSearch').evaluate(el => el.click());
+if ((await page.locator('#dojoSongSearch').inputValue()) !== '') {
+  await fail('Dojo clear-search did not clear the input');
+}
+
 const firstDifficulty = page.locator('#dojoDifficultyButtons [data-dojo-diff]').first();
 await firstDifficulty.evaluate(el => el.click());
 
@@ -177,15 +186,6 @@ const analyzed = await page.evaluate(() => ({
 }));
 if (!analyzed.title || analyzed.notes === '—' || analyzed.nps === '—') {
   await fail('Dojo chart analysis did not populate: ' + JSON.stringify(analyzed));
-}
-
-await page.locator('#dojoSongSearch').fill(firstSongTitle.slice(0, Math.min(8, firstSongTitle.length)));
-await page.waitForTimeout(100);
-const filtered = await page.locator('#dojoSongList [data-dojo-song]').count();
-if (!filtered) await fail('Dojo song search returned no result for the selected title');
-await page.locator('#dojoClearSearch').evaluate(el => el.click());
-if ((await page.locator('#dojoSongSearch').inputValue()) !== '') {
-  await fail('Dojo clear-search did not clear the input');
 }
 
 await page.locator('#dojoSpeedCalc').evaluate(el => el.click());
