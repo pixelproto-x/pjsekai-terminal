@@ -166,7 +166,7 @@ if (selectedAfterClick.title !== firstSongTitle) {
 }
 if (!selectedAfterClick.buttons) await fail('Selected Dojo song has no available difficulty buttons');
 
-await page.locator('#dojoSongSearch').fill(firstSongTitle.slice(0, Math.min(8, firstSongTitle.length)));
+await page.locator('#dojoSongSearch').evaluate((el, value) => { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }, firstSongTitle.slice(0, Math.min(8, firstSongTitle.length)));
 await page.waitForTimeout(100);
 const filtered = await page.locator('#dojoSongList [data-dojo-song]').count();
 if (!filtered) await fail('Dojo song search returned no result for the selected title');
