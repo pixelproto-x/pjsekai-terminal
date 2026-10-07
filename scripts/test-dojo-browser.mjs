@@ -153,8 +153,7 @@ const firstSongId = await firstSong.getAttribute('data-dojo-song');
 const firstSongTitle = (await firstSong.locator('.dojo-song-title').textContent() || '').trim();
 if (!firstSongId || !firstSongTitle) await fail('Dojo local song list contains an invalid first song');
 
-await firstSong.scrollIntoViewIfNeeded();
-await firstSong.click({force:true});
+await firstSong.evaluate(el => el.click());
 await page.waitForTimeout(100);
 
 const selectedAfterClick = await page.evaluate(() => ({
