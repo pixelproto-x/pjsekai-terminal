@@ -832,7 +832,7 @@ body[data-sekai-theme] .theme-choice.active{
 /* Home card layout: full desktop breathing room while the bottom Dock remains fixed. */
 html,body{min-height:100%;height:auto;overflow-y:auto}
 .app-shell{height:auto;max-height:none;overflow:visible}
-main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visible;padding-bottom:var(--bottom-nav-clearance)}
+main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visible;padding-bottom:calc(var(--bottom-nav-clearance) + 24px);scroll-padding-bottom:calc(var(--bottom-nav-clearance) + 24px)}
 .page{height:auto;max-height:none;overflow:visible}
 .home-grid{
   width:94%;
@@ -2733,6 +2733,19 @@ function toggleAccordion(card){
   card.querySelector(".arrow").textContent="⌄";
 }
 
+function keepHomeAccordionAboveDock(panel){
+  requestAnimationFrame(()=>{
+    const dock=document.querySelector(".bottom-bar");
+    const target=panel?.closest(".home-feature");
+    if(!dock || !target)return;
+    const dockRect=dock.getBoundingClientRect();
+    const targetRect=target.getBoundingClientRect();
+    const margin=16;
+    const overlap=targetRect.bottom-(dockRect.top-margin);
+    if(overlap>0)window.scrollBy({top:overlap,behavior:"smooth"});
+  });
+}
+
 function toggleHomeAccordion(card){
   const key=card.dataset.homeSheet;
   const data=homeData[key];
@@ -2761,6 +2774,7 @@ function toggleHomeAccordion(card){
   card.setAttribute("aria-expanded","true");
   const chev=card.querySelector(".chev");
   if(chev)chev.textContent="⌄";
+  keepHomeAccordionAboveDock(panel);
 }
 
 function normalizeAccordionInitialState(){
