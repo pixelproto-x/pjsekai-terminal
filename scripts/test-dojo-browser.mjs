@@ -94,7 +94,7 @@ await cardsAccordionCard.evaluate(el => el.click());
 const accordionAfterCards = await page.evaluate(() => ({
   characterClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-characters"]')?.className || '',
   cardsClass: document.querySelector('.home-grid .app-card[data-home-sheet="home-cards"]')?.className || '',
-  openPanels: document.querySelectorAll('.home-grid > .home-feature > .home-accordion-panel').length,
+  openPanels: document.querySelectorAll('.home-grid .home-accordion-panel').length,
 }));
 if (accordionAfterCards.characterClass.includes('home-card-expanded')) {
   await fail('Characters remained expanded after Cards was opened: ' + JSON.stringify(accordionAfterCards));
