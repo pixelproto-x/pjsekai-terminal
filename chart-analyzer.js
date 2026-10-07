@@ -88,7 +88,7 @@ function normalizeMusic(x,diffRows=[]){
     const mapped=key==='append'?'append':key==='master'?'master':key==='expert'?'expert':key==='hard'?'hard':key==='normal'?'normal':key==='easy'?'easy':'';
     if(mapped)difficulties[mapped]={
       level:num(d.playLevel??d.level,0),
-      notes:num(d.noteCount??d.notes,0),
+      notes:num(d.totalNoteCount??d.noteCount??d.notes,0),
       raw:d
     };
   });
@@ -337,7 +337,7 @@ function renderTimeline(song,diff,bundle,times){
   const bpmLabel=Number(song.bpm)>0?(song.bpmMax&&song.bpmMax!==song.bpm?esc(song.bpm)+'–'+esc(song.bpmMax):esc(song.bpm)):'資料未提供';
   const notesLabel=notesOf(song,diff)>0?notesOf(song,diff).toLocaleString('en-US'):'資料未提供';
   const nps=hasDuration&&notesOf(song,diff)>0?(notesOf(song,diff)/song.duration).toFixed(2):'—';
-  return '<div class="ca-timeline"><div class="ca-bars">'+html+'</div><div class="ca-axis"><span>0:00</span><span>'+fmtTime(song.duration/2)+'</span><span>'+fmtTime(song.duration)+'</span></div><div class="ca-timeline-meta"><span>平均 NPS '+nps.toFixed(2)+'</span><span>峰值區間 '+Math.max(0,Math.round(tl.counts.indexOf(peak)*tl.width))+'s</span><span>'+(tl.exact?'原始時間點':'投影估算')+'</span></div></div>';
+  return '<div class="ca-timeline"><div class="ca-bars">'+html+'</div><div class="ca-axis"><span>0:00</span><span>'+fmtTime(song.duration/2)+'</span><span>'+fmtTime(song.duration)+'</span></div><div class="ca-timeline-meta"><span>平均 NPS '+nps+'</span><span>峰值區間 '+Math.max(0,Math.round(tl.counts.indexOf(peak)*tl.width))+'s</span><span>'+(tl.exact?'原始時間點':'投影估算')+'</span></div></div>';
 }
 function renderBreakdown(bundle,diff){
   const bd=extractBreakdown(bundle,diff);
