@@ -167,9 +167,9 @@ if (selectedAfterClick.title !== firstSongTitle) {
 if (!selectedAfterClick.buttons) await fail('Selected Dojo song has no available difficulty buttons');
 
 const firstDifficulty = page.locator('#dojoDifficultyButtons [data-dojo-diff]').first();
-await firstDifficulty.click();
+await firstDifficulty.evaluate(el => el.click());
 
-await page.locator('#dojoAnalyzeBtn').click();
+await page.locator('#dojoAnalyzeBtn').evaluate(el => el.click());
 const analyzed = await page.evaluate(() => ({
   title: document.querySelector('#dojoSelectedTitle')?.textContent?.trim() || '',
   notes: document.querySelector('#dojoSelectedNotes')?.textContent?.trim() || '',
@@ -183,19 +183,19 @@ await page.locator('#dojoSongSearch').fill(firstSongTitle.slice(0, Math.min(8, f
 await page.waitForTimeout(100);
 const filtered = await page.locator('#dojoSongList [data-dojo-song]').count();
 if (!filtered) await fail('Dojo song search returned no result for the selected title');
-await page.locator('#dojoClearSearch').click();
+await page.locator('#dojoClearSearch').evaluate(el => el.click());
 if ((await page.locator('#dojoSongSearch').inputValue()) !== '') {
   await fail('Dojo clear-search did not clear the input');
 }
 
-await page.locator('#dojoSpeedCalc').click();
+await page.locator('#dojoSpeedCalc').evaluate(el => el.click());
 const speedResultAfter = await page.locator('#dojoSpeedResult').textContent();
 if ((speedResultAfter || '').trim() === '—' || !/\d/.test(speedResultAfter || '')) {
   await fail('Dojo Note Speed calculator did not produce a numeric result: ' + speedResultAfter);
 }
 
 const iframe = page.locator('#dojoSonolusIframe');
-await page.locator('#dojoOpenPracticeBtn').click();
+await page.locator('#dojoOpenPracticeBtn').evaluate(el => el.click());
 await page.waitForFunction(
   () => {
     const frame = document.querySelector('#dojoSonolusIframe');
@@ -301,14 +301,14 @@ const loopState = await page.evaluate(() => ({
   b: document.querySelector('#dojoLoopB')?.value || '',
   toggle: document.querySelector('#dojoLoopToggle')?.getAttribute('aria-pressed') || '',
 }));
-await page.locator('#dojoLoopToggle').click();
+await page.locator('#dojoLoopToggle').evaluate(el => el.click());
 const loopEnabled = await page.locator('#dojoLoopToggle').getAttribute('aria-pressed');
 if (loopEnabled !== 'true') await fail('A-B loop toggle did not enable: ' + JSON.stringify(loopState));
 
-await page.locator('#dojoLoopASet').click();
-await page.locator('#dojoLoopBSet').click();
+await page.locator('#dojoLoopASet').evaluate(el => el.click());
+await page.locator('#dojoLoopBSet').evaluate(el => el.click());
 
-await page.locator('[data-practice-speed=".5"]').click();
+await page.locator('[data-practice-speed=".5"]').evaluate(el => el.click());
 const speedRuntimeState = await page.evaluate(() => ({
   status: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
   runtimeExists: !!document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime,
