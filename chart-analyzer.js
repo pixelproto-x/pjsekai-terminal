@@ -7,7 +7,7 @@ const ROOT_ID='chartAnalyzerMount';
 const DIFFS=['easy','normal','hard','expert','master','append'];
 const LABELS={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
 const COLORS={easy:'var(--cyan)',normal:'var(--green)',hard:'var(--yellow)',expert:'var(--orange)',master:'var(--pink)',append:'var(--violet)'};
-const CACHE_KEY='pjsekai-chart-analyzer-cache-v1';
+const CACHE_KEY='pjsekai-chart-analyzer-cache-v2';
 const CACHE_TTL=24*60*60*1000;
 const SOURCES={
   musics:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musics.json',
@@ -31,7 +31,11 @@ const state={
 
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const num=(v,d=0)=>{const n=Number(v);return Number.isFinite(n)?n:d};
+const num=(v,d=0)=>{
+  if(v===null || v===undefined || String(v).trim()==='') return d;
+  const n=Number(v);
+  return Number.isFinite(n)?n:d;
+};
 const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?(v.items||v.results||v.data||[]):[]);
 function fmtTime(sec){
   const n=Math.max(0,Math.round(num(sec,0))),m=Math.floor(n/60),s=n%60;
@@ -45,6 +49,24 @@ function notesOf(song,diff){
   const d=song?.difficulties?.[diff];
   return num(d?.notes??d?.noteCount,0);
 }
+function parseDateValue(v){
+  if(v===null || v===undefined || String(v).trim()==='') return null;
+  if(typeof v==='number' && Number.isFinite(v)){
+    return new Date(v<1e12?v*1000:v);
+  }
+  const text=String(v).trim();
+  if(/^\d+$/.test(text)){
+    const n=Number(text);
+    if(Number.isFinite(n)) return new Date(n<1e12?n*1000:n);
+  }
+  const dt=new Date(text);
+  return Number.isNaN(dt.getTime())?null:dt;
+}
+function formatDateValue(v){
+  const dt=parseDateValue(v);
+  return dt?dt.toLocaleString('zh-TW'):'資料未提供';
+}
+
 function unitText(song){
   return [song.unit,song.categories,song.category,song.group,song.groupName].filter(Boolean).join(' ');
 }
@@ -76,7 +98,7 @@ function normalizeMusic(x,diffRows=[]){
       if(DIFFS.includes(mapped))difficulties[mapped]={
         ...difficulties[mapped],
         level:num(d.playLevel??d.level??difficulties[mapped]?.level,0),
-        notes:num(d.noteCount??d.notes??difficulties[mapped]?.notes,0),
+        notes:num(d.totalNoteCount??d.noteCount??d.notes??difficulties[mapped]?.notes,0),
         raw:d
       };
     });
@@ -91,8 +113,15 @@ function normalizeMusic(x,diffRows=[]){
     arranger:String(x.arranger??''),
     unit:String(x.unit??x.unitName??''),
     categories:Array.isArray(x.categories)?x.categories.join(' / '):String(x.categories??x.category??''),
-    releaseAt:String(x.releaseAt??x.releasedAt??x.releaseDate??x.publishedAt??''),
-    duration:(()=>{const raw=num(x.duration??x.musicTime??x.length,0);return raw>1000&&raw<3600000?raw/1000:raw;})(),
+    releaseAt:x.releaseAt??x.releasedAt??x.releaseDate??x.publishedAt??'',
+    duration:(()=>{
+      const raw=num(x.duration??x.musicTime??x.length,0);
+      if(raw>1000&&raw<3600000)return raw/1000;
+      if(raw>0)return raw;
+      const fallback=num(x.secForMusicScoreMaker,0);
+      return fallback>0?fallback:0;
+    })(),
+    durationEstimated:!(num(x.duration??x.musicTime??x.length,0)>0) && num(x.secForMusicScoreMaker,0)>0,
     bpm:num(x.bpm??x.musicBpm??x.bpmMin,0),
     bpmMax:num(x.bpmMax??x.maxBpm??x.bpm,0),
     assetbundleName:String(x.assetbundleName??x.assetBundleName??''),
@@ -284,7 +313,8 @@ function calcProjection(song,diff){
   return counts.map(v=>v*scale);
 }
 function buildTimeline(song,diff,bundle,times){
-  const duration=Math.max(1,num(song.duration,0));
+  const duration=num(song.duration,0);
+  if(!(duration>0))return {counts:[],width:0,exact:false,unavailable:true};
   const raw=times||[];
   if(raw.length>2){
     const bins=Math.min(60,Math.max(18,Math.ceil(duration/5)));
@@ -295,12 +325,18 @@ function buildTimeline(song,diff,bundle,times){
   return {counts:calcProjection(song,diff),width:duration/Math.max(18,Math.min(60,Math.ceil(duration/5))),exact:false};
 }
 function renderTimeline(song,diff,bundle,times){
-  const tl=buildTimeline(song,diff,bundle,times),peak=Math.max(...tl.counts,1),avg=tl.counts.reduce((a,b)=>a+b,0)/tl.counts.length;
+  const tl=buildTimeline(song,diff,bundle,times);
+  if(tl.unavailable)return '<div class="ca-unavailable">目前資料沒有可用的歌曲時長，因此不產生虛假的密度時間軸或 NPS。</div>';
+  const peak=Math.max(...tl.counts,1),avg=tl.counts.reduce((a,b)=>a+b,0)/tl.counts.length;
   const html=tl.counts.map((v,i)=>{
     const ratio=v/peak,h=Math.max(4,Math.round(ratio*100));
     return '<span class="ca-bar '+(ratio>.76?'hot':'')+'" style="height:'+h+'%" title="'+fmtTime(i*tl.width)+' · '+Math.round(v)+' notes"></span>';
   }).join('');
-  const nps=notesOf(song,diff)/Math.max(1,num(song.duration,0));
+  const hasDuration=Number.isFinite(Number(song.duration)) && Number(song.duration)>0;
+  const durationLabel=hasDuration?((song.durationEstimated?'≈':'')+fmtTime(song.duration)):'資料未提供';
+  const bpmLabel=Number(song.bpm)>0?(song.bpmMax&&song.bpmMax!==song.bpm?esc(song.bpm)+'–'+esc(song.bpmMax):esc(song.bpm)):'資料未提供';
+  const notesLabel=notesOf(song,diff)>0?notesOf(song,diff).toLocaleString('en-US'):'資料未提供';
+  const nps=hasDuration&&notesOf(song,diff)>0?(notesOf(song,diff)/song.duration).toFixed(2):'—';
   return '<div class="ca-timeline"><div class="ca-bars">'+html+'</div><div class="ca-axis"><span>0:00</span><span>'+fmtTime(song.duration/2)+'</span><span>'+fmtTime(song.duration)+'</span></div><div class="ca-timeline-meta"><span>平均 NPS '+nps.toFixed(2)+'</span><span>峰值區間 '+Math.max(0,Math.round(tl.counts.indexOf(peak)*tl.width))+'s</span><span>'+(tl.exact?'原始時間點':'投影估算')+'</span></div></div>';
 }
 function renderBreakdown(bundle,diff){
@@ -351,14 +387,14 @@ function renderDetail(){
     '<div class="ca-detail-hero">'+
       '<div class="ca-detail-jacket" style="background-image:url(\'https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+esc(song.assetbundleName||song.jacket)+'_normal.webp\')"></div>'+
       '<div class="ca-detail-title"><div class="ca-chip">'+LABELS[diff]+'</div><h3>'+esc(song.title||'未命名歌曲')+'</h3><p>'+esc(song.artist||song.composer||'')+'</p><small>ID '+song.id+'</small></div>'+
-      '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+(song.bpmMax&&song.bpmMax!==song.bpm?esc(song.bpm)+'–'+esc(song.bpmMax):esc(song.bpm||'—'))+'</b></div><div><small>時長</small><b>'+fmtTime(song.duration)+'</b></div><div><small>Notes</small><b>'+notesOf(song,diff).toLocaleString('en-US')+'</b></div><div><small>NPS</small><b>'+(notesOf(song,diff)/Math.max(1,song.duration)).toFixed(2)+'</b></div></div>'+
+      '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+bpmLabel+'</b></div><div><small>時長</small><b>'+durationLabel+'</b></div><div><small>Notes</small><b>'+notesLabel+'</b></div><div><small>NPS</small><b>'+nps+'</b></div></div>'+
     '</div>'+
     '<div class="ca-sections"><section><div class="ca-section-title"><strong>76 / 78 · 難度資料</strong><span>全難度 Level + Note Count</span></div>'+difficultyTable(song)+'</section>'+
     '<section><div class="ca-section-title"><strong>80 / 82 / 83 · 密度分析</strong><span>NPS · 高密度區 · 靜態長條圖</span></div><div id="caTimelineHolder"><div class="ca-loading">讀取詳細譜面資料…</div></div></section>'+
     '<section><div class="ca-section-title"><strong>79 · Note 類型比例</strong><span>Tap / Flick / Hold / Slide</span></div><div id="caBreakdownHolder" class="ca-loading">讀取中…</div></section>'+
     '<section>'+votePanel(song,diff)+'</section>'+
     '<section><div class="ca-section-title"><strong>85 · 歌曲資料</strong><span>實裝日期 / 創作者 / 分類</span></div><div class="ca-meta-grid">'+
-      '<div><small>實裝日期</small><strong>'+esc(song.releaseAt?new Date(song.releaseAt).toLocaleString('zh-TW'):'資料未提供')+'</strong></div>'+
+      '<div><small>實裝日期</small><strong>'+esc(formatDateValue(song.releaseAt))+'</strong></div>'+
       '<div><small>作詞</small><strong>'+esc(song.lyricist||'資料未提供')+'</strong></div>'+
       '<div><small>作曲</small><strong>'+esc(song.composer||'資料未提供')+'</strong></div>'+
       '<div><small>編曲</small><strong>'+esc(song.arranger||'資料未提供')+'</strong></div>'+
