@@ -148,7 +148,7 @@ await page.waitForFunction(
 const initialSelection = (await page.locator('#dojoSelectedTitle').textContent() || '').trim();
 if (!initialSelection) await fail('Dojo selected-song panel is empty on initial load');
 
-const firstSong = page.locator('#dojoSongList [data-dojo-song]').last();
+const firstSong = page.locator('#dojoSongList [data-dojo-song]:visible').first();
 const firstSongId = await firstSong.getAttribute('data-dojo-song');
 const firstSongTitle = (await firstSong.locator('.dojo-song-title').textContent() || '').trim();
 if (!firstSongId || !firstSongTitle) await fail('Dojo local song list contains an invalid first song');
