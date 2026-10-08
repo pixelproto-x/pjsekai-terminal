@@ -321,7 +321,7 @@ if (!/16\b/.test(hardButtonText || '')) await fail('Dojo difficulty data is not 
 const initialSelection = (await page.locator('#dojoSelectedTitle').textContent() || '').trim();
 if (!initialSelection) await fail('Dojo selected-song panel is empty on initial load');
 
-const firstSong = page.locator('#dojoSongList [data-dojo-song]:visible:not(.active)').first();
+const firstSong = page.locator('#dojoSongList [data-dojo-song]:not(.active)').first();
 const firstSongId = await firstSong.getAttribute('data-dojo-song');
 const firstSongTitle = (await firstSong.locator('.dojo-song-title').textContent() || '').trim();
 if (!firstSongId || !firstSongTitle) await fail('Dojo local song list contains an invalid first song');
