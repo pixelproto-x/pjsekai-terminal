@@ -169,7 +169,7 @@ const coverUrls = await page.evaluate(() => [...document.querySelectorAll('#caSo
 if (!coverUrls.length) {
   await fail('Chart Analyzer rendered no jacket background images for proxy audit');
 }
-if (!coverUrls.every(url => /images\.weserv\.nl/i.test(url))) {
+if (!coverUrls.every(url => /wsrv\.nl/i.test(url))) {
   await fail('Chart Analyzer cover images are not consistently using the proxy: ' + JSON.stringify(coverUrls));
 }
 const coverProbe = [];
