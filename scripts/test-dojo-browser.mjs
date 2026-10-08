@@ -3,6 +3,7 @@ import { chromium } from 'playwright';
 const errors = [];
 const pageErrors = [];
 const failedLocalRequests = [];
+const failedRequests = [];
 
 const browser = await chromium.launch({
   headless: true,
@@ -18,9 +19,14 @@ page.on('console', msg => {
 });
 page.on('pageerror', err => pageErrors.push(err.stack || err.message));
 page.on('response', response => {
-  if (response.status() >= 400 && response.url().startsWith('http://127.0.0.1:4173/')) {
-    failedLocalRequests.push({ status: response.status(), url: response.url() });
+  if (response.status() >= 400) {
+    const item = { status: response.status(), url: response.url() };
+    failedRequests.push(item);
+    if (response.url().startsWith('http://127.0.0.1:4173/')) failedLocalRequests.push(item);
   }
+});
+page.on('requestfailed', request => {
+  failedRequests.push({ status: 'FAILED', url: request.url(), error: request.failure()?.errorText || '' });
 });
 
 const fail = async message => {
@@ -40,6 +46,102 @@ for (const asset of ['dojo-musics.json', 'dojo-difficulties.json', 'dojo-vocals.
 
 const home = page.locator('.page[data-page="home"]');
 if (!await home.isVisible()) await fail('Home page is not visible on initial load');
+
+// Deep homepage layout audit: each independent column must expand without stretching its paired card.
+const homePairs = [
+  ['home-songs', 'home-sekai'],
+  ['home-characters', 'home-cards'],
+  ['home-events', 'home-tools'],
+];
+for (const [leftKey, rightKey] of homePairs) {
+  const left = page.locator('.home-grid .app-card[data-home-sheet="' + leftKey + '"]');
+  const right = page.locator('.home-grid .app-card[data-home-sheet="' + rightKey + '"]');
+  if (!(await left.count()) || !(await right.count())) await fail('Missing homepage pair: ' + leftKey + ' / ' + rightKey);
+  const before = await right.boundingBox();
+  await left.evaluate(el => el.click());
+  await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
+  const after = await right.boundingBox();
+  if (!before || !after || Math.abs(after.height - before.height) > 2) {
+    await fail('Paired homepage card stretched after opening ' + leftKey + ': ' + JSON.stringify({ before, after }));
+  }
+  await left.evaluate(el => el.click());
+}
+const cardsForDock = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
+const toolsForDock = page.locator('.home-grid .app-card[data-home-sheet="home-tools"]');
+await cardsForDock.evaluate(el => el.click());
+await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
+const dockAudit = await page.evaluate(() => {
+  const dock = document.querySelector('nav.bottom-bar')?.getBoundingClientRect();
+  const tools = document.querySelector('.home-grid .app-card[data-home-sheet="home-tools"]')?.getBoundingClientRect();
+  return dock && tools ? { dockTop: dock.top, toolsBottom: tools.bottom } : null;
+});
+if (!dockAudit || dockAudit.toolsBottom > dockAudit.dockTop - 8) {
+  await fail('Homepage Tools card still overlaps fixed Dock after Cards expansion: ' + JSON.stringify(dockAudit));
+}
+await cardsForDock.evaluate(el => el.click());
+
+// Strategy Calculator deep checks.
+await page.locator('nav.bottom-bar button.tab[data-go="tools"]').evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="tools"].active', { state: 'visible', timeout: 10000 });
+const setInput = async (id, value) => page.locator('#' + id).evaluate((el, v) => {
+  el.value = String(v);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}, value);
+for (const [id, value] of [
+  ['scTargetPoints', 100000], ['scCurrentPoints', 25000], ['scBasePoints', 1500],
+  ['scBonusPct', 250], ['scBoostPerRun', 5], ['scRunSeconds', 180], ['scCurrentBoost', 10], ['scDrinkRestore', 10]
+]) await setInput(id, value);
+const strategyResult = await page.evaluate(() => Object.fromEntries(
+  ['scGapPoints','scRuns','scBoostNeeded','scDrinks','scPointsPerRun','scEventTime','scBoostRemain','scOver']
+    .map(id => [id, document.getElementById(id)?.textContent?.trim() || ''])
+));
+if (!strategyResult.scGapPoints || Number(strategyResult.scGapPoints.replace(/,/g,'')) !== 75000 ||
+    Number(strategyResult.scRuns.replace(/,/g,'')) <= 0 ||
+    Number(strategyResult.scPointsPerRun.replace(/,/g,'')) <= 0) {
+  await fail('Strategy event calculator returned invalid results: ' + JSON.stringify(strategyResult));
+}
+for (const [id, value] of [['scMrCurrent',0],['scMrTarget',5],['scSkillCurrent',1],['scSkillTarget',10],['scTrainSeconds',60]]) await setInput(id, value);
+const materialResult = await page.evaluate(() => ({
+  mr: document.querySelector('#scMrSteps')?.textContent?.trim() || '',
+  skill: document.querySelector('#scSkillSteps')?.textContent?.trim() || '',
+  total: document.querySelector('#scTotalSteps')?.textContent?.trim() || ''
+}));
+if (Number(materialResult.mr.replace(/,/g,'')) <= 0 || Number(materialResult.skill.replace(/,/g,'')) <= 0) {
+  await fail('Strategy material calculator returned zero for valid inputs: ' + JSON.stringify(materialResult));
+}
+await setInput('scStaminaCurrent', 2);
+await setInput('scStaminaMinutes', 1);
+await setInput('scStaminaTarget', 5);
+await page.locator('#scStaminaStartBtn').evaluate(el => el.click());
+await page.waitForTimeout(120);
+const staminaClock = await page.locator('#scStaminaClock').textContent();
+if ((staminaClock || '').trim() === '00:00:00') await fail('Strategy stamina timer did not start');
+await page.locator('#scStaminaStopBtn').evaluate(el => el.click());
+
+// Chart Analyzer deep checks.
+await page.locator('nav.bottom-bar button.tab[data-go="songs"]').evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
+await page.waitForFunction(() => {
+  const el = document.querySelector('#caCount');
+  return el && Number((el.textContent || '').replace(/[^0-9]/g, '')) > 0;
+}, null, { timeout: 25000 });
+const chartInitialCount = await page.locator('#caCount').textContent();
+if (!/\d/.test(chartInitialCount || '')) await fail('Chart Analyzer has no default songs');
+await setInput('caMaxLevel', '');
+await page.waitForTimeout(100);
+const blankMaxCount = await page.locator('#caCount').textContent();
+if (Number((blankMaxCount || '').replace(/[^0-9]/g,'')) <= 0) await fail('Chart Analyzer blank Lv upper bound filtered all songs');
+const chartSong = page.locator('#caSongList [data-ca-song]').first();
+await chartSong.evaluate(el => el.click());
+await page.waitForSelector('#caDetail .ca-detail-metrics', { state: 'visible', timeout: 10000 });
+const chartDetail = await page.evaluate(() => ({
+  text: document.querySelector('#caDetail')?.innerText || '',
+  metrics: document.querySelector('.ca-detail-metrics')?.innerText || ''
+}));
+if (/Invalid Date|undefined/.test(chartDetail.text) || !/Notes\s*\d/.test(chartDetail.metrics)) {
+  await fail('Chart Analyzer detail contains invalid/missing metadata: ' + JSON.stringify(chartDetail));
+}
 
 // Homepage accordion regression test: expanding Characters must not stretch the Cards card.
 const characterCard = page.locator('.home-grid .app-card[data-home-sheet="home-characters"]');
