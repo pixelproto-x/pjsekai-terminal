@@ -1964,8 +1964,15 @@ async function boot(){
     ce.is_offline_level=!1;
     window.__pjMenu.change_menu("SourceLoad");
     signal("stage",{stage:"source-load"});
-    await wait(()=>document.querySelector(".start-play-trg"),30000);
-    signal("ready",{duration:runtime.getDuration(),stage:"source-ready"});
+    const sourceReady=await wait(()=>document.querySelector(".start-play-trg:not([disabled])"),45000);
+    if(sourceReady){
+      signal("stage",{stage:"source-ready"});
+      signal("ready",{duration:runtime.getDuration(),stage:"source-ready"});
+    }else{
+      const log=document.querySelector(".loading-log")?.innerText||"SourceLoad timeout";
+      signal("error",{message:log.slice(-2000)});
+      return;
+    }
   }catch(e){
     console.error("[PJ] bootstrap",e);
     signal("error",{message:String(e?.message||e)});
