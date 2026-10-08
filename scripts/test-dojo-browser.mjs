@@ -74,7 +74,17 @@ await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible
 const dockAudit = await page.evaluate(() => {
   const dock = document.querySelector('nav.bottom-bar')?.getBoundingClientRect();
   const tools = document.querySelector('.home-grid .app-card[data-home-sheet="home-tools"]')?.getBoundingClientRect();
-  return dock && tools ? { dockTop: dock.top, toolsBottom: tools.bottom } : null;
+  const sc = document.scrollingElement || document.documentElement;
+  const main = document.querySelector('main');
+  return dock && tools ? {
+    dockTop: dock.top,
+    toolsBottom: tools.bottom,
+    scrollY: window.scrollY,
+    scroller: { tag: sc.tagName, scrollTop: sc.scrollTop, scrollHeight: sc.scrollHeight, clientHeight: sc.clientHeight },
+    html: { scrollTop: document.documentElement.scrollTop, scrollHeight: document.documentElement.scrollHeight, clientHeight: document.documentElement.clientHeight },
+    body: { scrollTop: document.body.scrollTop, scrollHeight: document.body.scrollHeight, clientHeight: document.body.clientHeight },
+    main: main ? { paddingBottom: getComputedStyle(main).paddingBottom, scrollHeight: main.scrollHeight, clientHeight: main.clientHeight, rectBottom: main.getBoundingClientRect().bottom } : null
+  } : null;
 });
 if (!dockAudit || dockAudit.toolsBottom > dockAudit.dockTop - 8) {
   await fail('Homepage Tools card still overlaps fixed Dock after Cards expansion: ' + JSON.stringify(dockAudit));
