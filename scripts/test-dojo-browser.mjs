@@ -385,7 +385,39 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
 const startButton = sonolusFrame.locator('.start-play-trg').first();
-await startButton.waitFor({ state: 'visible', timeout: 20000 });
+try {
+  await startButton.waitFor({ state: 'visible', timeout: 20000 });
+} catch (error) {
+  const debug = await page.evaluate(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    let child = {};
+    try {
+      const doc = frame?.contentDocument;
+      const runtime = frame?.contentWindow?.__pjPracticeRuntime;
+      child = {
+        href: frame?.contentWindow?.location?.href || '',
+        readyState: doc?.readyState || '',
+        bodyText: doc?.body?.innerText?.slice(0, 5000) || '',
+        rootText: doc?.querySelector('#root')?.innerText?.slice(0, 4000) || '',
+        loadingDisplay: doc?.querySelector('#loading-cover') ? getComputedStyle(doc.querySelector('#loading-cover')).display : '',
+        processingDisplay: doc?.querySelector('#processing-cover') ? getComputedStyle(doc.querySelector('#processing-cover')).display : '',
+        startButton: doc?.querySelector('.start-play-trg')?.outerHTML?.slice(0, 1000) || '',
+        practiceDebug: frame?.contentWindow?.__pjPracticeDebug || null,
+        runtime: !!runtime,
+      };
+    } catch (e) {
+      child = { accessError: e?.message || String(e) };
+    }
+    return {
+      iframeSrc: frame?.src || '',
+      bridgeStatus: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
+      apiLog: document.querySelector('#dojoApiLog')?.textContent?.trim() || '',
+      child,
+    };
+  });
+  await fail('Dojo SourceLoad START button did not appear: ' +
+    JSON.stringify({ debug, consoleErrors: errors, pageErrors, failedLocalRequests, timeout: error?.message || String(error) }));
+}
 
 const startInfo = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
