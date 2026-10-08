@@ -444,31 +444,71 @@ try {
   );
 }
 
-// Real START smoke test: expose the actual play button and prove the runtime clock/audio path advances.
-await startButton.evaluate(el => el.click());
-await page.waitForTimeout(600);
+// Wait for the upstream player bootstrap to reach SourceLoad, then click the REAL play button.
+await page.waitForFunction(
+  () => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    try {
+      const text = frame?.contentDocument?.body?.innerText || '';
+      return text.includes('ロード完了') && !!frame?.contentDocument?.querySelector('.start-play-trg');
+    } catch (_) {
+      return false;
+    }
+  },
+  null,
+  { timeout: 60000 }
+);
+
+const sourceLoadInfo = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  try {
+    const root = frame?.contentDocument?.querySelector('.start-play-trg');
+    const log = frame?.contentDocument?.querySelector('.loading-log')?.innerText || '';
+    return { button: root?.outerHTML?.slice(0, 600) || '', log };
+  } catch (_) {
+    return { accessError: 'cannot inspect iframe' };
+  }
+});
+
+const realStartButton = sonolusFrame.locator('.start-play-trg').first();
+await realStartButton.evaluate(el => el.click());
+await page.waitForTimeout(1000);
+
 const runtimeState = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   const runtime = frame?.contentWindow?.__pjPracticeRuntime;
+  const app = frame?.contentWindow?.app;
+  let bgm = {};
+  try {
+    bgm = {
+      state: typeof app?.BGM?.state === 'function' ? app.BGM.state() : '',
+      duration: typeof app?.BGM?.duration === 'function' ? Number(app.BGM.duration() || 0) : 0,
+      playing: typeof app?.BGM?.playing === 'function' ? !!app.BGM.playing() : false,
+      rate: typeof app?.BGM?.rate === 'function' ? Number(app.BGM.rate() || 0) : 0,
+      src: app?.BGM?._src || ''
+    };
+  } catch (_) {}
   return {
     sameOrigin: !!frame?.contentWindow,
     duration: Number(runtime?.getDuration?.() || 0),
     time: Number(runtime?.getTime?.() || 0),
     bridgeStatus: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
     iframeSrc: frame?.src || '',
+    appExists: !!app,
+    bgm
   };
 });
-if (!(runtimeState.duration > 0)) {
-  await fail('Dojo START did not expose a playable duration: ' + JSON.stringify(runtimeState));
+if (!(runtimeState.duration > 0) || !runtimeState.appExists || runtimeState.bgm.state !== 'loaded') {
+  await fail('Dojo real play did not expose a loaded playable BGM: ' + JSON.stringify({ runtimeState, sourceLoadInfo }));
 }
 const t0 = runtimeState.time;
-await page.waitForTimeout(700);
+await page.waitForTimeout(1000);
 const t1 = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   return Number(frame?.contentWindow?.__pjPracticeRuntime?.getTime?.() || 0);
 });
 if (!(t1 > t0 + 0.05)) {
-  await fail('Dojo START did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
+  await fail('Dojo real play did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
 }
 
 const bridgeExercise = await page.evaluate(() => {
