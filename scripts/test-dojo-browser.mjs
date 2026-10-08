@@ -449,8 +449,9 @@ await page.waitForFunction(
   () => {
     const frame = document.querySelector('#dojoSonolusIframe');
     try {
-      const text = frame?.contentDocument?.body?.innerText || '';
-      return text.includes('ロード完了') && !!frame?.contentDocument?.querySelector('.start-play-trg');
+      const doc = frame?.contentDocument;
+      const btn = doc?.querySelector('.start-play-trg');
+      return !!btn && !btn.hasAttribute('disabled');
     } catch (_) {
       return false;
     }
