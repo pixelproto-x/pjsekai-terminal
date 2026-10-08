@@ -25,13 +25,6 @@ jobs:
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/dojo-http.log 2>&1 &
           echo $! > /tmp/dojo-http.pid
-      - name: Inspect current official Sonolus Web
-        run: |
-          curl -L --fail --silent --show-error "https://sonolus.com/web/" -o /tmp/sonolus-web.html
-          echo "=== official page ==="
-          sed -n '1,180p' /tmp/sonolus-web.html
-          echo "=== script/style/src refs ==="
-          grep -Eo '(src|href)="[^"]+"' /tmp/sonolus-web.html | head -80
       - name: Verify browser audio asset
         run: |
           curl -L --fail --silent --show-error --range 0-255 -D /tmp/audio.headers -o /tmp/audio.sample "https://storage.sekai.best/sekai-jp-assets/music/long/0001_01/0001_01.wav"
