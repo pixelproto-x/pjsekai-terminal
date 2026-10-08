@@ -143,6 +143,11 @@ if (/Invalid Date|undefined/.test(chartDetail.text) || !/Notes\s*\d/.test(chartD
   await fail('Chart Analyzer detail contains invalid/missing metadata: ' + JSON.stringify(chartDetail));
 }
 
+// Return home before the secondary homepage regression checks.
+await page.locator('nav.bottom-bar button.tab[data-go="home"]').evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
+await page.evaluate(() => window.scrollTo(0, 0));
+
 // Homepage accordion regression test: expanding Characters must not stretch the Cards card.
 const characterCard = page.locator('.home-grid .app-card[data-home-sheet="home-characters"]');
 const cardsCard = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
