@@ -234,7 +234,9 @@ if (accordionClosed.characterClass.includes('home-card-expanded') || accordionCl
   await fail('Closing Cards did not leave all homepage accordion cards collapsed: ' + JSON.stringify(accordionClosed));
 }
 
-const routes = ['sekai', 'songs', 'tools', 'profile'];
+// Route coverage: every major page must become the sole active page.
+const routes = ['home', 'sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
+
 for (const route of routes) {
   const tab = page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]');
   if (!await tab.count()) await fail('Missing bottom navigation tab: ' + route);
@@ -244,6 +246,42 @@ for (const route of routes) {
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
 
+// Rapid navigation race audit.
+for (const route of ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings', 'home']) {
+  await page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]').evaluate(el => el.click());
+}
+await page.waitForTimeout(600);
+const rapidRouteAudit = await page.evaluate(() => ({
+  activeCount: document.querySelectorAll('.page.active').length,
+  activePages: [...document.querySelectorAll('.page.active')].map(x => x.dataset.page),
+  hash: location.hash
+}));
+if (rapidRouteAudit.activeCount !== 1 || rapidRouteAudit.activePages[0] !== 'home' || rapidRouteAudit.hash !== '#home') {
+  await fail('Rapid navigation left multiple/incorrect active pages: ' + JSON.stringify(rapidRouteAudit));
+}
+
+// Mobile 390×844 home layout + Dock audit.
+await page.setViewportSize({ width: 390, height: 844 });
+await page.evaluate(() => window.scrollTo(0, 0));
+const mobileOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+if (mobileOverflow > 1) await fail('Mobile homepage has horizontal overflow: ' + mobileOverflow);
+const mobileCards = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
+await mobileCards.evaluate(el => el.click());
+await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
+await page.waitForTimeout(350);
+const mobileDockAudit = await page.evaluate(() => {
+  const dock = document.querySelector('nav.bottom-bar')?.getBoundingClientRect();
+  const tools = document.querySelector('.home-grid .app-card[data-home-sheet="home-tools"]')?.getBoundingClientRect();
+  return dock && tools ? { dockTop:dock.top, toolsBottom:tools.bottom } : null;
+});
+if (!mobileDockAudit || mobileDockAudit.toolsBottom > mobileDockAudit.dockTop - 8) {
+  await fail('Mobile Tools card still overlaps Dock after Cards expansion: ' + JSON.stringify(mobileDockAudit));
+}
+await mobileCards.evaluate(el => el.click());
+await page.setViewportSize({ width: 1280, height: 720 });
+await page.evaluate(() => window.scrollTo(0, 0));
+
+// Continue Dojo checks.
 const dojo = await page.evaluate(() => ({
   songList: !!document.querySelector('#dojoSongList'),
   analyzerMount: !!document.querySelector('#chartAnalyzerMount'),
