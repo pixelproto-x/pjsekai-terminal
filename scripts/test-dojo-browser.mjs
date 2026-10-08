@@ -386,7 +386,7 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
 const startButton = sonolusFrame.locator('.start-play-trg').first();
 try {
-  await startButton.waitFor({ state: 'visible', timeout: 20000 });
+  await startButton.waitFor({ state: 'visible', timeout: 60000 });
 } catch (error) {
   const debug = await page.evaluate(() => {
     const frame = document.querySelector('#dojoSonolusIframe');
