@@ -195,7 +195,7 @@ function buildUI(){
   mount.innerHTML=
   '<section class="ca-shell">'+
     '<div class="ca-head">'+
-      '<div><div class="ca-kicker">CHART ANALYZER · 76—85</div><h2>譜面分析器</h2><p>從 Project SEKAI 主資料庫載入歌曲與難度資料；選曲後可查看等級、Note Count、BPM、時長、NPS、難點熱點與 MV 入口。</p></div>'+
+      '<div><div class="ca-kicker">CHART ANALYZER</div><h2>譜面分析器</h2><p>從 Project SEKAI 主資料庫載入歌曲與難度資料；選曲後可查看等級、Note Count、BPM、時長、NPS、難點熱點與 MV 入口。</p></div>'+
       '<div class="ca-status" id="caStatus">資料載入中…</div>'+
     '</div>'+
     '<div class="ca-toolbar">'+
@@ -438,8 +438,8 @@ function renderDetail(){
       '<div class="ca-detail-title"><div class="ca-chip">'+LABELS[diff]+'</div><h3>'+esc(song.title||'未命名歌曲')+'</h3><p>'+esc(song.artist||song.composer||'')+'</p><small>ID '+song.id+'</small></div>'+
       '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+esc(metrics.bpmLabel)+'</b></div><div><small>時長</small><b>'+esc(metrics.durationLabel)+'</b></div><div><small>Notes</small><b>'+esc(metrics.notesLabel)+'</b></div><div><small>NPS</small><b>'+esc(metrics.nps)+'</b></div></div>'+
     '</div>'+
-    '<div class="ca-sections"><section><div class="ca-section-title"><strong>76 / 78 · 難度資料</strong><span>全難度 Level + Note Count</span></div>'+difficultyTable(song)+'</section>'+
-    '<section><div class="ca-section-title"><strong>80 / 82 / 83 · 密度分析</strong><span>NPS · 高密度區 · 靜態長條圖</span></div><div id="caTimelineHolder"><div class="ca-loading">讀取詳細譜面資料…</div></div></section>'+
+    '<div class="ca-sections"><section><div class="ca-section-title"><strong>難度資料</strong><span>全難度 Level + Note Count</span></div>'+difficultyTable(song)+'</section>'+
+    '<section><div class="ca-section-title"><strong>密度分析</strong><span>NPS · 高密度區 · 靜態長條圖</span></div><div id="caTimelineHolder"><div class="ca-loading">讀取詳細譜面資料…</div></div></section>'+
     '<section><div class="ca-section-title"><strong>79 · Note 類型比例</strong><span>Tap / Flick / Hold / Slide</span></div><div id="caBreakdownHolder" class="ca-loading">讀取中…</div></section>'+
     '<section>'+votePanel(song,diff)+'</section>'+
     '<section><div class="ca-section-title"><strong>85 · 歌曲資料</strong><span>實裝日期 / 創作者 / 分類</span></div><div class="ca-meta-grid">'+
