@@ -2734,16 +2734,19 @@ function toggleAccordion(card){
 }
 
 function keepHomeAccordionAboveDock(panel){
-  requestAnimationFrame(()=>{
+  const settle=()=>{
     const dock=document.querySelector(".bottom-bar");
-    const target=panel?.closest(".home-feature");
-    if(!dock || !target)return;
+    const feature=panel?.closest(".home-feature");
+    const column=panel?.closest(".home-column");
+    if(!dock || !feature)return;
     const dockRect=dock.getBoundingClientRect();
-    const targetRect=target.getBoundingClientRect();
+    const columnLast=column?.lastElementChild||feature;
+    const contentRect=columnLast.getBoundingClientRect();
     const margin=16;
-    const overlap=targetRect.bottom-(dockRect.top-margin);
-    if(overlap>0)window.scrollBy({top:overlap,behavior:"smooth"});
-  });
+    const overlap=contentRect.bottom-(dockRect.top-margin);
+    if(overlap>0)window.scrollBy({top:overlap,behavior:"auto"});
+  };
+  requestAnimationFrame(()=>requestAnimationFrame(settle));
 }
 
 function toggleHomeAccordion(card){
