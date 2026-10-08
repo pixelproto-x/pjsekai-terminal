@@ -155,6 +155,35 @@ if (/Invalid Date|undefined/.test(chartDetail.text) || !/Notes\s*\d/.test(chartD
   await fail('Chart Analyzer detail contains invalid/missing metadata: ' + JSON.stringify(chartDetail));
 }
 
+// Cover proxy / ORB audit: verify the rendered jackets point at the proxy and the
+// proxy really returns image data from the browser test environment.
+await page.waitForTimeout(600);
+const coverUrls = await page.evaluate(() => [...document.querySelectorAll('#caSongList .ca-jacket')]
+  .slice(0, 12)
+  .map(el => {
+    const bg = getComputedStyle(el).backgroundImage || '';
+    const m = bg.match(/url\(["']?(.*?)["']?\)/);
+    return m ? m[1] : '';
+  })
+  .filter(Boolean));
+if (!coverUrls.length) {
+  await fail('Chart Analyzer rendered no jacket background images for proxy audit');
+}
+if (!coverUrls.every(url => /images\.weserv\.nl/i.test(url))) {
+  await fail('Chart Analyzer cover images are not consistently using the proxy: ' + JSON.stringify(coverUrls));
+}
+const coverProbe = [];
+for (const url of [...new Set(coverUrls)]) {
+  const response = await page.request.get(url);
+  coverProbe.push({status: response.status(), contentType: response.headers()['content-type'] || '', url});
+  if (!response.ok() || !/^image\//i.test(response.headers()['content-type'] || '')) {
+    await fail('Chart Analyzer cover proxy returned non-image/failed response: ' + JSON.stringify(coverProbe.at(-1)));
+  }
+}
+if (errors.some(e => /ERR_BLOCKED_BY_ORB|blocked by ORB|ORB/i.test(e))) {
+  await fail('Chart Analyzer cover audit detected ORB errors: ' + JSON.stringify(errors.filter(e => /ORB/i.test(e))));
+}
+
 // Return home before the secondary homepage regression checks.
 await page.locator('#homeBrand').evaluate(el => el.click());
 await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
@@ -233,6 +262,58 @@ const accordionClosed = await page.evaluate(() => ({
 if (accordionClosed.characterClass.includes('home-card-expanded') || accordionClosed.cardsClass.includes('home-card-expanded') || accordionClosed.openPanels !== 0) {
   await fail('Closing Cards did not leave all homepage accordion cards collapsed: ' + JSON.stringify(accordionClosed));
 }
+
+// Full-site smoke audit: exercise every page plus the P3 Characters/Cards
+// subcategory accordions, not just the homepage and Dojo route.
+const smokeRoutes = ['home', 'sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
+for (const route of smokeRoutes) {
+  const pageNode = page.locator('.page[data-page="' + route + '"]');
+  if (!await pageNode.count()) await fail('Full-site smoke missing page: ' + route);
+  await page.evaluate(route => go(route), route);
+  await page.waitForSelector('.page[data-page="' + route + '"].active', { state: 'visible', timeout: 10000 });
+  const contentText = (await pageNode.innerText()).trim();
+  if (!contentText || contentText.length < 20) {
+    await fail('Full-site smoke found nearly empty page: ' + route);
+  }
+}
+await page.evaluate(() => go('characters'));
+await page.waitForSelector('.page[data-page="characters"].active', { state: 'visible', timeout: 10000 });
+const characterCategory = page.locator('.page[data-page="characters"] .catalog-card[data-sheet^="unit-"]').first();
+if (!await characterCategory.count()) await fail('Characters subcategory buttons are missing');
+await characterCategory.evaluate(el => el.click());
+await page.locator('.page[data-page="characters"] .accordion-panel').waitFor({state:'visible', timeout:5000});
+if (await page.locator('.page[data-page="characters"] .accordion-panel .accordion-item').count() < 1) {
+  await fail('Characters subcategory click opened no child actions');
+}
+await page.locator('.page[data-page="characters"] .accordion-panel .accordion-item').first().evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="characters"].active', { state: 'visible', timeout: 10000 });
+
+await page.evaluate(() => go('cards'));
+await page.waitForSelector('.page[data-page="cards"].active', { state: 'visible', timeout: 10000 });
+const cardCategory = page.locator('.page[data-page="cards"] .catalog-card[data-sheet="card-unit"]').first();
+if (!await cardCategory.count()) await fail('Cards subcategory button is missing');
+await cardCategory.evaluate(el => el.click());
+await page.locator('.page[data-page="cards"] .accordion-panel').waitFor({state:'visible', timeout:5000});
+if (await page.locator('.page[data-page="cards"] .accordion-panel .accordion-item').count() < 1) {
+  await fail('Cards subcategory click opened no child actions');
+}
+await page.locator('.page[data-page="cards"] .accordion-panel .accordion-item').first().evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="cards"].active', { state: 'visible', timeout: 10000 });
+
+// Do not let known Sonolus engine-version noise hide real browser errors.
+const unexpectedConsoleErrors = errors.filter(e => !/A function named "StreamSet" does not exist\./.test(e));
+if (unexpectedConsoleErrors.length || pageErrors.length || failedLocalRequests.length) {
+  await fail(
+    'Browser errors detected:\n' +
+    pageErrors.join('\n') +
+    '\nLocal failed requests:\n' +
+    failedLocalRequests.map(x => x.status + ' ' + x.url).join('\n') +
+    '\nUnexpected console errors:\n' + unexpectedConsoleErrors.join('\n')
+  );
+}
+
+await page.evaluate(() => go('home'));
+await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 
 // Route coverage: test actual Dock entries, then direct-hash refresh for hidden pages.
 const dockRoutes = ['home', 'sekai', 'songs', 'tools', 'profile'];
@@ -631,7 +712,9 @@ console.log(JSON.stringify({
   afterReset,
   loopEnabled,
   speedRuntimeState,
+  coverProbe,
   errors,
+  unexpectedConsoleErrors,
   pageErrors,
   failedLocalRequests,
 }, null, 2));
