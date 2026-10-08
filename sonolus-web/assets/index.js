@@ -1942,5 +1942,32 @@ async function findLevel(){
   }
   return rankBest();
 }
-async function boot(){try{if(!SONG){signal("ready",{duration:runtime.getDuration()});return}await NM();await Rt.servers.put({name:"__pjsekai_terminal__",display_name:"Project SEKAI Terminal",address:SERVER,option:{},version:lc});await wait(()=>window.__pjMenu,30000);jt=SERVER;ei="__pjsekai_terminal__";const level=await findLevel();if(!level){signal("error",{message:"找不到對應的 Sonolus 譜面："+SONG});return}const pair=await Hl(SERVER,"levels",level.name);ce.level_info_data=pair[0];ce.collection_names=pair[1];ce.source_items=um(ce.level_info_data).source_items;ce.is_offline_level=!1;window.__pjMenu.change_menu("SourceLoad");await wait(()=>document.querySelector(".start-play-trg"),30000)}catch(e){console.error("[PJ] bootstrap",e);signal("error",{message:String(e?.message||e)})}}
-const watch=()=>{const a=app();if(a&&!a.__practiceControl){a.__practiceControl=!0;a.__practiceRate=1;a.__practiceTime=Math.max(0,(performance.now()-a.start_time)/1e3);a.__practiceWall=performance.now()}if(a)signal("ready",{duration:runtime.getDuration(),bgmState:a.BGM?.state?.()||"",bgmDuration:Number(a.BGM?.duration?.()||0),playing:!!a.BGM?.playing?.()});setTimeout(watch,500)};watch();boot()})();
+async function boot(){
+  try{
+    if(!SONG){signal("ready",{duration:runtime.getDuration()});return}
+    signal("stage",{stage:"init-menu"});
+    await NM();
+    signal("stage",{stage:"menu-ready"});
+    await Rt.servers.put({name:"__pjsekai_terminal__",display_name:"Project SEKAI Terminal",address:SERVER,option:{},version:lc});
+    await wait(()=>window.__pjMenu,30000);
+    signal("stage",{stage:"menu-controller"});
+    jt=SERVER;ei="__pjsekai_terminal__";
+    signal("stage",{stage:"find-level"});
+    const level=await findLevel();
+    if(!level){signal("error",{message:"找不到對應的 Sonolus 譜面："+SONG});return}
+    signal("stage",{stage:"level-found",name:level.name,title:level.title||""});
+    const pair=await Hl(SERVER,"levels",level.name);
+    signal("stage",{stage:"level-info"});
+    ce.level_info_data=pair[0];
+    ce.collection_names=pair[1];
+    ce.source_items=um(ce.level_info_data).source_items;
+    ce.is_offline_level=!1;
+    window.__pjMenu.change_menu("SourceLoad");
+    signal("stage",{stage:"source-load"});
+    await wait(()=>document.querySelector(".start-play-trg"),30000);
+    signal("ready",{duration:runtime.getDuration(),stage:"source-ready"});
+  }catch(e){
+    console.error("[PJ] bootstrap",e);
+    signal("error",{message:String(e?.message||e)});
+  }
+}const watch=()=>{const a=app();if(a&&!a.__practiceControl){a.__practiceControl=!0;a.__practiceRate=1;a.__practiceTime=Math.max(0,(performance.now()-a.start_time)/1e3);a.__practiceWall=performance.now()}if(a)signal("ready",{duration:runtime.getDuration(),bgmState:a.BGM?.state?.()||"",bgmDuration:Number(a.BGM?.duration?.()||0),playing:!!a.BGM?.playing?.()});setTimeout(watch,500)};watch();boot()})();
