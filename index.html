@@ -3024,6 +3024,7 @@ initDojo();
 
 
 /* ===== Stage 4 Strategy Calc logic ===== */
+const SC_BOOST_RATES={0:1,1:5,2:10,3:15,4:19,5:23,6:26,7:29,8:31,9:33,10:35};
 const SC_MATERIAL_DEFAULTS=[
   {name:"素材 A",mr:10,skill:4,stock:0},
   {name:"素材 B",mr:5,skill:2,stock:0},
@@ -3034,7 +3035,7 @@ function scN(v,d=0){const n=Number(String(v??"").replace(/[^\d.-]/g,""));return 
 function scFmt(v){return Math.max(0,scN(v)).toLocaleString("en-US");}
 function scTime(sec){sec=Math.max(0,Math.round(scN(sec)));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return [h,m,s].map((x,i)=>String(x).padStart(i===0?2:2,"0")).join(":");}
 function calculateEvent(){
-  const target=Math.max(0,scN($("#scTargetPoints")?.value)),current=Math.max(0,scN($("#scCurrentPoints")?.value)),base=Math.max(0,scN($("#scBasePoints")?.value)),bonus=Math.max(0,scN($("#scBonusPct")?.value)),boost=Math.max(0,Math.min(10,scN($("#scBoostPerRun")?.value))),runSec=Math.max(1,scN($("#scRunSeconds")?.value)),currentBoost=Math.max(0,scN($("#scCurrentBoost")?.value)),drink=Math.max(1,scN($("#scDrinkRestore")?.value)),gap=Math.max(0,target-current),multiplier=1+bonus/100,bonusFactor=boost>0?boost:1,perRun=base*multiplier*bonusFactor,runs=gap>0&&perRun>0?Math.ceil(gap/perRun):0,totalBoost=runs*boost,needFromItems=Math.max(0,totalBoost-currentBoost),drinks=Math.ceil(needFromItems/drink),remain=Math.max(0,currentBoost+runs*0-totalBoost),over=Math.max(0,runs*perRun-gap);
+  const target=Math.max(0,scN($("#scTargetPoints")?.value)),current=Math.max(0,scN($("#scCurrentPoints")?.value)),base=Math.max(0,scN($("#scBasePoints")?.value)),bonus=Math.max(0,scN($("#scBonusPct")?.value)),boost=Math.max(0,Math.min(10,scN($("#scBoostPerRun")?.value))),runSec=Math.max(1,scN($("#scRunSeconds")?.value)),currentBoost=Math.max(0,scN($("#scCurrentBoost")?.value)),drink=Math.max(1,scN($("#scDrinkRestore")?.value)),gap=Math.max(0,target-current),multiplier=1+bonus/100,bonusFactor=SC_BOOST_RATES[boost]??1,perRun=base*multiplier*bonusFactor,runs=gap>0&&perRun>0?Math.ceil(gap/perRun):0,totalBoost=runs*boost,needFromItems=Math.max(0,totalBoost-currentBoost),drinks=Math.ceil(needFromItems/drink),remain=Math.max(0,currentBoost+runs*0-totalBoost),over=Math.max(0,runs*perRun-gap);
   $("#scGapPoints").textContent=scFmt(gap);$("#scRuns").textContent=scFmt(runs);$("#scBoostNeeded").textContent=scFmt(totalBoost);$("#scDrinks").textContent=scFmt(drinks);$("#scPointsPerRun").textContent=scFmt(perRun);$("#scEventTime").textContent=scTime(runs*runSec);$("#scBoostRemain").textContent=scFmt(Math.max(0,currentBoost-totalBoost));$("#scOver").textContent=scFmt(over);
 }
 function calculateMaterials(){
