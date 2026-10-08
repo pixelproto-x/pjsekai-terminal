@@ -243,12 +243,14 @@ for (const route of dockRoutes) {
   await page.waitForSelector('.page[data-page="' + route + '"].active', { state: 'visible', timeout: 10000 });
 }
 for (const route of ['characters', 'cards', 'events', 'settings']) {
-  await page.goto('http://127.0.0.1:4173/#' + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.evaluate(route => { location.hash = '#' + route; }, route);
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('.page[data-page="' + route + '"].active', { state: 'visible', timeout: 10000 });
   const activeCount = await page.locator('.page.active').count();
-  if (activeCount !== 1) await fail('Direct route refresh left multiple active pages: ' + route + ' count=' + activeCount);
+  if (activeCount !== 1) await fail('Direct route reload left multiple active pages: ' + route + ' count=' + activeCount);
 }
-await page.goto('http://127.0.0.1:4173/#home', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.evaluate(() => { location.hash = '#home'; });
+await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
 await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
