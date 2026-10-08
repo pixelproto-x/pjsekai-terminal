@@ -384,15 +384,14 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 }
 
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
-const startButton = sonolusFrame.getByText('START!', { exact: true }).first();
+const startButton = sonolusFrame.locator('.start-play-trg').first();
 await startButton.waitFor({ state: 'visible', timeout: 20000 });
 
 const startInfo = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   try {
-    const node = [...(frame?.contentDocument?.querySelectorAll('*') || [])]
-      .find(el => (el.textContent || '').trim() === 'START!');
-    return node ? { tag: node.tagName, className: node.className || '', outer: node.outerHTML.slice(0, 500) } : null;
+    const node = frame?.contentDocument?.querySelector('.start-play-trg');
+    return node ? { tag: node.tagName, className: node.className || '', disabled: node.hasAttribute('disabled'), outer: node.outerHTML.slice(0, 500) } : null;
   } catch (_) {
     return null;
   }
