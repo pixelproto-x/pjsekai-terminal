@@ -1947,7 +1947,7 @@ async function mr(i,e,r){
 class pk extends Ut.Component{constructor(e){super(e),this.Menu_Controller=e.C}render(){const e=this.Menu_Controller,r=_t.get_translator();return F.jsxs("div",{id:"result",children:[F.jsx("h3",{className:"Menu-title",children:r("リザルト")}),F.jsxs("div",{id:"window",className:"selector-window",children:[F.jsx("h3",{id:"title",children:ce.level_info_data.item.title}),F.jsxs("p",{id:"arcade",children:[r("アーケードスコア"),":",ce.game_result.arcade_score,"/1000000"]}),F.jsxs("p",{id:"accuracy",children:[r("精度スコア"),":",ce.game_result.accuracy_score,"/1000000"]}),F.jsxs("p",{id:"max_combo",children:[r("最大コンボ"),":",ce.game_result.max_combo,"/",ce.game_result.possible_combo]}),F.jsxs("p",{id:"acc_result",children:["PERFECT:",ce.game_result.acc_result.perfect,F.jsx("br",{}),"GREAT:",ce.game_result.acc_result.great,F.jsx("br",{}),"GOOD:",ce.game_result.acc_result.good,F.jsx("br",{}),"MISS:",ce.game_result.acc_result.miss]})]}),F.jsx("button",{id:"back",className:"btn",onClick:()=>{e.back_menu(2)},children:r("戻る")}),F.jsx("button",{id:"back",className:"btn",onClick:()=>{e.change_menu("BucketMenu")},children:r("バケットグラフを見る")})]})}}class vk extends Ut.Component{constructor(e){super(e),this.Menu_Controller=e.C}render(){const e=this.Menu_Controller,r=_t.get_translator();return F.jsxs("div",{id:"result",children:[F.jsx("h3",{className:"Menu-title",children:r("バケットグラフ")}),F.jsx("div",{id:"window",className:"selector-window",children:ce.game_result.bucket_graphs.map((n,s)=>F.jsx(_k,{graphs:n},s))}),F.jsx("button",{id:"back",className:"btn",onClick:()=>{e.back_menu()},children:r("戻る")})]})}}class _k extends Ut.Component{constructor(e){super(e),this.graphs=e.graphs,this.state={graph:"all"},this.frame_ref=Ut.createRef()}render(){const e=_t.get_translator();return F.jsxs("div",{children:[F.jsx("div",{ref:this.frame_ref}),F.jsxs("select",{className:"select-ref",onChange:r=>{this.setState({graph:r.target.value})},children:[F.jsx("option",{value:"all",children:e("全部")}),F.jsx("option",{value:"perfect",children:"PERFECT"}),F.jsx("option",{value:"great",children:"GREAT"}),F.jsx("option",{value:"good",children:"GOOD"}),F.jsx("option",{value:"miss",children:"MISS"})]})]})}componentDidMount(){this.frame_ref.current.innerHTML="",this.frame_ref.current.appendChild(this.graphs[this.state.graph])}componentDidUpdate(){this.frame_ref.current.innerHTML="",this.frame_ref.current.appendChild(this.graphs[this.state.graph])}}const m1=new URL(window.location.href).searchParams;let wi=m1.has("lang")?m1.get("lang"):window.navigator.language;console.log("user language:",wi);const _t=new FR(wi,{ja:"https://raw.githubusercontent.com/1217pond/sonolus-web-player/58c2e201a9554d7e4e43704c88ecf73c42933d80/localization/ja-localization-react.json",en:"https://raw.githubusercontent.com/1217pond/sonolus-web-player/58c2e201a9554d7e4e43704c88ecf73c42933d80/localization/en-localization-react.json"});wi=_t.language;console.log("system language:",wi);const mk=BT.createRoot(document.getElementById("root"));mk.render(F.jsx(MM,{}));const Rt=new mo("contents_data");Rt.version(3).stores({servers:"name,address,option,display_name,version",collections:"name,data,version",cache:"hash,file"});document.readyState==="complete"?Ne("#loading-cover").hide():window.addEventListener("load",function(){Ne("#loading-cover").hide()});void 0;class Ln{constructor(e,r,n){switch(this.op_type=e,this.id=r,e){case"slider":this.def_val=n.def_val,this.min=n.min,this.max=n.max,this.step=n.step,this.unit=n.unit||"",this.ratio=n.ratio||1;break;case"toggle":this.def_val=n.def_val;break;default:console.warn(`op_type:${e} does not exist.`);break}}}const Nw=[new Ln("slider","bgm_volume",{def_val:100,min:0,max:100,step:.1,unit:"%"}),new Ln("slider","effect_volume",{def_val:100,min:0,max:100,step:.1,unit:"%"}),new Ln("slider","audio_offset",{def_val:0,min:-500,max:500,step:5,unit:"ms",ratio:1/1e3}),new Ln("slider","input_offset",{def_val:0,min:-500,max:500,step:5,unit:"ms",ratio:1/1e3}),new Ln("slider","mesh_vertexes",{def_val:3,min:2,max:10,step:1}),new Ln("slider","curv_vertexes",{def_val:3,min:2,max:10,step:1}),new Ln("slider","max_fps",{def_val:0,min:0,max:120,step:1,unit:"fps"}),new Ln("slider","texture_scale",{def_val:.5,min:.1,max:1,step:.05,unit:"x"}),new Ln("slider","render_scale",{def_val:1,min:.1,max:2,step:.05,unit:"x"}),new Ln("slider","start_interval",{def_val:3,min:0,max:5,step:1,unit:"s"}),new Ln("slider","unpause_interval",{def_val:3,min:0,max:5,step:1,unit:"s"}),new Ln("toggle","debug_mode",{def_val:!1}),new Ln("toggle","antialias",{def_val:!1})];let ce=window.TEMP={},jt="",ei="";const zf="https://swp-server.ponz.workers.dev/";let r_={};const Qf=4,lc=2;
 
 (()=>{const Q=new URLSearchParams(location.search),SERVER=(Q.get("server")||"https://sonolus.sevenc7c.com").replace(/\/$/,""),SONG=(Q.get("title")||"").trim(),DIFF=(Q.get("difficulty")||"master").toLowerCase(),LEVEL=Number(Q.get("playLevel")||0),sleep=m=>new Promise(r=>setTimeout(r,m)),wait=async(f,t=60000)=>{const s=performance.now();for(;performance.now()-s<t;){try{const v=f();if(v)return v}catch{}await sleep(60)}return null},signal=(type,p={})=>{try{window.parent!==window&&window.parent.postMessage({source:"pjsekai-local-sonolus",type,...p},"*")}catch{}};
-window.__pjPracticeDebug={server:SERVER,song:SONG,difficulty:DIFF,playLevel:LEVEL,stage:"boot",history:[],error:""};const debugStage=(stage,extra={})=>{window.__pjPracticeDebug={...window.__pjPracticeDebug,stage,history:[...(window.__pjPracticeDebug.history||[]),{stage,time:Date.now(),...extra}].slice(-30)};signal("stage",{stage,...extra});};try{const oc=MM.prototype.change_menu;MM.prototype.change_menu=function(sc,...a){window.__pjMenu=this;return oc.call(this,sc,...a)}}catch(e){console.warn("[PJ] menu hook",e)}
+try{const oc=MM.prototype.change_menu;MM.prototype.change_menu=function(sc,...a){window.__pjMenu=this;return oc.call(this,sc,...a)}}catch(e){console.warn("[PJ] menu hook",e)}
 const app=()=>window.app||null,clock=(a,t,r)=>{if(!a)return!1;t=Math.max(0,Number(t)||0);r=Math.max(.05,Number(r)||1);const n=performance.now();a.__practiceControl=!0;a.__practiceRate=r;a.__practiceTime=t;a.__practiceWall=n;a.start_time=n-t*1e3-(Number(a.bgmOffset)||0)*1e3-(Number(a.audio_offset)||0)*1e3;a.before_time=n;try{a.BGM.rate(r)}catch{}try{a.BGM.seek(t)}catch{}try{if(a.BGM.state&&a.BGM.state()!=="unloaded"&&!a.paused)a.BGM.play()}catch{}return!0};
 const runtime={get app(){return app()},getTime(){const a=app();return a?Math.max(0,(performance.now()-a.start_time)/1e3):0},getDuration(){try{const b=app()?.BGM;if(!b)return 0;const d=Number(b.duration?.()||0);if(d>0)return d;const media=b._sounds?.[0]?._node;return Number(media?.duration||0)}catch{return 0}},seek(t){const a=app();return a?clock(a,t,a.__practiceRate||1):!1},setRate(r){const a=app();return a?clock(a,this.getTime(),r):Number(r)||1},async reset(t=0){const r=Number(app()?.__practiceRate||1),retry=window.__pjPracticeRetry;if(typeof retry!=="function")throw new Error("Local Sonolus retry bridge unavailable.");signal("resetting");await retry();const a=await wait(app,30000);if(!a)throw new Error("Sonolus engine rebuild timeout.");await wait(()=>a.BGM&&a.BGM.state&&a.BGM.state()!=="unloaded",30000);clock(a,t,r);signal("ready",{duration:this.getDuration()});return!0}};
 window.__pjPracticeRuntime=runtime;
@@ -2007,28 +2007,28 @@ async function findLevel(){
 async function boot(){
   try{
     if(!SONG){signal("ready",{duration:runtime.getDuration()});return}
-    debugStage("init-menu");
+    signal("stage",{stage:"init-menu"});
     await NM();
-    debugStage("menu-ready");
+    signal("stage",{stage:"menu-ready"});
     await Rt.servers.put({name:"__pjsekai_terminal__",display_name:"Project SEKAI Terminal",address:SERVER,option:{},version:lc});
     await wait(()=>window.__pjMenu,30000);
-    debugStage("menu-controller");
+    signal("stage",{stage:"menu-controller"});
     jt=SERVER;ei="__pjsekai_terminal__";
-    debugStage("find-level");
+    signal("stage",{stage:"find-level"});
     const level=await findLevel();
     if(!level){signal("error",{message:"找不到對應的 Sonolus 譜面："+SONG});return}
-    debugStage("level-found",{name:level.name,title:level.title||""});
+    signal("stage",{stage:"level-found",name:level.name,title:level.title||""});
     const pair=await Hl(SERVER,"levels",level.name);
-    debugStage("level-info");
+    signal("stage",{stage:"level-info"});
     ce.level_info_data=pair[0];
     ce.collection_names=pair[1];
     ce.source_items=um(ce.level_info_data).source_items;
     ce.is_offline_level=!1;
     window.__pjMenu.change_menu("SourceLoad");
-    debugStage("source-load");
-    debugStage("source-wait");const sourceReady=await wait(()=>document.querySelector(".start-play-trg:not([disabled])"),45000);
+    signal("stage",{stage:"source-load"});
+    const sourceReady=await wait(()=>document.querySelector(".start-play-trg:not([disabled])"),45000);
     if(sourceReady){
-      debugStage("source-ready");
+      signal("stage",{stage:"source-ready"});
       signal("ready",{duration:runtime.getDuration(),stage:"source-ready"});
     }else{
       const log=document.querySelector(".loading-log")?.innerText||"SourceLoad timeout";
@@ -2036,7 +2036,7 @@ async function boot(){
       return;
     }
   }catch(e){
-    window.__pjPracticeDebug.error=String(e?.stack||e?.message||e);console.error("[PJ] bootstrap",e);
+    console.error("[PJ] bootstrap",e);
     signal("error",{message:String(e?.message||e)});
   }
 }const watch=()=>{const a=app();if(a&&!a.__practiceControl){a.__practiceControl=!0;a.__practiceRate=1;a.__practiceTime=Math.max(0,(performance.now()-a.start_time)/1e3);a.__practiceWall=performance.now()}if(a)signal("ready",{duration:runtime.getDuration(),bgmState:a.BGM?.state?.()||"",bgmDuration:Number(a.BGM?.duration?.()||0),playing:!!a.BGM?.playing?.()});setTimeout(watch,500)};watch();boot()})();
