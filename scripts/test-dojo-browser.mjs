@@ -116,8 +116,8 @@ if (!strategyResult.scGapPoints || Number(strategyResult.scGapPoints.replace(/,/
 
 
 // Chart Analyzer deep checks.
-await page.locator('nav.bottom-bar button.tab[data-go="songs"]').evaluate(el => el.click());
-await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
+await page.locator('nav.bottom-bar button.tab[data-go="tools"]').evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="tools"].active', { state: 'visible', timeout: 10000 });
 await page.waitForFunction(() => {
   const el = document.querySelector('#caCount');
   return el && Number((el.textContent || '').replace(/[^0-9]/g, '')) > 0;
