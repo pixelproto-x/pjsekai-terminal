@@ -60,10 +60,55 @@ function openPractice(force=false){
  const frame=$('dojoSonolusIframe');if(!frame)return false;
  const url=practiceUrl();
  if(force||frame.src!==url)frame.src=url;
+ practiceRecoveryAttempts=0;
  $('dojoFrameShell')?.scrollIntoView({behavior:'smooth',block:'center'});
  status('', '正在載入同源 Sonolus 特訓核心。');
  log('load '+url);
  return true;
+}
+
+let practiceRecoveryAttempts=0;
+let practiceRecoveryTimer=0;
+function armPracticeRecovery(){
+ const frame=$('dojoSonolusIframe');
+ if(!frame)return;
+ if(practiceRecoveryTimer)window.clearTimeout(practiceRecoveryTimer);
+ const expected=frame.src;
+ const started=Date.now();
+ const check=()=>{
+   if(!frame || frame.src!==expected)return;
+   let disabled=false,hasStart=false,ready=false;
+   try{
+     const doc=frame.contentDocument;
+     const btn=doc?.querySelector('.start-play-trg');
+     hasStart=!!btn;
+     disabled=!!btn?.hasAttribute('disabled');
+     const r=frame.contentWindow?.__pjPracticeRuntime;
+     ready=!!r&&Number(r.getDuration?.()||0)>0;
+   }catch(_){}
+   if(ready||((hasStart&&!disabled)&&Date.now()-started>1000)){
+     practiceRecoveryAttempts=0;
+     return;
+   }
+   if(Date.now()-started<15000){
+     practiceRecoveryTimer=window.setTimeout(check,1000);
+     return;
+   }
+   if(hasStart&&disabled&&practiceRecoveryAttempts<2){
+     practiceRecoveryAttempts++;
+     status('','Sonolus 載入卡住，正在自動重新載入核心（'+practiceRecoveryAttempts+'/2）……');
+     log('auto-retry SourceLoad '+practiceRecoveryAttempts);
+     frame.src='';
+     window.setTimeout(()=>{ if(frame)frame.src=expected; },80);
+     practiceRecoveryTimer=window.setTimeout(armPracticeRecovery,120);
+     return;
+   }
+   if(hasStart&&disabled){
+     status('','Sonolus 核心仍未解除 START；請按「重新傳送設定」再試一次。');
+     log('SourceLoad remained disabled after automatic recovery');
+   }
+ };
+ practiceRecoveryTimer=window.setTimeout(check,1000);
 }
 function practiceTime(){
  try{return Number(runtime()?.getTime?.()||0)}catch(_){return 0}
@@ -170,7 +215,7 @@ function bind(){
  $('dojoResetSettingsBtn')?.addEventListener('click',()=>{const s=ensure();s.dojo={...s.dojo,...DEFAULTS,keys:DEFAULT_KEYS.slice()};save();render();sendConfig('reset-settings')});
  $('dojoBridgeRetryBtn')?.addEventListener('click',()=>openPractice(true));
  $('dojoFullscreenBtn')?.addEventListener('click',async()=>{const x=$('dojoFrameShellInner');try{if(!document.fullscreenElement)await x.requestFullscreen();else await document.exitFullscreen()}catch(_){B.toast('此瀏覽器不允許全螢幕')}});
- $('dojoSonolusIframe')?.addEventListener('load',()=>{status('loaded','同源 Sonolus Web 已載入，等待 practice runtime。');log('iframe load');setTimeout(()=>sendConfig('iframe-ready'),350)});
+ $('dojoSonolusIframe')?.addEventListener('load',()=>{practiceRecoveryAttempts=0;status('loaded','同源 Sonolus Web 已載入，等待 practice runtime。');log('iframe load');setTimeout(()=>{sendConfig('iframe-ready');armPracticeRecovery();},350)});
  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>openPractice(true));
 
  $('dojoLoopToggle')?.addEventListener('click',()=>{practice.loop=!practice.loop;renderPracticeControls();status('ack',practice.loop?'A-B 循環已開啟。':'A-B 循環已關閉。');});
