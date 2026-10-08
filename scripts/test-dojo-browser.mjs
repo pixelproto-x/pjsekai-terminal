@@ -235,8 +235,9 @@ if (accordionClosed.characterClass.includes('home-card-expanded') || accordionCl
 }
 
 // Route coverage: every major page must become the sole active page.
-const routes = ['home', 'sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
-
+const routes = ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
+await page.locator('#homeBrand').evaluate(el => el.click());
+await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 for (const route of routes) {
   const tab = page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]');
   if (!await tab.count()) await fail('Missing bottom navigation tab: ' + route);
