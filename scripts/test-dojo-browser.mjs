@@ -175,9 +175,10 @@ if (!coverUrls.every(url => /wsrv\.nl/i.test(url))) {
 const coverProbe = [];
 for (const url of [...new Set(coverUrls)]) {
   const response = await page.request.get(url);
-  coverProbe.push({status: response.status(), contentType: response.headers()['content-type'] || '', url});
-  if (!response.ok() || !/^image\//i.test(response.headers()['content-type'] || '')) {
-    await fail('Chart Analyzer cover proxy returned non-image/failed response: ' + JSON.stringify(coverProbe.at(-1)));
+  const contentType = response.headers()['content-type'] || '';
+  coverProbe.push({status: response.status(), contentType, url});
+  if (!response.ok() || !/^image\//i.test(contentType) || /^image\/svg\+xml$/i.test(contentType)) {
+    await fail('Chart Analyzer cover proxy returned fallback/non-cover image: ' + JSON.stringify(coverProbe.at(-1)));
   }
 }
 if (errors.some(e => /ERR_BLOCKED_BY_ORB|blocked by ORB|ORB/i.test(e))) {
