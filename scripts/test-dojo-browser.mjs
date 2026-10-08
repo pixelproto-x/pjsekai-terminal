@@ -71,7 +71,7 @@ const toolsForDock = page.locator('.home-grid .app-card[data-home-sheet="home-to
 await page.evaluate(() => window.scrollTo(0, 0));
 await cardsForDock.evaluate(el => el.click());
 await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
-await page.waitForTimeout(350);
+await page.waitForTimeout(650);
 const dockAudit = await page.evaluate(() => {
   const dock = document.querySelector('nav.bottom-bar')?.getBoundingClientRect();
   const tools = document.querySelector('.home-grid .app-card[data-home-sheet="home-tools"]')?.getBoundingClientRect();
@@ -268,7 +268,7 @@ if (mobileOverflow > 1) await fail('Mobile homepage has horizontal overflow: ' +
 const mobileCards = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
 await mobileCards.evaluate(el => el.click());
 await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
-await page.waitForTimeout(350);
+await page.waitForTimeout(650);
 const mobileDockAudit = await page.evaluate(() => {
   const dock = document.querySelector('nav.bottom-bar')?.getBoundingClientRect();
   const tools = document.querySelector('.home-grid .app-card[data-home-sheet="home-tools"]')?.getBoundingClientRect();
