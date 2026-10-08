@@ -2741,7 +2741,9 @@ function toggleAccordion(card){
 }
 
 function keepHomeAccordionAboveDock(panel){
+  let passes=0;
   const settle=()=>{
+    passes++;
     const dock=document.querySelector(".bottom-bar");
     const feature=panel?.closest(".home-feature");
     const column=panel?.closest(".home-column");
@@ -2753,24 +2755,23 @@ function keepHomeAccordionAboveDock(panel){
     const last=column?.lastElementChild||feature;
     const rect=last.getBoundingClientRect();
     const margin=16;
-    const needed=Math.max(0,rect.bottom-(dockRect.top-margin));
-    if(!needed)return;
-
-    const current=Number(scroller.scrollTop||window.scrollY||0);
-    const desired=current+needed;
-    let maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
-    if(desired>maxScroll){
-      const extra=Math.ceil(desired-maxScroll)+margin;
-      mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
-      maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+    const overlap=rect.bottom-(dockRect.top-margin);
+    if(overlap>0){
+      const current=Number(scroller.scrollTop||window.scrollY||0);
+      const desired=current+overlap;
+      let maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+      if(desired>maxScroll){
+        const extra=Math.ceil(desired-maxScroll)+margin;
+        mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
+        maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+      }
+      const target=Math.min(desired,maxScroll);
+      scroller.scrollTop=target;
+      window.scrollTo({top:target,behavior:"auto"});
     }
-    const target=Math.min(desired,maxScroll);
-    scroller.scrollTop=target;
-    window.scrollTo({top:target,behavior:"auto"});
+    if(passes<10)requestAnimationFrame(settle);
   };
-
-  // Wait for both the accordion and homepage entrance animations to finish.
-  window.setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(settle)),520);
+  requestAnimationFrame(()=>requestAnimationFrame(settle));
 }
 function toggleHomeAccordion(card){
   const key=card.dataset.homeSheet;
