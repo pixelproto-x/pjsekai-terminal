@@ -318,6 +318,20 @@ function calcProjection(song,diff){
   const scale=total/(counts.reduce((a,b)=>a+b,0)||1);
   return counts.map(v=>v*scale);
 }
+function detailMetrics(song,diff){
+  const hasDuration=Number.isFinite(Number(song?.duration)) && Number(song.duration)>0;
+  const bpm=Number(song?.bpm)>0?(song.bpmMax&&song.bpmMax!==song.bpm?String(song.bpm)+'–'+String(song.bpmMax):String(song.bpm)):'資料未提供';
+  const notes=notesOf(song,diff);
+  const nps=hasDuration&&notes>0?(notes/Number(song.duration)).toFixed(2):'—';
+  return {
+    hasDuration,
+    bpmLabel:bpm,
+    durationLabel:hasDuration?((song.durationEstimated?'≈':'')+fmtTime(song.duration)):'資料未提供',
+    notesLabel:notes>0?notes.toLocaleString('en-US'):'資料未提供',
+    nps
+  };
+}
+
 function buildTimeline(song,diff,bundle,times){
   const duration=num(song.duration,0);
   if(!(duration>0))return {counts:[],width:0,exact:false,unavailable:true};
@@ -338,11 +352,11 @@ function renderTimeline(song,diff,bundle,times){
     const ratio=v/peak,h=Math.max(4,Math.round(ratio*100));
     return '<span class="ca-bar '+(ratio>.76?'hot':'')+'" style="height:'+h+'%" title="'+fmtTime(i*tl.width)+' · '+Math.round(v)+' notes"></span>';
   }).join('');
-  const hasDuration=Number.isFinite(Number(song.duration)) && Number(song.duration)>0;
-  const durationLabel=hasDuration?((song.durationEstimated?'≈':'')+fmtTime(song.duration)):'資料未提供';
-  const bpmLabel=Number(song.bpm)>0?(song.bpmMax&&song.bpmMax!==song.bpm?esc(song.bpm)+'–'+esc(song.bpmMax):esc(song.bpm)):'資料未提供';
-  const notesLabel=notesOf(song,diff)>0?notesOf(song,diff).toLocaleString('en-US'):'資料未提供';
-  const nps=hasDuration&&notesOf(song,diff)>0?(notesOf(song,diff)/song.duration).toFixed(2):'—';
+  const metrics=detailMetrics(song,diff);
+  const durationLabel=metrics.durationLabel;
+  const bpmLabel=metrics.bpmLabel;
+  const notesLabel=metrics.notesLabel;
+  const nps=metrics.nps;
   return '<div class="ca-timeline"><div class="ca-bars">'+html+'</div><div class="ca-axis"><span>0:00</span><span>'+fmtTime(song.duration/2)+'</span><span>'+fmtTime(song.duration)+'</span></div><div class="ca-timeline-meta"><span>平均 NPS '+nps+'</span><span>峰值區間 '+Math.max(0,Math.round(tl.counts.indexOf(peak)*tl.width))+'s</span><span>'+(tl.exact?'原始時間點':'投影估算')+'</span></div></div>';
 }
 function renderBreakdown(bundle,diff){
@@ -375,7 +389,7 @@ function difficultyTable(song){
     '<div class="ca-row ca-row-head"><span>難度</span><span>Lv</span><span>Notes</span><span>NPS</span></div>'+
     DIFFS.map(d=>{
       const n=notesOf(song,d),lv=levelOf(song,d);
-      return lv?'<button type="button" class="ca-row '+(d===state.selectedDiff?'selected':'')+'" data-ca-diff="'+d+'"><span>'+LABELS[d]+'</span><span>'+lv+'</span><span>'+n.toLocaleString('en-US')+'</span><span>'+(n/Math.max(1,song.duration)).toFixed(2)+'</span></button>':'';
+      return lv?'<button type="button" class="ca-row '+(d===state.selectedDiff?'selected':'')+'" data-ca-diff="'+d+'"><span>'+LABELS[d]+'</span><span>'+lv+'</span><span>'+n.toLocaleString('en-US')+'</span><span>'+((Number(song.duration)>0&&n>0)?(n/Number(song.duration)).toFixed(2):'—')+'</span></button>':'';
     }).join('')+'</div>';
 }
 function mvPanel(song){
@@ -389,6 +403,7 @@ function mvPanel(song){
 }
 function renderDetail(){
   const box=$('caDetail'),song=state.selected,diff=state.selectedDiff;if(!box||!song)return;
+  const metrics=detailMetrics(song,diff);
   box.innerHTML='<div class="ca-detail-inner">'+
     '<div class="ca-detail-hero">'+
       '<div class="ca-detail-jacket" style="background-image:url(\''+jacketProxyUrl(song)+'\')"></div>'+
