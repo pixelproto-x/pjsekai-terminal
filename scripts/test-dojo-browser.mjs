@@ -476,20 +476,53 @@ try {
 }
 
 // Wait for the upstream player bootstrap to reach SourceLoad, then click the REAL play button.
-await page.waitForFunction(
-  () => {
+try {
+  await page.waitForFunction(
+    () => {
+      const frame = document.querySelector('#dojoSonolusIframe');
+      try {
+        const doc = frame?.contentDocument;
+        const btn = doc?.querySelector('.start-play-trg');
+        return !!btn && !btn.hasAttribute('disabled');
+      } catch (_) {
+        return false;
+      }
+    },
+    null,
+    { timeout: 60000 }
+  );
+} catch (error) {
+  const debug = await page.evaluate(() => {
     const frame = document.querySelector('#dojoSonolusIframe');
+    let child = {};
     try {
       const doc = frame?.contentDocument;
-      const btn = doc?.querySelector('.start-play-trg');
-      return !!btn && !btn.hasAttribute('disabled');
-    } catch (_) {
-      return false;
+      child = {
+        href: frame?.contentWindow?.location?.href || '',
+        readyState: doc?.readyState || '',
+        bodyText: doc?.body?.innerText?.slice(0, 5000) || '',
+        rootText: doc?.querySelector('#root')?.innerText?.slice(0, 3000) || '',
+        loadingText: doc?.querySelector('.loading-log')?.innerText?.slice(-5000) || '',
+        loadingDisplay: doc?.querySelector('#loading-cover') ? getComputedStyle(doc.querySelector('#loading-cover')).display : '',
+        processingDisplay: doc?.querySelector('#processing-cover') ? getComputedStyle(doc.querySelector('#processing-cover')).display : '',
+        startButton: doc?.querySelector('.start-play-trg')?.outerHTML?.slice(0, 1200) || '',
+        runtime: !!frame?.contentWindow?.__pjPracticeRuntime,
+      };
+    } catch (e) {
+      child = { accessError: e?.message || String(e) };
     }
-  },
-  null,
-  { timeout: 60000 }
-);
+    return {
+      iframeSrc: frame?.src || '',
+      bridgeStatus: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
+      apiLog: document.querySelector('#dojoApiLog')?.textContent?.trim() || '',
+      child,
+    };
+  });
+  await fail(
+    'Dojo SourceLoad never exposed playable START button: ' +
+    JSON.stringify({ debug, consoleErrors: errors, pageErrors, failedLocalRequests, timeout: error?.message || String(error) })
+  );
+}
 
 const sourceLoadInfo = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
