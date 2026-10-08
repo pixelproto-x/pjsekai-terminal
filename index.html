@@ -2558,6 +2558,7 @@ bottomBar?.addEventListener("click",e=>{
 const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
+let routeTransitionId=0;
 
 function updateTabMotion(page){
   tabs.forEach(t=>t.classList.toggle("active",t.dataset.go===page));
@@ -2566,6 +2567,7 @@ function updateTabMotion(page){
 }
 
 function go(page){
+  const transitionId=++routeTransitionId;
   const target=pages.find(p=>p.dataset.page===page) || pages[0];
   const routeSource=pages.find(p=>p.dataset.page===currentRoute && p!==target)
     || pages.find(p=>p.classList.contains("active") && p!==target)
@@ -2611,6 +2613,7 @@ function go(page){
     target.classList.add(direction==="right"?"route-slide-new-right":"route-slide-new-left");
 
     const finish=()=>{
+      if(transitionId!==routeTransitionId)return;
       source.classList.remove("active","route-slide-old-left","route-slide-old-right");
       target.classList.remove("route-slide-new-left","route-slide-new-right");
       target.style.removeProperty("position");
