@@ -2971,7 +2971,7 @@ document.addEventListener("click",e=>{const d=e.target.closest("[data-delete-sna
 
 
 /* ===== Stage 3 Dojo ===== */
-const DOJO_SONGS=[
+let DOJO_SONGS=[
  {id:"tell-your-world",title:"Tell Your World",artist:"初音ミク",attr:"Cool",bpm:150,diffs:{Easy:5,Normal:10,Hard:15,Expert:24,Master:29,Append:32},notes:{Easy:420,Normal:710,Hard:1040,Expert:1320,Master:1560,Append:1860}},
  {id:"world-is-mine",title:"ワールドイズマイン",artist:"初音ミク",attr:"Cute",bpm:165,diffs:{Easy:5,Normal:10,Hard:16,Expert:25,Master:30,Append:33},notes:{Easy:430,Normal:720,Hard:1060,Expert:1390,Master:1640,Append:1940}},
  {id:"senbonzakura",title:"千本桜",artist:"初音ミク",attr:"Cool",bpm:154,diffs:{Easy:6,Normal:12,Hard:18,Expert:26,Master:31,Append:34},notes:{Easy:500,Normal:820,Hard:1190,Expert:1510,Master:1780,Append:2020}},
@@ -3023,6 +3023,72 @@ function renderDojoDifficulty(){$("#dojoDifficultyButtons").innerHTML=DOJO_DIFFI
 
 
 
+async function loadDojoCatalog(){
+  try{
+    const [musicRes,diffRes,bpmRes]=await Promise.all([
+      fetch('./dojo-musics.json',{cache:'no-store'}),
+      fetch('./dojo-difficulties.json',{cache:'no-store'}),
+      fetch('https://raw.githubusercontent.com/StarMoe-org/MoeSekai-Hub/main/data/music_bpm/music_bpms.json',{cache:'no-store'}).catch(()=>null)
+    ]);
+    if(!musicRes.ok||!diffRes.ok)return false;
+    const musics=await musicRes.json();
+    const difficulties=await diffRes.json();
+    const bpmPayload=bpmRes&&bpmRes.ok?await bpmRes.json():{};
+    const bpmRows=Array.isArray(bpmPayload?.songs)?bpmPayload.songs:[];
+    const bpmById=new Map(bpmRows.map(x=>[Number(x?.music_id),x]).filter(([id])=>Number.isFinite(id)&&id>0));
+    const grouped=new Map();
+    (Array.isArray(difficulties)?difficulties:[]).forEach(d=>{
+      const id=Number(d?.musicId||d?.id||0);
+      if(!id)return;
+      if(!grouped.has(id))grouped.set(id,[]);
+      grouped.get(id).push(d);
+    });
+    const fallbackAttr=new Map([
+      ['1','Cool'],['2','Cute'],['3','Cool'],['6','Mysterious'],['8','Pure'],['10','Happy'],
+      ['11','Happy'],['13','Cool'],['15','Pure'],['18','Cool'],['19','Happy'],['21','Cool']
+    ]);
+    const next=(Array.isArray(musics)?musics:[]).map(x=>{
+      const id=Number(x?.id||0);
+      if(!id)return null;
+      const diffRows=grouped.get(id)||[];
+      const diffs={}; const notes={};
+      diffRows.forEach(d=>{
+        const key=String(d?.musicDifficulty||d?.difficulty||'').toLowerCase();
+        const mapped={easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'}[key];
+        if(mapped){
+          diffs[mapped]=Number(d?.playLevel??d?.level??0)||0;
+          notes[mapped]=Number(d?.totalNoteCount??d?.noteCount??0)||0;
+        }
+      });
+      const bpm=bpmById.get(id);
+      const bpms=Array.isArray(bpm?.bpms)?bpm.bpms.map(Number).filter(Number.isFinite):[];
+      const bpmValue=Number.isFinite(Number(bpm?.bpm))?Number(bpm.bpm):0;
+      return {
+        id:'music-'+id,
+        musicId:id,
+        title:String(x?.title||('Music #'+id)),
+        artist:String(x?.composer||x?.lyricist||''),
+        attr:fallbackAttr.get(String(id))||'Unknown',
+        bpm:bpmValue||0,
+        bpmMax:bpms.length?Math.max(...bpms):bpmValue||0,
+        diffs,notes,
+        secForMusicScoreMaker:Number(x?.secForMusicScoreMaker)||0,
+        assetbundleName:String(x?.assetbundleName||'')
+      };
+    }).filter(x=>x&&Object.keys(x.diffs).length);
+    if(next.length<50)return false;
+    const selectedMusicId=Number(dojoState.song?.musicId||0);
+    DOJO_SONGS=next.sort((a,b)=>Number(a.musicId)-Number(b.musicId));
+    dojoState.song=DOJO_SONGS.find(x=>Number(x.musicId)===selectedMusicId)||DOJO_SONGS[0];
+    if(!dojoState.song.diffs[dojoState.difficulty])dojoState.difficulty=Object.keys(dojoState.song.diffs)[0]||'Expert';
+    renderDojoSongs();renderDojoDifficulty();dojoAnalyze();
+    return true;
+  }catch(e){
+    console.warn('[Dojo catalog] fallback list retained',e);
+    return false;
+  }
+}
+
 function offsetStats(){const x=dojoState.taps;if(!x.length)return;const mean=x.reduce((a,b)=>a+b,0)/x.length,sort=[...x].sort((a,b)=>a-b),med=sort[Math.floor(sort.length/2)],suggest=-Math.round(med);$("#dojoOffsetMean").textContent=(mean>=0?"+":"")+mean.toFixed(1)+" ms";$("#dojoOffsetMedian").textContent=(med>=0?"+":"")+med.toFixed(1)+" ms";$("#dojoOffsetSuggest").textContent=(suggest>=0?"+":"")+suggest+" ms";const bins=[-100,-75,-50,-25,0,25,50,75,100],counts=bins.map((v,i)=>x.filter(z=>z>=v&&z<(bins[i+1]??Infinity)).length),mx=Math.max(...counts,1);$("#dojoOffsetChart").innerHTML=counts.map(v=>'<span class="dojo-bar" style="height:'+Math.max(7,v/mx*100)+'%"></span>').join("");}
 function startCalibration(){dojoState.calibrating=true;dojoState.taps=[];dojoState.calStart=Date.now()+1000;dojoState.calBeat=0;$("#dojoTapBtn").disabled=false;$("#dojoCalStart").disabled=true;showToast("1 秒後開始，請跟著節拍點擊 TAP");const bpm=Math.max(30,Math.min(300,num($("#dojoCalBpm").value,120))),int=60000/bpm;clearInterval(dojoState.calTimer);dojoState.calTimer=setInterval(()=>{if(!dojoState.calibrating)return;const now=Date.now();if(now<dojoState.calStart)return;const expected=dojoState.calStart+dojoState.calBeat*int;if(now-expected>int*2){dojoState.calBeat=Math.round((now-dojoState.calStart)/int);}else if(now>=expected){dojoState.calBeat++;}},int/4);}
 function tapCalibration(){if(!dojoState.calibrating)return;const bpm=Math.max(30,Math.min(300,num($("#dojoCalBpm").value,120))),int=60000/bpm,now=Date.now();if(now<dojoState.calStart)return;const beat=Math.round((now-dojoState.calStart)/int),expected=dojoState.calStart+beat*int,offset=now-expected;dojoState.taps.push(offset);offsetStats();if(dojoState.taps.length>=32)stopCalibration();}
@@ -3044,6 +3110,7 @@ function initDojo(){
   $("#dojoNoteTimes")?.addEventListener("change",dojoAnalyze);
 }
 initDojo();
+loadDojoCatalog();
 
 
 
