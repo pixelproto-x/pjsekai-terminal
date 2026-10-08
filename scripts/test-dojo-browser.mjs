@@ -258,10 +258,16 @@ for (const [key, ok] of Object.entries(dojo)) {
 }
 
 await page.waitForFunction(
-  () => document.querySelectorAll('#dojoSongList [data-dojo-song]').length > 0,
+  () => document.querySelectorAll('#dojoSongList [data-dojo-song]').length > 50,
   null,
-  { timeout: 20000 }
+  { timeout: 25000 }
 );
+const dojoCatalogCount = await page.locator('#dojoSongList [data-dojo-song]').count();
+if (dojoCatalogCount <= 50) await fail('Dojo catalog did not hydrate from full static data: ' + dojoCatalogCount);
+const firstDojoCatalogTitle = (await page.locator('#dojoSongList [data-dojo-song]').first().locator('.dojo-song-title').textContent() || '').trim();
+if (firstDojoCatalogTitle !== 'Tell Your World') await fail('Dojo static catalog sort/first song is unexpected: ' + firstDojoCatalogTitle);
+const hardButtonText = await page.locator('#dojoDifficultyButtons [data-dojo-diff="Hard"]').textContent();
+if (!/16\b/.test(hardButtonText || '')) await fail('Dojo difficulty data is not using current generated values for Tell Your World: ' + hardButtonText);
 
 const initialSelection = (await page.locator('#dojoSelectedTitle').textContent() || '').trim();
 if (!initialSelection) await fail('Dojo selected-song panel is empty on initial load');
