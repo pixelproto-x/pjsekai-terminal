@@ -244,8 +244,11 @@ function filterSongs(){
 function jacketProxyUrl(song){
   const asset=String(song?.assetbundleName||song?.jacket||'').trim();
   if(!asset)return '';
-  const origin='https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+asset+'_normal.webp';
-  return 'https://images.weserv.nl/?url='+encodeURIComponent('ssl:'+origin)+'&w=96&h=96&fit=cover&output=webp';
+  const origin='storage.sekai.best/sekai-jp-assets/thumbnail/music/'+asset+'_normal.webp';
+  // wsrv.nl is the current Weserv image-cache endpoint. Using the documented
+  // host/path form avoids the 400 responses returned by images.weserv.nl.
+  const fallback='https://pixelproto-x.github.io/pjsekai-terminal/favicon.svg';
+  return 'https://wsrv.nl/?url='+encodeURIComponent(origin)+'&w=96&h=96&fit=cover&output=webp&default='+encodeURIComponent(fallback);
 }
 function renderList(){
   const box=$('caSongList'),count=$('caCount');if(!box)return;
