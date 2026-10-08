@@ -68,6 +68,7 @@ for (const [leftKey, rightKey] of homePairs) {
 }
 const cardsForDock = page.locator('.home-grid .app-card[data-home-sheet="home-cards"]');
 const toolsForDock = page.locator('.home-grid .app-card[data-home-sheet="home-tools"]');
+await page.evaluate(() => window.scrollTo(0, 0));
 await cardsForDock.evaluate(el => el.click());
 await page.locator('.home-grid .home-accordion-panel').waitFor({ state: 'visible', timeout: 5000 });
 const dockAudit = await page.evaluate(() => {
