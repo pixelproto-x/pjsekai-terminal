@@ -61,5 +61,27 @@
     if (shouldRedirect(url)) url = localSystemTexture();
     return originalOpen.call(this, method, url, ...rest);
   };
+
+  // Some Sonolus runtime loaders create Image elements directly instead of
+  // going through fetch/XHR. Rewrite the absolute root asset path there too.
+  const imageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  if (imageSrc && imageSrc.get && imageSrc.set) {
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      configurable: imageSrc.configurable,
+      enumerable: imageSrc.enumerable,
+      get: imageSrc.get,
+      set(value) {
+        imageSrc.set.call(this, shouldRedirect(value) ? localSystemTexture() : value);
+      }
+    });
+  }
+
+  const originalSetAttribute = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function(name, value) {
+    if (String(name).toLowerCase() === 'src' && shouldRedirect(value)) {
+      value = localSystemTexture();
+    }
+    return originalSetAttribute.call(this, name, value);
+  };
 })();
 </script><script src="./zlib/gunzip.min.js"></script><script src="./zlib/unzip.min.js"></script><script type="module" src="./assets/index.js"></script></body></html>
