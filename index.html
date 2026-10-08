@@ -2741,41 +2741,37 @@ function toggleAccordion(card){
 }
 
 function keepHomeAccordionAboveDock(panel){
-  let settled=false;
   const settle=()=>{
-    if(settled)return;
-    settled=true;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const dock=document.querySelector(".bottom-bar");
-      const feature=panel?.closest(".home-feature");
-      const column=panel?.closest(".home-column");
-      const mainEl=document.querySelector("main");
-      const scroller=document.scrollingElement||document.documentElement;
-      if(!dock || !feature || !mainEl)return;
-      const dockRect=dock.getBoundingClientRect();
-      const columnLast=column?.lastElementChild||feature;
-      const contentRect=columnLast.getBoundingClientRect();
-      const margin=16;
-      const overlap=contentRect.bottom-(dockRect.top-margin);
-      if(overlap<=0)return;
+    const dock=document.querySelector(".bottom-bar");
+    const feature=panel?.closest(".home-feature");
+    const column=panel?.closest(".home-column");
+    const mainEl=document.querySelector("main");
+    const scroller=document.scrollingElement||document.documentElement;
+    if(!dock || !feature || !mainEl)return;
 
-      const currentScroll=Number(scroller.scrollTop||window.scrollY||0);
-      const desiredScroll=Math.max(0,currentScroll+overlap);
-      let maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
-      if(maxScroll<desiredScroll){
-        const extra=Math.ceil(desiredScroll-maxScroll)+8;
-        mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
-        maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
-      }
-      const targetScroll=Math.min(desiredScroll,maxScroll);
-      scroller.scrollTop=targetScroll;
-      window.scrollTo({top:targetScroll,behavior:"auto"});
-    }));
+    const dockRect=dock.getBoundingClientRect();
+    const last=column?.lastElementChild||feature;
+    const rect=last.getBoundingClientRect();
+    const margin=16;
+    const needed=Math.max(0,rect.bottom-(dockRect.top-margin));
+    if(!needed)return;
+
+    const current=Number(scroller.scrollTop||window.scrollY||0);
+    const desired=current+needed;
+    let maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+    if(desired>maxScroll){
+      const extra=Math.ceil(desired-maxScroll)+margin;
+      mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
+      maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+    }
+    const target=Math.min(desired,maxScroll);
+    scroller.scrollTop=target;
+    window.scrollTo({top:target,behavior:"auto"});
   };
-  panel?.addEventListener("animationend",settle,{once:true});
-  window.setTimeout(settle,320);
-}
 
+  // Wait for both the accordion and homepage entrance animations to finish.
+  window.setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(settle)),520);
+}
 function toggleHomeAccordion(card){
   const key=card.dataset.homeSheet;
   const data=homeData[key];
