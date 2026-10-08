@@ -37,4 +37,29 @@
     };
   }
 })();
+
+/* GitHub Pages fallback: some Sonolus runtime data asks for /textures/system_tex.webp.
+ * The actual asset is bundled beside this player at ./textures/system_tex.webp.
+ */
+(() => {
+  const localSystemTexture = () => new URL('./textures/system_tex.webp', document.baseURI).href;
+  const shouldRedirect = input => {
+    try {
+      const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+      return url.pathname === '/textures/system_tex.webp';
+    } catch (_) { return false; }
+  };
+
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    if (shouldRedirect(input)) return originalFetch(localSystemTexture(), init);
+    return originalFetch(input, init);
+  };
+
+  const originalOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+    if (shouldRedirect(url)) url = localSystemTexture();
+    return originalOpen.call(this, method, url, ...rest);
+  };
+})();
 </script><script src="./zlib/gunzip.min.js"></script><script src="./zlib/unzip.min.js"></script><script type="module" src="./assets/index.js"></script></body></html>
