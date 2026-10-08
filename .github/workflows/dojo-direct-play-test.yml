@@ -30,19 +30,5 @@ jobs:
           curl -L --fail --silent --show-error --range 0-255 -D /tmp/audio.headers -o /tmp/audio.sample "https://storage.sekai.best/sekai-jp-assets/music/long/0001_01/0001_01.wav"
           cat /tmp/audio.headers
           file /tmp/audio.sample
-      - name: Verify browser image asset and proxy sources
-        run: |
-          echo "=== source image ==="
-          curl -L --fail --silent --show-error -D /tmp/cover.headers -o /tmp/cover.sample "https://storage.sekai.best/sekai-jp-assets/thumbnail/music/jacket_s_001_normal.webp"
-          cat /tmp/cover.headers
-          file /tmp/cover.sample
-          echo "=== wsrv full https ==="
-          curl -L --fail --silent --show-error -D /tmp/wsrv.headers -o /tmp/wsrv.sample "https://wsrv.nl/?url=https%3A%2F%2Fstorage.sekai.best%2Fsekai-jp-assets%2Fthumbnail%2Fmusic%2Fjacket_s_001_normal.webp&w=96&h=96&fit=cover&output=webp"
-          cat /tmp/wsrv.headers
-          file /tmp/wsrv.sample
-          echo "=== images.weserv https ==="
-          curl -L --fail --silent --show-error -D /tmp/weserv.headers -o /tmp/weserv.sample "https://images.weserv.nl/?url=https%3A%2F%2Fstorage.sekai.best%2Fsekai-jp-assets%2Fthumbnail%2Fmusic%2Fjacket_s_001_normal.webp&w=96&h=96&fit=cover&output=webp"
-          cat /tmp/weserv.headers
-          file /tmp/weserv.sample
       - name: Run Dojo browser test
         run: node scripts/test-dojo-browser.mjs
