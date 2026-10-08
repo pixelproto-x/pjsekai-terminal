@@ -1009,7 +1009,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <div class="home-feature">
           <button class="app-card card-cyan" data-home-sheet="home-songs">
             <span class="icon">♫</span><span class="chev">⌃</span>
-            <span><h3>歌曲 Music</h3><p>歌曲、難度、收藏、MV、搜尋</p></span>
+            <span><h3>歌曲 Music</h3><p>歌曲、難度、譜面分析、搜尋</p></span>
           </button>
         </div>
         <div class="home-feature">
@@ -1021,13 +1021,13 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <div class="home-feature">
           <button class="app-card card-orange" data-home-sheet="home-events">
             <span class="icon">✦</span><span class="chev">⌃</span>
-            <span><h3>活動 Events</h3><p>目前活動、歷史、排名、計算器</p></span>
+            <span><h3>活動 Events</h3><p>目前活動、活動計算器、排名</p></span>
           </button>
         </div>
         <div class="home-feature">
           <button class="app-card card-green" data-home-sheet="home-profile">
             <span class="icon">♙</span><span class="chev">⌃</span>
-            <span><h3>我的 Profile</h3><p>玩家資料、收藏、最近使用、設定</p></span>
+            <span><h3>我的 Profile</h3><p>玩家資料、主隊、CR、統計、名片</p></span>
           </button>
         </div>
       </div>
@@ -1047,7 +1047,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <div class="home-feature">
           <button class="app-card card-dark" data-home-sheet="home-tools">
             <span class="icon">⌘</span><span class="chev">⌃</span>
-            <span><h3>工具 Tools</h3><p>玩家資料、節奏設定、各種工具</p></span>
+            <span><h3>工具 Tools</h3><p>譜面分析、活動計算、Rank EXP</p></span>
           </button>
         </div>
       </div>
@@ -1073,8 +1073,8 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   </section>
 
   <section class="page" data-page="songs">
-    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">DOJO</div><h1 class="page-title">音遊實戰工具</h1><p class="page-subtitle">歌曲資料庫、譜面密度分析、練習室、AP Offset 與 Note Speed 換算。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
-    <div id="chartAnalyzerMount"></div>
+    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">DOJO</div><h1 class="page-title">Songs &amp; Dojo</h1><p class="page-subtitle">歌曲資料庫、譜面分析與實戰特訓房。選歌後直接分析並進入 Dojo。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
+    
     <div class="dojo-hero">
       <div class="dojo-panel dark"><div class="dojo-kicker">SONG DATABASE</div><div class="dojo-title">歌曲資料庫</div><p class="dojo-copy">依歌名、歌手、屬性、難度與 BPM 搜尋。資料目前以本地資料庫運作，之後可直接擴充 JSON。</p><div class="dojo-search-row"><input id="dojoSongSearch" class="search-input" placeholder="搜尋歌名 / 歌手 / 關鍵字" autocomplete="off"><button id="dojoClearSearch" class="data-action" type="button">清除</button></div><div class="dojo-filter-row"><select id="dojoAttrFilter" class="dojo-select"><option value="">全部屬性</option><option value="Cool">Cool</option><option value="Cute">Cute</option><option value="Pure">Pure</option><option value="Happy">Happy</option><option value="Mysterious">Mysterious</option></select><select id="dojoDifficultyFilter" class="dojo-select"><option value="">全部難度</option><option value="Easy">Easy</option><option value="Normal">Normal</option><option value="Hard">Hard</option><option value="Expert">Expert</option><option value="Master">Master</option><option value="Append">Append</option></select><input id="dojoBpmFilter" class="dojo-number" type="number" min="1" placeholder="BPM ≥"></div><div id="dojoSongList" class="dojo-song-list"></div></div>
       <div class="dojo-panel"><div class="dojo-kicker">SELECTED SONG</div><div class="dojo-title" id="dojoSelectedTitle">尚未選擇歌曲</div><p class="dojo-copy" id="dojoSelectedMeta">從左側選一首歌曲開始分析。</p><div class="dojo-stat-grid"><div class="dojo-stat"><small>BPM</small><strong id="dojoSelectedBpm">—</strong></div><div class="dojo-stat"><small>難度</small><strong id="dojoSelectedDifficulty">—</strong></div><div class="dojo-stat"><small>Notes</small><strong id="dojoSelectedNotes">—</strong></div><div class="dojo-stat"><small>NPS</small><strong id="dojoSelectedNps">—</strong></div></div><div class="dojo-difficulty" id="dojoDifficultyButtons"></div><div class="dojo-action-row"><button class="primary-btn" id="dojoAnalyzeBtn" type="button">分析譜面</button><button class="secondary-btn" id="dojoOpenPracticeBtn" type="button">開啟練習室</button></div></div>
@@ -1171,8 +1171,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     </section>
   </div>
 </div>
-<div class="dojo-tool-card"><h3>AP Offset 敲擊校準</h3><p>按照節拍點擊，計算你的平均偏移、中位數與 Timing 分布，並給出可解釋的建議值。</p><div class="dojo-control-row"><label>BPM</label><input id="dojoCalBpm" class="dojo-number" type="number" min="30" max="300" value="120"><button class="primary-btn" id="dojoCalStart" type="button">開始校準</button><button class="secondary-btn" id="dojoCalReset" type="button">重置</button></div><div class="dojo-action-row"><button id="dojoTapBtn" class="data-action" type="button" disabled> TAP － 依節拍點擊 </button></div><div class="dojo-offset-result"><div class="dojo-stat"><small>平均偏移</small><strong id="dojoOffsetMean">—</strong></div><div class="dojo-stat"><small>中位數</small><strong id="dojoOffsetMedian">—</strong></div><div class="dojo-stat"><small>建議 Offset</small><strong id="dojoOffsetSuggest">—</strong></div></div><div class="dojo-chart" id="dojoOffsetChart"><div class="dojo-chart-empty">尚無 Timing 資料</div></div></div>
-      <div class="dojo-tool-card"><h3>Note Speed 換算器</h3><p>用螢幕尺寸與比例換算「相近的垂直像素速度」。這是幾何估算，不是官方速度對照表。</p><div class="dojo-filter-row"><input id="dojoRefW" class="dojo-number" type="number" value="1080" min="1"><input id="dojoRefH" class="dojo-number" type="number" value="1920" min="1"><input id="dojoBaseSpeed" class="dojo-number" type="number" value="10" min=".1" step=".1"><input id="dojoTargetW" class="dojo-number" type="number" value="1179" min="1"><input id="dojoTargetH" class="dojo-number" type="number" value="2556" min="1"></div><div class="dojo-stat-grid"><div class="dojo-stat"><small>參考比例</small><strong id="dojoRefRatio">9:16</strong></div><div class="dojo-stat"><small>目標比例</small><strong id="dojoTargetRatio">—</strong></div><div class="dojo-stat"><small>換算 Speed</small><strong id="dojoSpeedResult">—</strong></div><div class="dojo-stat"><small>垂直倍率</small><strong id="dojoHeightFactor">—</strong></div></div><div class="dojo-action-row"><button class="primary-btn" id="dojoSpeedCalc" type="button">重新換算</button></div></div>
+
     </div>
   </section>
 
@@ -1209,20 +1208,19 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 
   <section class="page" data-page="events">
     <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>COLORFUL EVENT</div><div class="kicker">EVENT CENTER</div><h1 class="page-title">活動</h1><p class="page-subtitle">活動資料與計算器分開整理，點開後再進入各種工具。</p></div>
+      <div><div class="sekai-chip"><span class="chip-dot"></span>COLORFUL EVENT</div><div class="kicker">EVENT CENTER</div><h1 class="page-title">活動</h1><p class="page-subtitle">活動資料與活動計算器整合在同一區。</p></div>
       <button class="back-btn" data-go="home">‹ 首頁</button>
     </div>
     <div class="catalog-grid">
       <button class="catalog-card w2" data-sheet="event-current"><span class="tiny-icon" style="background:var(--pink)">✦</span><span class="arrow">⌃</span><h3>目前活動</h3><p>查看活動入口、活動頁與相關資訊。</p></button>
       <button class="catalog-card w2" data-sheet="event-calc"><span class="tiny-icon" style="background:var(--orange)">÷</span><span class="arrow">⌃</span><h3>活動計算器</h3><p>計算周回與資源需求。</p></button>
-      <button class="catalog-card" data-sheet="event-ranking"><span class="tiny-icon" style="background:var(--yellow);color:#222">#</span><span class="arrow">⌃</span><h3>排名紀錄</h3><p>整理自己的活動紀錄。</p></button>
-      <button class="catalog-card" data-sheet="event-history"><span class="tiny-icon" style="background:var(--violet)">◷</span><span class="arrow">⌃</span><h3>歷史活動</h3><p>回顧過往活動入口。</p></button>
     </div>
   </section>
 
   <section class="page" data-page="tools">
-    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>STRATEGY CALC</div><div class="kicker">GAME TOOLS</div><h1 class="page-title">戰略精算器</h1><p class="page-subtitle">活動衝榜、角色培養素材逆推與體力回復倒數。全部在瀏覽器本機計算。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
+    <div class="page-head"><div><div class="sekai-chip"><span class="chip-dot"></span>STRATEGY CALC</div><div class="kicker">GAME TOOLS</div><h1 class="page-title">Tools</h1><p class="page-subtitle">譜面分析、活動精算與 Player Rank EXP。實戰相關設定直接放在 Dojo。</p></div><button class="back-btn" data-go="home">‹ 首頁</button></div>
     <div id="eventCalcProMount"></div>
+    <div id="chartAnalyzerMount"></div>
     <div class="strategy-grid">
       <section class="strategy-card">
         <div class="strategy-head"><div><h2>活動衝榜精算</h2><p>用目前進度、目標點數、加成與每場基礎點數估算所需場數。</p></div><span class="badge">EVENT</span></div>
@@ -1246,40 +1244,9 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <div class="strategy-note">本工具把「每場基礎點數 × (1 + 加成%)」視為一場的基礎事件點數，再套用該場的 Live Bonus 倍率。官方目前確認 Live Bonus 消耗設定可為 0～10，並會依消耗量增加報酬與 EXP；大火罐（大型 Live Bonus Drink）一次回復 10 點。 citeturn582786search0</div>
       </section>
 
-      <section class="strategy-card">
-        <div class="strategy-head"><div><h2>角色培養逆推</h2><p>輸入目前 / 目標 Master Rank、Skill Level，再填入你的素材需求模板與庫存，就能算缺口。</p></div><span class="badge">MATERIAL</span></div>
-        <div class="strategy-fields three">
-          <div class="strategy-field"><label>目前 Master Rank</label><input id="scMrCurrent" type="number" min="0" max="5" value="0"></div>
-          <div class="strategy-field"><label>目標 Master Rank</label><input id="scMrTarget" type="number" min="0" max="5" value="5"></div>
-          <div class="strategy-field"><label>目前 Skill Level</label><input id="scSkillCurrent" type="number" min="1" max="10" value="1"></div>
-          <div class="strategy-field"><label>目標 Skill Level</label><input id="scSkillTarget" type="number" min="1" max="10" value="10"></div>
-          <div class="strategy-field"><label>每次突破時間（秒）</label><input id="scTrainSeconds" type="number" min="0" value="0"></div>
-        </div>
-        <div class="material-grid" id="scMaterialGrid">
-          <div class="material-row"><div class="material-name"><input data-sc-mat-name="0" value="素材 A"><small>名稱可自行修改</small></div><input data-sc-mr="0" type="number" min="0" value="10" title="每 MR 素材需求"><input data-sc-skill="0" type="number" min="0" value="4" title="每 Skill Level 素材需求"><input data-sc-stock="0" type="number" min="0" value="0" title="目前持有"></div>
-          <div class="material-row"><div class="material-name"><input data-sc-mat-name="1" value="素材 B"><small>每階段需求</small></div><input data-sc-mr="1" type="number" min="0" value="5"><input data-sc-skill="1" type="number" min="0" value="2"><input data-sc-stock="1" type="number" min="0" value="0"></div>
-          <div class="material-row"><div class="material-name"><input data-sc-mat-name="2" value="素材 C"><small>每階段需求</small></div><input data-sc-mr="2" type="number" min="0" value="2"><input data-sc-skill="2" type="number" min="0" value="1"><input data-sc-stock="2" type="number" min="0" value="0"></div>
-          <div class="material-row"><div class="material-name"><input data-sc-mat-name="3" value="金幣"><small>通用資源</small></div><input data-sc-mr="3" type="number" min="0" value="1000"><input data-sc-skill="3" type="number" min="0" value="500"><input data-sc-stock="3" type="number" min="0" value="0"></div>
-        </div>
-        <div class="strategy-note">欄位順序：素材名稱／每 1 個 Master Rank 的需求／每 1 個 Skill Level 的需求／目前庫存。遊戲版本與卡片類型可能使實際素材表不同，因此這裡刻意做成可編輯模板，不硬編一套可能過時的官方數值。</div>
-        <div class="strategy-actions"><button class="strategy-link" id="scMaterialCalcBtn" type="button">⌕ 計算素材缺口</button><button class="strategy-link" id="scMaterialResetBtn" type="button">↺ 還原模板</button></div>
-        <div class="strategy-result-grid" id="scMaterialResults">
-          <div class="strategy-metric"><small>MR 級距</small><strong id="scMrSteps">—</strong></div><div class="strategy-metric"><small>Skill 級距</small><strong id="scSkillSteps">—</strong></div><div class="strategy-metric"><small>總突破次數</small><strong id="scTotalSteps">—</strong></div><div class="strategy-metric"><small>估算時間</small><strong id="scTrainTime">—</strong></div>
-        </div>
-        <div id="scMaterialGapList" class="strategy-status">按「計算素材缺口」查看每種素材的總需求與缺口。</div>
-      </section>
+      
 
-      <section class="strategy-card">
-        <div class="strategy-head"><div><h2>體力倒數鬧鐘</h2><p>自訂目前體力與每 1 點的回復分鐘數，倒數到 10/10；也可設定每日固定回復時間。</p></div><span class="badge">TIMER</span></div>
-        <div class="strategy-fields three">
-          <div class="strategy-field"><label>目前體力</label><input id="scStaminaCurrent" type="number" min="0" max="10" value="5"></div>
-          <div class="strategy-field"><label>回復 1 點分鐘</label><input id="scStaminaMinutes" type="number" min="1" value="30"></div>
-          <div class="strategy-field"><label>目標體力</label><input id="scStaminaTarget" type="number" min="1" max="10" value="10"></div>
-        </div>
-        <div class="strategy-actions"><button class="strategy-link" id="scStaminaStartBtn" type="button">▶ 開始倒數</button><button class="strategy-link" id="scStaminaStopBtn" type="button">■ 停止</button><button class="strategy-link" id="scStaminaNotifyBtn" type="button">🔔 通知設定</button></div>
-        <div class="stamina-clock"><div><small>距離目標</small><strong id="scStaminaClock">00:00:00</strong></div><div class="stamina-count"><span id="scStaminaCount">5/10</span></div></div>
-        <div class="strategy-status" id="scStaminaStatus">尚未開始計時。計時結束前可關閉頁面，重新開啟仍會嘗試恢復計時。</div>
-      </section>
+      
 
       <section class="strategy-card">
         <div class="strategy-head"><div><h2>精算器說明</h2><p>所有結果只使用你輸入的資料，在瀏覽器本機運算。</p></div></div>
@@ -3116,7 +3083,7 @@ function tapCalibration(){if(!dojoState.calibrating)return;const bpm=Math.max(30
 function stopCalibration(){dojoState.calibrating=false;clearInterval(dojoState.calTimer);dojoState.calTimer=null;$("#dojoTapBtn").disabled=true;$("#dojoCalStart").disabled=false;offsetStats();}
 function calcSpeed(){const rw=Math.max(1,num($("#dojoRefW").value,1080)),rh=Math.max(1,num($("#dojoRefH").value,1920)),tw=Math.max(1,num($("#dojoTargetW").value,1179)),th=Math.max(1,num($("#dojoTargetH").value,2556)),base=Math.max(.1,num($("#dojoBaseSpeed").value,10)),factor=th/rh;$("#dojoRefRatio").textContent=dojoRatio(rw,rh);$("#dojoTargetRatio").textContent=dojoRatio(tw,th);$("#dojoHeightFactor").textContent=factor.toFixed(3)+"x";$("#dojoSpeedResult").textContent=(base*factor).toFixed(2);}
 function initDojo(){
-  renderDojoSongs();renderDojoDifficulty();dojoAnalyze();calcSpeed();
+  renderDojoSongs();renderDojoDifficulty();dojoAnalyze();
   ["dojoSongSearch","dojoAttrFilter","dojoDifficultyFilter","dojoBpmFilter"].forEach(id=>$("#"+id)?.addEventListener("input",renderDojoSongs));
   $("#dojoClearSearch")?.addEventListener("click",()=>{$("#dojoSongSearch").value="";$("#dojoAttrFilter").value="";$("#dojoDifficultyFilter").value="";$("#dojoBpmFilter").value="";renderDojoSongs();});
   $("#dojoSongList")?.addEventListener("click",e=>{const x=e.target.closest("[data-dojo-song]");if(x)selectDojoSong(x.dataset.dojoSong);});
@@ -3126,8 +3093,7 @@ function initDojo(){
   
   
   
-  $("#dojoCalStart")?.addEventListener("click",startCalibration);$("#dojoTapBtn")?.addEventListener("click",tapCalibration);$("#dojoCalReset")?.addEventListener("click",()=>{stopCalibration();dojoState.taps=[];$("#dojoOffsetMean").textContent="—";$("#dojoOffsetMedian").textContent="—";$("#dojoOffsetSuggest").textContent="—";$("#dojoOffsetChart").innerHTML='<div class="dojo-chart-empty">尚無 Timing 資料</div>';});
-  ["dojoRefW","dojoRefH","dojoBaseSpeed","dojoTargetW","dojoTargetH"].forEach(id=>$("#"+id)?.addEventListener("input",calcSpeed));$("#dojoSpeedCalc")?.addEventListener("click",calcSpeed);
+
   $("#dojoNoteTimes")?.addEventListener("change",dojoAnalyze);
 }
 initDojo();
@@ -3223,7 +3189,9 @@ function restoreStaminaTimer(){
   }catch(_){return false;}
 }
 function initStrategy(){
-  loadStrategyPrefs();calculateEvent();calculateMaterials();renderStaminaTimer();restoreStaminaTimer();
+  loadStrategyPrefs();calculateEvent();
+  if(document.getElementById("scMaterialCalcBtn")) calculateMaterials();
+  if(document.getElementById("scStaminaClock")) { renderStaminaTimer(); restoreStaminaTimer(); }
   ["scTargetPoints","scCurrentPoints","scBasePoints","scBonusPct","scBoostPerRun","scRunSeconds","scCurrentBoost","scDrinkRestore"].forEach(id=>$("#"+id)?.addEventListener("input",calculateEvent));
   ["scMrCurrent","scMrTarget","scSkillCurrent","scSkillTarget","scTrainSeconds"].forEach(id=>$("#"+id)?.addEventListener("input",calculateMaterials));
   document.querySelectorAll(".material-row input").forEach(x=>x.addEventListener("input",calculateMaterials));
