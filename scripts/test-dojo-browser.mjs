@@ -156,7 +156,7 @@ if (/Invalid Date|undefined/.test(chartDetail.text) || !/Notes\s*\d/.test(chartD
 }
 
 // Return home before the secondary homepage regression checks.
-await page.locator('nav.bottom-bar button.tab[data-go="home"]').evaluate(el => el.click());
+await page.locator('#homeBrand').evaluate(el => el.click());
 await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 await page.evaluate(() => window.scrollTo(0, 0));
 
@@ -247,9 +247,10 @@ await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
 
 // Rapid navigation race audit.
-for (const route of ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings', 'home']) {
+for (const route of ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings']) {
   await page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]').evaluate(el => el.click());
 }
+await page.locator('#homeBrand').evaluate(el => el.click());
 await page.waitForTimeout(600);
 const rapidRouteAudit = await page.evaluate(() => ({
   activeCount: document.querySelectorAll('.page.active').length,
