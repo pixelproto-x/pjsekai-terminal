@@ -12,6 +12,7 @@ const CACHE_TTL=24*60*60*1000;
 const SOURCES={
   musics:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musics.json',
   diffs:'https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/main/musicDifficulties.json',
+  bpm:'https://raw.githubusercontent.com/StarMoe-org/MoeSekai-Hub/main/data/music_bpm/music_bpms.json',
   local:'dojo-musics.json'
 };
 
@@ -119,9 +120,10 @@ function normalizeMusic(x,diffRows=[]){
       if(raw>1000&&raw<3600000)return raw/1000;
       if(raw>0)return raw;
       const fallback=num(x.secForMusicScoreMaker,0);
-      return fallback>0?fallback:0;
+      if(fallback>0)return fallback;
+      return num(x.chartDuration,0);
     })(),
-    durationEstimated:!(num(x.duration??x.musicTime??x.length,0)>0) && num(x.secForMusicScoreMaker,0)>0,
+    durationEstimated:!(num(x.duration??x.musicTime??x.length,0)>0) && (num(x.secForMusicScoreMaker,0)>0 || num(x.chartDuration,0)>0),
     bpm:num(x.bpm??x.musicBpm??x.bpmMin,0),
     bpmMax:num(x.bpmMax??x.maxBpm??x.bpm,0),
     assetbundleName:String(x.assetbundleName??x.assetBundleName??''),
@@ -129,14 +131,32 @@ function normalizeMusic(x,diffRows=[]){
     difficulties
   };
 }
-function mergeSongs(musics,diffRows){
+function mergeSongs(musics,diffRows,bpmRows=[]){
   const grouped=new Map();
   diffRows.forEach(d=>{
     const id=num(d?.musicId??d?.id,0);if(!id)return;
     if(!grouped.has(id))grouped.set(id,[]);
     grouped.get(id).push(d);
   });
-  const out=musics.map(x=>normalizeMusic(x,grouped.get(num(x.id,0))||[])).filter(Boolean);
+  const bpmById=new Map(
+    bpmRows.map(x=>[num(x?.music_id??x?.musicId??x?.id,0),x]).filter(([id])=>id>0)
+  );
+  const out=musics.map(x=>{
+    const meta=bpmById.get(num(x.id,0));
+    if(meta){
+      const bpms=Array.isArray(meta.bpms)?meta.bpms.map(Number).filter(Number.isFinite):[];
+      const chartDuration=Array.isArray(meta.bpm_segments)
+        ? meta.bpm_segments.reduce((sum,row)=>sum+num(row?.duration_sec,0),0)
+        : 0;
+      x={...x,
+        bpm:meta.bpm??x.bpm,
+        bpmMax:bpms.length?Math.max(...bpms):meta.bpmMax??x.bpmMax,
+        bpms,
+        chartDuration
+      };
+    }
+    return normalizeMusic(x,grouped.get(num(x.id,0))||[]);
+  }).filter(Boolean);
   return out.sort((a,b)=>a.id-b.id);
 }
 async function fetchJson(url,timeout=18000){
@@ -160,8 +180,13 @@ function writeCache(songs){
 async function loadSongs(){
   const cached=readCache();
   if(cached?.length)return cached;
-  const [musics,diffs]=await Promise.all([fetchJson(SOURCES.musics),fetchJson(SOURCES.diffs)]);
-  const merged=mergeSongs(arr(musics),arr(diffs));
+  const [musics,diffs,bpmPayload]=await Promise.all([
+    fetchJson(SOURCES.musics),
+    fetchJson(SOURCES.diffs),
+    fetchJson(SOURCES.bpm).catch(()=>({}))
+  ]);
+  const bpmRows=Array.isArray(bpmPayload?.songs)?bpmPayload.songs:[];
+  const merged=mergeSongs(arr(musics),arr(diffs),bpmRows);
   writeCache(merged);
   return merged;
 }
