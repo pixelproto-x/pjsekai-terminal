@@ -408,7 +408,7 @@ function renderDetail(){
     '<div class="ca-detail-hero">'+
       '<div class="ca-detail-jacket" style="background-image:url(\''+jacketProxyUrl(song)+'\')"></div>'+
       '<div class="ca-detail-title"><div class="ca-chip">'+LABELS[diff]+'</div><h3>'+esc(song.title||'未命名歌曲')+'</h3><p>'+esc(song.artist||song.composer||'')+'</p><small>ID '+song.id+'</small></div>'+
-      '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+bpmLabel+'</b></div><div><small>時長</small><b>'+durationLabel+'</b></div><div><small>Notes</small><b>'+notesLabel+'</b></div><div><small>NPS</small><b>'+nps+'</b></div></div>'+
+      '<div class="ca-detail-metrics"><div><small>BPM</small><b>'+esc(metrics.bpmLabel)+'</b></div><div><small>時長</small><b>'+esc(metrics.durationLabel)+'</b></div><div><small>Notes</small><b>'+esc(metrics.notesLabel)+'</b></div><div><small>NPS</small><b>'+esc(metrics.nps)+'</b></div></div>'+
     '</div>'+
     '<div class="ca-sections"><section><div class="ca-section-title"><strong>76 / 78 · 難度資料</strong><span>全難度 Level + Note Count</span></div>'+difficultyTable(song)+'</section>'+
     '<section><div class="ca-section-title"><strong>80 / 82 / 83 · 密度分析</strong><span>NPS · 高密度區 · 靜態長條圖</span></div><div id="caTimelineHolder"><div class="ca-loading">讀取詳細譜面資料…</div></div></section>'+
