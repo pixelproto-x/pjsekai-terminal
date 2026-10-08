@@ -2738,13 +2738,24 @@ function keepHomeAccordionAboveDock(panel){
     const dock=document.querySelector(".bottom-bar");
     const feature=panel?.closest(".home-feature");
     const column=panel?.closest(".home-column");
-    if(!dock || !feature)return;
+    const mainEl=document.querySelector("main");
+    const scroller=document.scrollingElement||document.documentElement;
+    if(!dock || !feature || !mainEl)return;
     const dockRect=dock.getBoundingClientRect();
     const columnLast=column?.lastElementChild||feature;
     const contentRect=columnLast.getBoundingClientRect();
     const margin=16;
     const overlap=contentRect.bottom-(dockRect.top-margin);
-    if(overlap>0)window.scrollBy({top:overlap,behavior:"auto"});
+    if(overlap<=0)return;
+
+    const desiredScroll=Math.max(0,window.scrollY+overlap);
+    let maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
+    if(maxScroll<desiredScroll){
+      const extra=Math.ceil(desiredScroll-maxScroll)+8;
+      mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
+      maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
+    }
+    window.scrollTo({top:Math.min(desiredScroll,maxScroll),behavior:"auto"});
   };
   requestAnimationFrame(()=>requestAnimationFrame(settle));
 }
@@ -2758,6 +2769,7 @@ function toggleHomeAccordion(card){
   // Home accordions are mutually exclusive: always reset every other card
   // and remove every stale panel before deciding whether to open this card.
   const wasOpen=card.classList.contains("home-card-expanded");
+  document.querySelector("main")?.style.removeProperty("padding-bottom");
   container.querySelectorAll(".home-accordion-panel").forEach(panel=>panel.remove());
   container.querySelectorAll(".app-card[data-home-sheet]").forEach(other=>{
     other.classList.remove("home-card-expanded");
