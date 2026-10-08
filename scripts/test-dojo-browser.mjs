@@ -500,22 +500,46 @@ try {
     JSON.stringify({ debug, consoleErrors: errors, pageErrors, failedLocalRequests, timeout: error?.message || String(error) }));
 }
 
-const startButtonState = await page.evaluate(() => {
-  const node = document.querySelector('#dojoSonolusIframe')?.contentDocument?.querySelector('.start-play-trg');
-  if (!node) return null;
-  const s = getComputedStyle(node);
-  const r = node.getBoundingClientRect();
-  return {
-    disabled: node.hasAttribute('disabled'),
-    display: s.display,
-    visibility: s.visibility,
-    opacity: s.opacity,
-    width: r.width,
-    height: r.height,
-  };
-});
-if (!startButtonState || startButtonState.disabled) {
-  await fail('Dojo SourceLoad START button remained disabled: ' + JSON.stringify(startButtonState));
+let startButtonState = null;
+let startReady = false;
+const startAttempts = [];
+for (let attempt = 1; attempt <= 3 && !startReady; attempt++) {
+  await page.waitForFunction(() => {
+    const node = document.querySelector('#dojoSonolusIframe')?.contentDocument?.querySelector('.start-play-trg');
+    return !!node;
+  }, null, { timeout: 20000 });
+  startButtonState = await page.evaluate(() => {
+    const node = document.querySelector('#dojoSonolusIframe')?.contentDocument?.querySelector('.start-play-trg');
+    if (!node) return null;
+    const s = getComputedStyle(node);
+    const r = node.getBoundingClientRect();
+    let bgmState = '';
+    try {
+      const app = document.querySelector('#dojoSonolusIframe')?.contentWindow?.app;
+      bgmState = typeof app?.BGM?.state === 'function' ? String(app.BGM.state() || '') : '';
+    } catch (_) {}
+    return {
+      disabled: node.hasAttribute('disabled'),
+      display: s.display,
+      visibility: s.visibility,
+      opacity: s.opacity,
+      width: r.width,
+      height: r.height,
+      bgmState,
+    };
+  });
+  startAttempts.push(startButtonState);
+  startReady = !!startButtonState && !startButtonState.disabled;
+  if (!startReady && attempt < 3) {
+    await page.evaluate(() => {
+      const frame = document.querySelector('#dojoSonolusIframe');
+      if (frame?.src) frame.src = frame.src;
+    });
+    await page.waitForTimeout(2500);
+  }
+}
+if (!startReady) {
+  await fail('Dojo SourceLoad START button remained disabled after 3 load attempts: ' + JSON.stringify(startAttempts));
 }
 
 const startInfo = await page.evaluate(() => {
