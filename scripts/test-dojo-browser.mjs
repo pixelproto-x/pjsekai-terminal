@@ -234,21 +234,27 @@ if (accordionClosed.characterClass.includes('home-card-expanded') || accordionCl
   await fail('Closing Cards did not leave all homepage accordion cards collapsed: ' + JSON.stringify(accordionClosed));
 }
 
-// Route coverage: every major page must become the sole active page.
-const routes = ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
-await page.locator('#homeBrand').evaluate(el => el.click());
-await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
-for (const route of routes) {
+// Route coverage: test actual Dock entries, then direct-hash refresh for hidden pages.
+const dockRoutes = ['home', 'sekai', 'songs', 'tools', 'profile'];
+for (const route of dockRoutes) {
   const tab = page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]');
   if (!await tab.count()) await fail('Missing bottom navigation tab: ' + route);
-  await tab.click();
+  await tab.evaluate(el => el.click());
   await page.waitForSelector('.page[data-page="' + route + '"].active', { state: 'visible', timeout: 10000 });
 }
+for (const route of ['characters', 'cards', 'events', 'settings']) {
+  await page.goto('http://127.0.0.1:4173/#' + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForSelector('.page[data-page="' + route + '"].active', { state: 'visible', timeout: 10000 });
+  const activeCount = await page.locator('.page.active').count();
+  if (activeCount !== 1) await fail('Direct route refresh left multiple active pages: ' + route + ' count=' + activeCount);
+}
+await page.goto('http://127.0.0.1:4173/#home', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
 
 // Rapid navigation race audit.
-for (const route of ['sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings']) {
+for (const route of ['sekai', 'songs', 'tools', 'profile']) {
   await page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]').evaluate(el => el.click());
 }
 await page.locator('#homeBrand').evaluate(el => el.click());
