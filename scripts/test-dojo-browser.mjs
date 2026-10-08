@@ -467,7 +467,7 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
 const startButton = sonolusFrame.locator('.start-play-trg').first();
 try {
-  await startButton.waitFor({ state: 'visible', timeout: 60000 });
+  await startButton.waitFor({ state: 'attached', timeout: 60000 });
 } catch (error) {
   const debug = await page.evaluate(() => {
     const frame = document.querySelector('#dojoSonolusIframe');
@@ -498,6 +498,24 @@ try {
   });
   await fail('Dojo SourceLoad START button did not appear: ' +
     JSON.stringify({ debug, consoleErrors: errors, pageErrors, failedLocalRequests, timeout: error?.message || String(error) }));
+}
+
+const startButtonState = await page.evaluate(() => {
+  const node = document.querySelector('#dojoSonolusIframe')?.contentDocument?.querySelector('.start-play-trg');
+  if (!node) return null;
+  const s = getComputedStyle(node);
+  const r = node.getBoundingClientRect();
+  return {
+    disabled: node.hasAttribute('disabled'),
+    display: s.display,
+    visibility: s.visibility,
+    opacity: s.opacity,
+    width: r.width,
+    height: r.height,
+  };
+});
+if (!startButtonState || startButtonState.disabled) {
+  await fail('Dojo SourceLoad START button remained disabled: ' + JSON.stringify(startButtonState));
 }
 
 const startInfo = await page.evaluate(() => {
