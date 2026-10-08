@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b11">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Admin Control Center｜Project SEKAI</title>
+<link rel="stylesheet" href="./admin.css">
+<script src="./config.js"></script>
+<script type="module" src="./admin.js"></script>
+</head>
+<body>
+<div class="admin-bg"></div>
+<main class="admin-app">
+<section id="gate" class="gate">
+  <div class="gate-mark">✦</div>
+  <div class="gate-kicker">PROJECT SEKAI · PRIVATE AREA</div>
+  <h1>Admin Control Center</h1>
+  <p id="gateText">正在驗證管理員身分…</p>
+  <div id="gateDetail" class="gate-detail"></div>
+</section>
+
+<section id="app" class="hidden">
+<header class="admin-topbar">
+  <div class="brand"><div class="brand-mark">✦</div><div><strong>Admin Control Center</strong><span>Project SEKAI｜玩家工具箱</span></div></div>
+  <div class="top-actions"><span id="roleBadge" class="role-badge">—</span><button id="refreshBtn" class="icon-btn" type="button">↻</button><button id="logoutBtn" class="icon-btn danger" type="button">⇥</button></div>
+</header>
+
+<div class="admin-layout">
+<aside class="sidebar">
+  <button class="side-item active" data-view="dashboard" type="button"><span>⌂</span>Dashboard</button>
+  <button class="side-item" data-view="users" type="button"><span>◉</span>使用者</button>
+  <button class="side-item" data-view="dojo" type="button"><span>▶</span>Dojo</button>
+  <button class="side-item" data-view="data" type="button"><span>▦</span>資料中心</button>
+  <button class="side-item" data-view="errors" type="button"><span>!</span>Error Center</button>
+  <button class="side-item" data-view="analytics" type="button"><span>⌁</span>Analytics</button>
+  <button class="side-item" data-view="settings" type="button"><span>⚙</span>網站設定</button>
+  <div class="sidebar-foot"><a href="../" target="_blank" rel="noopener noreferrer">開啟網站 ↗</a><a href="https://github.com/pixelproto-x/pjsekai-terminal" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+</aside>
+
+<div class="content">
+<section class="view active" data-panel="dashboard">
+  <div class="view-head"><div><div class="kicker">OVERVIEW</div><h2>Dashboard</h2><p>網站服務、資料來源與後台狀態集中在這裡。</p></div><div id="signedUser" class="signed-user">—</div></div>
+  <div class="metric-grid">
+    <article class="metric"><span>管理員</span><strong id="metricAdmins">—</strong><small>目前啟用帳號</small></article>
+    <article class="metric"><span>Dojo</span><strong id="metricDojo">—</strong><small>前端開關狀態</small></article>
+    <article class="metric"><span>資料中心</span><strong id="metricData">—</strong><small>資料來源可達性</small></article>
+    <article class="metric"><span>最新 Commit</span><strong id="metricCommit">—</strong><small>GitHub main</small></article>
+  </div>
+  <div class="section-grid two">
+    <article class="panel"><div class="panel-head"><div><b>API Status</b><span>即時健康檢查。</span></div><button id="apiRefresh" class="small-btn" type="button">重新檢查</button></div><div id="apiStatusList" class="status-list"></div></article>
+    <article class="panel"><div class="panel-head"><div><b>最近活動</b><span>來自 Admin Audit Log。</span></div></div><div id="recentLogs" class="log-list"></div></article>
+  </div>
+</section>
+
+<section class="view" data-panel="users">
+  <div class="view-head"><div><div class="kicker">ACCESS CONTROL</div><h2>使用者管理</h2><p>只有 Owner 可以新增、停用與修改白名單。</p></div><button id="addUserBtn" class="primary-btn" type="button">＋ 新增管理員</button></div>
+  <div class="panel"><div class="table-wrap"><table><thead><tr><th>帳號</th><th>名稱</th><th>角色</th><th>狀態</th><th>建立時間</th><th></th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
+</section>
+
+<section class="view" data-panel="dojo">
+  <div class="view-head"><div><div class="kicker">RHYTHM ENGINE</div><h2>Dojo</h2><p>控制實戰特訓房前端開放狀態。</p></div></div>
+  <div class="section-grid two">
+    <article class="panel">
+      <div class="control-row"><div><b>Dojo 啟用</b><small>關閉後一般使用者無法進入實戰特訓房。</small></div><label class="switch"><input id="dojoEnabled" type="checkbox"><span></span></label></div>
+      <div class="control-row"><div><b>允許完整模式</b><small>Easy / Normal / Hard / Expert / Master / Append。</small></div><label class="switch"><input id="dojoAllDifficulties" type="checkbox" checked><span></span></label></div>
+      <div class="control-row"><div><b>音訊同步</b><small>保留目前 Controller Bar 與 iframe 播放同步流程。</small></div><span id="dojoSyncBadge" class="status-pill">檢查中</span></div>
+      <div class="form-actions"><button id="saveDojoBtn" class="primary-btn" type="button">儲存 Dojo 設定</button></div>
+    </article>
+    <article class="panel"><div class="panel-head"><div><b>播放核心</b><span>目前前端架構。</span></div></div>
+      <dl class="detail-list"><div><dt>Runtime</dt><dd>Sonolus / iframe</dd></div><div><dt>控制</dt><dd>postMessage + Controller Bar</dd></div><div><dt>Note Speed</dt><dd>1.0–12.0 / 0.1</dd></div><div><dt>Loop</dt><dd>A–B</dd></div><div><dt>狀態</dt><dd id="dojoState">—</dd></div></dl>
+    </article>
+  </div>
+</section>
+
+<section class="view" data-panel="data">
+  <div class="view-head"><div><div class="kicker">DATA</div><h2>資料中心</h2><p>歌曲、角色、卡片、活動與譜面來源的可達性。</p></div><button id="dataRefresh" class="primary-btn" type="button">重新檢查</button></div>
+  <div id="dataCards" class="data-grid"></div>
+</section>
+
+<section class="view" data-panel="errors">
+  <div class="view-head"><div><div class="kicker">DIAGNOSTICS</div><h2>Error Center</h2><p>顯示此管理工作階段捕捉到的錯誤。</p></div><button id="clearErrorsBtn" class="small-btn" type="button">清除</button></div>
+  <div class="panel"><div id="errorsList" class="error-list"></div></div>
+</section>
+
+<section class="view" data-panel="analytics">
+  <div class="view-head"><div><div class="kicker">USAGE</div><h2>Analytics</h2><p>跨使用者統計需要網站端事件收集啟用後才會有資料。</p></div></div>
+  <div class="section-grid two"><article class="panel empty-panel"><b>尚未啟用事件收集</b><span>目前不會偷偷收集訪客資料。後續啟用後才會顯示匿名頁面、歌曲、Dojo 使用統計。</span></article><article class="panel"><div class="panel-head"><div><b>本機使用概況</b><span>僅此瀏覽器 LocalStorage。</span></div></div><div id="localStats" class="stat-lines"></div></article></div>
+</section>
+
+<section class="view" data-panel="settings">
+  <div class="view-head"><div><div class="kicker">CONTROL</div><h2>網站設定</h2><p>維護模式、公告與後台安全原則。</p></div></div>
+  <div class="section-grid two">
+    <article class="panel"><div class="control-row"><div><b>維護模式</b><small>前端可顯示維護提示。</small></div><label class="switch"><input id="maintenanceEnabled" type="checkbox"><span></span></label></div><label class="stack-label">公開公告<input id="siteNotice" class="text-input" type="text" placeholder="例如：Dojo 更新中"></label><div class="form-actions"><button id="saveSiteBtn" class="primary-btn" type="button">儲存網站設定</button></div></article>
+    <article class="panel"><div class="panel-head"><div><b>安全原則</b><span>固定顯示。</span></div></div><div class="security-note"><p>Google OAuth 負責登入。</p><p>Supabase RLS 負責白名單與權限。</p><p>不使用前端硬編碼管理員密碼。</p><p>未授權帳號會跳 GitHub 原生 404。</p></div></article>
+  </div>
+</section>
+</div></div>
+</section>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="userDialog">
+<form method="dialog" id="userForm" class="dialog-card">
+<button class="dialog-close" value="cancel" type="submit">×</button><div class="kicker">WHITELIST</div><h3>新增管理員</h3><p>使用 Google 登入後，以 Supabase Auth User ID 對應白名單。</p>
+<label>Supabase User ID<input id="newUserId" class="text-input" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></label>
+<label>Google Email<input id="newUserEmail" class="text-input" type="email" required placeholder="name@gmail.com"></label>
+<label>顯示名稱<input id="newUserName" class="text-input" placeholder="Admin"></label>
+<label>角色<select id="newUserRole" class="text-input"><option value="admin">Admin</option><option value="viewer">Viewer</option><option value="owner">Owner</option></select></label>
+<div class="form-actions"><button id="createUserBtn" class="primary-btn" type="submit">加入白名單</button></div>
+</form>
+</dialog>
+</main>
+</body>
+</html>
