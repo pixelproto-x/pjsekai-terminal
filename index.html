@@ -2754,13 +2754,22 @@ function keepHomeAccordionAboveDock(panel){
     const scroller=document.scrollingElement||document.documentElement;
     if(!dock || !feature || !mainEl)return;
 
+    // Disable scroll anchoring while the accordion changes document height so the
+    // browser cannot immediately snap back to the old scroll position.
+    mainEl.style.overflowAnchor="none";
+
     const dockRect=dock.getBoundingClientRect();
     const last=column?.lastElementChild||feature;
     const rect=last.getBoundingClientRect();
     const margin=16;
     const overlap=rect.bottom-(dockRect.top-margin);
     if(overlap>0){
-      const current=Number(scroller.scrollTop||window.scrollY||0);
+      const current=Math.max(
+        Number(scroller.scrollTop||0),
+        Number(document.documentElement.scrollTop||0),
+        Number(document.body.scrollTop||0),
+        Number(window.scrollY||0)
+      );
       const desired=current+overlap;
       let maxScroll=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
       if(desired>maxScroll){
@@ -2770,11 +2779,16 @@ function keepHomeAccordionAboveDock(panel){
       }
       const target=Math.min(desired,maxScroll);
       scroller.scrollTop=target;
-      window.scrollTo({top:target,behavior:"auto"});
+      document.documentElement.scrollTop=target;
+      document.body.scrollTop=target;
+      window.scrollTo(0,target);
     }
-    if(passes<10)requestAnimationFrame(settle);
+    if(passes<14)requestAnimationFrame(settle);
   };
   requestAnimationFrame(()=>requestAnimationFrame(settle));
+  window.setTimeout(settle,80);
+  window.setTimeout(settle,180);
+  window.setTimeout(settle,350);
 }
 function toggleHomeAccordion(card){
   const key=card.dataset.homeSheet;
