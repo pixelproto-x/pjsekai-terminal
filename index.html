@@ -2748,14 +2748,17 @@ function keepHomeAccordionAboveDock(panel){
     const overlap=contentRect.bottom-(dockRect.top-margin);
     if(overlap<=0)return;
 
-    const desiredScroll=Math.max(0,window.scrollY+overlap);
+    const currentScroll=Number(scroller.scrollTop||window.scrollY||0);
+    const desiredScroll=Math.max(0,currentScroll+overlap);
     let maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
     if(maxScroll<desiredScroll){
       const extra=Math.ceil(desiredScroll-maxScroll)+8;
       mainEl.style.paddingBottom="calc(var(--bottom-nav-clearance) + 24px + "+extra+"px)";
       maxScroll=Math.max(0,scroller.scrollHeight-window.innerHeight);
     }
-    window.scrollTo({top:Math.min(desiredScroll,maxScroll),behavior:"auto"});
+    const targetScroll=Math.min(desiredScroll,maxScroll);
+    scroller.scrollTop=targetScroll;
+    window.scrollTo({top:targetScroll,behavior:"auto"});
   };
   requestAnimationFrame(()=>requestAnimationFrame(settle));
 }
