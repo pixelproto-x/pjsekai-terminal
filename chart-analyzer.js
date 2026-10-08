@@ -244,7 +244,7 @@ function filterSongs(){
 function jacketProxyUrl(song){
   const asset=String(song?.assetbundleName||song?.jacket||'').trim();
   if(!asset)return '';
-  const origin='storage.sekai.best/sekai-jp-assets/thumbnail/music/'+asset+'_normal.webp';
+  const origin='https://storage.sekai.best/sekai-jp-assets/thumbnail/music/'+asset+'_normal.webp';
   // wsrv.nl is the current Weserv image-cache endpoint. Using the documented
   // host/path form avoids the 400 responses returned by images.weserv.nl.
   const fallback='https://pixelproto-x.github.io/pjsekai-terminal/favicon.svg';
