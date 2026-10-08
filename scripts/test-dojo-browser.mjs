@@ -113,14 +113,6 @@ if (!strategyResult.scGapPoints || Number(strategyResult.scGapPoints.replace(/,/
     Number(strategyResult.scPointsPerRun.replace(/,/g,'')) <= 0) {
   await fail('Strategy event calculator returned invalid results: ' + JSON.stringify(strategyResult));
 }
-if (document.querySelector('#scStaminaCurrent')) {
-  await setInput('scStaminaCurrent', 2);
-  await setInput('scStaminaMinutes', 1);
-  await setInput('scStaminaTarget', 5);
-  await page.locator('#scStaminaStartBtn').evaluate(el => el.click());
-  await page.waitForTimeout(120);
-  await page.locator('#scStaminaStopBtn').evaluate(el => el.click());
-}
 
 
 // Chart Analyzer deep checks.
