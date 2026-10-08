@@ -3167,11 +3167,22 @@ function resetEventCalc(){[["scTargetPoints",100000],["scCurrentPoints",25000],[
 function resetMaterials(){SC_MATERIAL_DEFAULTS.forEach((x,i)=>{$('[data-sc-mat-name="'+i+'"]').value=x.name;$('[data-sc-mr="'+i+'"]').value=x.mr;$('[data-sc-skill="'+i+'"]').value=x.skill;$('[data-sc-stock="'+i+'"]').value=x.stock;});calculateMaterials();}
 let scTimer=null,scEndAt=0;
 function renderStaminaTimer(){
-  const cur=Math.max(0,Math.min(10,scN($("#scStaminaCurrent")?.value))),target=Math.max(1,Math.min(10,scN($("#scStaminaTarget")?.value,10))),minutes=Math.max(1,scN($("#scStaminaMinutes")?.value,30));
-  if(cur>=target){$("#scStaminaClock").textContent="00:00:00";$("#scStaminaCount").textContent=target+"/"+target;$("#scStaminaStatus").textContent="已達到目標體力。";return;}
-  const remaining=Math.max(0,Math.ceil((scEndAt-Date.now())/1000));
-  const count=Math.min(target,cur+Math.max(0,Math.floor((Math.max(0,(minutes*60*(target-cur))-(scEndAt-Date.now())))/(minutes*60))));
-  $("#scStaminaClock").textContent=scTime(remaining);$("#scStaminaCount").textContent=count+"/"+target;
+  const cur=Math.max(0,Math.min(10,scN($("#scStaminaCurrent")?.value))),
+    target=Math.max(1,Math.min(10,scN($("#scStaminaTarget")?.value,10))),
+    minutes=Math.max(1,scN($("#scStaminaMinutes")?.value,30));
+  if(cur>=target){
+    $("#scStaminaClock").textContent="00:00:00";
+    $("#scStaminaCount").textContent=target+"/"+target;
+    $("#scStaminaStatus").textContent="已達到目標體力。";
+    return;
+  }
+  const totalMs=Math.max(0,(target-cur)*minutes*60*1000);
+  const remainingMs=Math.max(0,scEndAt-Date.now());
+  const remaining=scEndAt>0?Math.ceil(remainingMs/1000):Math.ceil(totalMs/1000);
+  const elapsedMs=scEndAt>0?Math.max(0,totalMs-remainingMs):0;
+  const recovered=Math.min(target-cur,Math.max(0,Math.floor(elapsedMs/(minutes*60*1000))));
+  $("#scStaminaClock").textContent=scTime(remaining);
+  $("#scStaminaCount").textContent=Math.min(target,cur+recovered)+"/"+target;
 }
 function startStaminaTimer(){
   const cur=Math.max(0,Math.min(10,scN($("#scStaminaCurrent")?.value))),target=Math.max(1,Math.min(10,scN($("#scStaminaTarget")?.value,10))),minutes=Math.max(1,scN($("#scStaminaMinutes")?.value,30));
