@@ -1890,6 +1890,57 @@ const app=()=>window.app||null,clock=(a,t,r)=>{if(!a)return!1;t=Math.max(0,Numbe
 const runtime={get app(){return app()},getTime(){const a=app();return a?Math.max(0,(performance.now()-a.start_time)/1e3):0},getDuration(){try{const b=app()?.BGM;if(!b)return 0;const d=Number(b.duration?.()||0);if(d>0)return d;const media=b._sounds?.[0]?._node;return Number(media?.duration||0)}catch{return 0}},seek(t){const a=app();return a?clock(a,t,a.__practiceRate||1):!1},setRate(r){const a=app();return a?clock(a,this.getTime(),r):Number(r)||1},async reset(t=0){const r=Number(app()?.__practiceRate||1),retry=window.__pjPracticeRetry;if(typeof retry!=="function")throw new Error("Local Sonolus retry bridge unavailable.");signal("resetting");await retry();const a=await wait(app,30000);if(!a)throw new Error("Sonolus engine rebuild timeout.");await wait(()=>a.BGM&&a.BGM.state&&a.BGM.state()!=="unloaded",30000);clock(a,t,r);signal("ready",{duration:this.getDuration()});return!0}};
 window.__pjPracticeRuntime=runtime;
 const norm=v=>String(v||"").toLowerCase().replace(/\s+/g,"").replace(/[【】\[\]()（）・:：_-]/g,""),score=x=>{const n=norm(x?.name),t=norm(x?.title),w=norm(SONG),all=n+" "+t;let s=0;if(w&&t===w)s+=1600;else if(w&&t.includes(w))s+=1200;else if(w&&all.includes(w))s+=850;if(all.includes(DIFF))s+=300;if(Number(x?.rating)===LEVEL)s+=220;if(new RegExp("\\b"+DIFF+"\\b","i").test(String(x?.name||"")))s+=350;return s};
-async function findLevel(){let a=[];try{const first=await fo(SERVER,"levels",0,{});if(first?.items)a.push(...first.items);for(const q of Array.isArray(first?.searches)?first.searches:[]){const opts=Array.isArray(q?.options)?q.options:[];for(const target of opts.filter(x=>x?.type==="text")){const p={};for(const o of opts){if(o.type==="text")p[o.query]=o.query===target.query?SONG:o.def;else if(o.type==="slider"||o.type==="select")p[o.query]=o.def;else if(o.type==="toggle")p[o.query]=o.def?1:0}try{const z=await fo(SERVER,"levels",0,p);if(z?.items)a.push(...z.items)}catch{}}}}catch{}let best=[...new Map(a.map(x=>[x?.name,x])).values()].sort((x,y)=>score(y)-score(x))[0];if(best&&score(best)>=850)return best;for(let p=1;p<80;p++){try{const z=await fo(SERVER,"levels",p,{});if(!z?.items?.length)break;a.push(...z.items);best=[...z.items].sort((x,y)=>score(y)-score(x))[0];if(best&&score(best)>=850)return best;if(Number(z.pageCount)>0&&p+1>=Number(z.pageCount))break}catch{break}}return[...new Map(a.map(x=>[x?.name,x])).values()].sort((x,y)=>score(y)-score(x))[0]||null}
+async function findLevel(){
+  const candidates=[];
+  const addItems=(items)=>{if(Array.isArray(items))candidates.push(...items);};
+  const rankBest=()=>{
+    const unique=[...new Map(candidates.map(x=>[x?.name,x])).values()];
+    return unique.sort((x,y)=>score(y)-score(x))[0]||null;
+  };
+  const trySearch=async(options)=>{
+    try{
+      const res=await fo(SERVER,"levels",0,options);
+      addItems(res?.items);
+      const best=rankBest();
+      return best&&score(best)>=850?best:null;
+    }catch{return null}
+  };
+
+  // Prefer the server's native keyword search for the selected song.
+  const direct=await trySearch({keywords:SONG});
+  if(direct)return direct;
+
+  // Compatibility fallback for servers whose keyword search is unavailable.
+  try{
+    const first=await fo(SERVER,"levels",0,{});
+    addItems(first?.items);
+    for(const q of Array.isArray(first?.searches)?first.searches:[]){
+      const opts=Array.isArray(q?.options)?q.options:[];
+      for(const target of opts.filter(x=>x?.type==="text")){
+        const p={};
+        for(const o of opts){
+          if(o.type==="text")p[o.query]=o.query===target.query?SONG:o.def;
+          else if(o.type==="slider"||o.type==="select")p[o.query]=o.def;
+          else if(o.type==="toggle")p[o.query]=o.def?1:0;
+        }
+        const best=await trySearch(p);
+        if(best)return best;
+      }
+    }
+  }catch{}
+
+  // Bounded fallback; avoid an 80-page scan when a server has no search support.
+  for(let p=1;p<10;p++){
+    try{
+      const z=await fo(SERVER,"levels",p,{});
+      if(!z?.items?.length)break;
+      addItems(z.items);
+      const best=rankBest();
+      if(best&&score(best)>=850)return best;
+      if(Number(z.pageCount)>0&&p+1>=Number(z.pageCount))break;
+    }catch{break}
+  }
+  return rankBest();
+}
 async function boot(){try{if(!SONG){signal("ready",{duration:runtime.getDuration()});return}await NM();await Rt.servers.put({name:"__pjsekai_terminal__",display_name:"Project SEKAI Terminal",address:SERVER,option:{},version:lc});await wait(()=>window.__pjMenu,30000);jt=SERVER;ei="__pjsekai_terminal__";const level=await findLevel();if(!level){signal("error",{message:"找不到對應的 Sonolus 譜面："+SONG});return}const pair=await Hl(SERVER,"levels",level.name);ce.level_info_data=pair[0];ce.collection_names=pair[1];ce.source_items=um(ce.level_info_data).source_items;ce.is_offline_level=!1;window.__pjMenu.change_menu("SourceLoad");await wait(()=>document.querySelector(".start-play-trg"),30000)}catch(e){console.error("[PJ] bootstrap",e);signal("error",{message:String(e?.message||e)})}}
 const watch=()=>{const a=app();if(a&&!a.__practiceControl){a.__practiceControl=!0;a.__practiceRate=1;a.__practiceTime=Math.max(0,(performance.now()-a.start_time)/1e3);a.__practiceWall=performance.now()}if(a)signal("ready",{duration:runtime.getDuration(),bgmState:a.BGM?.state?.()||"",bgmDuration:Number(a.BGM?.duration?.()||0),playing:!!a.BGM?.playing?.()});setTimeout(watch,500)};watch();boot()})();
