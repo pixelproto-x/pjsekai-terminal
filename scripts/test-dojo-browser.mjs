@@ -113,7 +113,6 @@ if (!strategyResult.scGapPoints || Number(strategyResult.scGapPoints.replace(/,/
     Number(strategyResult.scPointsPerRun.replace(/,/g,'')) <= 0) {
   await fail('Strategy event calculator returned invalid results: ' + JSON.stringify(strategyResult));
 }
-for (const [id, value] of [['scMrCurrent',0],['scMrTarget',5],['scSkillCurrent',1],['scSkillTarget',10],['scTrainSeconds',60]]) await setInput(id, value);
 if (document.querySelector('#scStaminaCurrent')) {
   await setInput('scStaminaCurrent', 2);
   await setInput('scStaminaMinutes', 1);
