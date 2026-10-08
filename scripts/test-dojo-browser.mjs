@@ -434,6 +434,9 @@ try {
   );
 }
 
+// Real START smoke test: expose the actual play button and prove the runtime clock/audio path advances.
+await startButton.evaluate(el => el.click());
+await page.waitForTimeout(600);
 const runtimeState = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   const runtime = frame?.contentWindow?.__pjPracticeRuntime;
@@ -445,6 +448,19 @@ const runtimeState = await page.evaluate(() => {
     iframeSrc: frame?.src || '',
   };
 });
+if (!(runtimeState.duration > 0)) {
+  await fail('Dojo START did not expose a playable duration: ' + JSON.stringify(runtimeState));
+}
+const t0 = runtimeState.time;
+await page.waitForTimeout(700);
+const t1 = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  return Number(frame?.contentWindow?.__pjPracticeRuntime?.getTime?.() || 0);
+});
+if (!(t1 > t0 + 0.05)) {
+  await fail('Dojo START did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
+}
+
 const bridgeExercise = await page.evaluate(() => {
   const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
   try {
