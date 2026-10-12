@@ -2,7 +2,8 @@
 
 export const Blocks = new Map<i32,Map<i32,f32>>();
 // Sonolus 1.1.3 stream functions (id -> key/value entries).
-let streams = new Map<i32,Array<StaticArray<f32>>>();
+let streams = new Map<i32,Map<f32,f32>>();
+let stream_keys = new Map<i32,Array<f32>>();
 // Break関係
 let is_breaking:bool = false;
 let breaked_count:i16 = 0;
@@ -403,7 +404,8 @@ export function init_blocks(r_env:f32[], UIconfig:f32[], level_op:f32[]):void {
 
 export function reset_vars():void{
     Blocks.clear();
-    streams = new Map<i32,Array<StaticArray<f32>>>();
+    streams = new Map<i32,Map<f32,f32>>();
+    stream_keys = new Map<i32,Array<f32>>();
     is_breaking = false;
     breaked_count = 0;
     break_scopes = 0;
@@ -2527,101 +2529,88 @@ function DestroyParticleEffect(entity_id:i32,args:StaticArray<f32>):f32{
 }
 
 
-function get_stream_entries(id:i32):Array<StaticArray<f32>>{
+function get_stream_values(id:i32):Map<f32,f32>{
     if(!streams.has(id)){
-        streams.set(id,new Array<StaticArray<f32>>());
+        streams.set(id,new Map<f32,f32>());
+        stream_keys.set(id,new Array<f32>());
     }
     return streams.get(id);
 }
-
+function get_stream_keys(id:i32):Array<f32>{
+    if(!stream_keys.has(id)){
+        streams.set(id,new Map<f32,f32>());
+        stream_keys.set(id,new Array<f32>());
+    }
+    return stream_keys.get(id);
+}
+function stream_upper_bound(keys:Array<f32>,key:f32):i32{
+    let lo:i32=0;
+    let hi:i32=keys.length;
+    while(lo<hi){
+        const mid:i32=(lo+hi)>>1;
+        if(keys[mid]<=key) lo=mid+1;
+        else hi=mid;
+    }
+    return lo;
+}
 function StreamSet(entity_id:i32,args:StaticArray<f32>):f32{
-    const id = i32(args[0]);
-    const key = args[1];
-    const value = args[2];
-    const entries = get_stream_entries(id);
-    for(let i:i32=0;i<entries.length;i++){
-        if(entries[i][0] == key){
-            entries[i][1] = value;
-            return 0.;
-        }
+    const id=i32(args[0]), key=args[1], value=args[2];
+    const values=get_stream_values(id);
+    const keys=get_stream_keys(id);
+    if(values.has(key)){
+        values.set(key,value);
+        return 0.;
     }
-    const entry = new StaticArray<f32>(2);
-    entry[0] = key;
-    entry[1] = value;
-    entries.push(entry);
+    values.set(key,value);
+    if(keys.length==0 || key>keys[keys.length-1]){
+        keys.push(key);
+        return 0.;
+    }
+    // Most runtime writes are chronological; retain sorted order for occasional out-of-order keys.
+    let pos:i32=0;
+    let hi:i32=keys.length;
+    while(pos<hi){
+        const mid:i32=(pos+hi)>>1;
+        if(keys[mid]<key) pos=mid+1;
+        else hi=mid;
+    }
+    keys.push(0.);
+    for(let i:i32=keys.length-1;i>pos;i--) keys[i]=keys[i-1];
+    keys[pos]=key;
     return 0.;
 }
-
 function StreamHas(entity_id:i32,args:StaticArray<f32>):f32{
-    const entries = streams.has(i32(args[0])) ? streams.get(i32(args[0])) : new Array<StaticArray<f32>>();
-    const key = args[1];
-    for(let i:i32=0;i<entries.length;i++){
-        if(entries[i][0] == key) return 1.;
-    }
-    return 0.;
+    const id=i32(args[0]);
+    return streams.has(id)&&streams.get(id).has(args[1]) ? 1. : 0.;
 }
-
 function StreamGetNextKey(entity_id:i32,args:StaticArray<f32>):f32{
-    const entries = streams.has(i32(args[0])) ? streams.get(i32(args[0])) : new Array<StaticArray<f32>>();
-    const key = args[1];
-    let found = false;
-    let next = key;
-    for(let i:i32=0;i<entries.length;i++){
-        const candidate = entries[i][0];
-        if(candidate > key && (!found || candidate < next)){
-            next = candidate;
-            found = true;
-        }
-    }
-    return found ? next : key;
+    const id=i32(args[0]), key=args[1];
+    if(!stream_keys.has(id)) return key;
+    const keys=get_stream_keys(id);
+    const i=stream_upper_bound(keys,key);
+    return i<keys.length ? keys[i] : key;
 }
-
 function StreamGetPreviousKey(entity_id:i32,args:StaticArray<f32>):f32{
-    const entries = streams.has(i32(args[0])) ? streams.get(i32(args[0])) : new Array<StaticArray<f32>>();
-    const key = args[1];
-    let found = false;
-    let previous = key;
-    for(let i:i32=0;i<entries.length;i++){
-        const candidate = entries[i][0];
-        if(candidate < key && (!found || candidate > previous)){
-            previous = candidate;
-            found = true;
-        }
-    }
-    return found ? previous : key;
+    const id=i32(args[0]), key=args[1];
+    if(!stream_keys.has(id)) return key;
+    const keys=get_stream_keys(id);
+    const i=stream_upper_bound(keys,key)-1;
+    return i>=0 ? keys[i] : key;
 }
-
 function StreamGetValue(entity_id:i32,args:StaticArray<f32>):f32{
-    const entries = streams.has(i32(args[0])) ? streams.get(i32(args[0])) : new Array<StaticArray<f32>>();
-    if(entries.length == 0) return 0.;
-    const key = args[1];
-    let hasLower = false;
-    let hasUpper = false;
-    let lowerKey:f32 = 0.;
-    let lowerValue:f32 = 0.;
-    let upperKey:f32 = 0.;
-    let upperValue:f32 = 0.;
-    let firstKey:f32 = entries[0][0];
-    let firstValue:f32 = entries[0][1];
-    let lastKey:f32 = entries[0][0];
-    let lastValue:f32 = entries[0][1];
-    for(let i:i32=0;i<entries.length;i++){
-        const k = entries[i][0];
-        const v = entries[i][1];
-        if(k < firstKey){firstKey=k;firstValue=v;}
-        if(k > lastKey){lastKey=k;lastValue=v;}
-        if(k == key) return v;
-        if(k < key && (!hasLower || k > lowerKey)){
-            lowerKey=k;lowerValue=v;hasLower=true;
-        }
-        if(k > key && (!hasUpper || k < upperKey)){
-            upperKey=k;upperValue=v;hasUpper=true;
-        }
-    }
-    if(!hasLower) return firstValue;
-    if(!hasUpper) return lastValue;
-    if(upperKey == lowerKey) return lowerValue;
-    return lowerValue + (upperValue-lowerValue)*(key-lowerKey)/(upperKey-lowerKey);
+    const id=i32(args[0]), key=args[1];
+    if(!streams.has(id)) return 0.;
+    const values=streams.get(id);
+    const keys=get_stream_keys(id);
+    if(keys.length==0) return 0.;
+    if(values.has(key)) return values.get(key);
+    const i=stream_upper_bound(keys,key);
+    if(i<=0) return values.get(keys[0]);
+    if(i>=keys.length) return values.get(keys[keys.length-1]);
+    const lowKey=keys[i-1], highKey=keys[i];
+    const lowValue=values.get(lowKey), highValue=values.get(highKey);
+    if(highKey==lowKey) return lowValue;
+    return lowValue+(highValue-lowValue)*(key-lowKey)/(highKey-lowKey);
 }
 
 function HasSkinSprite(entity_id:i32,args:StaticArray<f32>):f32{
