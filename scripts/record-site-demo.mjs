@@ -36,7 +36,8 @@ async function clickVisible(locator, timeout = 12000) {
   await locator.click({ timeout });
 }
 async function openHomeCard(page, key, itemIndex, route) {
-  await clickVisible(page.locator('nav.bottom-bar button.tab[data-go="home"]'));
+  // Use the site's fixed brand navigation (the same route action used by the QA suite).
+  await clickVisible(page.locator('#homeBrand'));
   await waitRoute(page, 'home');
   const card = page.locator('.home-grid .app-card[data-home-sheet="' + key + '"]');
   await clickVisible(card);
