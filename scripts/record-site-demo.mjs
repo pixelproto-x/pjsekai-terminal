@@ -92,15 +92,15 @@ async function openAndPlayDojo(page) {
 
   // Use the same known-good real chart as the direct-play QA, rather than whichever
   // song happens to be first after the earlier chapters.
-  const search = page.locator('#dojoSongSearch');
-  await search.fill('ロキ');
+  const practiceSongSearch = page.locator('#dojoSongSearch');
+  await practiceSongSearch.fill('ロキ');
   await page.waitForFunction(() => document.querySelectorAll('#dojoSongList [data-dojo-song]').length > 0, null, { timeout: 12000 });
   const song = page.locator('#dojoSongList [data-dojo-song]').first();
   await clickVisible(song);
   await page.locator('#dojoSelectedTitle').waitFor({ state: 'visible', timeout: 8000 });
   const chosenTitle = (await page.locator('#dojoSelectedTitle').innerText()).trim();
   if (!chosenTitle.includes('ロキ')) throw new Error('Recorder did not select known-good chart ロキ: '+chosenTitle);
-  await search.fill('');
+  await practiceSongSearch.fill('');
   await waitSongCatalog(page);
 
   const easy = page.locator('#dojoDifficultyButtons [data-dojo-diff="Easy"]');
