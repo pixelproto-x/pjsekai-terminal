@@ -86,6 +86,9 @@ async function waitForPlayableStart(page, attempts = 3) {
 async function openAndPlayDojo(page) {
   await clickVisible(page.locator('nav.bottom-bar button.tab[data-go="songs"]'));
   await waitRoute(page, 'songs');
+  // Earlier chapter uses a filtered search. Clear it before asserting the full catalog.
+  const search = page.locator('#dojoSongSearch');
+  if (await search.count()) await search.fill('');
   await waitSongCatalog(page);
 
   // Choose the first non-selected real song, matching the stable path in the QA test.
