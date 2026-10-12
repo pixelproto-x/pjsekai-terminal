@@ -193,10 +193,10 @@ async function openAndPlayDojo(page) {
 
   // Demonstrate A–B without leaving a tiny 0–1s loop enabled throughout the final shot.
   await page.evaluate(() => document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.seek?.(12));
-  const loop = page.locator('#dojoLoopToggle');
-  if (await loop.getAttribute('aria-pressed') !== 'true') await clickVisible(loop);
+  const loopToggleFinal = page.locator('#dojoLoopToggle');
+  if (await loopToggleFinal.getAttribute('aria-pressed') !== 'true') await clickVisible(loopToggleFinal);
   await sleep(800);
-  if (await loop.getAttribute('aria-pressed') === 'true') await clickVisible(loop);
+  if (await loopToggleFinal.getAttribute('aria-pressed') === 'true') await clickVisible(loopToggleFinal);
   await page.evaluate(() => {
     const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
     runtime?.setRate?.(1);
