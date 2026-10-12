@@ -2,8 +2,8 @@
 
 export const Blocks = new Map<i32,Map<i32,f32>>();
 // Sonolus 1.1.3 stream functions (id -> key/value entries).
-let stream_keys = new Map<i32,Array<f32>>();
-let stream_values = new Map<i32,Array<f32>>();
+let stream_keys = new Map<f32,Array<f32>>();
+let stream_values = new Map<f32,Array<f32>>();
 // Break関係
 let is_breaking:bool = false;
 let breaked_count:i16 = 0;
@@ -404,8 +404,8 @@ export function init_blocks(r_env:f32[], UIconfig:f32[], level_op:f32[]):void {
 
 export function reset_vars():void{
     Blocks.clear();
-    stream_keys = new Map<i32,Array<f32>>();
-    stream_values = new Map<i32,Array<f32>>();
+    stream_keys = new Map<f32,Array<f32>>();
+    stream_values = new Map<f32,Array<f32>>();
     is_breaking = false;
     breaked_count = 0;
     break_scopes = 0;
@@ -2529,14 +2529,14 @@ function DestroyParticleEffect(entity_id:i32,args:StaticArray<f32>):f32{
 }
 
 
-function get_stream_keys(id:i32):Array<f32>{
+function get_stream_keys(id:f32):Array<f32>{
     if(!stream_keys.has(id)){
         stream_keys.set(id,new Array<f32>());
         stream_values.set(id,new Array<f32>());
     }
     return stream_keys.get(id);
 }
-function get_stream_values(id:i32):Array<f32>{
+function get_stream_values(id:f32):Array<f32>{
     if(!stream_values.has(id)){
         stream_keys.set(id,new Array<f32>());
         stream_values.set(id,new Array<f32>());
@@ -2564,7 +2564,7 @@ function stream_upper_bound(keys:Array<f32>,key:f32):i32{
     return lo;
 }
 function StreamSet(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]), key=args[1], value=args[2];
+    const id=args[0], key=args[1], value=args[2];
     const keys=get_stream_keys(id);
     const values=get_stream_values(id);
     const i=stream_lower_bound(keys,key);
@@ -2589,21 +2589,21 @@ function StreamSet(entity_id:i32,args:StaticArray<f32>):f32{
     return 0.;
 }
 function StreamHas(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]), key=args[1];
+    const id=args[0], key=args[1];
     if(!stream_keys.has(id)) return 0.;
     const keys=get_stream_keys(id);
     const i=stream_lower_bound(keys,key);
     return i<keys.length && keys[i]==key ? 1. : 0.;
 }
 function StreamGetNextKey(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]), key=args[1];
+    const id=args[0], key=args[1];
     if(!stream_keys.has(id)) return key;
     const keys=get_stream_keys(id);
     const i=stream_upper_bound(keys,key);
     return i<keys.length ? keys[i] : key;
 }
 function StreamGetPreviousKey(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]), key=args[1];
+    const id=args[0], key=args[1];
     if(!stream_keys.has(id)) return key;
     const keys=get_stream_keys(id);
     // Previous must be strictly less than key; returning key at equality can stall stream iterators.
@@ -2611,7 +2611,7 @@ function StreamGetPreviousKey(entity_id:i32,args:StaticArray<f32>):f32{
     return i>=0 ? keys[i] : key;
 }
 function StreamGetValue(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]), key=args[1];
+    const id=args[0], key=args[1];
     if(!stream_keys.has(id)) return 0.;
     const keys=get_stream_keys(id);
     const values=get_stream_values(id);
