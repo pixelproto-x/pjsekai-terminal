@@ -27,7 +27,7 @@ function status(mode,text){
  const el=$('dojoBridgeStatus');if(!el)return;
  el.className='dojo-bridge-status '+mode;
  const strong=el.querySelector('strong'),span=el.querySelector('span');
- if(strong)strong.textContent=mode==='ack'?'打歌控制已連線':mode==='loaded'?'伺服器介面已載入':mode==='unsupported'?'未提供打歌控制介面':'等待本地播放器';
+ if(strong)strong.textContent=mode==='ack'?'打歌控制已連線':mode==='loaded'?'本地播放器已載入':mode==='unsupported'?'部分控制尚未接通':'等待本地播放器';
  if(span)span.textContent=text;
 }
 function log(msg){const el=$('dojoApiLog');if(el)el.innerHTML='<strong>LOCAL CORE</strong> '+String(msg).replace(/[<>]/g,'')}
@@ -62,7 +62,7 @@ function openPractice(force=false){
  if(force||frame.src!==url)frame.src=url;
  practiceRecoveryAttempts=0;
  $('dojoFrameShell')?.scrollIntoView({behavior:'smooth',block:'center'});
- status('', '正在載入 Sonolus 伺服器瀏覽介面。');
+ status('', '正在載入同源 Sonolus 打歌核心，並依目前歌曲與難度初始化。');
  log('load '+url);
  return true;
 }
@@ -104,12 +104,12 @@ function armPracticeRecovery(){
      return;
    }
    if(hasStart&&disabled){
-     status('unsupported','Sonolus 頁面載入後仍未解除 START；請確認伺服器服務與歌曲資料。');
+     status('unsupported','播放器的 START 持續停用，載入流程可能卡住。請查看下方引擎紀錄，或重新載入練習核心。');
      log('SourceLoad remained disabled after automatic recovery');
      return;
    }
-   status('unsupported','已載入伺服器瀏覽介面，但沒有偵測到可控制的打歌 runtime。網頁內的 A–B、變速與偏移不會套用；請按「以 Sonolus 開啟」交由 App 播放。');
-   log('no playable runtime detected in embedded server web client');
+   status('unsupported','在等待期間尚未取得有效播放時鐘；歌曲載入可能仍在進行，或發生錯誤。請查看引擎紀錄後再重試。');
+   log('runtime readiness timeout');
  };
  practiceRecoveryTimer=window.setTimeout(check,1000);
 }
@@ -158,13 +158,12 @@ function sendConfig(reason){
  const r=runtime();
  const cfg=getConfig();
  if(!r){
-   status('unsupported','設定已保存於本機，但目前內嵌的是伺服器瀏覽介面，沒有可控制的打歌 runtime。');
-   log(reason+' → saved locally; no gameplay runtime');
+   status('', '設定已保存於本機；等待同源 Sonolus 播放核心就緒後再套用。');
+   log(reason+' → saved locally; runtime not ready');
    return false;
  }
  try{
    const applied=[];
-   // Note Speed is chart scroll speed, not BGM playback rate. Never map it to setRate().
    if(typeof r.setSettings==='function'){r.setSettings(cfg);applied.push('設定');}
    else if(typeof r.setConfig==='function'){r.setConfig(cfg);applied.push('設定');}
    else{
@@ -177,23 +176,25 @@ function sendConfig(reason){
      if(typeof r.setKeys==='function'){r.setKeys(cfg.keys.slice());applied.push('Key Mapping');}
    }
    if(!applied.length){
-     status('unsupported','設定已保存於本機，但播放器沒有公開相對應的設定 API，未套用到遊戲。');
-     log(reason+' → no supported config API');
+     status('unsupported','播放器已連線。播放時間、定位、重置和 0.5×／0.75×／1.0×播放倍率由 runtime 支援；Note Speed、Mirror、Sudden／Hidden、偏移與按鍵映射尚無對應 setter，這些值目前只保存於本機。');
+     log(reason+' → persisted; unsupported setters: speed/mirror/visibility/offsets/keys');
      return false;
    }
-   status('ack','播放器已接受：'+applied.join('、')+'。未列出的設定尚未確認生效。');
+   status('ack','播放器已接受：'+applied.join('、')+'。其他設定仍未確認生效。');
    log(reason+' → runtime: '+applied.join(', '));
    return true;
  }catch(e){
    console.error('[Dojo local config]',e);
-   status('unsupported','播放器拒絕設定；設定仍保存在本機，但沒有套用到遊戲。');
+   status('unsupported','播放器拒絕設定；資料仍保存在本機，但沒有套用到遊戲。');
    log(reason+' → runtime config error');
    return false;
  }
 }
 function noRuntimeMessage(action){
- status('unsupported','目前載入的是 Sonolus 伺服器瀏覽介面，沒有可控制的打歌 runtime；'+action+'無法在網頁內生效。請按「以 Sonolus 開啟」交由已安裝的 Sonolus App 播放。');
- log(action+' unavailable: no gameplay runtime');
+ const ready=!!runtime();
+ const why=ready?'目前打歌 runtime 沒有提供此控制方法':'同源打歌 runtime 尚未初始化完成';
+ status('unsupported',why+'；'+action+'沒有套用。播放倍率與時間定位只會在播放器回報相對應的方法時執行。');
+ log(action+' unavailable: '+(ready?'unsupported runtime method':'runtime not ready'));
 }
 function runtimeHas(...methods){
  const r=runtime();
@@ -204,10 +205,8 @@ function updatePracticeSelection(){
  if(key===practice.lastKey)return;
  practice.lastKey=key;
  const frame=$('dojoSonolusIframe');
- // The server-web client does not consume these song/difficulty parameters. Do not reload it and imply that the selected chart was opened.
- if(frame&&frame.src&&!/about:blank$/.test(frame.src)){
-   log('selected '+(sel.title||'no song')+' / '+sel.difficulty+' — server browser cannot open this chart directly');
- }
+ // The local bundle reads server/title/difficulty/playLevel from its URL and opens that level.
+ if(sel.title&&frame&&frame.src&&!/about:blank$/.test(frame.src))openPractice(true);
 }function renderServers(){
  const s=ensure(),box=$('dojoServerGrid');if(!box)return;
  box.innerHTML=SERVERS.map(x=>'<button class="dojo-server-option '+(x.id===s.dojo.server?'active':'')+'" type="button" data-dojo-server="'+x.id+'"><strong>'+x.name+'</strong><span>'+x.kind+'</span><b class="dojo-server-badge">'+x.tone+'</b></button>').join('');
@@ -255,10 +254,10 @@ function bind(){
  $('dojoResetSettingsBtn')?.addEventListener('click',()=>{const s=ensure();s.dojo={...s.dojo,...DEFAULTS,keys:DEFAULT_KEYS.slice()};save();render();sendConfig('reset-settings')});
  $('dojoBridgeRetryBtn')?.addEventListener('click',()=>openPractice(true));
  $('dojoFullscreenBtn')?.addEventListener('click',async()=>{const x=$('dojoFrameShellInner');try{if(!document.fullscreenElement)await x.requestFullscreen();else await document.exitFullscreen()}catch(_){B.toast('此瀏覽器不允許全螢幕')}});
- $('dojoSonolusIframe')?.addEventListener('load',()=>{practiceRecoveryAttempts=0;status('loaded','伺服器瀏覽介面已載入，正在檢查是否提供打歌控制 runtime。');log('iframe load');setTimeout(()=>{sendConfig('iframe-ready');armPracticeRecovery();},350)});
+ $('dojoSonolusIframe')?.addEventListener('load',()=>{practiceRecoveryAttempts=0;status('loaded','本地 Sonolus 頁面已載入，正在等待歌曲引擎與有效播放時長。');log('iframe load');setTimeout(()=>{sendConfig('iframe-ready');armPracticeRecovery();},350)});
  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>openPractice(true));
 
- $('dojoLoopToggle')?.addEventListener('click',()=>{if(!practice.loop&&!runtimeHas('getTime','getDuration')){noRuntimeMessage('A-B 循環');return;}practice.loop=!practice.loop;renderPracticeControls();status('ack',practice.loop?'A-B 循環已開啟。':'A-B 循環已關閉。');});
+ $('dojoLoopToggle')?.addEventListener('click',()=>{if(!practice.loop&&!runtimeHas('getTime','getDuration','reset')){noRuntimeMessage('A-B 循環');return;}practice.loop=!practice.loop;renderPracticeControls();status('ack',practice.loop?'A-B 循環已開啟。':'A-B 循環已關閉。');});
  $('dojoLoopA')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.a=Math.max(0,Math.min(Number(e.target.value)||0,Math.max(.0,practice.b-.01)));$('dojoLoopAValue').textContent=fmtPracticeTime(practice.a);const r=runtimeHas('seek');if(r)r.seek(practice.a);else noRuntimeMessage('A 起點定位');});
  $('dojoLoopB')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.b=Math.min(dur,Math.max(practice.a+.01,Number(e.target.value)||dur));$('dojoLoopBValue').textContent=fmtPracticeTime(practice.b);if(!runtimeHas('getDuration'))noRuntimeMessage('B 終點設定');});
  $('dojoLoopASet')?.addEventListener('click',()=>{const r=runtimeHas('getTime','seek');if(!r){noRuntimeMessage('目前位置設為 A');return;}practice.a=Math.min(practiceDuration()||practice.b||1,Math.max(0,practiceTime()));renderPracticeControls();r.seek(practice.a);});
