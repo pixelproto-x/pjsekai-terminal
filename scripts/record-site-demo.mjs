@@ -213,13 +213,9 @@ try {
   await waitRoute(desktop, 'profile');
   await sleep(4300);
 
-  // Display settings through the site's real global search.
-  await clickVisible(desktop.locator('#globalSearchBtn'));
-  await desktop.locator('#globalSearchInput').fill('設定');
-  await desktop.locator('#globalSearchResults .search-result[data-search-route="settings"]').first().waitFor({
-    state: 'visible', timeout: 8000
-  });
-  await clickVisible(desktop.locator('#globalSearchResults .search-result[data-search-route="settings"]').first());
+  // Open the real settings route directly; this also works when browser auto-translation
+  // changes the visible language of the global-search labels.
+  await desktop.evaluate(() => { location.hash = '#settings'; });
   await waitRoute(desktop, 'settings');
   await sleep(3000);
 
