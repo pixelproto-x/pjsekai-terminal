@@ -50,38 +50,37 @@ async function waitSongCatalog(page) {
     return document.querySelectorAll('#dojoSongList [data-dojo-song]').length > 50;
   }, null, { timeout: 25000 });
 }
-async function waitForPlayableStart(page, attempts = 3) {
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      await page.waitForFunction(() => {
-        const frame = document.querySelector('#dojoSonolusIframe');
-        const button = frame?.contentDocument?.querySelector('.start-play-trg');
-        return !!button && !button.hasAttribute('disabled');
-      }, null, { timeout: 14000 });
-      return true;
-    } catch (_) {
-      if (attempt < attempts) {
-        await page.evaluate(() => {
-          const frame = document.querySelector('#dojoSonolusIframe');
-          if (frame?.src && !/about:blank$/.test(frame.src)) frame.src = frame.src;
-        });
-        await sleep(1400);
-      }
-    }
+async function waitForPlayableStart(page) {
+  try {
+    await page.waitForFunction(() => {
+      const frame=document.querySelector('#dojoSonolusIframe');
+      const button=frame?.contentDocument?.querySelector('.start-play-trg');
+      return !!button&&!button.hasAttribute('disabled');
+    },null,{timeout:90000});
+    return true;
+  } catch(error) {
+    const debug=await page.evaluate(()=>{
+      const frame=document.querySelector('#dojoSonolusIframe');
+      try {
+        const doc=frame?.contentDocument;
+        const button=doc?.querySelector('.start-play-trg');
+        return {
+          src:frame?.src||'',title:doc?.title||'',readyState:doc?.readyState||'',
+          log:doc?.querySelector('.loading-log')?.innerText?.slice(-5000)||'',
+          body:doc?.body?.innerText?.slice(-2500)||'',
+          start:button?{disabled:button.hasAttribute('disabled'),
+            rect:(()=>{const r=button.getBoundingClientRect();return{width:r.width,height:r.height}})()}:null,
+          runtime:!!frame?.contentWindow?.__pjPracticeRuntime,
+          duration:Number(frame?.contentWindow?.__pjPracticeRuntime?.getDuration?.()||0)
+        };
+      } catch(e) { return {src:frame?.src||'',error:String(e)}; }
+    });
+    const diagDir=path.join(OUT_DIR,'diagnostics');
+    fs.mkdirSync(diagDir,{recursive:true});
+    await page.screenshot({path:path.join(diagDir,'dojo-load-failure.png')}).catch(()=>{});
+    await page.locator('#dojoSonolusIframe').screenshot({path:path.join(diagDir,'dojo-iframe-load-failure.png')}).catch(()=>{});
+    throw new Error('Dojo did not reach playable START state during uninterrupted load: '+JSON.stringify({debug,timeout:error?.message||String(error)}));
   }
-  const debug = await page.evaluate(() => {
-    const frame = document.querySelector('#dojoSonolusIframe');
-    try {
-      return {
-        src: frame?.src || '',
-        log: frame?.contentDocument?.querySelector('.loading-log')?.innerText?.slice(-3000) || '',
-        body: frame?.contentDocument?.body?.innerText?.slice(-1200) || ''
-      };
-    } catch (e) {
-      return { src: frame?.src || '', error: String(e) };
-    }
-  });
-  throw new Error('Dojo did not reach playable START state: ' + JSON.stringify(debug));
 }
 async function openAndPlayDojo(page) {
   await clickVisible(page.locator('nav.bottom-bar button.tab[data-go="songs"]'));
@@ -91,11 +90,18 @@ async function openAndPlayDojo(page) {
   if (await search.count()) await search.fill('');
   await waitSongCatalog(page);
 
-  // Choose the first non-selected real song, matching the stable path in the QA test.
-  let song = page.locator('#dojoSongList [data-dojo-song]:not(.active)').first();
-  if (await song.count() === 0) song = page.locator('#dojoSongList [data-dojo-song]').first();
+  // Use the same known-good real chart as the direct-play QA, rather than whichever
+  // song happens to be first after the earlier chapters.
+  const search = page.locator('#dojoSongSearch');
+  await search.fill('ロキ');
+  await page.waitForFunction(() => document.querySelectorAll('#dojoSongList [data-dojo-song]').length > 0, null, { timeout: 12000 });
+  const song = page.locator('#dojoSongList [data-dojo-song]').first();
   await clickVisible(song);
   await page.locator('#dojoSelectedTitle').waitFor({ state: 'visible', timeout: 8000 });
+  const chosenTitle = (await page.locator('#dojoSelectedTitle').innerText()).trim();
+  if (!chosenTitle.includes('ロキ')) throw new Error('Recorder did not select known-good chart ロキ: '+chosenTitle);
+  await search.fill('');
+  await waitSongCatalog(page);
 
   const easy = page.locator('#dojoDifficultyButtons [data-dojo-diff="Easy"]');
   if (await easy.count()) await clickVisible(easy);

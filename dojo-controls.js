@@ -77,12 +77,13 @@ function armPracticeRecovery(){
  const started=Date.now();
  const check=()=>{
    if(!frame || frame.src!==expected)return;
-   let disabled=false,hasStart=false,ready=false;
+   let disabled=false,hasStart=false,ready=false,loadingText='';
    try{
      const doc=frame.contentDocument;
      const btn=doc?.querySelector('.start-play-trg');
      hasStart=!!btn;
      disabled=!!btn?.hasAttribute('disabled');
+     loadingText=doc?.querySelector('.loading-log')?.innerText||'';
      const r=frame.contentWindow?.__pjPracticeRuntime;
      ready=!!r&&Number(r.getDuration?.()||0)>0;
    }catch(_){}
@@ -90,26 +91,19 @@ function armPracticeRecovery(){
      practiceRecoveryAttempts=0;
      return;
    }
-   if(Date.now()-started<15000){
+   // Do not restart the iframe while embedded assets are downloading: a reload aborts
+   // engine/skin/level/particle requests and can keep START disabled forever.
+   if(Date.now()-started<90000){
      practiceRecoveryTimer=window.setTimeout(check,1000);
      return;
    }
-   if(hasStart&&disabled&&practiceRecoveryAttempts<2){
-     practiceRecoveryAttempts++;
-     status('','Sonolus 載入卡住，正在自動重新載入核心（'+practiceRecoveryAttempts+'/2）……');
-     log('auto-retry SourceLoad '+practiceRecoveryAttempts);
-     frame.src='';
-     window.setTimeout(()=>{ if(frame)frame.src=expected; },80);
-     practiceRecoveryTimer=window.setTimeout(armPracticeRecovery,120);
-     return;
-   }
    if(hasStart&&disabled){
-     status('unsupported','播放器的 START 持續停用，載入流程可能卡住。請查看下方引擎紀錄，或重新載入練習核心。');
-     log('SourceLoad remained disabled after automatic recovery');
+     status('unsupported','播放器載入超過 90 秒仍未解除 START；沒有自動重載，以免中斷資源下載。請查看下方引擎紀錄，再按「重新載入練習核心」手動重試。');
+     log('SourceLoad timeout after 90s; auto-reload disabled. '+loadingText.slice(-180));
      return;
    }
-   status('unsupported','在等待期間尚未取得有效播放時鐘；歌曲載入可能仍在進行，或發生錯誤。請查看引擎紀錄後再重試。');
-   log('runtime readiness timeout');
+   status('unsupported','播放器載入超時，尚未取得有效播放時鐘。請查看引擎紀錄，再手動重新載入練習核心。');
+   log('runtime readiness timeout after 90s');
  };
  practiceRecoveryTimer=window.setTimeout(check,1000);
 }
