@@ -1030,12 +1030,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         </div>
       </div>
       <div class="home-column">
-        <div class="home-feature">
-          <button class="app-card card-pink" data-home-sheet="home-sekai">
-            <span class="icon">◎</span><span class="chev">⌃</span>
-            <span><h3>SEKAI</h3><p>六大世界、世界資訊、相關內容</p></span>
-          </button>
-        </div>
+        
         <div class="home-feature">
           <button class="app-card card-yellow" data-home-sheet="home-cards">
             <span class="icon">▣</span><span class="chev">⌃</span>
@@ -1051,22 +1046,6 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       </div>
     </div>
 
-  </section>
-
-  <section class="page" data-page="sekai">
-    <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">WORLD DIRECTORY</div><h1 class="page-title">SEKAI</h1><p class="page-subtitle">先選一個世界，再進入該世界的歌曲、角色與相關內容。</p></div>
-      <button class="back-btn" data-go="home">‹ 首頁</button>
-    </div>
-    <div class="official-strip"><img src="https://pjsekai.sega.jp/assets/img/special/dl/sns_header/header_unite01_1.png" alt="Leo/need 全隊官方視覺"></div>
-    <div class="catalog-grid">
-      <button class="catalog-card w2" data-sheet="classroom"><span class="tiny-icon" style="background:#58c4e3">01</span><span class="arrow">⌃</span><h3>教室的 SEKAI</h3><p>青春、友情與還沒說出口的歌。</p><span class="color-orb" style="background:#58c4e3"></span></button>
-      <button class="catalog-card w2" data-sheet="stage"><span class="tiny-icon" style="background:#f06d9b">02</span><span class="arrow">⌃</span><h3>舞台的 SEKAI</h3><p>燈光亮起後，夢想開始向前。</p><span class="color-orb" style="background:#f06d9b"></span></button>
-      <button class="catalog-card" data-sheet="street"><span class="tiny-icon" style="background:#ff9756">03</span><span class="arrow">⌃</span><h3>街道的 SEKAI</h3><p>城市、音樂與夥伴。</p><span class="color-orb" style="background:#ff9756"></span></button>
-      <button class="catalog-card" data-sheet="wonderland"><span class="tiny-icon" style="background:#9179f5">04</span><span class="arrow">⌃</span><h3>Wonderland</h3><p>充滿不可思議的舞台。</p><span class="color-orb" style="background:#9179f5"></span></button>
-      <button class="catalog-card" data-sheet="empty"><span class="tiny-icon" style="background:#666f7e">05</span><span class="arrow">⌃</span><h3>空無的 SEKAI</h3><p>安靜卻沒有消失的旋律。</p><span class="color-orb" style="background:#666f7e"></span></button>
-      <button class="catalog-card" data-sheet="virtual"><span class="tiny-icon" style="background:#5fc596">06</span><span class="arrow">⌃</span><h3>Virtual Singer</h3><p>跨越次元傳達的歌聲。</p><span class="color-orb" style="background:#5fc596"></span></button>
-    </div>
   </section>
 
   <section class="page" data-page="songs">
@@ -1557,7 +1536,6 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 <nav class="bottom-bar" aria-label="主選單">
   <span class="tab-indicator" aria-hidden="true"></span>
   <button class="tab active" data-go="home"><span class="tab-icon">⌂</span>首頁</button>
-  <button class="tab" data-go="sekai"><span class="tab-icon">◎</span>SEKAI</button>
   <button class="tab" data-go="songs"><span class="tab-icon">♫</span>歌曲</button>
   <button class="tab" data-go="tools"><span class="tab-icon">⌘</span>工具</button>
   <button class="tab" data-go="profile"><span class="tab-icon">♙</span>我的</button>
@@ -1569,7 +1547,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   <section class="search-dialog" role="dialog" aria-modal="true" aria-labelledby="globalSearchTitle">
     <div class="search-dialog-head">
       <input id="globalSearchInput" class="search-input" type="search" autocomplete="off" spellcheck="false"
-        aria-label="全站搜尋" placeholder="搜尋歌曲、SEKAI、角色、卡片、活動、工具…">
+        aria-label="全站搜尋" placeholder="搜尋歌曲、角色、卡片、活動、工具…">
       <button id="searchCloseBtn" class="search-close" type="button" aria-label="關閉搜尋">×</button>
     </div>
     <div class="search-hint">全站搜尋 · 可搜尋目前所有入口與已建立的資料分類</div>
@@ -2518,7 +2496,7 @@ bottomBar?.addEventListener("click",e=>{
 
 
 
-const routeOrder=["home","sekai","songs","characters","cards","events","tools","profile","settings"];
+const routeOrder=["home","songs","characters","cards","events","tools","profile","settings"];
 let currentRoute=location.hash.replace("#","")||"home";
 let routeInitialized=false;
 let routeTransitionId=0;
@@ -2609,7 +2587,6 @@ $("#globalSearchBtn").onclick=()=>openGlobalSearch();
 
 const homeData={
   "home-songs":["歌曲 Music",["全部歌曲","收藏歌曲","難度分類","MV / 對應影片","歌曲資料","歌曲工具"]],
-  "home-sekai":["SEKAI",["六大世界","教室的 SEKAI","舞台的 SEKAI","街道的 SEKAI","Wonderland","空無的 SEKAI","Virtual Singer"]],
   "home-characters":["角色 Characters",["全部角色","Leo/need","MORE MORE JUMP!","Vivid BAD SQUAD","Wonderlands×Showtime","25時、ナイトコードで。","Virtual Singer"]],
   "home-cards":["卡片 Cards",["全部卡片","我的收藏","特訓狀態","團體分類","稀有度","卡片搜尋"]],
   "home-events":["活動 Events",["目前活動","活動計算器","資源規劃"]],
@@ -2621,12 +2598,6 @@ const sheetData={
   news:["最新情報","近期更新與網站公告",["最新首頁","SEKAI 入口更新","工具區重新整理","行動版介面更新"]],
   favorites:["我的收藏","你保存的內容會從這裡進入",["收藏歌曲","收藏卡片","最近收藏","收藏設定"]],
   about:["關於 Terminal","Project SEKAI 同人介面作品",["SEKAI Terminal 2.0","iOS 風格介面","Responsive mobile UI","本網站為非官方粉絲作品，與 SEGA、Colorful Palette 無隸屬關係"]],
-  classroom:["教室的 SEKAI","World 01",["角色","歌曲","世界資訊","相關 MV"]],
-  stage:["舞台的 SEKAI","World 02",["角色","歌曲","舞台資訊","相關 MV"]],
-  street:["街道的 SEKAI","World 03",["角色","歌曲","街頭資訊","相關 MV"]],
-  wonderland:["Wonderland","World 04",["角色","歌曲","劇場資訊","相關 MV"]],
-  empty:["空無的 SEKAI","World 05",["角色","歌曲","世界資訊","相關 MV"]],
-  virtual:["Virtual Singer","World 06",["角色","歌曲","歌唱入口","相關 MV"]],
   "song-all":["全部歌曲","歌曲專區",["歌曲搜尋","歌曲列表","歌手分類","快速收藏"]],
   "song-favorite":["收藏歌曲","歌曲專區",["已收藏","最近收藏","移除收藏","排序"]],
   "song-difficulty":["難度分類","歌曲專區",["Easy","Normal","Hard","Expert / Master"]],
@@ -2803,7 +2774,6 @@ normalizeAccordionInitialState();
 function resolveHomeActionRoute(key){
   const k=String(key||"");
   if(k.startsWith("home-songs-"))return"songs";
-  if(k.startsWith("home-sekai-"))return"sekai";
   if(k.startsWith("home-characters-"))return"characters";
   if(k.startsWith("home-cards-"))return"cards";
   if(k.startsWith("home-events-"))return"events";
@@ -2817,7 +2787,6 @@ function resolveHomeActionRoute(key){
 function resolveAccordionRoute(key){
   const k=String(key||"");
   const root=k.split("-")[0];
-  if(["classroom","stage","street","wonderland","empty","virtual"].includes(root))return"sekai";
   if(root==="unit"||k.startsWith("unit-"))return"characters";
   if(root==="song"||k.startsWith("song-"))return"songs";
   if(root==="card"||k.startsWith("card-"))return"cards";
@@ -3203,7 +3172,6 @@ function routeForSheetKey(key){
   if(/^card-/.test(key))return "cards";
   if(/^event-/.test(key))return "events";
   if(/^player-|^rhythm-|^music-|^card-tool|^event-tool/.test(key))return "profile";
-  if(/^(classroom|stage|street|wonderland|empty|virtual)$/.test(key))return "sekai";
   return "home";
 }
 function buildGlobalSearchIndex(){
