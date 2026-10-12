@@ -322,7 +322,7 @@ await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
 
 // Rapid navigation race audit.
-for (const route of ['characters', 'songs', 'tools', 'profile']) {
+for (const route of ['home', 'songs', 'tools', 'profile']) {
   await page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]').evaluate(el => el.click());
 }
 await page.locator('#homeBrand').evaluate(el => el.click());
