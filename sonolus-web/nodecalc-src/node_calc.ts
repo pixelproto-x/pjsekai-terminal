@@ -15,6 +15,8 @@ let functions:StaticArray<NodeFunc> = new StaticArray(0);
 let func_of_nodes:StaticArray<i16> = new StaticArray(0);
 let args_of_nodes:StaticArray<StaticArray<f32>> = new StaticArray(0);
 let added_node_count:i32 = 0;
+// NodeCalc preprocessing is split into ordering and execution by the bundled Sonolus player.
+let preprocess_queue:Array<Array<f32>> = new Array<Array<f32>>();
 
 export function init_nodes(nodes_count:i32):void{
     added_node_count = 0;
@@ -413,6 +415,7 @@ export function reset_vars():void{
     func_of_nodes = new StaticArray(0);
     args_of_nodes = new StaticArray(0);
     added_node_count = 0;
+    preprocess_queue = new Array<Array<f32>>();
     tex_transforms = new Map<i32,StaticArray<f32>>();
     draw_sprites_info = new Array<StaticArray<f32>>();
     draw_sprites_uvs = new Array<StaticArray<f32>>();
@@ -720,23 +723,38 @@ function comparator(a:f32,b:f32):i32{
     }
 }
 
-export function preprocess():void{
-    //アーキタイプのorder順に整列
-    let entity_orders = new Array<Entity_Order>();
+// Match the two-step export contract used by sonolus-web/assets/index.js.
+// The player calls preprocess_ordering() before its progress animation, then
+// preprocess_batch() after it. The second function must perform the actual NodeCalc work.
+export function preprocess_ordering():void{
+    preprocess_queue = new Array<Array<f32>>();
     for(let i = 0;i<entities.length;i++){
         if(entities[i].is_entity){
-            let odr:Process_Order = archetypes[entities[i].archetype_id].preprocess;
-            if(odr.runnable){//preprocess属性があるやつのみ
-                entity_orders.push(new Entity_Order(i,odr));
+            const order:Process_Order = archetypes[entities[i].archetype_id].preprocess;
+            if(order.runnable){
+                const entry = new Array<f32>();
+                entry.push(order.order);
+                entry.push(<f32>order.index);
+                entry.push(<f32>i);
+                preprocess_queue.push(entry);
             }
         }
     }
-    entity_orders.sort((a:Entity_Order,b:Entity_Order) => comparator(a.process_order.order,b.process_order.order));
-    //実行
-    for(let i = 0;i<entity_orders.length;i++){
-        let entity_order = entity_orders[i];
-        run_node(entity_order.process_order.index,entity_order.entity_id);
+    preprocess_queue.sort((a:Array<f32>,b:Array<f32>) => comparator(a[0],b[0]));
+}
+
+export function preprocess_batch():void{
+    for(let i=0;i<preprocess_queue.length;i++){
+        const entry = preprocess_queue[i];
+        run_node(i32(entry[1]),i32(entry[2]));
     }
+    preprocess_queue = new Array<Array<f32>>();
+}
+
+// Retain the original combined entry point for any callers that still use it.
+export function preprocess():void{
+    preprocess_ordering();
+    preprocess_batch();
 }
 
 class Spawn_Order{
