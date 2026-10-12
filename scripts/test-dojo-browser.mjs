@@ -49,9 +49,9 @@ if (!await home.isVisible()) await fail('Home page is not visible on initial loa
 
 // Deep homepage layout audit: each independent column must expand without stretching its paired card.
 const homePairs = [
-  ['home-songs', 'home-sekai'],
-  ['home-characters', 'home-cards'],
-  ['home-events', 'home-tools'],
+  ['home-songs', 'home-cards'],
+  ['home-characters', 'home-tools'],
+  ['home-events', 'home-profile'],
 ];
 for (const [leftKey, rightKey] of homePairs) {
   const left = page.locator('.home-grid .app-card[data-home-sheet="' + leftKey + '"]');
@@ -250,7 +250,7 @@ if (accordionClosed.characterClass.includes('home-card-expanded') || accordionCl
 
 // Full-site smoke audit: exercise every page plus the P3 Characters/Cards
 // subcategory accordions, not just the homepage and Dojo route.
-const smokeRoutes = ['home', 'sekai', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
+const smokeRoutes = ['home', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
 for (const route of smokeRoutes) {
   const pageNode = page.locator('.page[data-page="' + route + '"]');
   if (!await pageNode.count()) await fail('Full-site smoke missing page: ' + route);
@@ -301,7 +301,7 @@ await page.evaluate(() => go('home'));
 await page.waitForSelector('.page[data-page="home"].active', { state: 'visible', timeout: 10000 });
 
 // Route coverage: test actual Dock entries, then direct-hash refresh for hidden pages.
-const dockRoutes = ['home', 'sekai', 'songs', 'tools', 'profile'];
+const dockRoutes = ['home', 'songs', 'tools', 'profile'];
 for (const route of dockRoutes) {
   const tab = page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]');
   if (!await tab.count()) await fail('Missing bottom navigation tab: ' + route);
@@ -322,7 +322,7 @@ await page.locator('nav.bottom-bar button.tab[data-go="songs"]').click();
 await page.waitForSelector('.page[data-page="songs"].active', { state: 'visible', timeout: 10000 });
 
 // Rapid navigation race audit.
-for (const route of ['sekai', 'songs', 'tools', 'profile']) {
+for (const route of ['characters', 'songs', 'tools', 'profile']) {
   await page.locator('nav.bottom-bar button.tab[data-go="' + route + '"]').evaluate(el => el.click());
 }
 await page.locator('#homeBrand').evaluate(el => el.click());
