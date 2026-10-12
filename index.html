@@ -1075,7 +1075,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <section class="dojo-config-card light">
         <div class="dojo-config-kicker">ENGINE SETTINGS</div>
         <h3>實戰控制設定</h3>
-        <p class="dojo-config-desc">設定保存在本機。設定會保存在本機。內嵌頁面若沒有提供可控制的打歌引擎，速度、偏移與循環設定就不會套用；可改用「以 Sonolus 開啟」交由 App 播放。</p>
+        <p class="dojo-config-desc">設定保存在本機。播放核心提供時鐘、時間定位、重置與播放倍率。Note Speed、Mirror、Sudden／Hidden、偏移與按鍵映射會保存，但目前尚未全部接上遊戲控制介面；狀態提示不會假報設定已生效。</p>
         <div class="dojo-setting-grid">
           <div class="dojo-setting"><label><span>Note Speed</span><b id="dojoSpeedValue">10.0</b></label><input id="dojoSpeedRange" type="range" min="1" max="12" step=".1" value="10"></div>
           <div class="dojo-setting"><label><span>Audio Offset</span><b>ms</b></label><input id="dojoAudioOffset" type="number" min="-1000" max="1000" step="1" value="0"><small>音訊延遲補償</small></div>
@@ -1093,7 +1093,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <section class="dojo-config-card light">
       <div class="dojo-config-kicker">PRACTICE CONTROL</div>
       <h3>A-B 循環 / 變速 / 快速重置</h3>
-      <p class="dojo-config-desc">只有連上具備播放時鐘與 seek/reset 控制介面的打歌引擎時，A–B 點位、循環與瞬發重置才會生效。伺服器瀏覽頁本身不提供這些控制。</p>
+      <p class="dojo-config-desc">播放器回報有效播放時長後，A／B 定位、循環與瞬發重置才會生效；如果缺少對應控制方法，頁面會顯示未套用。</p>
       <div class="dojo-practice-loop-grid">
         <div class="dojo-practice-point">
           <div class="dojo-practice-point-head"><strong>A 起點</strong><output id="dojoLoopAValue">00:00.0</output></div>
@@ -1121,7 +1121,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <section class="dojo-config-card light">
       <div class="dojo-config-kicker">INPUT CONFIGURATION</div>
       <h3>虛擬按鍵 / 鍵盤 Key Mapping</h3>
-      <p class="dojo-config-desc">4 鍵預設 D / F / J / K，可直接修改並保存。映射會保存於本機；只有打歌引擎明確提供按鍵設定介面時才會套用。一般伺服器瀏覽頁不會被攔截鍵盤事件。</p>
+      <p class="dojo-config-desc">4 鍵預設 D / F / J / K，可直接修改並保存。按鍵映射會保存於本機；目前這份 Sonolus runtime 尚未暴露按鍵映射 setter，因此不會宣稱已改變遊戲內輸入。</p>
       <div class="dojo-key-grid">
         <div class="dojo-key-slot"><label>Lane 1</label><input data-dojo-key="0" maxlength="2" value="D" aria-label="Lane 1 key"><button class="dojo-virtual-key" data-virtual-lane="0" type="button">D</button></div>
         <div class="dojo-key-slot"><label>Lane 2</label><input data-dojo-key="1" maxlength="2" value="F" aria-label="Lane 2 key"><button class="dojo-virtual-key" data-virtual-lane="1" type="button">F</button></div>
@@ -1129,7 +1129,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <div class="dojo-key-slot"><label>Lane 4</label><input data-dojo-key="3" maxlength="2" value="K" aria-label="Lane 4 key"><button class="dojo-virtual-key" data-virtual-lane="3" type="button">K</button></div>
       </div>
       <div class="dojo-virtual-hint">點擊虛擬鍵只做本頁映射測試與視覺回饋；不攔截 Sonolus iframe 的原生輸入。</div>
-      <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新載入伺服器介面</button></div>
+      <div class="dojo-config-actions"><button class="dojo-control-btn light-btn" id="dojoBridgeRetryBtn" type="button">重新載入練習核心</button></div>
       <div class="dojo-bridge-status" id="dojoBridgeStatus"><i class="dojo-bridge-dot"></i><div><strong>等待引擎橋接</strong><span>Sonolus Web iframe 尚未回覆橋接確認。</span></div></div>
     </section>
 
