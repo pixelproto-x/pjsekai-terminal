@@ -27,7 +27,7 @@ function status(mode,text){
  const el=$('dojoBridgeStatus');if(!el)return;
  el.className='dojo-bridge-status '+mode;
  const strong=el.querySelector('strong'),span=el.querySelector('span');
- if(strong)strong.textContent=mode==='ack'?'同源引擎已連線':mode==='loaded'?'本地播放器已載入':'等待本地播放器';
+ if(strong)strong.textContent=mode==='ack'?'打歌控制已連線':mode==='loaded'?'伺服器介面已載入':mode==='unsupported'?'未提供打歌控制介面':'等待本地播放器';
  if(span)span.textContent=text;
 }
 function log(msg){const el=$('dojoApiLog');if(el)el.innerHTML='<strong>LOCAL CORE</strong> '+String(msg).replace(/[<>]/g,'')}
@@ -62,7 +62,7 @@ function openPractice(force=false){
  if(force||frame.src!==url)frame.src=url;
  practiceRecoveryAttempts=0;
  $('dojoFrameShell')?.scrollIntoView({behavior:'smooth',block:'center'});
- status('', '正在載入同源 Sonolus 特訓核心。');
+ status('', '正在載入 Sonolus 伺服器瀏覽介面。');
  log('load '+url);
  return true;
 }
@@ -104,9 +104,12 @@ function armPracticeRecovery(){
      return;
    }
    if(hasStart&&disabled){
-     status('','Sonolus 核心仍未解除 START；請按「重新傳送設定」再試一次。');
+     status('unsupported','Sonolus 頁面載入後仍未解除 START；請確認伺服器服務與歌曲資料。');
      log('SourceLoad remained disabled after automatic recovery');
+     return;
    }
+   status('unsupported','已載入伺服器瀏覽介面，但沒有偵測到可控制的打歌 runtime。網頁內的 A–B、變速與偏移不會套用；請按「以 Sonolus 開啟」交由 App 播放。');
+   log('no playable runtime detected in embedded server web client');
  };
  practiceRecoveryTimer=window.setTimeout(check,1000);
 }
@@ -134,7 +137,7 @@ function renderPracticeControls(){
  document.querySelectorAll('[data-practice-speed]').forEach(x=>x.classList.toggle('active',Number(x.dataset.practiceSpeed)===practice.speed));
 }
 async function resetPractice(time=0){
- const r=runtime();if(!r||practice.busy){return false}
+ const r=runtime();if(!r||typeof r.reset!=='function'||practice.busy){noRuntimeMessage('瞬發重置');return false}
  practice.busy=true;
  status('ack','正在重置同源 Sonolus 播放核心……');
  try{
@@ -155,27 +158,56 @@ function sendConfig(reason){
  const r=runtime();
  const cfg=getConfig();
  if(!r){
-   status('', '本地播放器尚未載入，設定先保存於本機。');
+   status('unsupported','設定已保存於本機，但目前內嵌的是伺服器瀏覽介面，沒有可控制的打歌 runtime。');
+   log(reason+' → saved locally; no gameplay runtime');
    return false;
  }
  try{
-   const applied=Number(cfg.speed)||1;
-   r.setRate?.(Math.max(.05,applied/10));
-   status('ack','同源 runtime 已連線；速度與特訓控制可直接套用。');
-   log(reason+' → local runtime');
+   const applied=[];
+   // Note Speed is chart scroll speed, not BGM playback rate. Never map it to setRate().
+   if(typeof r.setSettings==='function'){r.setSettings(cfg);applied.push('設定');}
+   else if(typeof r.setConfig==='function'){r.setConfig(cfg);applied.push('設定');}
+   else{
+     if(typeof r.setNoteSpeed==='function'){r.setNoteSpeed(Number(cfg.speed));applied.push('Note Speed');}
+     if(typeof r.setMirror==='function'){r.setMirror(!!cfg.mirror);applied.push('Mirror');}
+     if(typeof r.setSudden==='function'){r.setSudden(!!cfg.sudden);applied.push('Sudden');}
+     if(typeof r.setHidden==='function'){r.setHidden(!!cfg.hidden);applied.push('Hidden');}
+     if(typeof r.setAudioOffset==='function'){r.setAudioOffset(Number(cfg.audioOffset));applied.push('Audio Offset');}
+     if(typeof r.setVisualOffset==='function'){r.setVisualOffset(Number(cfg.visualOffset));applied.push('Visual Offset');}
+     if(typeof r.setKeys==='function'){r.setKeys(cfg.keys.slice());applied.push('Key Mapping');}
+   }
+   if(!applied.length){
+     status('unsupported','設定已保存於本機，但播放器沒有公開相對應的設定 API，未套用到遊戲。');
+     log(reason+' → no supported config API');
+     return false;
+   }
+   status('ack','播放器已接受：'+applied.join('、')+'。未列出的設定尚未確認生效。');
+   log(reason+' → runtime: '+applied.join(', '));
    return true;
  }catch(e){
    console.error('[Dojo local config]',e);
-   status('', '本地 runtime 尚未準備完成。');
+   status('unsupported','播放器拒絕設定；設定仍保存在本機，但沒有套用到遊戲。');
+   log(reason+' → runtime config error');
    return false;
  }
+}
+function noRuntimeMessage(action){
+ status('unsupported','目前載入的是 Sonolus 伺服器瀏覽介面，沒有可控制的打歌 runtime；'+action+'無法在網頁內生效。請按「以 Sonolus 開啟」交由已安裝的 Sonolus App 播放。');
+ log(action+' unavailable: no gameplay runtime');
+}
+function runtimeHas(...methods){
+ const r=runtime();
+ return !!r&&methods.every(name=>typeof r[name]==='function')?r:null;
 }
 function updatePracticeSelection(){
  const sel=selectedPractice(),key=sel.title+'|'+sel.difficulty+'|'+sel.playLevel;
  if(key===practice.lastKey)return;
  practice.lastKey=key;
  const frame=$('dojoSonolusIframe');
- if(frame&&frame.src&&!frame.src.endsWith('/about:blank')&&!/about:blank$/.test(frame.src))openPractice(true);
+ // The server-web client does not consume these song/difficulty parameters. Do not reload it and imply that the selected chart was opened.
+ if(frame&&frame.src&&!/about:blank$/.test(frame.src)){
+   log('selected '+(sel.title||'no song')+' / '+sel.difficulty+' — server browser cannot open this chart directly');
+ }
 }function renderServers(){
  const s=ensure(),box=$('dojoServerGrid');if(!box)return;
  box.innerHTML=SERVERS.map(x=>'<button class="dojo-server-option '+(x.id===s.dojo.server?'active':'')+'" type="button" data-dojo-server="'+x.id+'"><strong>'+x.name+'</strong><span>'+x.kind+'</span><b class="dojo-server-badge">'+x.tone+'</b></button>').join('');
@@ -199,13 +231,21 @@ function setServer(id){
  log('server='+x.url);
 }
 async function copyText(v){try{await navigator.clipboard.writeText(v);B.toast('已複製伺服器網址')}catch(_){B.toast('無法自動複製，請手動複製')}} 
+function nativeServerLink(serverUrl){
+ const u=new URL(serverUrl);
+ return 'sonolus://'+u.host+u.pathname.replace(/\/+$/,'')+u.search+u.hash;
+}
 function openNative(){
- openPractice(true);
+ const s=ensure(),x=SERVERS.find(v=>v.id===s.dojo.server)||SERVERS[0];
+ const target=nativeServerLink(x.url);
+ status('', '正在嘗試開啟 Sonolus App。若沒有跳出 App，請先安裝／開啟 Sonolus，再按一次。');
+ log('open native '+target);
+ window.location.href=target;
 }
 function bind(){
  $('dojoServerGrid')?.addEventListener('click',e=>{const b=e.target.closest('[data-dojo-server]');if(b)setServer(b.dataset.dojoServer)});
  $('dojoCopyServerBtn')?.addEventListener('click',()=>{const s=ensure(),x=SERVERS.find(v=>v.id===s.dojo.server)||SERVERS[0];copyText(x.url)});
- $('dojoOpenServerBtn')?.addEventListener('click',()=>openPractice(true));
+ $('dojoOpenServerBtn')?.addEventListener('click',openNative);
  $('dojoOpenServerWebBtn')?.addEventListener('click',()=>{const s=ensure(),x=SERVERS.find(v=>v.id===s.dojo.server)||SERVERS[0];window.open(x.url,'_blank','noopener,noreferrer')});
  $('dojoSpeedRange')?.addEventListener('input',e=>{ensure().dojo.speed=Math.max(1,Math.min(12,n(e.target.value,10)));$('dojoSpeedValue').textContent=Number(e.target.value).toFixed(1);save();sendConfig('note-speed')});
  [['audioOffset','dojoAudioOffset'],['visualOffset','dojoVisualOffset']].forEach(([k,id])=>$(id)?.addEventListener('input',e=>{ensure().dojo[k]=n(e.target.value);save();sendConfig(k)}));
@@ -215,18 +255,18 @@ function bind(){
  $('dojoResetSettingsBtn')?.addEventListener('click',()=>{const s=ensure();s.dojo={...s.dojo,...DEFAULTS,keys:DEFAULT_KEYS.slice()};save();render();sendConfig('reset-settings')});
  $('dojoBridgeRetryBtn')?.addEventListener('click',()=>openPractice(true));
  $('dojoFullscreenBtn')?.addEventListener('click',async()=>{const x=$('dojoFrameShellInner');try{if(!document.fullscreenElement)await x.requestFullscreen();else await document.exitFullscreen()}catch(_){B.toast('此瀏覽器不允許全螢幕')}});
- $('dojoSonolusIframe')?.addEventListener('load',()=>{practiceRecoveryAttempts=0;status('loaded','同源 Sonolus Web 已載入，等待 practice runtime。');log('iframe load');setTimeout(()=>{sendConfig('iframe-ready');armPracticeRecovery();},350)});
+ $('dojoSonolusIframe')?.addEventListener('load',()=>{practiceRecoveryAttempts=0;status('loaded','伺服器瀏覽介面已載入，正在檢查是否提供打歌控制 runtime。');log('iframe load');setTimeout(()=>{sendConfig('iframe-ready');armPracticeRecovery();},350)});
  $('dojoOpenPracticeBtn')?.addEventListener('click',()=>openPractice(true));
 
- $('dojoLoopToggle')?.addEventListener('click',()=>{practice.loop=!practice.loop;renderPracticeControls();status('ack',practice.loop?'A-B 循環已開啟。':'A-B 循環已關閉。');});
- $('dojoLoopA')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.a=Math.max(0,Math.min(Number(e.target.value)||0,Math.max(.0,practice.b-.01)));$('dojoLoopAValue').textContent=fmtPracticeTime(practice.a);runtime()?.seek?.(practice.a);});
- $('dojoLoopB')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.b=Math.min(dur,Math.max(practice.a+.01,Number(e.target.value)||dur));$('dojoLoopBValue').textContent=fmtPracticeTime(practice.b);});
- $('dojoLoopASet')?.addEventListener('click',()=>{practice.a=Math.min(practiceDuration()||practice.b||1,Math.max(0,practiceTime()));renderPracticeControls();runtime()?.seek?.(practice.a);});
- $('dojoLoopBSet')?.addEventListener('click',()=>{practice.b=Math.max(practice.a+.01,Math.min(practiceDuration()||practice.b||1,practiceTime()));renderPracticeControls();});
- document.querySelectorAll('[data-practice-speed]').forEach(btn=>btn.addEventListener('click',()=>{practice.speed=Number(btn.dataset.practiceSpeed)||1;document.querySelectorAll('[data-practice-speed]').forEach(x=>x.classList.toggle('active',x===btn));runtime()?.setRate?.(practice.speed);status('ack','播放速度 '+practice.speed+'×');}));
+ $('dojoLoopToggle')?.addEventListener('click',()=>{if(!practice.loop&&!runtimeHas('getTime','getDuration')){noRuntimeMessage('A-B 循環');return;}practice.loop=!practice.loop;renderPracticeControls();status('ack',practice.loop?'A-B 循環已開啟。':'A-B 循環已關閉。');});
+ $('dojoLoopA')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.a=Math.max(0,Math.min(Number(e.target.value)||0,Math.max(.0,practice.b-.01)));$('dojoLoopAValue').textContent=fmtPracticeTime(practice.a);const r=runtimeHas('seek');if(r)r.seek(practice.a);else noRuntimeMessage('A 起點定位');});
+ $('dojoLoopB')?.addEventListener('input',e=>{const dur=practice.duration||practiceDuration()||1;practice.b=Math.min(dur,Math.max(practice.a+.01,Number(e.target.value)||dur));$('dojoLoopBValue').textContent=fmtPracticeTime(practice.b);if(!runtimeHas('getDuration'))noRuntimeMessage('B 終點設定');});
+ $('dojoLoopASet')?.addEventListener('click',()=>{const r=runtimeHas('getTime','seek');if(!r){noRuntimeMessage('目前位置設為 A');return;}practice.a=Math.min(practiceDuration()||practice.b||1,Math.max(0,practiceTime()));renderPracticeControls();r.seek(practice.a);});
+ $('dojoLoopBSet')?.addEventListener('click',()=>{const r=runtimeHas('getTime','getDuration');if(!r){noRuntimeMessage('目前位置設為 B');return;}practice.b=Math.max(practice.a+.01,Math.min(practiceDuration()||practice.b||1,practiceTime()));renderPracticeControls();});
+ document.querySelectorAll('[data-practice-speed]').forEach(btn=>btn.addEventListener('click',()=>{const r=runtimeHas('setRate');if(!r){noRuntimeMessage('播放速度');return;}practice.speed=Number(btn.dataset.practiceSpeed)||1;document.querySelectorAll('[data-practice-speed]').forEach(x=>x.classList.toggle('active',x===btn));r.setRate(practice.speed);status('ack','播放速度 '+practice.speed+'×');}));
  $('dojoPracticeResetBtn')?.addEventListener('click',()=>resetPractice(0));
  window.addEventListener('message',e=>{if(e.source!==$('dojoSonolusIframe')?.contentWindow)return;if(e.data?.source!=='pjsekai-local-sonolus')return;if(e.data.type==='ready'){practice.duration=Number(e.data.duration||practiceDuration()||practice.duration||1);practice.b=practice.duration;renderPracticeControls();status('ack','同源 Sonolus 特訓核心已就緒。');}});
- window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='r'&&!/input|textarea/i.test(document.activeElement?.tagName||'')){e.preventDefault();resetPractice(0)}});
+ window.addEventListener('keydown',e=>{const tag=document.activeElement?.tagName||'';const inSongs=!!document.querySelector('.page[data-page="songs"].active');if(inSongs&&e.key.toLowerCase()==='r'&&!/input|textarea|select|button/i.test(tag)&&!document.activeElement?.isContentEditable&&runtimeHas('reset')){e.preventDefault();resetPractice(0)}});
  setInterval(updatePracticeSelection,700);
  function loopTick(){
    const r=runtime(),d=r?Number(r.getDuration?.()||0):0;
