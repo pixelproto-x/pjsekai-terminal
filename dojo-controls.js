@@ -203,10 +203,16 @@ function runtimeHas(...methods){
 function updatePracticeSelection(){
  const sel=selectedPractice(),key=sel.title+'|'+sel.difficulty+'|'+sel.playLevel;
  if(key===practice.lastKey)return;
+ const hadSelection=!!practice.lastKey;
  practice.lastKey=key;
  const frame=$('dojoSonolusIframe');
- // The local bundle reads server/title/difficulty/playLevel from its URL and opens that level.
- if(sel.title&&frame&&frame.src&&!/about:blank$/.test(frame.src))openPractice(true);
+ const hasLoadedFrame=!!frame&&frame.src&&!/about:blank$/.test(frame.src);
+ // Prevent background polling from repeatedly restarting SourceLoad. Song/difficulty
+ // are passed on the next explicit click of "開啟練習室".
+ if(hadSelection&&hasLoadedFrame&&sel.title){
+   status('loaded','歌曲或難度已更新；按「開啟練習室」即可載入新選擇。');
+   log('selection changed; waiting for explicit practice launch');
+ }
 }function renderServers(){
  const s=ensure(),box=$('dojoServerGrid');if(!box)return;
  box.innerHTML=SERVERS.map(x=>'<button class="dojo-server-option '+(x.id===s.dojo.server?'active':'')+'" type="button" data-dojo-server="'+x.id+'"><strong>'+x.name+'</strong><span>'+x.kind+'</span><b class="dojo-server-badge">'+x.tone+'</b></button>').join('');
