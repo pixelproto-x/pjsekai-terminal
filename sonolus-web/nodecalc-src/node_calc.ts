@@ -2543,6 +2543,16 @@ function get_stream_keys(id:i32):Array<f32>{
     }
     return stream_keys.get(id);
 }
+function stream_lower_bound(keys:Array<f32>,key:f32):i32{
+    let lo:i32=0;
+    let hi:i32=keys.length;
+    while(lo<hi){
+        const mid:i32=(lo+hi)>>1;
+        if(keys[mid]<key) lo=mid+1;
+        else hi=mid;
+    }
+    return lo;
+}
 function stream_upper_bound(keys:Array<f32>,key:f32):i32{
     let lo:i32=0;
     let hi:i32=keys.length;
@@ -2594,7 +2604,8 @@ function StreamGetPreviousKey(entity_id:i32,args:StaticArray<f32>):f32{
     const id=i32(args[0]), key=args[1];
     if(!stream_keys.has(id)) return key;
     const keys=get_stream_keys(id);
-    const i=stream_upper_bound(keys,key)-1;
+    // Official semantics are strict: when key is itself present, return the prior key.
+    const i=stream_lower_bound(keys,key)-1;
     return i>=0 ? keys[i] : key;
 }
 function StreamGetValue(entity_id:i32,args:StaticArray<f32>):f32{
