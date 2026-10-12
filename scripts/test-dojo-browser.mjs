@@ -679,14 +679,36 @@ if (!(runtimeState.duration > 0) || !runtimeState.appExists || runtimeState.bgm.
   await fail('Dojo real play did not expose a loaded playable BGM: ' + JSON.stringify({ runtimeState, sourceLoadInfo }));
 }
 const t0 = runtimeState.time;
-await page.waitForTimeout(1000);
-const t1 = await page.evaluate(() => {
-  const frame = document.querySelector('#dojoSonolusIframe');
-  return Number(frame?.contentWindow?.__pjPracticeRuntime?.getTime?.() || 0);
-});
-if (!(t1 > t0 + 0.05)) {
-  await fail('Dojo real play did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
+// The engine has a start countdown; do not judge playback after an arbitrary one-second sleep.
+try {
+  await page.waitForFunction(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    const runtime = frame?.contentWindow?.__pjPracticeRuntime;
+    const app = frame?.contentWindow?.app;
+    return Number(runtime?.getTime?.() || 0) > 0.25 &&
+      !!app?.BGM && typeof app.BGM.playing === 'function' && !!app.BGM.playing();
+  }, null, { timeout: 20000 });
+} catch (error) {
+  const playbackDebug = await page.evaluate(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    const runtime = frame?.contentWindow?.__pjPracticeRuntime;
+    const app = frame?.contentWindow?.app;
+    return {
+      time:Number(runtime?.getTime?.()||0),
+      duration:Number(runtime?.getDuration?.()||0),
+      paused:!!app?.paused,
+      gameTickerActive:!!app?.ticker?.started,
+      bgmState:String(app?.BGM?.state?.()||''),
+      bgmPlaying:!!app?.BGM?.playing?.(),
+      bgmRate:Number(app?.BGM?.rate?.()||0),
+      startTime:Number(app?.start_time||0),
+      now:performance.now()
+    };
+  });
+  await fail('Dojo START was clicked but the real playback clock/BGM did not start: '+JSON.stringify({playbackDebug,timeout:error?.message||String(error)}));
 }
+const t1 = await page.evaluate(() => Number(document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.getTime?.() || 0));
+if (!(t1 > t0 + 0.05)) await fail('Dojo real play did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
 
 const bridgeExercise = await page.evaluate(() => {
   const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;

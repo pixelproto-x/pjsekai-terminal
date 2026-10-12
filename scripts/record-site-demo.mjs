@@ -136,8 +136,9 @@ async function openAndPlayDojo(page) {
     const runtime = frame?.contentWindow?.__pjPracticeRuntime;
     const app = frame?.contentWindow?.app;
     return !!runtime && !!app && Number(runtime.getDuration?.() || 0) > 0 &&
-      Number(runtime.getTime?.() || 0) > 0.3;
-  }, null, { timeout: 20000 });
+      Number(runtime.getTime?.() || 0) > 0.3 &&
+      typeof app.BGM?.playing === 'function' && !!app.BGM.playing();
+  }, null, { timeout: 30000 });
 
   // Seek into the live chart and require evidence of note rendering, not just BGM playback.
   await page.evaluate(() => {
