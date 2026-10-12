@@ -1,0 +1,60 @@
+name: Record 150-second site demo
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/record-site-demo.mjs"
+      - ".github/workflows/record-site-demo.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: npm install --no-save playwright@1.55.0
+
+      - name: Install Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Start local copy of the site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/demo-http.log 2>&1 &
+          echo $! > /tmp/demo-http.pid
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/demo-http.log
+          exit 1
+
+      - name: Record the real browser tour and render 150-second MP4
+        env:
+          DEMO_BASE_URL: http://127.0.0.1:4173/
+          DEMO_OUT_DIR: recording-output
+        run: node scripts/record-site-demo.mjs
+
+      - name: Upload finished video
+        uses: actions/upload-artifact@v4
+        with:
+          name: pjsekai-terminal-demo-150s
+          path: recording-output/pjsekai-terminal-demo-150s.mp4
+          if-no-files-found: error
+          retention-days: 14
