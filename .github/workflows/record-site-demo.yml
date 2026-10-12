@@ -26,8 +26,8 @@ jobs:
       - name: Install Playwright
         run: npm install --no-save playwright@1.55.0
 
-      - name: Install Chromium and system dependencies
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium
+        run: npx playwright install chromium
 
       - name: Install FFmpeg
         run: |
