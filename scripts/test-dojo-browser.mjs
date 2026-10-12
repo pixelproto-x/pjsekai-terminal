@@ -688,6 +688,18 @@ const runtimeState = await page.evaluate(() => {
     bridgeStatus: document.querySelector('#dojoBridgeStatus')?.textContent?.trim() || '',
     iframeSrc: frame?.src || '',
     appExists: !!app,
+    chartDiagnostics: app ? {
+      levelEntityCount: Number(app.level_data?.entities?.length || 0),
+      maximumCombo: Number(app.maximum_combo || 0),
+      runtimeEntityCount: Number(app.entities?.length || 0),
+      activeEntityCount: Number(app.active_entities?.length || 0),
+      initialEntityKinds: (app.level_data?.entities || []).slice(0, 8).map(x => ({
+        archetype: x.archetype || '',
+        name: x.name || '',
+        hasData: Array.isArray(x.data),
+        dataFields: Array.isArray(x.data) ? x.data.map(y => y.name).slice(0, 5) : []
+      }))
+    } : null,
     bgm
   };
 });
