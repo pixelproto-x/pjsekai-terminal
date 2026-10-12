@@ -2,8 +2,8 @@
 
 export const Blocks = new Map<i32,Map<i32,f32>>();
 // Sonolus 1.1.3 stream functions (id -> key/value entries).
-let streams = new Map<i32,Map<f32,f32>>();
 let stream_keys = new Map<i32,Array<f32>>();
+let stream_values = new Map<i32,Array<f32>>();
 // Break関係
 let is_breaking:bool = false;
 let breaked_count:i16 = 0;
@@ -404,8 +404,8 @@ export function init_blocks(r_env:f32[], UIconfig:f32[], level_op:f32[]):void {
 
 export function reset_vars():void{
     Blocks.clear();
-    streams = new Map<i32,Map<f32,f32>>();
     stream_keys = new Map<i32,Array<f32>>();
+    stream_values = new Map<i32,Array<f32>>();
     is_breaking = false;
     breaked_count = 0;
     break_scopes = 0;
@@ -2529,19 +2529,19 @@ function DestroyParticleEffect(entity_id:i32,args:StaticArray<f32>):f32{
 }
 
 
-function get_stream_values(id:i32):Map<f32,f32>{
-    if(!streams.has(id)){
-        streams.set(id,new Map<f32,f32>());
-        stream_keys.set(id,new Array<f32>());
-    }
-    return streams.get(id);
-}
 function get_stream_keys(id:i32):Array<f32>{
     if(!stream_keys.has(id)){
-        streams.set(id,new Map<f32,f32>());
         stream_keys.set(id,new Array<f32>());
+        stream_values.set(id,new Array<f32>());
     }
     return stream_keys.get(id);
+}
+function get_stream_values(id:i32):Array<f32>{
+    if(!stream_values.has(id)){
+        stream_keys.set(id,new Array<f32>());
+        stream_values.set(id,new Array<f32>());
+    }
+    return stream_values.get(id);
 }
 function stream_lower_bound(keys:Array<f32>,key:f32):i32{
     let lo:i32=0;
@@ -2565,33 +2565,35 @@ function stream_upper_bound(keys:Array<f32>,key:f32):i32{
 }
 function StreamSet(entity_id:i32,args:StaticArray<f32>):f32{
     const id=i32(args[0]), key=args[1], value=args[2];
-    const values=get_stream_values(id);
     const keys=get_stream_keys(id);
-    if(values.has(key)){
-        values.set(key,value);
+    const values=get_stream_values(id);
+    const i=stream_lower_bound(keys,key);
+    if(i<keys.length && keys[i]==key){
+        values[i]=value;
         return 0.;
     }
-    values.set(key,value);
-    if(keys.length==0 || key>keys[keys.length-1]){
+    // Entries are ordered by key. Most writes are chronological, so appends stay O(1).
+    if(i==keys.length){
         keys.push(key);
+        values.push(value);
         return 0.;
-    }
-    // Most runtime writes are chronological; retain sorted order for occasional out-of-order keys.
-    let pos:i32=0;
-    let hi:i32=keys.length;
-    while(pos<hi){
-        const mid:i32=(pos+hi)>>1;
-        if(keys[mid]<key) pos=mid+1;
-        else hi=mid;
     }
     keys.push(0.);
-    for(let i:i32=keys.length-1;i>pos;i--) keys[i]=keys[i-1];
-    keys[pos]=key;
+    values.push(0.);
+    for(let j:i32=keys.length-1;j>i;j--){
+        keys[j]=keys[j-1];
+        values[j]=values[j-1];
+    }
+    keys[i]=key;
+    values[i]=value;
     return 0.;
 }
 function StreamHas(entity_id:i32,args:StaticArray<f32>):f32{
-    const id=i32(args[0]);
-    return streams.has(id)&&streams.get(id).has(args[1]) ? 1. : 0.;
+    const id=i32(args[0]), key=args[1];
+    if(!stream_keys.has(id)) return 0.;
+    const keys=get_stream_keys(id);
+    const i=stream_lower_bound(keys,key);
+    return i<keys.length && keys[i]==key ? 1. : 0.;
 }
 function StreamGetNextKey(entity_id:i32,args:StaticArray<f32>):f32{
     const id=i32(args[0]), key=args[1];
@@ -2604,22 +2606,22 @@ function StreamGetPreviousKey(entity_id:i32,args:StaticArray<f32>):f32{
     const id=i32(args[0]), key=args[1];
     if(!stream_keys.has(id)) return key;
     const keys=get_stream_keys(id);
-    // Official semantics are strict: when key is itself present, return the prior key.
+    // Previous must be strictly less than key; returning key at equality can stall stream iterators.
     const i=stream_lower_bound(keys,key)-1;
     return i>=0 ? keys[i] : key;
 }
 function StreamGetValue(entity_id:i32,args:StaticArray<f32>):f32{
     const id=i32(args[0]), key=args[1];
-    if(!streams.has(id)) return 0.;
-    const values=streams.get(id);
+    if(!stream_keys.has(id)) return 0.;
     const keys=get_stream_keys(id);
+    const values=get_stream_values(id);
     if(keys.length==0) return 0.;
-    if(values.has(key)) return values.get(key);
-    const i=stream_upper_bound(keys,key);
-    if(i<=0) return values.get(keys[0]);
-    if(i>=keys.length) return values.get(keys[keys.length-1]);
+    const i=stream_lower_bound(keys,key);
+    if(i<keys.length && keys[i]==key) return values[i];
+    if(i<=0) return values[0];
+    if(i>=keys.length) return values[values.length-1];
     const lowKey=keys[i-1], highKey=keys[i];
-    const lowValue=values.get(lowKey), highValue=values.get(highKey);
+    const lowValue=values[i-1], highValue=values[i];
     if(highKey==lowKey) return lowValue;
     return lowValue+(highValue-lowValue)*(key-lowKey)/(highKey-lowKey);
 }
