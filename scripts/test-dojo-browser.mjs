@@ -727,6 +727,42 @@ const bridgeExercise = await page.evaluate(() => {
   }
 });
 if (!bridgeExercise) await fail('Dojo practice bridge methods threw while the Sonolus core was ready');
+
+// Verify that chart notes progress through the actual renderer, not just that BGM/time runs.
+await page.evaluate(() => {
+  const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
+  runtime?.setRate?.(1);
+  runtime?.seek?.(12);
+});
+await page.waitForTimeout(3000);
+const chartVisualState = await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  const app = frame?.contentWindow?.app;
+  if (!app) return { appExists:false, noteEntities:0, visibleNoteSprites:0 };
+  const entities = app.level_data?.entities || [];
+  let noteEntities = 0;
+  let visibleNoteSprites = 0;
+  for (let i=0;i<entities.length;i++) {
+    if (!/(note|hold|flick|slide|connector)/i.test(String(entities[i]?.archetype||''))) continue;
+    noteEntities++;
+    const sprites = app.sprites?.[i] || [];
+    visibleNoteSprites += sprites.filter(s => s && s.sprite && Number(s.num) >= Number(app.now_num||0)-1).length;
+  }
+  return {
+    appExists:true,
+    time:Number(frame?.contentWindow?.__pjPracticeRuntime?.getTime?.()||0),
+    noteEntities,
+    visibleNoteSprites,
+    despawnedSprites:Number(app.despawned_sprites||0),
+    maximumCombo:Number(app.maximum_combo||0)
+  };
+});
+if (!(chartVisualState.noteEntities > 0) || !(chartVisualState.visibleNoteSprites > 0)) {
+  await fail('Dojo has chart data/BGM but no note sprites are being rendered: ' + JSON.stringify(chartVisualState));
+}
+if (errors.some(message => /A function named \\"StreamSet\\" does not exist/i.test(message))) {
+  await fail('Local Sonolus WASM is missing StreamSet compatibility: ' + JSON.stringify(errors.filter(message => /StreamSet/i.test(message)).slice(0,10)));
+}
 const beforeReset = null;
 const afterReset = null;
 
