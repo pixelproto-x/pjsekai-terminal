@@ -128,6 +128,9 @@ async function openAndPlayDojo(page) {
   if (await halfSpeed.count()) await clickVisible(halfSpeed);
   const loop = page.locator('#dojoLoopToggle');
   if (await loop.count()) await clickVisible(loop);
+  // Return the camera to the actual running playfield after interacting with controls.
+  await clickVisible(page.locator('#dojoFrameShellInner'));
+  await sleep(1200);
   return await page.evaluate(() => {
     const frame = document.querySelector('#dojoSonolusIframe');
     const runtime = frame?.contentWindow?.__pjPracticeRuntime;
