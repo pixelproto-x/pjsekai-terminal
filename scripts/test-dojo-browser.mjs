@@ -760,7 +760,7 @@ const chartVisualState = await page.evaluate(() => {
 if (!(chartVisualState.noteEntities > 0) || !(chartVisualState.visibleNoteSprites > 0)) {
   await fail('Dojo has chart data/BGM but no note sprites are being rendered: ' + JSON.stringify(chartVisualState));
 }
-if (errors.some(message => /A function named \\"StreamSet\\" does not exist/i.test(message))) {
+if (errors.some(message => /StreamSet.*does not exist/i.test(message))) {
   await fail('Local Sonolus WASM is missing StreamSet compatibility: ' + JSON.stringify(errors.filter(message => /StreamSet/i.test(message)).slice(0,10)));
 }
 const beforeReset = null;
