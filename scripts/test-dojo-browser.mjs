@@ -293,7 +293,8 @@ if (unexpectedConsoleErrors.length || pageErrors.length || failedLocalRequests.l
     pageErrors.join('\n') +
     '\nLocal failed requests:\n' +
     failedLocalRequests.map(x => x.status + ' ' + x.url).join('\n') +
-    '\nUnexpected console errors:\n' + unexpectedConsoleErrors.join('\n')
+    '\nUnexpected console errors:\n' + unexpectedConsoleErrors.join('\n') +
+    '\nExternal failed requests (diagnostic):\n' + JSON.stringify(failedRequests.filter(x => String(x.status) !== '200'), null, 2)
   );
 }
 
