@@ -126,16 +126,68 @@ async function openAndPlayDojo(page) {
       Number(runtime.getTime?.() || 0) > 0.3;
   }, null, { timeout: 20000 });
 
-  // Demonstrate only controls already verified by the browser QA: real play,
-  // playback rate, and the A-B loop control. No unverified visual options are toggled.
+  // Seek into the live chart and require evidence of note rendering, not just BGM playback.
+  await page.evaluate(() => {
+    const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
+    runtime?.setRate?.(1);
+    runtime?.seek?.(8);
+  });
+  await sleep(2500);
+  const chartVisualState = await page.evaluate(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    const app = frame?.contentWindow?.app;
+    if (!app) return { appExists:false, noteEntities:0, visibleNoteSprites:0, time:0 };
+    const entities = app.level_data?.entities || [];
+    let noteEntities = 0;
+    let visibleNoteSprites = 0;
+    for (let i=0;i<entities.length;i++) {
+      if (!/(note|hold|flick|slide|connector)/i.test(String(entities[i]?.archetype||''))) continue;
+      noteEntities++;
+      const sprites = app.sprites?.[i] || [];
+      visibleNoteSprites += sprites.filter(s => s && s.sprite &&
+        Number(s.num) >= Number(app.now_num||0)-1).length;
+    }
+    return {
+      appExists:true,
+      time:Number(frame?.contentWindow?.__pjPracticeRuntime?.getTime?.()||0),
+      noteEntities,
+      visibleNoteSprites,
+      nowNum:Number(app.now_num||0),
+      maximumCombo:Number(app.maximum_combo||0)
+    };
+  });
+  const streamErrors = allConsoleErrors.filter(x => /StreamSet.*does not exist/i.test(x));
+  if (!(chartVisualState.noteEntities > 0) || !(chartVisualState.visibleNoteSprites > 0) || streamErrors.length) {
+    const diagDir = path.join(OUT_DIR, 'diagnostics');
+    fs.mkdirSync(diagDir, { recursive: true });
+    await page.screenshot({ path: path.join(diagDir, 'dojo-playfield.png'), fullPage: false }).catch(() => {});
+    await page.locator('#dojoSonolusIframe').screenshot({ path: path.join(diagDir, 'dojo-iframe.png') }).catch(() => {});
+    throw new Error('Dojo visual check failed; refusing to publish a blank-playfield demo: ' +
+      JSON.stringify({ chartVisualState, streamErrors:streamErrors.slice(0,10) }));
+  }
+
+  // Demonstrate a real 0.5× playback rate briefly, then return to normal speed.
   const halfSpeed = page.locator('[data-practice-speed=".5"]');
-  if (await halfSpeed.count()) await clickVisible(halfSpeed);
+  if (await halfSpeed.count()) {
+    await clickVisible(halfSpeed);
+    await sleep(1800);
+    await clickVisible(page.locator('[data-practice-speed="1"]'));
+  }
+
+  // Configure a meaningful A–B window (roughly 10s–18s) before enabling the loop.
+  await page.evaluate(() => document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.seek?.(10));
+  await sleep(350);
+  await clickVisible(page.locator('#dojoLoopASet'));
+  await page.evaluate(() => document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.seek?.(18));
+  await sleep(350);
+  await clickVisible(page.locator('#dojoLoopBSet'));
   const loop = page.locator('#dojoLoopToggle');
-  if (await loop.count()) await clickVisible(loop);
+  if (await loop.getAttribute('aria-pressed') !== 'true') await clickVisible(loop);
+
   // Return the camera to the actual running playfield after interacting with controls.
   await clickVisible(page.locator('#dojoFrameShellInner'));
   await sleep(1200);
-  return await page.evaluate(() => {
+  return await page.evaluate(chartVisualState => {
     const frame = document.querySelector('#dojoSonolusIframe');
     const runtime = frame?.contentWindow?.__pjPracticeRuntime;
     const app = frame?.contentWindow?.app;
@@ -144,9 +196,10 @@ async function openAndPlayDojo(page) {
       duration: Number(runtime?.getDuration?.() || 0),
       time: Number(runtime?.getTime?.() || 0),
       bgmState: String(app?.BGM?.state?.() || ''),
-      playing: !!app?.BGM?.playing?.()
+      playing: !!app?.BGM?.playing?.(),
+      chartVisualState
     };
-  });
+  }, chartVisualState);
 }
 
 let desktopPath = '';
