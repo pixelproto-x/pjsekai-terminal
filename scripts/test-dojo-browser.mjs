@@ -636,6 +636,10 @@ const sourceLoadInfo = await page.evaluate(() => {
 });
 
 const realStartButton = sonolusFrame.locator('.start-play-trg').first();
+await page.evaluate(() => {
+  const frame = document.querySelector('#dojoSonolusIframe');
+  if (frame?.contentWindow) frame.contentWindow.__PJSEKAI_DEBUG__ = true;
+});
 await realStartButton.evaluate(el => el.click());
 await page.waitForTimeout(1000);
 
@@ -698,6 +702,8 @@ try {
       duration:Number(runtime?.getDuration?.()||0),
       paused:!!app?.paused,
       gameTickerActive:!!app?.ticker?.started,
+      prepStage:frame?.contentWindow?.__pjPracticeDebugStage||'',
+      progressOverlayDisplay:frame?.contentDocument?.querySelector('#progress-cover')?getComputedStyle(frame.contentDocument.querySelector('#progress-cover')).display:'',
       bgmState:String(app?.BGM?.state?.()||''),
       bgmPlaying:!!app?.BGM?.playing?.(),
       bgmRate:Number(app?.BGM?.rate?.()||0),
@@ -705,7 +711,7 @@ try {
       now:performance.now()
     };
   });
-  await fail('Dojo START was clicked but the real playback clock/BGM did not start: '+JSON.stringify({playbackDebug,timeout:error?.message||String(error)}));
+  await fail('Dojo START was clicked but the real playback clock/BGM did not start: '+JSON.stringify({playbackDebug,timeout:error?.message||String(error),consoleErrors:errors.slice(-30),pageErrors:pageErrors.slice(-10)}));
 }
 const t1 = await page.evaluate(() => Number(document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.getTime?.() || 0));
 if (!(t1 > t0 + 0.05)) await fail('Dojo real play did not advance playback time: ' + JSON.stringify({ t0, t1, runtimeState }));
