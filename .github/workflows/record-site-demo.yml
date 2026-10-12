@@ -34,20 +34,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Start local copy of the site
-        run: |
-          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/demo-http.log 2>&1 &
-          echo $! > /tmp/demo-http.pid
-          for i in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/demo-http.log
-          exit 1
-
       - name: Record the real browser tour and render 150-second MP4
         env:
-          DEMO_BASE_URL: http://127.0.0.1:4173/
+          DEMO_BASE_URL: https://pixelproto-x.github.io/pjsekai-terminal/
           DEMO_OUT_DIR: recording-output
         run: node scripts/record-site-demo.mjs
 
@@ -58,3 +47,12 @@ jobs:
           path: recording-output/pjsekai-terminal-demo-150s.mp4
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload Dojo diagnostics on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pjsekai-terminal-demo-diagnostics
+          path: recording-output/diagnostics/*.png
+          if-no-files-found: ignore
+          retention-days: 3

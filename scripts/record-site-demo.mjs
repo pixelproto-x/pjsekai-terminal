@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const BASE_URL = process.env.DEMO_BASE_URL || 'http://127.0.0.1:4173/';
+const BASE_URL = process.env.DEMO_BASE_URL || 'https://pixelproto-x.github.io/pjsekai-terminal/';
 const OUT_DIR = process.env.DEMO_OUT_DIR || path.resolve('recording-output');
 const DESKTOP_SECONDS = 110;
 const MOBILE_SECONDS = 40;
@@ -112,7 +112,14 @@ async function openAndPlayDojo(page) {
   }
 
   await waitForPlayableStart(page);
-  await page.frameLocator('#dojoSonolusIframe').locator('.start-play-trg').first().click({ timeout: 12000 });
+  const startButton = page.frameLocator('#dojoSonolusIframe').locator('.start-play-trg').first();
+  try {
+    await startButton.click({ timeout: 12000 });
+  } catch (clickError) {
+    // Sonolus can rebuild its menu on the same tick as the pointer click. Retry the same
+    // visible START control via its own click handler, then still require live runtime/BGM.
+    await startButton.evaluate(el => el.click()).catch(() => {});
+  }
   await page.waitForFunction(() => {
     const frame = document.querySelector('#dojoSonolusIframe');
     const runtime = frame?.contentWindow?.__pjPracticeRuntime;
@@ -184,10 +191,22 @@ async function openAndPlayDojo(page) {
   const loop = page.locator('#dojoLoopToggle');
   if (await loop.getAttribute('aria-pressed') !== 'true') await clickVisible(loop);
 
+  // Demonstrate A–B without leaving a tiny 0–1s loop enabled throughout the final shot.
+  await page.evaluate(() => document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime?.seek?.(12));
+  const loop = page.locator('#dojoLoopToggle');
+  if (await loop.getAttribute('aria-pressed') !== 'true') await clickVisible(loop);
+  await sleep(800);
+  if (await loop.getAttribute('aria-pressed') === 'true') await clickVisible(loop);
+  await page.evaluate(() => {
+    const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
+    runtime?.setRate?.(1);
+    runtime?.seek?.(25);
+  });
+
   // Return the camera to the actual running playfield after interacting with controls.
   await clickVisible(page.locator('#dojoFrameShellInner'));
   await sleep(1200);
-  return await page.evaluate(chartVisualState => {
+  const stats = await page.evaluate(chartVisualState => {
     const frame = document.querySelector('#dojoSonolusIframe');
     const runtime = frame?.contentWindow?.__pjPracticeRuntime;
     const app = frame?.contentWindow?.app;
@@ -200,6 +219,10 @@ async function openAndPlayDojo(page) {
       chartVisualState
     };
   }, chartVisualState);
+  if (stats.bgmState !== 'loaded' || !stats.playing || stats.duration <= 0) {
+    throw new Error('Final Dojo shot is not actually playing: ' + JSON.stringify(stats));
+  }
+  return stats;
 }
 
 let desktopPath = '';
