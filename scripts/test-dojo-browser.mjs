@@ -518,7 +518,32 @@ for (let attempt = 1; attempt <= 3 && !startReady; attempt++) {
   }
 }
 if (!startReady) {
-  await fail('Dojo SourceLoad START button remained disabled after 3 load attempts: ' + JSON.stringify(startAttempts));
+  const loadFailureDebug = await page.evaluate(() => {
+    const frame = document.querySelector('#dojoSonolusIframe');
+    try {
+      const doc = frame?.contentDocument;
+      const button = doc?.querySelector('.start-play-trg');
+      return {
+        iframeSrc: frame?.src || '',
+        childTitle: doc?.title || '',
+        childReadyState: doc?.readyState || '',
+        loadingLog: doc?.querySelector('.loading-log')?.innerText?.slice(-7000) || '',
+        childBody: doc?.body?.innerText?.slice(-5000) || '',
+        button: button ? {
+          disabled: button.hasAttribute('disabled'),
+          text: button.innerText || '',
+          rect: (() => { const r = button.getBoundingClientRect(); return {width:r.width,height:r.height}; })()
+        } : null,
+        runtimeExists: !!frame?.contentWindow?.__pjPracticeRuntime,
+        practiceDebug: frame?.contentWindow?.__pjPracticeDebug || null
+      };
+    } catch (e) {
+      return { iframeSrc:frame?.src||'', accessError:e?.message||String(e) };
+    }
+  });
+  await fail('Dojo SourceLoad START button remained disabled after 3 load attempts: ' +
+    JSON.stringify({ startAttempts, loadFailureDebug, consoleErrors:errors.slice(-30),
+      pageErrors:pageErrors.slice(-10), failedRequests:failedRequests.slice(-30) }));
 }
 
 const startInfo = await page.evaluate(() => {
