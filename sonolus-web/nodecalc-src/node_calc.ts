@@ -17,6 +17,11 @@ let args_of_nodes:StaticArray<StaticArray<f32>> = new StaticArray(0);
 let added_node_count:i32 = 0;
 // NodeCalc preprocessing is split into ordering and execution by the bundled Sonolus player.
 let preprocess_queue:Array<Array<f32>> = new Array<Array<f32>>();
+let preprocess_active:bool = false;
+let preprocess_execution_count:i32 = 0;
+let preprocess_budget_exhausted:bool = false;
+const PREPROCESS_EXECUTION_LIMIT:i32 = 1000000;
+const NODE_LOOP_ITERATION_LIMIT:i32 = 10000;
 
 export function init_nodes(nodes_count:i32):void{
     added_node_count = 0;
@@ -416,6 +421,9 @@ export function reset_vars():void{
     args_of_nodes = new StaticArray(0);
     added_node_count = 0;
     preprocess_queue = new Array<Array<f32>>();
+    preprocess_active = false;
+    preprocess_execution_count = 0;
+    preprocess_budget_exhausted = false;
     tex_transforms = new Map<i32,StaticArray<f32>>();
     draw_sprites_info = new Array<StaticArray<f32>>();
     draw_sprites_uvs = new Array<StaticArray<f32>>();
@@ -744,10 +752,14 @@ export function preprocess_ordering():void{
 }
 
 export function preprocess_batch():void{
+    preprocess_active = true;
+    preprocess_execution_count = 0;
+    preprocess_budget_exhausted = false;
     for(let i=0;i<preprocess_queue.length;i++){
         const entry = preprocess_queue[i];
         run_node(i32(entry[1]),i32(entry[2]));
     }
+    preprocess_active = false;
     preprocess_queue = new Array<Array<f32>>();
 }
 
@@ -937,6 +949,16 @@ export function despawning():Array<Array<f32>>{
 }
 
 export function run_node(index:i32,entity_id:i32):f32{
+    // Bound pathological/cyclic chart graphs so one corrupt node cannot freeze the whole iframe.
+    if(preprocess_active){
+        if(preprocess_budget_exhausted) return 0.;
+        preprocess_execution_count++;
+        if(preprocess_execution_count > PREPROCESS_EXECUTION_LIMIT){
+            preprocess_budget_exhausted = true;
+            console.error("[NodeCalc] preprocess execution budget exceeded");
+            return 0.;
+        }
+    }
     if(0 <= index && index <= func_of_nodes.length){
         const node:NodeFunc = functions[func_of_nodes[index]];
         
@@ -1001,23 +1023,27 @@ function Block(entity_id:i32,args:StaticArray<f32>):f32{
 }
 
 function While(entity_id:i32,args:StaticArray<f32>):f32{
-    while(true){
+    for(let iteration:i32=0;iteration<NODE_LOOP_ITERATION_LIMIT;iteration++){
         if(!run_node(i32(args[0]),entity_id)) return 0.;
         if(is_breaking) return 0.;
 
         run_node(i32(args[1]),entity_id);
         if(is_breaking) return 0.;
     }
+    console.error("[NodeCalc] While loop iteration limit exceeded");
+    return 0.;
 }
 
 function DoWhile(entity_id:i32,args:StaticArray<f32>):f32{
-    while(true){
+    for(let iteration:i32=0;iteration<NODE_LOOP_ITERATION_LIMIT;iteration++){
         run_node(i32(args[0]),entity_id);
         if(is_breaking) return 0.;
 
         if(!run_node(i32(args[1]),entity_id)) return 0.;
         if(is_breaking) return 0.;
     }
+    console.error("[NodeCalc] DoWhile loop iteration limit exceeded");
+    return 0.;
 }
 
 function Execute(entity_id:i32,args:StaticArray<f32>):f32{
@@ -1103,13 +1129,15 @@ function SwitchIntegerWithDefault(entity_id:i32,args:StaticArray<f32>):f32{
 
 function JumpLoop(entity_id:i32,args:StaticArray<f32>):f32{
     let idx:i32 = 0;
-    while(true){
+    for(let iteration:i32=0;iteration<NODE_LOOP_ITERATION_LIMIT;iteration++){
+        if(idx < 0 || idx > args.length-1) return 0.;
         idx = i32(run_node(i32(args[idx]),entity_id));
         if(is_breaking) return 0.;
-        if(idx > args.length-1) return 0.;
-        if(idx == args.length-1) break;
+        if(idx > args.length-1 || idx < 0) return 0.;
+        if(idx == args.length-1) return run_node(i32(args[args.length-1]),entity_id);
     }
-    return run_node(i32(args[args.length-1]),entity_id);
+    console.error("[NodeCalc] JumpLoop iteration limit exceeded");
+    return 0.;
 }
 
 function TimeToScaledTime(entity_id:i32,args:StaticArray<f32>):f32{

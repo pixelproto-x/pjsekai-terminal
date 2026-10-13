@@ -763,6 +763,10 @@ if (!(chartVisualState.noteEntities > 0) || !(chartVisualState.visibleNoteSprite
 if (errors.some(message => /StreamSet.*does not exist/i.test(message))) {
   await fail('Local Sonolus WASM is missing StreamSet compatibility: ' + JSON.stringify(errors.filter(message => /StreamSet/i.test(message)).slice(0,10)));
 }
+const nodeCalcGuards = errors.filter(message => /NodeCalc.*(budget exceeded|iteration limit exceeded)/i.test(message));
+if (nodeCalcGuards.length) {
+  await fail('Sonolus NodeCalc hit a safety guard while processing this chart: ' + JSON.stringify(nodeCalcGuards.slice(0,10)));
+}
 const beforeReset = null;
 const afterReset = null;
 
