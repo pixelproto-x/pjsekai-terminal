@@ -2611,6 +2611,9 @@ function stream_upper_bound(keys:Array<f32>,key:f32):i32{
 }
 function StreamSet(entity_id:i32,args:StaticArray<f32>):f32{
     const id=args[0], key=args[1], value=args[2];
+    // NaN/Infinity keys cannot represent ordered stream positions. Ignore malformed
+    // writes instead of inserting an unmatchable key into the sorted index.
+    if(!(key >= -1e30 && key <= 1e30)) return 0.;
     const keys=get_stream_keys(id);
     const values=get_stream_values(id);
     const i=stream_lower_bound(keys,key);
