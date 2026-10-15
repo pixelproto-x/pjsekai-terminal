@@ -5,6 +5,21 @@ const pageErrors = [];
 const failedLocalRequests = [];
 const failedRequests = [];
 
+let qaStage = 'startup';
+const qaStartedAt = Date.now();
+const mark = name => {
+  qaStage = name;
+  console.log('[QA +' + Math.round((Date.now() - qaStartedAt) / 1000) + 's] ' + name);
+};
+const qaHeartbeat = setInterval(() => {
+  console.log('[QA heartbeat +' + Math.round((Date.now() - qaStartedAt) / 1000) + 's] stage=' + qaStage);
+}, 15000);
+qaHeartbeat.unref();
+const qaWatchdog = setTimeout(() => {
+  process.stderr.write('[QA WATCHDOG] timed out after 8 minutes; last stage=' + qaStage + '\n', () => process.exit(124));
+}, 8 * 60 * 1000);
+qaWatchdog.unref();
+
 const browser = await chromium.launch({
   headless: true,
   args: ['--autoplay-policy=no-user-gesture-required'],
@@ -13,11 +28,22 @@ const page = await browser.newPage({
   viewport: { width: 1280, height: 720 },
   deviceScaleFactor: 1,
 });
+page.setDefaultTimeout(15000);
+page.setDefaultNavigationTimeout(30000);
+mark('browser ready; loading homepage');
 
 page.on('console', msg => {
-  if (msg.type() === 'error') errors.push(msg.text());
+  if (msg.type() === 'error') {
+    errors.push(msg.text());
+    if (/NodeCalc|StreamSet|WASM|memory access out of bounds/i.test(msg.text())) {
+      console.log('[ENGINE CONSOLE ERROR] ' + msg.text());
+    }
+  }
 });
-page.on('pageerror', err => pageErrors.push(err.stack || err.message));
+page.on('pageerror', err => {
+  pageErrors.push(err.stack || err.message);
+  console.log('[BROWSER PAGE ERROR] ' + (err.stack || err.message));
+});
 page.on('response', response => {
   if (response.status() >= 400) {
     const item = { status: response.status(), url: response.url() };
@@ -30,14 +56,22 @@ page.on('requestfailed', request => {
 });
 
 const fail = async message => {
-  await browser.close();
-  throw new Error(message);
+  clearTimeout(qaWatchdog);
+  clearInterval(qaHeartbeat);
+  try {
+    await Promise.race([
+      browser.close(),
+      new Promise(resolve => setTimeout(resolve, 2500)),
+    ]);
+  } catch (_) {}
+  throw new Error('[last stage=' + qaStage + '] ' + message);
 };
 
 await page.goto('http://127.0.0.1:4173/', {
   waitUntil: 'domcontentloaded',
   timeout: 30000,
 });
+mark('homepage loaded; checking layout');
 
 for (const asset of ['dojo-musics.json', 'dojo-difficulties.json', 'dojo-vocals.json']) {
   const response = await page.request.get('http://127.0.0.1:4173/' + asset);
@@ -92,6 +126,8 @@ if (!dockAudit || dockAudit.toolsBottom > dockAudit.dockTop - 8) {
 }
 await cardsForDock.evaluate(el => el.click());
 
+mark('strategy calculator checks');
+
 // Strategy Calculator deep checks.
 await page.locator('nav.bottom-bar button.tab[data-go="tools"]').evaluate(el => el.click());
 await page.waitForSelector('.page[data-page="tools"].active', { state: 'visible', timeout: 10000 });
@@ -114,6 +150,8 @@ if (!strategyResult.scGapPoints || Number(strategyResult.scGapPoints.replace(/,/
   await fail('Strategy event calculator returned invalid results: ' + JSON.stringify(strategyResult));
 }
 
+
+mark('chart analyzer checks');
 
 // Chart Analyzer deep checks.
 await page.locator('nav.bottom-bar button.tab[data-go="tools"]').evaluate(el => el.click());
@@ -138,6 +176,8 @@ const chartDetail = await page.evaluate(() => ({
 if (/Invalid Date|undefined/.test(chartDetail.text) || !/Notes\s*\d/.test(chartDetail.metrics)) {
   await fail('Chart Analyzer detail contains invalid/missing metadata: ' + JSON.stringify(chartDetail));
 }
+
+mark('cover proxy and image-response checks');
 
 // Cover proxy / ORB audit: verify the rendered jackets point at the proxy and the
 // proxy really returns image data from the browser test environment.
@@ -248,6 +288,8 @@ if (accordionClosed.characterClass.includes('home-card-expanded') || accordionCl
   await fail('Closing Cards did not leave all homepage accordion cards collapsed: ' + JSON.stringify(accordionClosed));
 }
 
+mark('all-page navigation and subcategory checks');
+
 // Full-site smoke audit: exercise every page plus the P3 Characters/Cards
 // subcategory accordions, not just the homepage and Dojo route.
 const smokeRoutes = ['home', 'songs', 'characters', 'cards', 'events', 'tools', 'profile', 'settings'];
@@ -337,6 +379,8 @@ if (rapidRouteAudit.activeCount !== 1 || rapidRouteAudit.activePages[0] !== 'hom
   await fail('Rapid navigation left multiple/incorrect active pages: ' + JSON.stringify(rapidRouteAudit));
 }
 
+mark('mobile layout and Dock checks');
+
 // Mobile 390×844 home layout + Dock audit.
 await page.setViewportSize({ width: 390, height: 844 });
 await page.evaluate(() => window.scrollTo(0, 0));
@@ -357,6 +401,8 @@ if (!mobileDockAudit || mobileDockAudit.toolsBottom > mobileDockAudit.dockTop - 
 await mobileCards.evaluate(el => el.click());
 await page.setViewportSize({ width: 1280, height: 720 });
 await page.evaluate(() => window.scrollTo(0, 0));
+
+mark('Dojo UI and song catalog checks');
 
 // Continue Dojo checks.
 const dojo = await page.evaluate(() => ({
@@ -445,6 +491,7 @@ if (!frameUrl || !frameUrl.includes('/sonolus-web/')) {
 }
 
 const sonolusFrame = page.frameLocator('#dojoSonolusIframe');
+mark('Sonolus SourceLoad: waiting for START control');
 const startButton = sonolusFrame.locator('.start-play-trg').first();
 try {
   await startButton.waitFor({ state: 'attached', timeout: 60000 });
@@ -624,6 +671,7 @@ try {
   );
 }
 
+mark('SourceLoad diagnostics captured; preparing actual gameplay start');
 const sourceLoadInfo = await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   try {
@@ -635,12 +683,18 @@ const sourceLoadInfo = await page.evaluate(() => {
   }
 });
 
+mark('actual START button found; preparing click');
 const realStartButton = sonolusFrame.locator('.start-play-trg').first();
 await page.evaluate(() => {
   const frame = document.querySelector('#dojoSonolusIframe');
   if (frame?.contentWindow) frame.contentWindow.__PJSEKAI_DEBUG__ = true;
 });
-await realStartButton.evaluate(el => el.click());
+mark('dispatching actual START click (watchdog will identify a renderer stall)');
+await Promise.race([
+  realStartButton.evaluate(el => el.click()),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('Actual START click did not return within 120 seconds; renderer may be blocked in chart preprocessing')), 120000)),
+]);
+mark('START click returned; checking live BGM and playback clock');
 await page.waitForTimeout(1000);
 
 const runtimeState = await page.evaluate(() => {
@@ -728,6 +782,8 @@ const bridgeExercise = await page.evaluate(() => {
 });
 if (!bridgeExercise) await fail('Dojo practice bridge methods threw while the Sonolus core was ready');
 
+mark('checking actual note-sprite rendering');
+
 // Verify that chart notes progress through the actual renderer, not just that BGM/time runs.
 await page.evaluate(() => {
   const runtime = document.querySelector('#dojoSonolusIframe')?.contentWindow?.__pjPracticeRuntime;
@@ -770,6 +826,7 @@ if (nodeCalcGuards.length) {
 const beforeReset = null;
 const afterReset = null;
 
+mark('checking practice controls and final browser errors');
 const loopState = await page.evaluate(() => ({
   a: document.querySelector('#dojoLoopA')?.value || '',
   b: document.querySelector('#dojoLoopB')?.value || '',
@@ -799,6 +856,8 @@ if (pageErrors.length || failedLocalRequests.length) {
   );
 }
 
+clearTimeout(qaWatchdog);
+clearInterval(qaHeartbeat);
 console.log(JSON.stringify({
   PASS: true,
   initialSelection,
