@@ -1011,6 +1011,30 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <a class="anniversary-credit" href="https://pjsekai.sega.jp/6th/index.html" target="_blank" rel="noopener noreferrer">6TH ANNIVERSARY · OFFICIAL SITE ↗</a>
     </section>
 
+    <section class="hub-lookup" aria-labelledby="hubLookupTitle">
+      <div class="hub-lookup-copy">
+        <span class="hub-eyebrow"><i></i> PLAYER SEARCH · TAIWAN</span>
+        <h2 id="hubLookupTitle">從 UID 開始，<em>探索你的 SEKAI</em></h2>
+        <p>輸入台灣區玩家 ID，快速開啟玩家資料。只使用公開資料，不需要提供遊戲密碼。</p>
+      </div>
+      <form class="hub-lookup-form" id="homePlayerLookup">
+        <label for="homePlayerUid">玩家 UID</label>
+        <div class="hub-lookup-control">
+          <span class="hub-region">TW</span>
+          <input id="homePlayerUid" name="playerId" type="text" inputmode="numeric" autocomplete="off" maxlength="32" pattern="[0-9]{1,32}" placeholder="輸入玩家 ID" aria-describedby="homePlayerHint" required>
+          <button type="submit">查詢玩家 <span aria-hidden="true">↗</span></button>
+        </div>
+        <p id="homePlayerHint">目前提供台灣區公開 Profile 查詢；其他地區支援狀態會在確認後再開放。</p>
+      </form>
+    </section>
+
+    <nav class="hub-shortcuts" aria-label="常用功能">
+      <button type="button" data-go="songs"><span class="hub-shortcut-icon cyan">♫</span><span><strong>歌曲與譜面</strong><small>Music & Dojo</small></span><b>↗</b></button>
+      <button type="button" data-go="cards"><span class="hub-shortcut-icon violet">▣</span><span><strong>卡片圖鑑</strong><small>Card Archive</small></span><b>↗</b></button>
+      <button type="button" data-go="events"><span class="hub-shortcut-icon orange">✦</span><span><strong>活動規劃</strong><small>Event Planner</small></span><b>↗</b></button>
+      <button type="button" data-go="characters"><span class="hub-shortcut-icon pink">☆</span><span><strong>角色資料</strong><small>Character Guide</small></span><b>↗</b></button>
+    </nav>
+
     <div class="section-head"><div><div class="kicker">EXPLORE SEKAI</div><h2>探索玩家工具箱</h2></div><button class="section-link" data-go="profile">我的資料 ›</button></div>
 
     <div class="home-grid">
@@ -3545,5 +3569,6 @@ window.__PJSEKAI_APP__ = {
 <script src="event-calc.js" defer></script>
 <script src="chart-analyzer.js?v=20261006-button-audit" defer></script>
 <script src="system-settings.js" defer></script>
+<script src="home-hub.js" defer></script>
 </body>
 </html>
