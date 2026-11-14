@@ -18,7 +18,7 @@ test("Cloudflare provider requests the deployed Taiwan Worker endpoint", async (
         data: { user: { userId: "123", level: 42 } },
         uid: "123",
         region: "tw",
-        source: "HiSekai",
+        source: "Haruki v6.33.0",
         fetchedAt: "2026-11-14T00:00:00.000Z",
       });
     },
@@ -30,7 +30,7 @@ test("Cloudflare provider requests the deployed Taiwan Worker endpoint", async (
   assert.equal(requested, CLOUDFLARE_PLAYER_API + "/api/tw/user/123/profile");
   assert.equal(result.uid, "123");
   assert.equal(result.region, "tw");
-  assert.equal(result.source, "HiSekai");
+  assert.equal(result.source, "Haruki v6.33.0");
   assert.equal(result.cached, false);
   assert.equal(result.data.user.level, 42);
 });
