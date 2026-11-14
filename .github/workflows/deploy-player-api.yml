@@ -1,0 +1,35 @@
+name: Deploy player API Worker
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "workers/player-api/**"
+      - ".github/workflows/deploy-player-api.yml"
+  pull_request:
+    paths:
+      - "workers/player-api/**"
+      - ".github/workflows/deploy-player-api.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Worker syntax
+        working-directory: workers/player-api
+        run: node --check src/index.js
+      - name: Run Worker tests
+        working-directory: workers/player-api
+        run: node --test test/*.test.mjs
+      - name: Deploy Cloudflare Worker
+        if: ${{ github.event_name != 'pull_request' && env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' }}
+        working-directory: workers/player-api
+        run: npx --yes wrangler@4 deploy
