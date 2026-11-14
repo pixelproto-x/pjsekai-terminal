@@ -1,0 +1,41 @@
+.songs-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.songs-overview>div{min-height:92px;padding:17px 19px;border:1px solid rgba(255,255,255,.82);border-radius:20px;background:rgba(255,255,255,.76);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.songs-overview span,.songs-toolbar label>span{font-size:10px;font-weight:750;color:var(--muted)}
+.songs-overview strong{font-size:27px;letter-spacing:-.04em;color:var(--ink)}
+.songs-workbench,.songs-playlists{padding:22px;border:1px solid rgba(255,255,255,.84);border-radius:26px;background:rgba(255,255,255,.78);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.songs-toolbar{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(130px,1fr));gap:12px}
+.songs-toolbar label,.song-playlist-form{display:flex;flex-direction:column;gap:7px;min-width:0}
+.songs-toolbar input,.songs-toolbar select,.song-playlist-form input{width:100%;height:42px;min-width:0;padding:0 12px;border:1px solid var(--hub-line,rgba(85,112,155,.18));border-radius:12px;background:rgba(255,255,255,.9);color:var(--ink);font-size:12px}
+.songs-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 10px}
+.song-filter-chip,.song-favorite,.song-record select,.song-playlist-form button,.song-playlist-add,.song-playlist-remove{border:1px solid var(--hub-line,rgba(85,112,155,.18));border-radius:999px;background:rgba(255,255,255,.86);padding:9px 13px;color:var(--ink);font-size:11px;font-weight:750}
+.song-filter-chip.active{background:#253858;color:white;border-color:#253858}
+.songs-data-note{padding:10px 0 13px;color:var(--muted);font-size:11px}
+.song-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.song-card{min-width:0;padding:17px;border:1px solid rgba(85,112,155,.14);border-radius:19px;background:rgba(255,255,255,.78)}
+.song-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.song-card h3{margin:0;font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+.song-card-meta{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.6}
+.song-favorite{flex:none;padding:7px 11px}
+.song-favorite[aria-pressed="true"]{background:#fff0f5;border-color:#f4a4c2;color:#b83b70}
+.song-difficulties{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0}
+.song-difficulty{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;background:#f0f3f8;color:#56647b;font-size:9px;font-weight:800}
+.song-difficulty strong{font-size:12px;color:#1e2c45}
+.song-record{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-top:1px solid rgba(85,112,155,.12);padding-top:11px}
+.song-record label{font-size:10px;color:var(--muted)}
+.song-record select{padding:7px 9px;font-size:10px}
+.song-playlist-add{padding:7px 10px;font-size:10px}
+.songs-empty{padding:32px;text-align:center;color:var(--muted);font-size:12px}
+.songs-playlists{margin-top:18px}
+.songs-section-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.songs-section-heading h2{margin:5px 0 0;font-size:24px}
+.song-playlist-form{display:flex;flex-direction:row;max-width:560px}
+.song-playlist-form button{flex:none;background:#253858;color:#fff;border-color:#253858}
+.song-playlist-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.song-playlist{padding:14px;border:1px solid rgba(85,112,155,.14);border-radius:15px;background:rgba(255,255,255,.8)}
+.song-playlist strong{font-size:13px}
+.song-playlist small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.song-playlist-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.song-playlist-actions button{padding:6px 10px;border:1px solid var(--hub-line);border-radius:999px;background:white;font-size:10px}
+@media(max-width:820px){.songs-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.songs-toolbar .songs-search{grid-column:1/-1}}
+@media(max-width:640px){.songs-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.songs-overview>div{min-height:76px;padding:13px}.songs-overview strong{font-size:23px}.songs-workbench,.songs-playlists{padding:15px;border-radius:20px}.songs-toolbar{gap:9px}.song-list,.song-playlist-list{grid-template-columns:1fr}.song-card{padding:14px}.song-playlist-form{max-width:none}.song-playlist-form input{min-width:0}.songs-data-note{line-height:1.6}}
+@media(prefers-reduced-motion:reduce){.song-card{transition:none}}
