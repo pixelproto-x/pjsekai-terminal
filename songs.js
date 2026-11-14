@@ -6,7 +6,7 @@ const STORAGE = {
   playlists: "pjskSongPlaylists",
 };
 const difficultyNames = { easy: "EASY", normal: "NORMAL", hard: "HARD", expert: "EXPERT", master: "MASTER", append: "APPEND" };
-const state = { songs: [], difficulties: [], favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null };
+const state = { songs: [], difficulties: [], favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
 
 function readStorage(key, fallback) {
   try {
@@ -49,7 +49,8 @@ function visibleSongs() {
     const matchesLevel = charts.some((chart) => chart.playLevel >= minLevel && chart.playLevel <= maxLevel && (!difficulty || chart.musicDifficulty === difficulty));
     const matchesFavorite = state.filter !== "favorites" || state.favorites.has(song.id);
     const matchesUnplayed = state.filter !== "unplayed" || getRecordCount(song.id) === 0;
-    return matchesQuery && matchesDifficulty && matchesLevel && matchesFavorite && matchesUnplayed;
+    const matchesPlaylist = !state.playlistFilterIds || state.playlistFilterIds.has(song.id);
+    return matchesQuery && matchesDifficulty && matchesLevel && matchesFavorite && matchesUnplayed && matchesPlaylist;
   });
   const sort = $("#songSort").value;
   if (sort === "newest") list.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0));
@@ -78,7 +79,8 @@ function renderSongs() {
       '<button class="song-favorite" type="button" data-action="favorite" aria-pressed="' + state.favorites.has(song.id) + '">' + (state.favorites.has(song.id) ? "已收藏" : "收藏") + '</button></div>' +
       '<div class="song-difficulties">' + chartMarkup + '</div>' +
       '<div class="song-record"><label>紀錄難度</label><select data-role="record-difficulty" aria-label="紀錄難度">' + charts.map((chart) => '<option value="' + chart.musicDifficulty + '">' + difficultyNames[chart.musicDifficulty] + '</option>').join("") + '</select>' +
-      '<select data-role="record-status" aria-label="遊玩結果"><option value="">未設定</option><option value="clear">Clear</option><option value="fc">Full Combo</option><option value="ap">All Perfect</option></select>' +
+      '<select data-role="record-status" aria-label="遊玩結果"><option value="" ' + (!currentStatus ? "selected" : "") + '>未設定</option><option value="clear" ' + (currentStatus === "clear" ? "selected" : "") + '>Clear</option><option value="fc" ' + (currentStatus === "fc" ? "selected" : "") + '>Full Combo</option><option value="ap" ' + (currentStatus === "ap" ? "selected" : "") + '>All Perfect</option></select>' +
+      '<select data-role="playlist-target" aria-label="選擇歌單">' + state.playlists.map((playlist, index) => '<option value="' + index + '">' + escapeHTML(playlist.name) + '</option>').join("") + '</select>' +
       '<button class="song-playlist-add" type="button" data-action="playlist-add">加入歌單</button></div></article>';
   }).join("");
   $("#songEmpty").hidden = songs.length > 0;
@@ -94,6 +96,7 @@ function renderPlaylists() {
 function setFilter(filter) {
   state.filter = filter;
   state.randomId = null;
+  if (filter === "all") state.playlistFilterIds = null;
   ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[filter]));
   renderSongs();
 }
@@ -145,7 +148,9 @@ $("#songList").addEventListener("click", (event) => {
   }
   if (button.dataset.action === "playlist-add") {
     if (!state.playlists.length) return window.PJSEKAI?.toast("請先建立歌單");
-    const playlist = state.playlists[0];
+    const target = Number($("select[data-role=playlist-target]", card).value);
+    const playlist = state.playlists[target];
+    if (!playlist) return window.PJSEKAI?.toast("請先建立歌單");
     if (!playlist.songIds.includes(songId)) playlist.songIds.push(songId);
     writeStorage(STORAGE.playlists, state.playlists);
     renderPlaylists();
@@ -187,8 +192,12 @@ $("#songPlaylistList").addEventListener("click", (event) => {
     renderPlaylists();
     updateOverview();
   } else {
-    const names = playlist.songIds.map((id) => state.songs.find((song) => song.id === id)?.title).filter(Boolean);
-    window.PJSEKAI?.toast(names.length ? names.join("、") : "這份歌單還沒有歌曲");
+    state.playlistFilterIds = new Set(playlist.songIds);
+    state.filter = "playlist";
+    state.randomId = null;
+    ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.remove("active"));
+    renderSongs();
+    $("#songList").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
 loadSongs();
