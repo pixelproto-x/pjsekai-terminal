@@ -1,6 +1,6 @@
 import { AppError } from "./errors.mjs";
 
-const UID_PATTERN = /^\\d{1,20}$/;
+const UID_PATTERN = /^\d{1,20}$/;
 
 export function normalizePlayerUid(input) {
   const uid = String(input ?? "").trim();
