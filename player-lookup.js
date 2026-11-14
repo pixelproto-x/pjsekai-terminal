@@ -1,5 +1,6 @@
 import { REGION_LABELS } from "./src/data/haruki-player.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
+import { extractPlayerIdentity } from "./src/data/player-profile-fields.mjs";
 
 const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
@@ -41,14 +42,11 @@ function createNode(tag, className, text) {
 }
 function renderProfile(result) {
   const objects = allObjects(result.data);
-  const identity = objects.map((object) => ({
-    object,
-    score: ["userId", "user_id", "playerId", "player_id", "nickname", "userName", "playerName", "level", "userLevel"].reduce((sum, key) => sum + (object[key] != null ? 1 : 0), 0),
-  })).sort((a, b) => b.score - a.score)[0]?.object ?? result.data;
-  const scoped = [identity, ...objects.filter((object) => object !== identity)];
-  const name = getValue(scoped, ["name", "nickname", "userName", "playerName", "displayName"]) || "未提供名稱";
-  const uid = getValue(scoped, ["userId", "user_id", "playerId", "player_id"]) || result.uid;
-  const level = getValue(scoped, ["rank", "level", "userLevel", "user_level"]);
+  const identity = extractPlayerIdentity(result.data, result.uid);
+  const scoped = objects;
+  const name = identity.name;
+  const uid = identity.uid;
+  const level = identity.level;
   const rank = getValue(scoped, ["playerRank", "player_rank"]);
   const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
@@ -69,7 +67,7 @@ function renderProfile(result) {
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
     ["玩家排名", rank == null ? "未提供" : rank],
-    ["隊伍戰力", power == null ? "未提供" : Number(power).toLocaleString()],
+    ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
     const item = createNode("div", "player-stat");
