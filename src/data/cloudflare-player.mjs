@@ -15,7 +15,18 @@ export function createCloudflarePlayerProvider({
   return Object.freeze({
     id: "cloudflare-player-api",
     regions: REGIONS,
-    capabilities: Object.freeze({ profile: true, team: true, cards: true, characters: true }),
+    capabilities: Object.freeze({ profile: true, team: true, cards: true, characters: true, eventRanking: true }),
+    async getEventRanking(input, region = "tw", options = {}) {
+      const uid = normalizePlayerUid(input);
+      if (!REGIONS.includes(region)) {
+        const error = new RangeError("Unsupported Project SEKAI region.");
+        error.code = "REGION_UNSUPPORTED";
+        throw error;
+      }
+      if (region === "cn") return { status: "UNSUPPORTED_REGION", row: null, event: null };
+      const url = CLOUDFLARE_PLAYER_API + "/api/" + region + "/user/" + encodeURIComponent(uid) + "/event-ranking";
+      return fetchJson(url, { fetchImpl, signal: options.signal, timeoutMs });
+    },
     async getProfile(input, region = "tw", options = {}) {
       const uid = normalizePlayerUid(input);
       if (!REGIONS.includes(region)) {
