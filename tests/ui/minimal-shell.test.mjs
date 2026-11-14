@@ -33,7 +33,12 @@ assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom sele
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
 assert.deepEqual(routes.sort(), ["home", "profile", "settings"], "only the intended three page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
-assert.match(lookup, /createHiSekaiPlayerProvider/, "public UID provider is connected");
+assert.match(lookup, /createHarukiPlayerProvider/, "five-region public UID provider is connected");
+assert.match(html, /id="homePlayerRegion"/, "homepage server selector remains");
+assert.match(html, /id="playerRegion"/, "player page server selector remains");
+for (const region of ["jp", "en", "tw", "kr", "cn"]) {
+  assert.match(html, new RegExp('option value="' + region + '"'), region + " server can be selected");
+}
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
