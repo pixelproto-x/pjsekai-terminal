@@ -953,7 +953,41 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 <style>
 .hub-region-select{appearance:none;-webkit-appearance:none;cursor:pointer;max-width:88px;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:center;outline:none}
 .player-form{grid-template-columns:minmax(120px,.34fr) minmax(0,1fr) auto}
-.player-form label select{height:48px;width:100%;padding:0 12px;border:1px solid rgba(111,143,190,.24);border-radius:13px;background:#fff;color:#243b5c;font-size:13px;font-weight:750}
+.player-form label select{height:48px;width:100%;padding:0 12px;border:1px solid rgba(111,143,190,.24);border-radius:13px;background:#fff;color:#243b5c;font-size:13px;font-weight:750;cursor:pointer}
+@supports (appearance:base-select){
+  .hub-region-select,.player-form label select{appearance:base-select;-webkit-appearance:base-select}
+  .hub-region-select::picker(select),.player-form label select::picker(select){
+    appearance:base-select;
+    border:1px solid rgba(255,255,255,.86);
+    border-radius:16px;
+    padding:7px;
+    background:rgba(250,251,255,.97);
+    color:#25304a;
+    box-shadow:0 18px 48px rgba(25,27,40,.20),inset 0 1px 0 #fff;
+    backdrop-filter:blur(18px);
+  }
+  .hub-region-select option,.player-form label select option{
+    min-height:40px;
+    padding:10px 13px;
+    border-radius:10px;
+    background:transparent;
+    color:#29324a;
+    font:700 13px/1.4 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+    transition:background .16s ease,color .16s ease;
+  }
+  .hub-region-select option:checked,.player-form label select option:checked{
+    background:linear-gradient(110deg,rgba(145,121,245,.20),rgba(82,207,232,.18));
+    color:#4c3c9b;
+  }
+  .hub-region-select option:hover,.player-form label select option:hover{
+    background:rgba(145,121,245,.12);
+  }
+  .hub-region-select::picker-icon,.player-form label select::picker-icon{
+    color:#7768c9;
+    transition:transform .2s ease;
+  }
+  .hub-region-select:open::picker-icon,.player-form label select:open::picker-icon{transform:rotate(180deg)}
+}
 @media(max-width:640px){.player-form{grid-template-columns:1fr}.hub-region-select{max-width:100%;text-align:left}}
 </style>
 </head>
