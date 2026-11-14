@@ -20,7 +20,7 @@ assert.match(js, /sekai-master-db-tc-diff/, "Traditional Chinese server data sou
 assert.match(js, /sekai-master-db-en-diff/, "English server data source is configured");
 assert.match(js, /sekai-master-db-kr-diff/, "Korean server data source is configured");
 assert.match(js, /sekai-master-db-cn-diff/, "Simplified Chinese server data source is configured");
-assert.match(js, /musics\\.json/, "song list endpoint is configured");
+assert.ok(js.includes('"/musics.json"'), "song list endpoint is configured");
 assert.match(js, /musicDifficulties\.json/, "chart difficulty data source is configured");
 assert.match(js, /localStorage/, "personal data persists locally");
 assert.match(js, /pjskSongFavorites/, "favorite list has a dedicated storage key");
