@@ -2,7 +2,7 @@ name: Core refactor tests
 
 on:
   push:
-    branches: ["refactor/player-hub-core"]
+    branches: ["cleanup/keep-ui-player-lookup"]
   pull_request:
     branches: ["main"]
 

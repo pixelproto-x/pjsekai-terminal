@@ -2,7 +2,7 @@ name: UI redesign smoke tests
 
 on:
   push:
-    branches: ["redesign/6th-anniversary-ui"]
+    branches: ["cleanup/keep-ui-player-lookup"]
   pull_request:
     branches: ["main"]
 
@@ -14,5 +14,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check redesigned interface and preserved modules
+      - name: Check minimal player hub UI
         run: node scripts/test-ui-redesign.mjs
