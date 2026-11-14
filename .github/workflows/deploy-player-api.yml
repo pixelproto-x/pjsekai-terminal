@@ -76,3 +76,15 @@ jobs:
                 ;;
             esac
           done
+          sample_status="$(curl --silent --show-error --max-time 25 \
+            -H "Origin: https://pixelproto-x.github.io" \
+            -o /tmp/tw-sample-profile.json -w "%{http_code}" \
+            "$WORKER_URL/api/tw/user/7014633806900763393/profile")"
+          echo "Documented HiSekai Taiwan sample profile HTTP $sample_status"
+          if [[ "$sample_status" == "200" ]]; then
+            node -e '
+              const p = require("/tmp/tw-sample-profile.json");
+              if (!p.data || p.region !== "tw") throw new Error("Unexpected TW profile payload");
+              console.log("Taiwan sample profile payload validated; source:", p.source);
+            '
+          fi
