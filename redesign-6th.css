@@ -82,3 +82,150 @@ body{color:var(--hub-ink);background:#eaf0f8;font-family:-apple-system,BlinkMacS
 .footer{padding-left:10px;padding-right:10px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* ===== Player Hub refresh: clearer hierarchy, UID-first entry, responsive navigation ===== */
+:root{
+  --hub-ink:#203653;
+  --hub-muted:#73839c;
+  --hub-border:rgba(105,133,174,.18);
+}
+body{color:var(--hub-ink)}
+.app-shell:before{background:rgba(246,249,255,.88);border-color:rgba(255,255,255,.78)}
+.topbar{box-shadow:0 10px 30px rgba(29,54,91,.10),inset 0 1px 0 #fff}
+.top-icon{color:#48658d}
+.anniversary-hero{
+  min-height:390px;
+  margin-top:20px;
+  background-position:center 34%;
+}
+.anniversary-hero:before{
+  background:linear-gradient(90deg,rgba(13,27,51,.94),rgba(17,35,64,.76) 42%,rgba(17,35,64,.12) 82%),linear-gradient(0deg,rgba(13,27,51,.28),transparent 58%);
+}
+.anniversary-hero h1{max-width:680px}
+.hub-lookup{
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
+  align-items:center;
+  gap:26px;
+  margin:18px 0 0;
+  padding:25px 28px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:24px;
+  background:linear-gradient(125deg,rgba(255,255,255,.96),rgba(238,245,255,.92));
+  box-shadow:0 14px 36px rgba(35,62,105,.085),inset 0 1px 0 #fff;
+}
+.hub-lookup-copy{min-width:0}
+.hub-eyebrow{
+  display:flex;align-items:center;gap:8px;
+  color:#8193ad;font-size:9px;font-weight:900;letter-spacing:.18em;
+}
+.hub-eyebrow i{width:7px;height:7px;border-radius:50%;background:#67bfd7;box-shadow:0 0 0 4px rgba(103,191,215,.14)}
+.hub-lookup h2{margin:11px 0 8px;color:#263b5a;font-size:clamp(22px,3vw,32px);line-height:1.2;letter-spacing:-.045em}
+.hub-lookup h2 em{color:#648bb8;font-style:normal}
+.hub-lookup-copy p{max-width:520px;margin:0;color:#71819a;font-size:11px;line-height:1.8}
+.hub-lookup-form{min-width:0}
+.hub-lookup-form>label{display:block;margin:0 0 7px 3px;color:#5f7392;font-size:9px;font-weight:850}
+.hub-lookup-control{
+  display:flex;align-items:center;gap:8px;min-height:54px;padding:5px;
+  border:1px solid rgba(111,143,190,.24);border-radius:16px;background:#fff;
+  box-shadow:0 5px 18px rgba(35,62,105,.055),inset 0 1px 0 #fff;
+}
+.hub-region{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:11px;background:#eaf4fa;color:#5482a9;font-size:9px;font-weight:950;letter-spacing:.08em}
+.hub-lookup-control input{width:100%;min-width:0;height:42px;border:0!important;outline:none!important;background:transparent!important;box-shadow:none!important;padding:0 5px;color:#243b5c;font-size:13px;font-weight:750}
+.hub-lookup-control input::placeholder{color:#a0adbf}
+.hub-lookup-control button{
+  min-height:42px;flex:none;border:0;border-radius:12px;padding:0 16px;
+  background:linear-gradient(135deg,#547eaf,#6c9ec4);color:#fff;
+  font-size:10px;font-weight:900;box-shadow:0 6px 15px rgba(76,117,166,.2);
+}
+.hub-lookup-control button:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.hub-lookup-control button span{margin-left:8px}
+.hub-lookup-form>p{margin:7px 3px 0;color:#8a98ad;font-size:8px;line-height:1.55}
+.hub-shortcuts{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 0;
+}
+.hub-shortcuts>button{
+  min-width:0;min-height:76px;display:flex;align-items:center;gap:11px;
+  padding:12px 13px;border:1px solid rgba(255,255,255,.9);border-radius:18px;
+  background:rgba(255,255,255,.82);box-shadow:0 8px 22px rgba(35,62,105,.055);
+  text-align:left;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.hub-shortcuts>button:hover{transform:translateY(-2px);border-color:rgba(117,157,207,.42);box-shadow:0 12px 26px rgba(35,62,105,.09)}
+.hub-shortcut-icon{width:38px;height:38px;display:grid;place-items:center;flex:none;border-radius:13px;font-size:17px;font-weight:900}
+.hub-shortcut-icon.cyan{background:#e4f5fa;color:#4b9db7}
+.hub-shortcut-icon.violet{background:#efebfc;color:#8374c5}
+.hub-shortcut-icon.orange{background:#fff0e7;color:#d58b5c}
+.hub-shortcut-icon.pink{background:#fceaf2;color:#d17c9e}
+.hub-shortcuts strong{display:block;overflow:hidden;color:#304767;font-size:10px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+.hub-shortcuts small{display:block;margin-top:4px;color:#8998ae;font-size:8px}
+.hub-shortcuts b{margin-left:auto;color:#9aaac0;font-size:13px}
+.page[data-page="home"] .section-head{margin-top:38px}
+.page[data-page="home"] .home-grid{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));
+  width:100%;max-width:1200px;gap:12px;margin:0 auto;
+}
+.page[data-page="home"] .home-column{display:contents!important;width:auto!important}
+.page[data-page="home"] .home-feature{display:contents!important}
+.page[data-page="home"] .home-grid .app-card,
+.page[data-page="home"] .home-grid .app-card.feature,
+.page[data-page="home"] .home-grid .app-card.wide{
+  min-height:104px!important;height:100%!important;padding:17px 42px 17px 16px!important;
+  border:1px solid rgba(255,255,255,.92);border-radius:19px;
+  background:rgba(255,255,255,.86);box-shadow:0 9px 25px rgba(35,62,105,.065),inset 0 1px 0 #fff;
+}
+.page[data-page="home"] .home-grid .app-card .icon{width:46px;height:46px;border-radius:15px}
+.page[data-page="home"] .home-grid .app-card h3{color:#2d4262!important;font-size:13px}
+.page[data-page="home"] .home-grid .app-card p{color:#8190a6;font-size:9px;white-space:normal}
+.page[data-page="home"] .home-grid .app-card .chev{right:15px;color:#91a1b7}
+.page[data-page="home"] .home-accordion-panel{grid-column:1/-1}
+.page:not([data-page="home"]) .page-head{padding-top:48px}
+.page:not([data-page="home"]) .page-title{font-size:clamp(38px,5vw,64px)}
+.page:not([data-page="home"]) .catalog-card,
+.page:not([data-page="home"]) .settings-card,
+.page:not([data-page="home"]) .list-panel{border-color:var(--hub-border);box-shadow:0 9px 25px rgba(35,62,105,.055)}
+.bottom-bar{border-color:rgba(255,255,255,.9);background:rgba(247,250,255,.9);box-shadow:0 14px 35px rgba(22,43,76,.18),inset 0 1px 0 #fff}
+.tab{color:#8192aa}
+.tab.active,.tab.lens-near{color:#365d91}
+@media(max-width:980px){
+  .hub-lookup{grid-template-columns:1fr;gap:17px;padding:22px}
+  .page[data-page="home"] .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .app-shell{padding:9px 10px 116px}
+  .anniversary-hero{min-height:390px;margin-top:13px;padding:24px 20px 28px;background-position:58% center}
+  .anniversary-hero h1{font-size:clamp(35px,10vw,46px)}
+  .hub-lookup{gap:14px;margin-top:11px;padding:18px 15px;border-radius:19px}
+  .hub-lookup h2{font-size:23px}
+  .hub-lookup-copy p{font-size:10px}
+  .hub-lookup-control{gap:5px;min-height:50px}
+  .hub-lookup-control button{padding:0 11px;font-size:9px}
+  .hub-lookup-control input{font-size:12px}
+  .hub-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .hub-shortcuts>button{min-height:68px;padding:10px;border-radius:15px;gap:8px}
+  .hub-shortcut-icon{width:34px;height:34px;border-radius:11px}
+  .hub-shortcuts strong{font-size:9px}
+  .hub-shortcuts small{font-size:7px}
+  .page[data-page="home"] .section-head{margin-top:30px}
+  .page[data-page="home"] .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .page[data-page="home"] .home-grid .app-card,
+  .page[data-page="home"] .home-grid .app-card.feature,
+  .page[data-page="home"] .home-grid .app-card.wide{
+    min-height:92px!important;padding:13px 12px!important;gap:8px;
+    align-items:flex-start!important;flex-direction:column!important;
+  }
+  .page[data-page="home"] .home-grid .app-card .icon{width:35px;height:35px;border-radius:11px;font-size:15px}
+  .page[data-page="home"] .home-grid .app-card h3{font-size:11px}
+  .page[data-page="home"] .home-grid .app-card p{font-size:8px;line-height:1.45}
+  .page[data-page="home"] .home-grid .app-card .chev{right:10px;top:14px;transform:none}
+  .page:not([data-page="home"]) .page-head{padding-top:38px}
+  .page:not([data-page="home"]) .page-title{font-size:43px}
+}
+@media(max-width:380px){
+  .hub-shortcuts{grid-template-columns:1fr 1fr}
+  .hub-shortcuts>button{gap:6px;padding:9px}
+  .page[data-page="home"] .home-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .hub-shortcuts>button,.hub-lookup-control button{transition:none}
+}
