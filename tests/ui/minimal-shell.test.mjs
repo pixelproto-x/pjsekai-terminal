@@ -17,8 +17,9 @@ assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom 
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
 assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
 assert.match(html, /pointer-events:auto;touch-action:none;cursor:grab/, "selection bubble accepts pointer and touch dragging");
-assert.match(shell, /tabIndicator\.addEventListener\("pointerdown"/, "selection bubble starts dragging on pointer down");
-assert.match(shell, /tabIndicator\.addEventListener\("pointermove"/, "selection bubble follows pointer movement");
+assert.match(shell, /bottomBar\.addEventListener\("pointerdown"/, "navigation container receives pointer down over the selection bubble");
+assert.match(shell, /bottomBar\.setPointerCapture\(event\.pointerId\)/, "drag keeps receiving pointer movement outside the bubble");
+assert.match(shell, /bottomBar\.addEventListener\("pointermove"/, "selection bubble follows captured pointer movement");
 assert.match(shell, /finishIndicatorDrag\(event, true\)/, "releasing dragged bubble selects the nearest tab");
 
 assert.match(html, /transition:left var\(--tab-duration\).*width var\(--tab-duration\)/, "bottom selection bubble smoothly animates its position and width");
