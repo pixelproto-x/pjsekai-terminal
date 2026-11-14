@@ -61,25 +61,34 @@ jobs:
           WORKER_URL: https://pjsekai-player-api.a0983439343.workers.dev
         shell: bash
         run: |
+          failed=0
           for region in jp tw en kr cn; do
-            status="$(curl --silent --show-error --max-time 25 \
-              -H "Origin: https://pixelproto-x.github.io" \
-              -o "/tmp/profile-$region.json" -w "%{http_code}" \
-              "$WORKER_URL/api/$region/user/1/profile")"
+            status="000"
+            for attempt in 1 2; do
+              status="$(curl --silent --show-error --max-time 25 \
+                -H "Origin: https://pixelproto-x.github.io" \
+                -o "/tmp/profile-$region.json" -w "%{http_code}" \
+                "$WORKER_URL/api/$region/user/1/profile" || true)"
+              case "$status" in
+                200|403|404|429) break ;;
+                *) sleep 1 ;;
+              esac
+            done
             echo "$region upstream HTTP $status"
             case "$status" in
               200|403|404|429) ;;
               *)
-                cat "/tmp/profile-$region.json"
-                echo "::error::The $region upstream did not return a usable public response."
-                exit 1
+                cat "/tmp/profile-$region.json" 2>/dev/null || true
+                echo "::warning::$region public upstream is currently unavailable."
+                failed=1
                 ;;
             esac
           done
+
           sample_status="$(curl --silent --show-error --max-time 25 \
             -H "Origin: https://pixelproto-x.github.io" \
             -o /tmp/tw-sample-profile.json -w "%{http_code}" \
-            "$WORKER_URL/api/tw/user/7014633806900763393/profile")"
+            "$WORKER_URL/api/tw/user/7014633806900763393/profile" || true)"
           echo "Documented HiSekai Taiwan sample profile HTTP $sample_status"
           if [[ "$sample_status" == "200" ]]; then
             node -e '
@@ -87,4 +96,8 @@ jobs:
               if (!p.data || p.region !== "tw") throw new Error("Unexpected TW profile payload");
               console.log("Taiwan sample profile payload validated; source:", p.source);
             '
+          fi
+          if [[ "$failed" -ne 0 ]]; then
+            echo "::error::One or more regional public upstreams did not respond successfully."
+            exit 1
           fi
