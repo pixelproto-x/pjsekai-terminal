@@ -96,7 +96,7 @@ function renderPlaylists() {
 function setFilter(filter) {
   state.filter = filter;
   state.randomId = null;
-  if (filter === "all") state.playlistFilterIds = null;
+  state.playlistFilterIds = null;
   ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[filter]));
   renderSongs();
 }
@@ -158,9 +158,16 @@ $("#songList").addEventListener("click", (event) => {
   }
 });
 $("#songList").addEventListener("change", (event) => {
-  if (event.target.dataset.role !== "record-status") return;
   const card = event.target.closest("[data-song-id]");
-  const songId = Number(card?.dataset.songId);
+  if (!card) return;
+  if (event.target.dataset.role === "record-difficulty") {
+    const songId = Number(card.dataset.songId);
+    const difficulty = event.target.value;
+    $("select[data-role=record-status]", card).value = state.records[recordKey(songId, difficulty)]?.status || "";
+    return;
+  }
+  if (event.target.dataset.role !== "record-status") return;
+  const songId = Number(card.dataset.songId);
   const difficulty = $("select[data-role=record-difficulty]", card).value;
   const key = recordKey(songId, difficulty);
   if (event.target.value) state.records[key] = { status: event.target.value, updatedAt: Date.now() };
@@ -189,7 +196,7 @@ $("#songPlaylistList").addEventListener("click", (event) => {
   if (button.dataset.playlistAction === "remove") {
     state.playlists.splice(index, 1);
     writeStorage(STORAGE.playlists, state.playlists);
-    renderPlaylists();
+    renderSongs();
     updateOverview();
   } else {
     state.playlistFilterIds = new Set(playlist.songIds);
