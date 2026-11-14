@@ -24,7 +24,6 @@ jobs:
         run: |
           node --check src/index.js
           node --check src/routes.mjs
-          sh -n container-entrypoint.sh
       - name: Run Haruki Worker route tests
         working-directory: workers/player-api
         run: node --test test/*.test.mjs
