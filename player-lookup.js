@@ -62,17 +62,17 @@ function renderProfile(result) {
   const card = createNode("section", "player-result-card");
   const header = createNode("div", "player-result-head");
   const heading = createNode("div");
-  heading.append(createNode("div", "msk-card-kicker", "PUBLIC PLAYER PROFILE"));
+  heading.append(createNode("div", "msk-card-kicker", "公開玩家資料"));
   heading.append(createNode("h2", "", name));
   heading.append(createNode("p", "", "UID " + uid));
-  header.append(heading, createNode("span", "player-source-pill", result.source + " · " + result.region.toUpperCase()));
+  header.append(heading, createNode("span", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase()));
   card.append(header);
 
   const stats = createNode("div", "player-stat-grid");
   const fields = [
     ["玩家等級", level == null ? "未提供" : level],
     ["玩家排名", rank == null ? "未提供" : rank],
-    ["隊伍 Power", power == null ? "未提供" : Number(power).toLocaleString()],
+    ["隊伍戰力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開卡片資料", cards.length ? cards.length + " 筆" : "未提供"],
   ];
   for (const [label, value] of fields) {
@@ -91,41 +91,41 @@ function renderProfile(result) {
       const value = member?.talent ?? member?.power ?? member?.cardPower ?? "";
       list.append(createNode("div", "player-team-row", ""));
       const row = list.lastElementChild;
-      row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : "Power " + Number(value).toLocaleString()));
+      row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : "戰力 " + Number(value).toLocaleString()));
     });
     card.append(list);
   } else {
-    card.append(createNode("div", "player-empty-note", "資料來源沒有回傳可辨識的隊伍欄位；這不代表玩家沒有隊伍。"));
+    card.append(createNode("div", "player-empty-note", "資料來源沒有提供可辨識的隊伍資料 這不代表玩家沒有隊伍"));
   }
   if (!level && !rank && !power && !team.length && !cards.length) {
-    card.append(createNode("div", "player-empty-note", "已收到公開 Profile 回應，但沒有辨識到常見的玩家欄位。請展開資料來源說明，或稍後再試。"));
+    card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
-  card.append(createNode("p", "player-status", "來源：Hi Sekai · 台灣區 · " + new Date(result.fetchedAt).toLocaleString() + (result.cached ? " · 快取資料" : " · 最新查詢")));
+  card.append(createNode("p", "player-status", "資料來源 Hi Sekai 台灣區 " + new Date(result.fetchedAt).toLocaleString().replace(/[^\\p{L}\\p{N}\\s]/gu, " ").replace(/\\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
 function messageFor(error) {
-  if (error?.code === "UID_INVALID") return "UID 格式錯誤，請只輸入數字。";
+  if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
-    if (error.details?.status === 404) return "找不到這個玩家，請確認 UID。";
-    if (error.details?.status === 429) return "查詢太頻繁，請稍後再試。";
-    return "資料來源暫時無法提供查詢（HTTP " + error.details?.status + "）。";
+    if (error.details?.status === 404) return "找不到這個玩家 請確認 UID";
+    if (error.details?.status === 429) return "查詢太頻繁 請稍後再試";
+    return "資料來源暫時無法查詢 狀態碼 " + error.details?.status;
   }
-  if (error?.code === "REQUEST_TIMEOUT") return "資料來源回應逾時，請稍後再試。";
-  if (error?.code === "NETWORK_ERROR") return "無法連線至資料來源；也可能是瀏覽器跨網域限制或服務暫時無法使用。";
-  if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源回傳格式異常，暫時無法解析。";
-  return "查詢失敗：" + (error?.message || "未知錯誤");
+  if (error?.code === "REQUEST_TIMEOUT") return "資料來源回應逾時 請稍後再試";
+  if (error?.code === "NETWORK_ERROR") return "目前無法連線到資料來源 請稍後再試";
+  if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
+  return "查詢失敗 " + (error?.message || "未知錯誤");
 }
 async function lookup(rawUid) {
   const uid = String(rawUid ?? "").trim();
   const input = $("#playerUid");
   if (input) input.value = uid;
-  if (button) { button.disabled = true; button.textContent = "查詢中…"; }
-  if (status) status.textContent = "正在讀取台灣區公開 Profile…";
+  if (button) { button.disabled = true; button.textContent = "查詢中"; }
+  if (status) status.textContent = "正在讀取台灣區公開資料";
   results?.replaceChildren();
   try {
     const result = await provider.getProfile(uid);
     renderProfile(result);
-    if (status) status.textContent = "查詢成功。只顯示公開資料來源實際回傳的內容。";
+    if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
     if (status) status.textContent = messageFor(error);
