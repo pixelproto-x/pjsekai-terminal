@@ -3,5 +3,20 @@ main = "src/index.js"
 compatibility_date = "2026-11-14"
 workers_dev = true
 
+[[containers]]
+class_name = "HarukiContainer"
+scheduling_policy = "durable_object"
+
+[containers.images.base]
+dockerfile = "./Dockerfile"
+
+[[durable_objects.bindings]]
+name = "HARUKI_CONTAINER"
+class_name = "HarukiContainer"
+
+[exports.HarukiContainer]
+type = "durable-object"
+storage = "sqlite"
+
 [observability]
 enabled = true
