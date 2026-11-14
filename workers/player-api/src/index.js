@@ -12,7 +12,7 @@ const PUBLIC_PROFILE_KEYS = [
   "userMysekaiGates", "upload_time",
 ].join(",");
 
-function json(body, status, origin, { cacheSeconds = 0 } = {}) {
+function json(body, status, origin, { cacheSeconds = 0, extraHeaders = {} } = {}) {
   const headers = {
     "content-type": "application/json; charset=utf-8",
     "access-control-allow-origin": origin,
@@ -21,8 +21,26 @@ function json(body, status, origin, { cacheSeconds = 0 } = {}) {
     "cache-control": cacheSeconds
       ? `public, max-age=0, s-maxage=${cacheSeconds}`
       : "no-store",
+    ...extraHeaders,
   };
   return new Response(JSON.stringify(body), { status, headers });
+}
+
+async function pendingRankingResponse(upstreamResponse, event, origin) {
+  let upstreamBody = {};
+  try {
+    upstreamBody = await upstreamResponse.json();
+  } catch {}
+  const rawRetryAfter = upstreamBody?.error?.retryAfter
+    ?? upstreamResponse.headers.get("Retry-After")
+    ?? 30;
+  const retryAfter = Math.max(5, Math.min(300, Number(rawRetryAfter) || 30));
+  return json({
+    status: "DATA_PENDING",
+    error: "EVENT_DATA_PENDING",
+    event,
+    retryAfter,
+  }, 202, origin, { extraHeaders: { "retry-after": String(retryAfter) } });
 }
 
 function candidates(region, uid, env) {
@@ -164,7 +182,7 @@ export default {
         const currentResponse = await fetchImpl(HANEOKA_BASE + "/" + eventRanking.region + "/events/current", {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
-        if (currentResponse.status === 503) return json({ error: "EVENT_DATA_PENDING" }, 503, origin);
+        if (currentResponse.status === 503) return pendingRankingResponse(currentResponse, null, origin);
         if (!currentResponse.ok) return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
         const current = await currentResponse.json();
         const event = current?.event ?? null;
@@ -174,7 +192,7 @@ export default {
         const rankingResponse = await fetchImpl(searchUrl, {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
-        if (rankingResponse.status === 503) return json({ error: "EVENT_DATA_PENDING", event }, 503, origin);
+        if (rankingResponse.status === 503) return pendingRankingResponse(rankingResponse, event, origin);
         if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
         if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE" }, 502, origin);
         const ranking = await rankingResponse.json();
