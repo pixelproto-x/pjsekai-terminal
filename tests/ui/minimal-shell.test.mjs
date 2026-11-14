@@ -43,3 +43,15 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 
 assert.equal(routes.length, 3, "only home, player lookup, and appearance settings remain");
 console.log("Minimal player hub UI smoke tests passed.");
+
+assert.match(themes, /VIRTUAL SINGER/);
+assert.match(themes, /Leo\/need/);
+assert.match(themes, /MORE MORE JUMP/);
+assert.match(themes, /Vivid BAD SQUAD/);
+assert.match(themes, /Wonderlands/);
+assert.match(themes, /Nightcord/);
+assert.match(themes, /--unit-scene/);
+assert.match(themes, /--unit-pattern/);
+assert.doesNotMatch(html, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT/);
+assert.doesNotMatch(html, /Fan-made project|↗|♫|✦|♪/);
+assert.doesNotMatch(player, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
