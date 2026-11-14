@@ -1014,6 +1014,28 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   align-self:center;
 }
 </style>
+
+<style id="floating-scroll-top-fix">
+/* Keep the back-to-top control in the viewport instead of inside the scrolling header. */
+.scroll-top-fab{
+  position:fixed;right:24px;bottom:calc(94px + env(safe-area-inset-bottom,0px));z-index:110;
+  display:flex;align-items:center;gap:8px;min-height:46px;padding:0 16px;
+  border:1px solid rgba(255,255,255,.82);border-radius:999px;
+  color:var(--ink,#252938);font-size:11px;font-weight:850;letter-spacing:.01em;
+  background:rgba(250,250,253,.82);backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  box-shadow:0 9px 28px rgba(30,32,45,.16),inset 0 1px 0 rgba(255,255,255,.9);
+  cursor:pointer;transition:transform .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.scroll-top-fab span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,var(--cyan,#52cfe8),var(--violet,#9b8af7));color:#fff;font-size:17px;line-height:1}
+.scroll-top-fab:hover{transform:translateY(-3px);background:rgba(255,255,255,.96);box-shadow:0 13px 32px rgba(30,32,45,.2)}
+.scroll-top-fab:active{transform:scale(.96)}
+.scroll-top-fab:focus-visible{outline:3px solid var(--violet,#9b8af7);outline-offset:3px}
+@media(max-width:700px){
+  .scroll-top-fab{right:16px;bottom:calc(94px + env(safe-area-inset-bottom,0px));min-height:43px;padding:0 13px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.scroll-top-fab{transition:none}}
+</style>
 </head>
 
 <body>
@@ -1029,7 +1051,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <span class="brand-mark"></span>
     <span class="brand-text"><strong>世界計畫玩家工具箱</strong><span>六週年紀念</span></span>
   </button>
-  <div class="top-actions"><button class="top-icon" id="scrollTopBtn" aria-label="回到頂端" type="button">回到頂端</button></div>
+  <div class="top-actions"></div>
 </header>
 <main>
   <section class="page active" data-page="home">
@@ -1154,8 +1176,9 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   <button class="tab" data-go="profile" type="button">玩家</button>
   <button class="tab" data-go="settings" type="button">設定</button>
 </nav>
+<button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script type="module" src="app-shell.js?v=server-flags-inline-2"></script>
+<script type="module" src="app-shell.js?v=server-flags-inline-2-scroll-top"></script>
 <script type="module" src="player-lookup.js"></script>
 <script type="module" src="songs.js"></script>
 </body>
