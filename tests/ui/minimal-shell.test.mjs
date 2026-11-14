@@ -19,7 +19,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 assert.match(html, /sekai-themes\.css/, "six-unit theme stylesheet is linked");
 assert.doesNotMatch(themes, /colorfulstage\.com|pjsekai\.sega\.jp/, "unit themes use original CSS artwork rather than embedded downloadable wallpaper assets");
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
-assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
+assert.match(html, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
 assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
 assert.match(html, /pointer-events:auto;touch-action:none;cursor:grab/, "selection bubble accepts pointer and touch dragging");
