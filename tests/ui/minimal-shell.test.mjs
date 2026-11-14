@@ -13,6 +13,10 @@ assert.match(html, /id="playerLookupForm"/, "dedicated player lookup page remain
 assert.match(html, /data-page="settings"/, "appearance settings remain");
 assert.match(html, /data-theme="virtual"/, "SEKAI themes remain");
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
+assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
+assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
+assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
+assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom selection bubble realigns after viewport resizing");
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
 assert.deepEqual(routes.sort(), ["home", "profile", "settings"], "only the intended three page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");

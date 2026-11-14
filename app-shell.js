@@ -1,6 +1,18 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const pages = [...document.querySelectorAll(".page")];
 const tabs = [...document.querySelectorAll(".tab")];
+const bottomBar = $(".bottom-bar");
+const tabIndicator = $(".tab-indicator");
+
+function syncTabIndicator() {
+  const activeTab = tabs.find((tab) => tab.classList.contains("active"));
+  if (!bottomBar || !tabIndicator || !activeTab) return;
+  const barRect = bottomBar.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+  const left = tabRect.left - barRect.left - bottomBar.clientLeft;
+  tabIndicator.style.setProperty("--tab-left", left + "px");
+  tabIndicator.style.setProperty("--tab-w", tabRect.width + "px");
+}
 const validRoutes = new Set(pages.map((page) => page.dataset.page));
 const themeNames = {
   classroom: "教室 · Classroom SEKAI",
@@ -16,6 +28,7 @@ export function go(route, updateHash = true) {
   const next = validRoutes.has(route) ? route : "home";
   pages.forEach((page) => page.classList.toggle("active", page.dataset.page === next));
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.go === next));
+  syncTabIndicator();
   if (updateHash && location.hash !== "#" + next) history.replaceState({}, "", "#" + next);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -47,6 +60,7 @@ $("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.targ
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 window.addEventListener("hashchange", () => go(location.hash.slice(1), false));
+window.addEventListener("resize", syncTabIndicator, { passive: true });
 
 function applyTheme(value) {
   const theme = Object.hasOwn(themeNames, value) ? value : "virtual";
