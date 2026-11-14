@@ -125,6 +125,16 @@ document.addEventListener("click", (event) => {
 $("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.target.value));
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+const scrollTopButton = $("#scrollTopBtn");
+function syncScrollTopButton() {
+  if (!scrollTopButton) return;
+  const visible = window.scrollY > 180;
+  scrollTopButton.classList.toggle("is-visible", visible);
+  scrollTopButton.setAttribute("aria-hidden", String(!visible));
+  scrollTopButton.tabIndex = visible ? 0 : -1;
+}
+window.addEventListener("scroll", syncScrollTopButton, { passive: true });
+syncScrollTopButton();
 window.addEventListener("hashchange", () => go(location.hash.slice(1), false));
 window.addEventListener("resize", syncTabIndicator, { passive: true });
 
