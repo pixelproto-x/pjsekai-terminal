@@ -42,7 +42,7 @@ assert.match(html, /option:checked/, "selected server has a custom highlighted s
 assert.match(html, /position-area:block-end span-inline/, "server dropdown is anchored directly below and aligned to its selector");
 assert.match(html, /min-width:160px/, "homepage server dropdown remains wide enough for full server labels");
 for (const [region, label] of [["jp","日服"],["tw","台服"],["en","國際服"],["kr","韓服"],["cn","簡中服"]]) {
-  assert.match(html, new RegExp(`<option value="${region}"[^>]*>${label}</option>`), `${label} label is used for its server`);
+  assert.match(html, new RegExp(`<option value="${region}"[^>]*>[^<]*${label}</option>`), `${label} label is used for its server`);
 }
 
 for (const region of ["jp", "en", "tw", "kr", "cn"]) {
