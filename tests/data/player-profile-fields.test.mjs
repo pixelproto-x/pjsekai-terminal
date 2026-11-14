@@ -42,3 +42,22 @@ test("uses UID fallback and explicit missing-name label", () => {
   assert.equal(result.uid, "321");
   assert.equal(result.level, 10);
 });
+
+import { extractPlayerRanking } from "../../src/data/player-profile-fields.mjs";
+
+test("reads explicit player ranking fields without mistaking character ranks", () => {
+  assert.equal(extractPlayerRanking({
+    userGamedata: { rank: 245, playerRank: 18 },
+    userCharacters: [{ rank: 99 }],
+  }), 18);
+  assert.equal(extractPlayerRanking({
+    userGamedata: { rank: 245 },
+    userCharacters: [{ rank: 99 }],
+  }), null);
+});
+
+test("supports ranking fields on a profile object", () => {
+  assert.equal(extractPlayerRanking({
+    userProfile: { rankingPosition: 321 },
+  }), 321);
+});
