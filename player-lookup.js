@@ -1,6 +1,8 @@
 import { createHarukiPlayerProvider, REGION_LABELS } from "./src/data/haruki-player.mjs";
+import { createHiSekaiPlayerProvider } from "./src/data/hisekai-player.mjs";
 
 const provider = createHarukiPlayerProvider();
+const taiwanProvider = createHiSekaiPlayerProvider();
 const $ = (selector) => document.querySelector(selector);
 const status = $("#playerLookupStatus");
 const results = $("#playerLookupResults");
@@ -125,13 +127,15 @@ async function lookup(rawUid, requestedRegion) {
   if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   results?.replaceChildren();
   try {
-    const result = await provider.getProfile(uid, region);
+    const result = region === "tw"
+      ? await taiwanProvider.getProfile(uid)
+      : await provider.getProfile(uid, region);
     renderProfile(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
     if (status) status.textContent = messageFor(error);
-    window.PJSEKAI?.toast("玩家資料查詢失敗");
+    window.PJSEKAI?.toast(messageFor(error));
   } finally {
     if (button) { button.disabled = false; button.textContent = "查詢公開資料"; }
   }
