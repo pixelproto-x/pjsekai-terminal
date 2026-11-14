@@ -259,3 +259,57 @@ body{color:var(--hub-ink)}
     font-size:11px;
   }
 }
+
+
+/* Definitive homepage server selector layout override */
+#homePlayerRegion.hub-region-select,
+#homePlayerRegion.hub-region{
+  appearance:base-select !important;
+  -webkit-appearance:base-select !important;
+  display:flex !important;
+  flex:0 0 92px !important;
+  width:92px !important;
+  min-width:92px !important;
+  max-width:92px !important;
+  height:42px !important;
+  min-height:42px !important;
+  box-sizing:border-box !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 9px !important;
+  white-space:nowrap !important;
+  word-break:keep-all !important;
+  overflow-wrap:normal !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  text-align:center !important;
+  letter-spacing:0 !important;
+  line-height:1.3 !important;
+  font-size:12px !important;
+}
+#homePlayerRegion.hub-region-select option{
+  display:block !important;
+  white-space:nowrap !important;
+  word-break:keep-all !important;
+  overflow-wrap:normal !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  text-align:left !important;
+  min-width:150px !important;
+  padding:10px 14px !important;
+}
+#homePlayerRegion.hub-region-select::picker(select){
+  min-width:170px !important;
+  width:max-content !important;
+  max-width:calc(100vw - 24px) !important;
+}
+@media(max-width:640px){
+  #homePlayerRegion.hub-region-select,
+  #homePlayerRegion.hub-region{
+    flex-basis:86px !important;
+    width:86px !important;
+    min-width:86px !important;
+    max-width:86px !important;
+    font-size:11px !important;
+  }
+}
