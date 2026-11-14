@@ -1,0 +1,88 @@
+# Copy this template into the Cloudflare Worker secret HARUKI_CONFIG_YAML.
+# Replace every __REQUIRED__ value using configuration intended for your own
+# Haruki v6.33.0 node. Never commit real credentials or encryption keys.
+
+proxy: ""
+jp_sekai_cookie_url: "__REQUIRED_IF_JP_COOKIES_ARE_USED__"
+
+backend:
+  host: "0.0.0.0"
+  port: 9999
+  log_level: "INFO"
+  sekai_user_jwt_signing_key: ""
+  internal_token: ""
+
+database:
+  enabled: false
+
+redis:
+  enabled: false
+
+servers:
+  jp:
+    enabled: true
+    api_url: "__REQUIRED__"
+    require_cookies: true
+    headers:
+      Host: "__REQUIRED__"
+    aes_key_hex: "__REQUIRED__"
+    aes_iv_hex: "__REQUIRED__"
+    account_dir: "/app/runtime/accounts/jp"
+    master_dir: "/app/runtime/master/jp"
+    version_path: "/app/runtime/version/jp.json"
+    enable_master_updater: false
+
+  en:
+    enabled: true
+    api_url: "__REQUIRED__"
+    require_cookies: false
+    headers:
+      Host: "__REQUIRED__"
+    aes_key_hex: "__REQUIRED__"
+    aes_iv_hex: "__REQUIRED__"
+    account_dir: "/app/runtime/accounts/en"
+    master_dir: "/app/runtime/master/en"
+    version_path: "/app/runtime/version/en.json"
+    enable_master_updater: false
+
+  tw:
+    enabled: true
+    api_url: "__REQUIRED__"
+    require_cookies: false
+    headers:
+      Host: "__REQUIRED__"
+    aes_key_hex: "__REQUIRED__"
+    aes_iv_hex: "__REQUIRED__"
+    account_dir: "/app/runtime/accounts/tw"
+    master_dir: "/app/runtime/master/tw"
+    version_path: "/app/runtime/version/tw.json"
+    nuverse_schema_bundle_path: "Data/structures/6.4.0/nuverse_schema_bundle.json"
+    enable_master_updater: false
+
+  kr:
+    enabled: true
+    api_url: "__REQUIRED__"
+    require_cookies: false
+    headers:
+      Host: "__REQUIRED__"
+    aes_key_hex: "__REQUIRED__"
+    aes_iv_hex: "__REQUIRED__"
+    account_dir: "/app/runtime/accounts/kr"
+    master_dir: "/app/runtime/master/kr"
+    version_path: "/app/runtime/version/kr.json"
+    nuverse_schema_bundle_path: "Data/structures/6.0.0/nuverse_schema_bundle.json"
+    enable_master_updater: false
+
+  cn:
+    enabled: true
+    api_url: "__REQUIRED__"
+    require_cookies: false
+    headers:
+      Host: "__REQUIRED__"
+    aes_key_hex: "__REQUIRED__"
+    aes_iv_hex: "__REQUIRED__"
+    account_dir: "/app/runtime/accounts/cn"
+    master_dir: "/app/runtime/master/cn"
+    version_path: "/app/runtime/version/cn.json"
+    nuverse_schema_bundle_path: "Data/structures/6.4.0/nuverse_schema_bundle.json"
+    enable_master_updater: false
