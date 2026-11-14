@@ -45,3 +45,81 @@
 .songs-region-row{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .songs-region-row label{font-size:10px;font-weight:750;color:var(--muted)}
 .songs-region-row select{height:34px;min-width:110px;padding:0 10px;border:1px solid var(--hub-line);border-radius:10px;background:#fff;color:var(--ink);font-size:11px}
+
+
+/* Project SEKAI anniversary glass theme */
+.page[data-page="songs"] .page-head{position:relative}
+.page[data-page="songs"] .page-title{
+  background:linear-gradient(105deg,var(--ink) 12%,var(--violet) 48%,var(--pink) 82%);
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.songs-overview>div,.songs-workbench,.songs-playlists{
+  border:1px solid rgba(255,255,255,.78);
+  background:rgba(255,255,255,var(--glass-opacity,.22));
+  backdrop-filter:blur(14px) saturate(145%);
+  -webkit-backdrop-filter:blur(14px) saturate(145%);
+  box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.7)
+}
+.songs-overview>div{position:relative;overflow:hidden;border-radius:21px}
+.songs-overview>div:before{
+  content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink),var(--yellow))
+}
+.songs-overview>div:nth-child(2):before{background:linear-gradient(90deg,var(--pink),var(--orange))}
+.songs-overview>div:nth-child(3):before{background:linear-gradient(90deg,var(--cyan),var(--green))}
+.songs-overview>div:nth-child(4):before{background:linear-gradient(90deg,var(--violet),var(--pink))}
+.songs-overview strong{color:var(--ink);font-variant-numeric:tabular-nums}
+.songs-workbench,.songs-playlists{border-radius:28px}
+.songs-toolbar input,.songs-toolbar select,.song-playlist-form input,.songs-region-row select{
+  border:1px solid var(--line);background:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 2px rgba(25,27,40,.035);transition:border-color .2s,box-shadow .2s,background .2s
+}
+.songs-toolbar input:focus,.songs-toolbar select:focus,.song-playlist-form input:focus,.songs-region-row select:focus{
+  border-color:var(--violet);background:#fff;box-shadow:0 0 0 3px rgba(145,121,245,.14)
+}
+.song-filter-chip,.song-favorite,.song-record select,.song-playlist-form button,.song-playlist-add,.song-playlist-remove{
+  border:1px solid var(--line);background:rgba(255,255,255,.72);
+  transition:transform .18s,background .18s,border-color .18s,box-shadow .18s
+}
+.song-filter-chip:hover,.song-favorite:hover,.song-playlist-add:hover,.song-playlist-remove:hover{transform:translateY(-1px);background:#fff;box-shadow:var(--shadow-sm)}
+.song-filter-chip.active,.song-playlist-form button{
+  color:#fff;border-color:transparent;
+  background:linear-gradient(110deg,#7865dc,#a17ce9 55%,#e46ca5);
+  box-shadow:0 7px 18px rgba(145,121,245,.2)
+}
+.song-card,.song-playlist{
+  position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.82);
+  background:rgba(255,255,255,calc(var(--glass-opacity,.22) + .42));
+  box-shadow:0 5px 18px rgba(25,27,40,.045),inset 0 1px 0 rgba(255,255,255,.8);
+  transition:transform .2s,box-shadow .2s,border-color .2s
+}
+.song-card:before,.song-playlist:before{
+  content:"";position:absolute;inset:0 0 auto;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink),transparent)
+}
+.song-card:hover,.song-playlist:hover{transform:translateY(-2px);border-color:rgba(145,121,245,.28);box-shadow:var(--shadow-sm)}
+.song-card h3{color:var(--ink)}
+.song-difficulty{background:rgba(145,121,245,.10);color:#696184;border:1px solid rgba(145,121,245,.10)}
+.song-difficulty strong{color:var(--ink)}
+.song-difficulty:nth-child(1){background:rgba(82,207,232,.13)}
+.song-difficulty:nth-child(2){background:rgba(97,199,149,.13)}
+.song-difficulty:nth-child(3){background:rgba(255,211,79,.17)}
+.song-difficulty:nth-child(4){background:rgba(255,148,80,.14)}
+.song-difficulty:nth-child(5){background:rgba(255,91,157,.13)}
+.song-difficulty:nth-child(6){background:rgba(145,121,245,.14)}
+.song-favorite[aria-pressed="true"]{background:rgba(255,91,157,.12);border-color:rgba(255,91,157,.35);color:#c43f79}
+.song-record{border-top-color:var(--line)}
+.songs-section-heading h2{letter-spacing:-.045em}
+.songs-section-heading .kicker{color:var(--violet)}
+.song-playlist-actions button{border-color:var(--line);background:rgba(255,255,255,.7);transition:background .18s,transform .18s}
+.song-playlist-actions button:hover{background:#fff;transform:translateY(-1px)}
+.songs-data-note{padding:12px 2px 14px}
+@media(max-width:640px){
+  .songs-overview>div{border-radius:17px}
+  .songs-workbench,.songs-playlists{border-radius:22px}
+  .songs-section-heading h2{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  .song-card,.song-playlist,.song-filter-chip,.song-favorite,.song-playlist-add,.song-playlist-remove{transition:none}
+}
