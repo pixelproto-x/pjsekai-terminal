@@ -1,34 +1,29 @@
-# Cloudflare player API setup
+# Cloudflare player API
 
-The website is hosted on GitHub Pages. This Worker runs in Cloudflare's cloud, so the owner's PC does not need to remain powered on.
+The Worker runs in Cloudflare and does not require the owner's computer to stay online.
 
-## Current integration status
+## Deployment
 
-This is the backend foundation only. The website still needs its Worker URL before its lookup client can be switched to the new backend. Do not remove the existing lookup UI or claim five-region support until upstream credentials and live tests are complete.
+The GitHub Actions workflow deploys `workers/player-api` using the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 
-## Required account setup
+Live endpoint:
+`https://pjsekai-player-api.a0983439343.workers.dev`
 
-1. Connect the GitHub repository to Cloudflare Workers Builds, or add GitHub repository secrets:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-2. Deploy `workers/player-api`.
-3. In the Worker settings, add provider secrets only if valid credentials have been issued:
-   - `HARUKI_TOKEN`
-   - `MOE_TOKEN`
-4. Record the deployed `workers.dev` URL in the website's public API endpoint configuration. This URL is not a secret.
+- Health: `/health`
+- Player profile: `/api/{region}/user/{uid}/profile`
+- Regions: `jp`, `tw`, `en`, `kr`, `cn`
 
-Never paste API tokens into chat, source files, commits, or public issues.
+## Current website integration
 
-## Provider coverage
+- Taiwan UID lookups now use the deployed Cloudflare Worker, which calls the documented HiSekai Taiwan profile endpoint.
+- Japan, International, Korea, and Simplified Chinese lookups still use the existing Haruki browser provider until an upstream provider credential is configured on the Worker.
+- The Worker supports Haruki and Exmeaning upstream credentials through Worker secrets named `HARUKI_TOKEN` and `MOE_TOKEN`. These are separate from the Cloudflare deployment token.
+- Missing upstream credentials return an explicit 503 response; the Worker does not fabricate profile data.
 
-- Taiwan: HiSekai documents the TW profile endpoint. This can work without an upstream token.
-- Japan, International, Korea, Simplified Chinese, and additional TW fallback: Haruki / Exmeaning gateway upstreams require provider credentials.
-- Missing credentials produce a clear 503 response instead of pretending a region is working.
+## Security and checks
 
-## Verification before frontend cutover
-
-- Confirm Worker `/health` returns `{ "status": "ok" }`.
-- Confirm a valid Taiwan UID returns a real HiSekai response.
-- Confirm each other region with its configured provider token.
-- Confirm invalid UIDs, missing profiles, provider throttling, and upstream outages are handled.
-- Only then point `player-lookup.js` to the Worker and remove the browser-side legacy adapters.
+- CORS allows only `https://pixelproto-x.github.io`.
+- UID paths accept numeric IDs of 1–20 digits.
+- Upstream requests have a 9-second timeout.
+- Provider credentials stay on the Worker and are never returned to the browser.
+- GitHub Actions runs syntax checks, unit tests, deploys the Worker, and checks its live health endpoint.

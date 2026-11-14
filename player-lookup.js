@@ -1,8 +1,8 @@
 import { createHarukiPlayerProvider, REGION_LABELS } from "./src/data/haruki-player.mjs";
-import { createHiSekaiPlayerProvider } from "./src/data/hisekai-player.mjs";
+import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
 
 const provider = createHarukiPlayerProvider();
-const taiwanProvider = createHiSekaiPlayerProvider();
+const cloudflareProvider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
 const status = $("#playerLookupStatus");
 const results = $("#playerLookupResults");
@@ -128,7 +128,7 @@ async function lookup(rawUid, requestedRegion) {
   results?.replaceChildren();
   try {
     const result = region === "tw"
-      ? await taiwanProvider.getProfile(uid)
+      ? await cloudflareProvider.getProfile(uid, region)
       : await provider.getProfile(uid, region);
     renderProfile(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
