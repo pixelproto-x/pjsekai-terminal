@@ -1,13 +1,10 @@
-const REGIONS = new Set(["jp", "tw", "en", "kr", "cn"]);
-const ALLOWED_ORIGIN = "https://pixelproto-x.github.io";
-const UPSTREAM_TIMEOUT_MS = 9000;
-const PUBLIC_PROFILE_KEYS = [
-  "userGamedata", "userDecks", "userCharacters",
-  "userChallengeLiveSoloStages", "userChallengeLiveSoloResults",
-  "userChallengeLiveSoloHighScoreRewards", "userBonds", "userMaterials",
-  "userAreas", "userMysekaiFixtureGameCharacterPerformanceBonuses",
-  "userMysekaiGates", "upload_time",
-].join(",");
+import { DurableObject } from "cloudflare:workers";
+import { ALLOWED_ORIGIN, mapPublicPath } from "./routes.mjs";
+
+const PORT = 9999;
+const INSTANCE = "basic";
+const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+const STARTUP_ATTEMPTS = 40;
 
 function json(body, status, origin) {
   return new Response(JSON.stringify(body), {
@@ -22,85 +19,99 @@ function json(body, status, origin) {
   });
 }
 
-function corsOrigin(request) {
-  const origin = request.headers.get("Origin");
-  return origin === ALLOWED_ORIGIN ? origin : "";
+function withCors(response, origin) {
+  const headers = new Headers(response.headers);
+  headers.set("access-control-allow-origin", origin);
+  headers.set("access-control-allow-methods", "GET, OPTIONS");
+  headers.set("access-control-allow-headers", "Content-Type");
+  headers.set("access-control-max-age", "86400");
+  headers.set("cache-control", "no-store");
+  headers.set("vary", "Origin");
+  headers.set("x-content-type-options", "nosniff");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
-async function fetchSource(url, headers, signal) {
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: { accept: "application/json", ...headers },
-      signal,
-    });
-    if (!response.ok) return { ok: false, status: response.status };
+const sleep = (milliseconds) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-    const data = await response.json();
-    if (!data || typeof data !== "object" || Array.isArray(data)) {
-      return { ok: false, status: 502 };
+export class HarukiContainer extends DurableObject {
+  starting;
+
+  constructor(ctx, env) {
+    super(ctx, env);
+    if (ctx.container?.running) {
+      void ctx.blockConcurrencyWhile(() =>
+        ctx.container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS),
+      );
     }
-    return { ok: true, data };
-  } catch {
-    return { ok: false, status: 502 };
   }
-}
 
-function candidates(region, uid, env) {
-  const encodedUid = encodeURIComponent(uid);
-  const list = [
-    {
-      name: "Haruki Public",
-      url: `https://suite-api.haruki.seiunx.com/public/${region}/suite/${encodedUid}?key=${PUBLIC_PROFILE_KEYS}`,
-      headers: {},
-    },
-  ];
-  if (region === "tw") {
-    list.push({
-      name: "HiSekai",
-      url: `https://api.hisekai.org/tw/user/${encodedUid}/profile`,
-      headers: {},
+  async fetch(request) {
+    this.starting ??= this.startAndWaitForPort().finally(() => {
+      this.starting = undefined;
     });
-  }
-  if (env.HARUKI_TOKEN) {
-    list.push({
-      name: "Haruki",
-      url: `https://public-api.haruki.seiunx.com/sekai-api/v5/api/${region}/user/${encodedUid}/profile`,
-      headers: { "X-Haruki-Sekai-Token": env.HARUKI_TOKEN },
-    });
-  }
-  if (env.MOE_TOKEN) {
-    list.push({
-      name: "Exmeaning",
-      url: `https://seka-api.exmeaning.com/api/${region}/user/${encodedUid}/profile`,
-      headers: { "x-moe-sekai-token": env.MOE_TOKEN },
-    });
-  }
-  return list;
-}
+    await this.starting;
 
-function upstreamError(statuses, region) {
-  const status = statuses.includes(404) ? 404
-    : statuses.includes(429) ? 429
-      : statuses.includes(403) ? 403 : 502;
-  return {
-    status,
-    body: {
-      error: status === 404 ? "PLAYER_NOT_FOUND"
-        : status === 429 ? "RATE_LIMITED"
-          : status === 403 ? "PROFILE_NOT_PUBLIC" : "UPSTREAM_UNAVAILABLE",
-      region,
-    },
-  };
+    const url = new URL(request.url);
+    url.protocol = "http:";
+    url.host = "container";
+    const forwarded = new Request(url, request);
+    forwarded.headers.delete("host");
+    return this.ctx.container.getTcpPort(PORT).fetch(forwarded);
+  }
+
+  async startAndWaitForPort() {
+    const container = this.ctx.container;
+    if (!container.running) {
+      const config = this.env.HARUKI_CONFIG_YAML;
+      const accounts = this.env.HARUKI_ACCOUNTS_JSON;
+      if (!config || !accounts) {
+        throw new Error("Haruki Cloudflare secrets are not configured");
+      }
+
+      container.start({
+        image: container.images.base,
+        instance: INSTANCE,
+        enableInternet: true,
+        env: {
+          HARUKI_CONFIG_YAML: config,
+          HARUKI_ACCOUNTS_JSON: accounts,
+        },
+      });
+    }
+
+    await container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS);
+    const port = container.getTcpPort(PORT);
+    let lastError;
+    for (let attempt = 0; attempt < STARTUP_ATTEMPTS; attempt += 1) {
+      try {
+        const response = await port.fetch("http://container/health", {
+          signal: AbortSignal.timeout(750),
+        });
+        await response.body?.cancel();
+        if (response.ok) return;
+        lastError = new Error(`Haruki health returned ${response.status}`);
+      } catch (error) {
+        lastError = error;
+      }
+      await sleep(250);
+    }
+    throw new Error("Haruki v6 container did not become ready", { cause: lastError });
+  }
 }
 
 export default {
   async fetch(request, env) {
-    const origin = corsOrigin(request);
-    const url = new URL(request.url);
+    const origin = request.headers.get("Origin");
+    if (origin !== ALLOWED_ORIGIN) {
+      return json({ error: "ORIGIN_NOT_ALLOWED" }, 403, "null");
+    }
 
     if (request.method === "OPTIONS") {
-      if (!origin) return new Response(null, { status: 403 });
       return new Response(null, {
         status: 204,
         headers: {
@@ -113,50 +124,47 @@ export default {
       });
     }
 
-    if (!origin) return json({ error: "ORIGIN_NOT_ALLOWED" }, 403, "null");
-    if (request.method !== "GET") return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
-
-    if (url.pathname === "/health") {
-      return json({ status: "ok", regions: [...REGIONS] }, 200, origin);
+    if (request.method !== "GET") {
+      return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
     }
 
-    const match = url.pathname.match(/^\/api\/([a-z]{2})\/user\/([0-9]{1,20})\/profile$/);
-    if (!match) return json({ error: "NOT_FOUND" }, 404, origin);
+    const incoming = new URL(request.url);
+    const mappedPath = mapPublicPath(incoming.pathname);
+    if (!mappedPath) return json({ error: "NOT_FOUND" }, 404, origin);
 
-    const [, region, uid] = match;
-    if (!REGIONS.has(region)) return json({ error: "REGION_UNSUPPORTED" }, 400, origin);
-
-    const sources = candidates(region, uid, env);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
-    const statuses = [];
+    const target = new URL(request.url);
+    target.protocol = "https:";
+    target.hostname = "haruki.internal";
+    target.pathname = mappedPath;
 
     try {
-      const attempts = sources.map(async (source) => {
-        const result = await fetchSource(source.url, source.headers, controller.signal);
-        if (!result.ok) {
-          statuses.push(result.status);
-          throw new Error("Upstream request failed");
-        }
-        return { source: source.name, result };
-      });
+      const stub = env.HARUKI_CONTAINER.getByName("production-v6");
+      const response = await stub.fetch(new Request(target, request));
 
-      const success = await Promise.any(attempts);
-      controller.abort();
+      if (incoming.pathname === "/health" || !response.ok) {
+        return withCors(response, origin);
+      }
+
+      const profile = await response.json();
+      if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+        return json({ error: "HARUKI_INVALID_PROFILE" }, 502, origin);
+      }
+
+      const match = incoming.pathname.match(/^\/api\/(jp|tw|en|kr|cn)\/user\/(\d{1,20})\/profile$/);
       return json({
-        data: success.result.data,
-        uid,
-        region,
-        source: success.source,
+        data: profile,
+        uid: match[2],
+        region: match[1],
+        source: "Haruki v6.33.0",
         fetchedAt: new Date().toISOString(),
         cached: false,
       }, 200, origin);
     } catch {
-      controller.abort();
-      const failure = upstreamError(statuses, region);
-      return json(failure.body, failure.status, origin);
-    } finally {
-      clearTimeout(timeout);
+      return json({
+        error: env.HARUKI_CONFIG_YAML && env.HARUKI_ACCOUNTS_JSON
+          ? "HARUKI_UNAVAILABLE"
+          : "HARUKI_NOT_CONFIGURED",
+      }, 503, origin);
     }
   },
 };
