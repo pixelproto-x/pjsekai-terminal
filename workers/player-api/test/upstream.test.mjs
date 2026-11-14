@@ -57,7 +57,7 @@ test("returns the current event ranking for a supported region", async () => {
   assert.equal(body.row.rank, 88);
   assert.equal(body.event.id, 321);
   assert.equal(calls.length, 2);
-  assert.match(calls[1], /321\\/points\\/search\\?profileId=123456$/);
+  assert.ok(calls[1].includes("321/points/search?profileId=123456"));
 });
 
 test("does not pretend CN event rankings are supported by the provider", async () => {
