@@ -656,58 +656,7 @@ button{
 }
 
 /* ===== Stage 1 global theme system ===== */
-body[data-sekai-theme="classroom"]{
-  --theme-accent:#52cfe8;--theme-accent-2:#6aa4ff;--theme-glow:rgba(82,207,232,.24);--theme-glow-2:rgba(106,164,255,.18);
-  --theme-surface:rgba(233,248,255,.42);
-}
-body[data-sekai-theme="stage"]{
-  --theme-accent:#ff5b9d;--theme-accent-2:#9179f5;--theme-glow:rgba(255,91,157,.24);--theme-glow-2:rgba(145,121,245,.18);
-  --theme-surface:rgba(255,235,246,.42);
-}
-body[data-sekai-theme="street"]{
-  --theme-accent:#ff9450;--theme-accent-2:#ffd34f;--theme-glow:rgba(255,148,80,.24);--theme-glow-2:rgba(255,211,79,.18);
-  --theme-surface:rgba(255,246,227,.42);
-}
-body[data-sekai-theme="wonderland"]{
-  --theme-accent:#9179f5;--theme-accent-2:#ff70bd;--theme-glow:rgba(145,121,245,.24);--theme-glow-2:rgba(255,112,189,.17);
-  --theme-surface:rgba(242,237,255,.44);
-}
-body[data-sekai-theme="empty"]{
-  --theme-accent:#5967a8;--theme-accent-2:#9ca7d2;--theme-glow:rgba(89,103,168,.25);--theme-glow-2:rgba(156,167,210,.16);
-  --theme-surface:rgba(229,234,250,.36);
-}
-body[data-sekai-theme="virtual"]{
-  --theme-accent:#61c795;--theme-accent-2:#52cfe8;--theme-glow:rgba(97,199,149,.24);--theme-glow-2:rgba(82,207,232,.18);
-  --theme-surface:rgba(232,250,244,.42);
-}
-body[data-sekai-theme] .top-accent{
-  background:linear-gradient(90deg,var(--theme-accent),var(--theme-accent-2),var(--theme-accent),var(--pink),var(--yellow));
-}
-body[data-sekai-theme] .sekai-ambience:after{
-  background:
-    radial-gradient(circle at 10% 8%,var(--theme-glow),transparent 31%),
-    radial-gradient(circle at 90% 28%,var(--theme-glow-2),transparent 28%),
-    linear-gradient(180deg,rgba(242,243,247,.02) 0%,rgba(242,243,247,.045) 42%,rgba(17,19,29,.1) 100%);
-}
-body[data-sekai-theme] .brand-mark{
-  background:conic-gradient(from 220deg,var(--theme-accent),var(--theme-accent-2),var(--pink),var(--yellow),var(--theme-accent));
-}
-body[data-sekai-theme] .chip-dot{
-  background:linear-gradient(135deg,var(--theme-accent),var(--theme-accent-2),var(--pink));
-}
-body[data-sekai-theme] .bottom-bar{
-  box-shadow:0 10px 30px rgba(25,27,40,.13),0 0 32px var(--theme-glow),inset 0 1px 0 rgba(255,255,255,.65);
-}
-body[data-sekai-theme] .tab-indicator{
-  box-shadow:0 5px 16px rgba(35,42,65,.11),0 0 22px var(--theme-glow),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
-}
-body[data-sekai-theme] .primary-btn{
-  box-shadow:0 8px 22px var(--theme-glow);
-}
-body[data-sekai-theme] .theme-choice.active{
-  border-color:var(--theme-accent);box-shadow:0 10px 24px var(--theme-glow),inset 0 0 0 1px var(--theme-accent);
-  background:var(--theme-surface);
-}
+/* Six original unit themes are defined in sekai-themes.css */
 .theme-grid{
   position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px
 }
@@ -968,6 +917,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   }
 }</style>
 <link rel="stylesheet" href="redesign-6th.css?v=1">
+<link rel="stylesheet" href="sekai-themes.css">
 <style>
 .hub-lookup{margin-top:18px}
 .player-panel{margin:18px 0;padding:clamp(18px,3vw,30px);border:1px solid rgba(255,255,255,.9);border-radius:24px;background:rgba(255,255,255,.88);box-shadow:0 14px 36px rgba(35,62,105,.085),inset 0 1px 0 #fff}
@@ -1082,16 +1032,16 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <div class="preview-glass"><span>PROJECT SEKAI</span><strong>介面預覽</strong><span>♫ 世界計畫 ♫</span></div>
     </div>
     <div class="settings-card">
-      <div class="settings-row-head"><div><strong>SEKAI 世界主題</strong><span>切換六大 SEKAI 主題。</span></div></div>
+      <div class="settings-row-head"><div><strong>SEKAI 世界主題</strong><span>六套依照各團體世界觀設計的完整介面風格</span></div></div>
       <div class="theme-grid" id="themeGrid">
-        <button class="theme-choice" data-theme="classroom" type="button" aria-label="教室的 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#52cfe8,#6aa4ff)"></span><span><strong>教室</strong><small>Classroom</small></span></button>
-        <button class="theme-choice" data-theme="stage" type="button" aria-label="舞台的 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#ff5b9d,#9179f5)"></span><span><strong>舞台</strong><small>Stage</small></span></button>
-        <button class="theme-choice" data-theme="street" type="button" aria-label="街頭的 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#ff9450,#ffd34f)"></span><span><strong>街頭</strong><small>Street</small></span></button>
-        <button class="theme-choice" data-theme="wonderland" type="button" aria-label="奇幻的 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#9179f5,#ff70bd)"></span><span><strong>奇幻</strong><small>Wonderland</small></span></button>
-        <button class="theme-choice" data-theme="empty" type="button" aria-label="無人的 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#5967a8,#9ca7d2)"></span><span><strong>無人</strong><small>Empty</small></span></button>
-        <button class="theme-choice" data-theme="virtual" type="button" aria-label="虛擬歌手 SEKAI"><span class="theme-dot" style="background:linear-gradient(135deg,#61c795,#52cfe8)"></span><span><strong>虛擬</strong><small>Virtual Singer</small></span></button>
+        <button class="theme-choice theme-virtual" data-theme="virtual-singer" type="button" aria-label="VIRTUAL SINGER 主題"><span class="theme-dot"></span><span><strong>虛擬歌手</strong><small>VIRTUAL SINGER</small></span></button>
+        <button class="theme-choice theme-leo" data-theme="leo-need" type="button" aria-label="Leo need 主題"><span class="theme-dot"></span><span><strong>Leo/need</strong><small>BLUE HORIZON</small></span></button>
+        <button class="theme-choice theme-mmj" data-theme="more-more-jump" type="button" aria-label="MORE MORE JUMP 主題"><span class="theme-dot"></span><span><strong>MORE MORE JUMP!</strong><small>IDOL BLOOM</small></span></button>
+        <button class="theme-choice theme-vbs" data-theme="vivid-bad-squad" type="button" aria-label="Vivid BAD SQUAD 主題"><span class="theme-dot"></span><span><strong>Vivid BAD SQUAD</strong><small>STREET BEAT</small></span></button>
+        <button class="theme-choice theme-wxs" data-theme="wonderlands-showtime" type="button" aria-label="Wonderlands x Showtime 主題"><span class="theme-dot"></span><span><strong>Wonderlands×Showtime</strong><small>SHOWTIME</small></span></button>
+        <button class="theme-choice theme-n25" data-theme="nightcord" type="button" aria-label="25時 Nightcord 主題"><span class="theme-dot"></span><span><strong>25時 Nightcord</strong><small>AFTER THE END</small></span></button>
       </div>
-      <div class="data-status" id="themeStatus">目前主題：虛擬</div>
+      <div class="data-status" id="themeStatus">目前主題：虛擬歌手</div>
     </div>
   </section>
 </main>

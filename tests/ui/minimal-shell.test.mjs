@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../../index.html", import.meta.url), "utf8");
 const css = await readFile(new URL("../../redesign-6th.css", import.meta.url), "utf8");
+const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
@@ -11,7 +12,12 @@ assert.match(html, /class="anniversary-hero"/, "sixth anniversary hero remains")
 assert.match(html, /id="homePlayerLookup"/, "homepage UID lookup remains");
 assert.match(html, /id="playerLookupForm"/, "dedicated player lookup page remains");
 assert.match(html, /data-page="settings"/, "appearance settings remain");
-assert.match(html, /data-theme="virtual"/, "SEKAI themes remain");
+for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
+  assert.match(html, new RegExp('data-theme="' + theme + '"'), theme + " theme control remains");
+  assert.match(themes, new RegExp('data-sekai-theme="' + theme + '"'), theme + " has its own visual system");
+}
+assert.match(html, /sekai-themes\.css/, "six-unit theme stylesheet is linked");
+for (const unit of ["VS","LN","MMJ","VBS","WxS","N25"]) assert.match(themes, new RegExp("Wallpapers_" + unit + "_iphone"), unit + " official wallpaper is referenced");
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
 assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
@@ -30,6 +36,7 @@ assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|m
 assert.match(lookup, /createHiSekaiPlayerProvider/, "public UID provider is connected");
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /applyTheme/, "theme switching is functional");
+assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual remains");
 assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
 assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");

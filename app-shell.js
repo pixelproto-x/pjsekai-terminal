@@ -81,12 +81,12 @@ if (bottomBar && tabIndicator) {
 }
 const validRoutes = new Set(pages.map((page) => page.dataset.page));
 const themeNames = {
-  classroom: "教室 · Classroom SEKAI",
-  stage: "舞台 · Stage SEKAI",
-  street: "街頭 · Street SEKAI",
-  wonderland: "奇幻 · Wonderland SEKAI",
-  empty: "無人 · Empty SEKAI",
-  virtual: "虛擬 · Virtual Singer SEKAI",
+  "virtual-singer": "虛擬歌手 · VIRTUAL SINGER",
+  "leo-need": "Leo/need · BLUE HORIZON",
+  "more-more-jump": "MORE MORE JUMP! · IDOL BLOOM",
+  "vivid-bad-squad": "Vivid BAD SQUAD · STREET BEAT",
+  "wonderlands-showtime": "Wonderlands×Showtime · SHOWTIME",
+  nightcord: "25時 Nightcord · AFTER THE END",
 };
 let toastTimer;
 
@@ -129,7 +129,7 @@ window.addEventListener("hashchange", () => go(location.hash.slice(1), false));
 window.addEventListener("resize", syncTabIndicator, { passive: true });
 
 function applyTheme(value) {
-  const theme = Object.hasOwn(themeNames, value) ? value : "virtual";
+  const theme = Object.hasOwn(themeNames, value) ? value : "virtual-singer";
   document.body.dataset.sekaiTheme = theme;
   document.querySelectorAll(".theme-choice").forEach((button) => {
     const active = button.dataset.theme === theme;
@@ -155,10 +155,10 @@ function applyOpacity(value) {
   try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
 }
 try {
-  applyTheme(localStorage.getItem("sekaiTheme") || "virtual");
+  applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
   applyOpacity(localStorage.getItem("sekaiGlassOpacity") ?? 22);
 } catch {
-  applyTheme("virtual");
+  applyTheme("virtual-singer");
   applyOpacity(22);
 }
 go(location.hash.slice(1) || "home", false);
