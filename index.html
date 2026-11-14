@@ -1055,7 +1055,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <form class="hub-lookup-form" id="homePlayerLookup">
         <label for="homePlayerUid">玩家 UID</label>
         <div class="hub-lookup-control">
-          <select class="hub-region hub-region-select" id="homePlayerRegion" aria-label="選擇伺服器"><option value="jp">🇯🇵 日服</option><option value="en">🇺🇸 國際服</option><option value="tw" selected>🇹🇼 台服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select>
+          <select class="hub-region hub-region-select" id="homePlayerRegion" aria-label="選擇伺服器"><option value="jp">🇯🇵 日服</option><option value="en">🌐 國際服</option><option value="tw" selected>🇹🇼 台服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select>
           <input id="homePlayerUid" name="playerId" type="text" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" aria-describedby="homePlayerHint" required>
           <button type="submit">查詢玩家</button>
         </div>
@@ -1081,7 +1081,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
         <label><span>等級</span><select id="songLevel"><option value="">全部等級</option><option value="1-19">19 以下</option><option value="20-24">20 至 24</option><option value="25-29">25 至 29</option><option value="30-32">30 至 32</option><option value="33-99">33 以上</option></select></label>
         <label><span>排序</span><select id="songSort"><option value="title">歌曲名稱</option><option value="level-desc">難度由高至低</option><option value="level-asc">難度由低至高</option><option value="newest">最新收錄</option></select></label>
       </div>
-      <div class="songs-region-row"><label for="songRegion">歌曲伺服器</label><select id="songRegion"><option value="jp">🇯🇵 日服</option><option value="tw" selected>🇹🇼 台服</option><option value="en">🇺🇸 國際服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select></div>
+      <div class="songs-region-row"><label for="songRegion">歌曲伺服器</label><select id="songRegion"><option value="jp">🇯🇵 日服</option><option value="tw" selected>🇹🇼 台服</option><option value="en">🌐 國際服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select></div>
       <div class="songs-filter-row">
         <button class="song-filter-chip active" id="songShowAll" type="button">全部歌曲</button>
         <button class="song-filter-chip" id="songShowFavorites" type="button">只看收藏</button>
@@ -1106,7 +1106,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <section class="player-panel">
       <div class="msk-card-kicker">公開玩家資料</div>
       <form class="player-form" id="playerLookupForm">
-        <label for="playerRegion">伺服器<select id="playerRegion" name="region" required><option value="jp">🇯🇵 日服</option><option value="en">🇺🇸 國際服</option><option value="tw" selected>🇹🇼 台服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select></label>
+        <label for="playerRegion">伺服器<select id="playerRegion" name="region" required><option value="jp">🇯🇵 日服</option><option value="en">🌐 國際服</option><option value="tw" selected>🇹🇼 台服</option><option value="kr">🇰🇷 韓服</option><option value="cn">🇨🇳 簡中服</option></select></label>
         <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" required></label>
         <button id="playerLookupButton" type="submit">查詢公開資料</button>
       </form>
