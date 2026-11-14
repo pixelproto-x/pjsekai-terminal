@@ -28,6 +28,3 @@ jobs:
       - name: Run Haruki Worker route tests
         working-directory: workers/player-api
         run: node --test test/*.test.mjs
-      - name: Build pinned Haruki v6.33.0 container image
-        working-directory: workers/player-api
-        run: docker build --tag pjsekai-player-api-ci .
