@@ -39,6 +39,11 @@ assert.match(html, /id="playerRegion"/, "player page server selector remains");
 assert.match(html, /@supports \(appearance:base-select\)/, "server selector enables the customizable CSS picker where supported");
 assert.match(html, /::picker\(select\)/, "server dropdown popup has its own CSS styling");
 assert.match(html, /option:checked/, "selected server has a custom highlighted state");
+assert.match(html, /position-area:block-end span-inline/, "server dropdown is anchored directly below and aligned to its selector");
+assert.match(html, /min-width:160px/, "homepage server dropdown remains wide enough for full server labels");
+for (const [region, label] of [["jp","日服"],["en","國際服"],["tw","台服"],["kr","韓服"],["cn","陸服"]]) {
+  assert.match(html, new RegExp(`<option value="${region}"[^>]*>${label}</option>`), `${label} label is used for its server`);
+}
 
 for (const region of ["jp", "en", "tw", "kr", "cn"]) {
   assert.match(html, new RegExp('option value="' + region + '"'), region + " server can be selected");
