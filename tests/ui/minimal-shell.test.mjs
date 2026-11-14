@@ -17,7 +17,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
   assert.match(themes, new RegExp('data-sekai-theme="' + theme + '"'), theme + " has its own visual system");
 }
 assert.match(html, /sekai-themes\.css/, "six-unit theme stylesheet is linked");
-for (const unit of ["VS","LN","MMJ","VBS","WxS","N25"]) assert.match(themes, new RegExp("Wallpapers_" + unit + "_iphone"), unit + " official wallpaper is referenced");
+assert.doesNotMatch(themes, /colorfulstage\.com|pjsekai\.sega\.jp/, "unit themes use original CSS artwork rather than embedded downloadable wallpaper assets");
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
 assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
