@@ -1,26 +1,34 @@
-# Cloudflare player API
+# Cloudflare player API migration
 
-The Worker runs in Cloudflare; the owner's computer does not need to remain online.
+The public website continues to call the existing Cloudflare Worker URL. The
+Worker is being migrated from legacy public upstream endpoints to the current
+self-hosted Haruki Sekai API v6.33.0 container.
 
-## Routes
+## Architecture
 
-- `GET /health` returns the five supported region codes.
-- `GET /api/{region}/user/{uid}/profile` supports `jp`, `tw`, `en`, `kr`, and `cn`.
+- Cloudflare Worker: public CORS and route adapter.
+- Cloudflare Container: official Haruki image
+  `ghcr.io/team-haruki/haruki-sekai-api:6.33.0`.
+- Durable Object: starts the container on demand and lets it sleep after
+  inactivity.
+- The user's computer does not need to remain online.
+- No Render service is used.
 
-## Upstream order
+## Required operator setup
 
-All five regions are routed through this Worker. It races the legacy public Haruki profile endpoint for the requested region. Taiwan additionally tries HiSekai. If configured, authenticated Haruki and Exmeaning upstreams are also raced.
+Cloudflare Containers require the Workers Paid plan. The account owner must
+also create encrypted Worker Secrets named `HARUKI_CONFIG_YAML` and
+`HARUKI_ACCOUNTS_JSON`. See
+`workers/player-api/README.md` and
+`workers/player-api/haruki-sekai-configs.template.yaml`.
 
-Optional Worker secrets:
-- `HARUKI_TOKEN` for the authenticated Haruki gateway.
-- `MOE_TOKEN` for the Exmeaning gateway.
+The five regions cannot be enabled with guessed values. Each needs valid
+region-specific API settings, encryption values, and an account session.
+Never store these secrets in the repository.
 
-The Cloudflare deployment token is separate and is not an upstream provider credential. Missing optional tokens do not prevent the Worker from attempting the public upstreams. If all upstreams fail, the Worker returns a real upstream error and never fabricates profile data.
+## Deployment and verification
 
-## Security
-
-- CORS allows only `https://pixelproto-x.github.io`.
-- UID paths accept numeric IDs of 1–20 digits.
-- Upstream requests have a 9-second timeout.
-- Provider credentials stay on the Worker and are never returned to the browser.
-- The Worker does not accept arbitrary upstream URLs.
+The deploy workflow is manual until the paid plan and both Worker secrets are
+ready. It deploys the container and then checks the live `/health` response
+for version `6.33.0` and all five healthy regions. A successful GitHub Pages
+build or Worker deployment by itself is not proof of live upstream access.
