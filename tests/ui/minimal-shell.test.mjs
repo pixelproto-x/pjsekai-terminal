@@ -59,3 +59,6 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
 assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
+
+assert.match(themes, /\.bottom-bar \.tab-indicator\{z-index:0\}/, "selection bubble stays behind navigation labels");
+assert.match(themes, /\.bottom-bar \.tab\{position:relative;z-index:1\}/, "navigation labels render above the selection bubble");
