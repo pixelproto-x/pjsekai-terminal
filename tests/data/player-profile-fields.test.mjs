@@ -61,3 +61,28 @@ test("supports ranking fields on a profile object", () => {
     userProfile: { rankingPosition: 321 },
   }), 321);
 });
+
+
+import { extractPlayerPower } from "../../src/data/player-profile-fields.mjs";
+
+test("extracts the published combined power from profile fields", () => {
+  assert.equal(extractPlayerPower({
+    userGamedata: { rank: 245, totalPower: 287654 },
+  }), 287654);
+});
+
+test("falls back to a deck's published total without summing card stats", () => {
+  assert.equal(extractPlayerPower({
+    userGamedata: { rank: 245 },
+    userDecks: [{ deckId: 1, teamPower: 198765 }],
+    userCharacters: [{ power: 999999 }],
+  }), 198765);
+});
+
+test("does not mistake character or card power for combined power", () => {
+  assert.equal(extractPlayerPower({
+    userGamedata: { rank: 245 },
+    userCharacters: [{ power: 999999 }],
+    userCards: [{ power: 888888 }],
+  }), null);
+});
