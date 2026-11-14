@@ -13,6 +13,52 @@ function syncTabIndicator() {
   tabIndicator.style.setProperty("--tab-left", left + "px");
   tabIndicator.style.setProperty("--tab-w", tabRect.width + "px");
 }
+
+let indicatorDrag = null;
+function nearestTabAt(clientX) {
+  return tabs.reduce((nearest, tab) => {
+    const rect = tab.getBoundingClientRect();
+    const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+    return !nearest || distance < nearest.distance ? { tab, distance } : nearest;
+  }, null)?.tab;
+}
+
+if (bottomBar && tabIndicator) {
+  tabIndicator.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+    const barRect = bottomBar.getBoundingClientRect();
+    const indicatorRect = tabIndicator.getBoundingClientRect();
+    indicatorDrag = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - indicatorRect.left,
+      barLeft: barRect.left + bottomBar.clientLeft,
+      maxLeft: bottomBar.clientWidth - indicatorRect.width - bottomBar.clientLeft * 2,
+      width: indicatorRect.width,
+    };
+    bottomBar.classList.add("is-dragging");
+    tabIndicator.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  tabIndicator.addEventListener("pointermove", (event) => {
+    if (!indicatorDrag || event.pointerId !== indicatorDrag.pointerId) return;
+    const left = Math.max(0, Math.min(indicatorDrag.maxLeft,
+      event.clientX - indicatorDrag.barLeft - indicatorDrag.offsetX));
+    tabIndicator.style.setProperty("--tab-left", left + "px");
+  });
+
+  const finishIndicatorDrag = (event, shouldNavigate) => {
+    if (!indicatorDrag || event.pointerId !== indicatorDrag.pointerId) return;
+    const nearest = nearestTabAt(event.clientX);
+    indicatorDrag = null;
+    bottomBar.classList.remove("is-dragging");
+    if (shouldNavigate && nearest) go(nearest.dataset.go);
+    else syncTabIndicator();
+  };
+  tabIndicator.addEventListener("pointerup", (event) => finishIndicatorDrag(event, true));
+  tabIndicator.addEventListener("pointercancel", (event) => finishIndicatorDrag(event, false));
+  tabIndicator.addEventListener("lostpointercapture", (event) => finishIndicatorDrag(event, false));
+}
 const validRoutes = new Set(pages.map((page) => page.dataset.page));
 const themeNames = {
   classroom: "教室 · Classroom SEKAI",

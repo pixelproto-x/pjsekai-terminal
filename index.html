@@ -281,13 +281,14 @@ html[dir="rtl"] .field-label,html[dir="rtl"] .field-help{text-align:right}
   box-shadow:0 5px 16px rgba(35,42,65,.11),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
   transform:translate3d(0,var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:left var(--tab-duration) var(--tab-ease),width var(--tab-duration) var(--tab-ease),transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease),box-shadow .25s ease;
-  pointer-events:none;will-change:transform;
+  pointer-events:auto;touch-action:none;cursor:grab;will-change:transform;
 }
 .tab-indicator:before{
   content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
   background:linear-gradient(135deg,rgba(255,255,255,.26),transparent 42%,rgba(160,180,255,.08));
 }
 .bottom-bar.is-dragging .tab-indicator{
+  transition:none;cursor:grabbing;
   box-shadow:0 8px 22px rgba(35,42,65,.15),inset 0 1px 0 rgba(255,255,255,.75);
 }
 .tab{position:relative;z-index:1;border:0;background:transparent;color:#858893;border-radius:18px;padding:7px 3px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:800;min-width:44px;min-height:48px;transition:color .2s ease,transform .3s var(--tab-ease),opacity .2s ease;touch-action:none;--lens:1}
