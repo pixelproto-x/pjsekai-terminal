@@ -313,7 +313,3 @@ body{color:var(--hub-ink)}
     font-size:11px !important;
   }
 }
-
-/* Keep the optional personal name field on its own row in the quick lookup */
-.hub-lookup-control{flex-wrap:wrap}
-#homePlayerName{flex:1 0 100%;order:4}
