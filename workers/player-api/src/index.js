@@ -1,6 +1,13 @@
 const REGIONS = new Set(["jp", "tw", "en", "kr", "cn"]);
 const ALLOWED_ORIGIN = "https://pixelproto-x.github.io";
 const UPSTREAM_TIMEOUT_MS = 9000;
+const PUBLIC_PROFILE_KEYS = [
+  "userGamedata", "userDecks", "userCharacters",
+  "userChallengeLiveSoloStages", "userChallengeLiveSoloResults",
+  "userChallengeLiveSoloHighScoreRewards", "userBonds", "userMaterials",
+  "userAreas", "userMysekaiFixtureGameCharacterPerformanceBonuses",
+  "userMysekaiGates", "upload_time",
+].join(",");
 
 function json(body, status, origin) {
   return new Response(JSON.stringify(body), {
@@ -41,7 +48,13 @@ async function fetchSource(url, headers, signal) {
 
 function candidates(region, uid, env) {
   const encodedUid = encodeURIComponent(uid);
-  const list = [];
+  const list = [
+    {
+      name: "Haruki Public",
+      url: `https://suite-api.haruki.seiunx.com/public/${region}/suite/${encodedUid}?key=${PUBLIC_PROFILE_KEYS}`,
+      headers: {},
+    },
+  ];
   if (region === "tw") {
     list.push({
       name: "HiSekai",
@@ -104,7 +117,7 @@ export default {
     if (request.method !== "GET") return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
 
     if (url.pathname === "/health") {
-      return json({ status: "ok" }, 200, origin);
+      return json({ status: "ok", regions: [...REGIONS] }, 200, origin);
     }
 
     const match = url.pathname.match(/^\/api\/([a-z]{2})\/user\/([0-9]{1,20})\/profile$/);
@@ -114,16 +127,6 @@ export default {
     if (!REGIONS.has(region)) return json({ error: "REGION_UNSUPPORTED" }, 400, origin);
 
     const sources = candidates(region, uid, env);
-    if (!sources.length) {
-      return json({
-        error: "SOURCE_NOT_CONFIGURED",
-        message: "No upstream credentials are configured for this region.",
-        region,
-      }, 503, origin);
-    }
-
-    // Race configured providers and return the first valid response. A slow
-    // provider must not delay a successful response from another provider.
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const statuses = [];

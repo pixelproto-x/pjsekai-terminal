@@ -1,8 +1,7 @@
-import { createHarukiPlayerProvider, REGION_LABELS } from "./src/data/haruki-player.mjs";
+import { REGION_LABELS } from "./src/data/haruki-player.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
 
-const provider = createHarukiPlayerProvider();
-const cloudflareProvider = createCloudflarePlayerProvider();
+const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
 const status = $("#playerLookupStatus");
 const results = $("#playerLookupResults");
@@ -22,17 +21,15 @@ function allObjects(root) {
   return output;
 }
 function getValue(objects, keys) {
-  for (const object of objects) {
-    for (const key of keys) {
-      const value = object?.[key];
-      if (value !== undefined && value !== null && value !== "" && typeof value !== "object") return value;
-    }
+  for (const object of objects) for (const key of keys) {
+    const value = object?.[key];
+    if (value !== undefined && value !== null && value !== "" && typeof value !== "object") return value;
   }
   return null;
 }
 function getArray(objects, keys) {
-  for (const object of objects) {
-    for (const key of keys) if (Array.isArray(object?.[key]) && object[key].length) return object[key];
+  for (const object of objects) for (const key of keys) {
+    if (Array.isArray(object?.[key]) && object[key].length) return object[key];
   }
   return [];
 }
@@ -44,12 +41,10 @@ function createNode(tag, className, text) {
 }
 function renderProfile(result) {
   const objects = allObjects(result.data);
-  const identity = objects
-    .map((object) => ({
-      object,
-      score: ["userId", "user_id", "playerId", "player_id", "nickname", "userName", "playerName", "level", "userLevel"].reduce((sum, key) => sum + (object[key] != null ? 1 : 0), 0),
-    }))
-    .sort((a, b) => b.score - a.score)[0]?.object ?? result.data;
+  const identity = objects.map((object) => ({
+    object,
+    score: ["userId", "user_id", "playerId", "player_id", "nickname", "userName", "playerName", "level", "userLevel"].reduce((sum, key) => sum + (object[key] != null ? 1 : 0), 0),
+  })).sort((a, b) => b.score - a.score)[0]?.object ?? result.data;
   const scoped = [identity, ...objects.filter((object) => object !== identity)];
   const name = getValue(scoped, ["name", "nickname", "userName", "playerName", "displayName"]) || "未提供名稱";
   const uid = getValue(scoped, ["userId", "user_id", "playerId", "player_id"]) || result.uid;
@@ -71,19 +66,17 @@ function renderProfile(result) {
   card.append(header);
 
   const stats = createNode("div", "player-stat-grid");
-  const fields = [
+  for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
     ["玩家排名", rank == null ? "未提供" : rank],
     ["隊伍戰力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
-  ];
-  for (const [label, value] of fields) {
+  ]) {
     const item = createNode("div", "player-stat");
     item.append(createNode("small", "", label), createNode("strong", "", value));
     stats.append(item);
   }
   card.append(stats);
-
   if (bio) card.append(createNode("p", "player-status", bio));
   if (team.length) {
     card.append(createNode("h3", "", "公開隊伍資料"));
@@ -91,14 +84,12 @@ function renderProfile(result) {
     team.slice(0, 6).forEach((member, index) => {
       const title = member?.name || member?.deckName || member?.characterName || member?.character_name || "隊伍 " + (member?.deckId ?? index + 1);
       const value = member?.talent ?? member?.power ?? member?.cardPower ?? (member?.leader ? "隊長卡片 " + member.leader : "");
-      list.append(createNode("div", "player-team-row", ""));
-      const row = list.lastElementChild;
+      const row = createNode("div", "player-team-row");
       row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : typeof value === "number" ? "戰力 " + value.toLocaleString() : String(value)));
+      list.append(row);
     });
     card.append(list);
-  } else {
-    card.append(createNode("div", "player-empty-note", "資料來源沒有提供可辨識的隊伍資料 這不代表玩家沒有隊伍"));
-  }
+  } else card.append(createNode("div", "player-empty-note", "資料來源沒有提供可辨識的隊伍資料 這不代表玩家沒有隊伍"));
   if (!level && !rank && !power && !team.length && !characters.length) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
@@ -127,9 +118,7 @@ async function lookup(rawUid, requestedRegion) {
   if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   results?.replaceChildren();
   try {
-    const result = region === "tw"
-      ? await cloudflareProvider.getProfile(uid, region)
-      : await provider.getProfile(uid, region);
+    const result = await provider.getProfile(uid, region);
     renderProfile(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");

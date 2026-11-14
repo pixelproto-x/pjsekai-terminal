@@ -1,29 +1,26 @@
 # Cloudflare player API
 
-The Worker runs in Cloudflare and does not require the owner's computer to stay online.
+The Worker runs in Cloudflare; the owner's computer does not need to remain online.
 
-## Deployment
+## Routes
 
-The GitHub Actions workflow deploys `workers/player-api` using the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+- `GET /health` returns the five supported region codes.
+- `GET /api/{region}/user/{uid}/profile` supports `jp`, `tw`, `en`, `kr`, and `cn`.
 
-Live endpoint:
-`https://pjsekai-player-api.a0983439343.workers.dev`
+## Upstream order
 
-- Health: `/health`
-- Player profile: `/api/{region}/user/{uid}/profile`
-- Regions: `jp`, `tw`, `en`, `kr`, `cn`
+All five regions are routed through this Worker. It races the legacy public Haruki profile endpoint for the requested region. Taiwan additionally tries HiSekai. If configured, authenticated Haruki and Exmeaning upstreams are also raced.
 
-## Current website integration
+Optional Worker secrets:
+- `HARUKI_TOKEN` for the authenticated Haruki gateway.
+- `MOE_TOKEN` for the Exmeaning gateway.
 
-- Taiwan UID lookups now use the deployed Cloudflare Worker, which calls the documented HiSekai Taiwan profile endpoint.
-- Japan, International, Korea, and Simplified Chinese lookups still use the existing Haruki browser provider until an upstream provider credential is configured on the Worker.
-- The Worker supports Haruki and Exmeaning upstream credentials through Worker secrets named `HARUKI_TOKEN` and `MOE_TOKEN`. These are separate from the Cloudflare deployment token.
-- Missing upstream credentials return an explicit 503 response; the Worker does not fabricate profile data.
+The Cloudflare deployment token is separate and is not an upstream provider credential. Missing optional tokens do not prevent the Worker from attempting the public upstreams. If all upstreams fail, the Worker returns a real upstream error and never fabricates profile data.
 
-## Security and checks
+## Security
 
 - CORS allows only `https://pixelproto-x.github.io`.
 - UID paths accept numeric IDs of 1–20 digits.
 - Upstream requests have a 9-second timeout.
 - Provider credentials stay on the Worker and are never returned to the browser.
-- GitHub Actions runs syntax checks, unit tests, deploys the Worker, and checks its live health endpoint.
+- The Worker does not accept arbitrary upstream URLs.
