@@ -1,6 +1,6 @@
-import { createHiSekaiPlayerProvider } from "./src/data/hisekai-player.mjs";
+import { createHarukiPlayerProvider, REGION_LABELS } from "./src/data/haruki-player.mjs";
 
-const provider = createHiSekaiPlayerProvider();
+const provider = createHarukiPlayerProvider();
 const $ = (selector) => document.querySelector(selector);
 const status = $("#playerLookupStatus");
 const results = $("#playerLookupResults");
@@ -100,7 +100,7 @@ function renderProfile(result) {
   if (!level && !rank && !power && !team.length && !cards.length) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
-  card.append(createNode("p", "player-status", "資料來源 Hi Sekai 台灣區 " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
+  card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
 function messageFor(error) {
@@ -115,15 +115,16 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-async function lookup(rawUid) {
+async function lookup(rawUid, requestedRegion) {
   const uid = String(rawUid ?? "").trim();
+  const region = requestedRegion || $("#playerRegion")?.value || $("#homePlayerRegion")?.value || "tw";
   const input = $("#playerUid");
   if (input) input.value = uid;
   if (button) { button.disabled = true; button.textContent = "查詢中"; }
-  if (status) status.textContent = "正在讀取台灣區公開資料";
+  if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   results?.replaceChildren();
   try {
-    const result = await provider.getProfile(uid);
+    const result = await provider.getProfile(uid, region);
     renderProfile(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
@@ -136,12 +137,14 @@ async function lookup(rawUid) {
 }
 $("#playerLookupForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  lookup($("#playerUid")?.value);
+  lookup($("#playerUid")?.value, $("#playerRegion")?.value);
 });
 $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   event.preventDefault();
   const uid = $("#homePlayerUid")?.value;
+  const region = $("#homePlayerRegion")?.value || "tw";
   $("#playerUid").value = uid;
+  $("#playerRegion").value = region;
   window.PJSEKAI?.go("profile");
-  lookup(uid);
+  lookup(uid, region);
 });
