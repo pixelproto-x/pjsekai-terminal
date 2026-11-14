@@ -67,7 +67,7 @@ function renderIdentity(){
  $('mskPlayerId').value=p.playerId||'';$('mskPlayerName').value=p.name||'';$('mskSignature').value=p.signature||'';$('mskTitle').value=p.title||'';$('mskTitleSub').value=p.titleSub||'';
  $('mskProfileSource').textContent=p.source==='api'?'API · CACHE':'LOCAL';
  $('mskProfileStatus').textContent=p.source==='api'?'API 資料已載入並保存於本機。':'資料只保存在這台裝置。';
- $('mskMiniTitle').textContent=p.title||'PLAYER';$('mskMiniRank').textContent='RANK '+(p.rank?fmt(p.rank):'—');$('mskMiniName').textContent=p.name||'Player';$('mskMiniSignature').textContent=p.signature||'還沒有簽名。';$('mskMiniId').textContent='ID '+(p.playerId||'未設定');$('mskMiniPower').textContent='TALENT '+fmt(total);
+ $('mskMiniTitle').textContent=p.title||'PLAYER';$('mskMiniRank').textContent=p.level?'LEVEL '+fmt(p.level):'RANK '+(p.rank?fmt(p.rank):'—');$('mskMiniName').textContent=p.name||'Player';$('mskMiniSignature').textContent=p.signature||'還沒有簽名。';$('mskMiniId').textContent='ID '+(p.playerId||'未設定');$('mskMiniPower').textContent='TALENT '+fmt(total);
 }
 function renderTeam(){
  const s=ensure(),p=s.profile,box=$('mskTeamGrid'); if(!box)return;
@@ -172,15 +172,56 @@ function extractRanks(raw,p){
  const map=new Map(CHARACTERS.map(x=>[x.replace(/\s/g,'').toLowerCase(),x]));const ranks={...p.characterRanks};const scan=o=>{if(!o||typeof o!=='object')return;for(const [k,v] of Object.entries(o)){const hit=map.get(String(k).replace(/\s/g,'').toLowerCase());if(hit&&(typeof v==='number'||/^\d+$/.test(String(v))))ranks[hit]=Math.max(0,Math.min(CR_MAX,n(v)));if(v&&typeof v==='object')scan(v)}};scan(raw);walk(raw,o=>{const name=String(o.characterName||o.character_name||'');const rank=n(o.characterRank??o.character_rank,NaN);const hit=map.get(name.replace(/\s/g,'').toLowerCase());if(hit&&Number.isFinite(rank))ranks[hit]=Math.max(0,Math.min(CR_MAX,rank));return false});return ranks;
 }
 async function loadPlayer(){
- const id=String($('mskPlayerId').value||'').replace(/\D/g,'');if(!id){bridge.toast('請輸入 Player ID');return}
- $('mskProfileStatus').textContent='正在讀取公開 Profile API……';
+ const id=String($('mskPlayerId').value||'').trim();
+ if(!id){bridge.toast('請輸入 Player ID');return}
+ const button=$('mskLoadPlayer');
+ const previousLabel=button?.textContent;
+ if(button){button.disabled=true;button.textContent='查詢中…'}
+ $('mskProfileStatus').textContent='正在向 Hi Sekai 讀取台灣區公開玩家資料…';
  try{
-  const res=await fetch(bridge.profileApiBase+encodeURIComponent(id)+'/profile',{headers:{Accept:'application/json'},cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);
-  const raw=await res.json(),u=extractUser(raw),s=ensure(),p=s.profile;
-  p.playerId=String(u.userId||u.user_id||u.playerId||id).replace(/\D/g,'');p.name=String(u.name||u.nickname||u.userName||u.playerName||u.displayName||'Player');p.rank=Math.max(0,n(u.rank??u.level??u.userLevel??u.userRank));p.bio=String(u.bio||u.introduction||u.profileComment||'');p.power=Math.max(0,n(u.totalPower??u.power??u.teamPower??u.talent));p.source='api';p.loadedAt=new Date().toISOString();p.characterRanks=extractRanks(raw,p);
-  const team=normalizeRawTeam(raw);if(team.some(x=>x.characterName||x.cardName||x.characterId||x.cardId||x.talent))s.team=team;
-  save();renderAll();$('mskProfileStatus').textContent='API 讀取成功 · 已保存快取。';bridge.toast('玩家資料已載入');
- }catch(e){const s=ensure();s.profile.playerId=id;s.profile.source='local';save();$('mskProfileStatus').textContent='API 讀取失敗，已保留本地資料。';bridge.toast('API 無法讀取，已保留本機模式');}
+  const {createHiSekaiPlayerProvider}=await import('./src/data/hisekai-player.mjs');
+  const provider=createHiSekaiPlayerProvider();
+  const result=await provider.getProfile(id);
+  const raw=result.data,u=extractUser(raw),s=ensure(),p=s.profile;
+  const team=normalizeRawTeam(raw);
+  const hasTeam=team.some(x=>x.characterName||x.cardName||x.characterId||x.cardId||x.talent);
+  const cards=walk(raw,o=>Array.isArray(o.cards)&&o.cards.length>0,40);
+  p.playerId=String(u.userId||u.user_id||u.playerId||result.uid).replace(/\D/g,'');
+  p.name=String(u.name||u.nickname||u.userName||u.playerName||u.displayName||'Player');
+  p.rank=Math.max(0,n(u.rank??u.userRank));
+  p.level=Math.max(0,n(u.level??u.userLevel));
+  p.bio=String(u.bio||u.introduction||u.profileComment||'');
+  p.power=Math.max(0,n(u.totalPower??u.power??u.teamPower??u.talent));
+  p.source='api';
+  p.sourceName=result.source;
+  p.sourceRegion=result.region;
+  p.loadedAt=result.fetchedAt;
+  p.characterRanks=extractRanks(raw,p);
+  p.publicTeamAvailable=hasTeam;
+  p.publicCardGroups=cards.length;
+  if(hasTeam)s.team=team;
+  save();renderAll();
+  const details=[];
+  if(p.level)details.push('Lv. '+fmt(p.level));
+  if(p.power)details.push('Power '+fmt(p.power));
+  if(hasTeam)details.push('隊伍資料');
+  const stamp=new Date(result.fetchedAt).toLocaleString();
+  $('mskProfileStatus').textContent='Hi Sekai · 台灣區公開資料 · '+(details.join(' / ')||'已取得部分資料')+' · '+(result.cached?'快取資料':'剛完成查詢')+' · '+stamp;
+  bridge.toast(result.cached?'已載入快取玩家資料':'玩家資料已載入');
+ }catch(e){
+  const messages={
+   UID_INVALID:'UID 格式錯誤，請只輸入數字。',
+   UID_REQUIRED:'請輸入玩家 UID。',
+   UPSTREAM_HTTP_ERROR:e?.details?.status===404?'找不到這個玩家，請確認 UID。':e?.details?.status===429?'查詢太頻繁，請稍後再試。':'資料來源暫時無法提供查詢。',
+   REQUEST_TIMEOUT:'資料來源回應逾時，請稍後再試。',
+   NETWORK_ERROR:'無法連線至 Hi Sekai，請檢查網路或稍後再試。',
+   UPSTREAM_INVALID_JSON:'資料來源回傳格式異常，暫時無法解析。'
+  };
+  $('mskProfileStatus').textContent=(messages[e?.code]||'查詢失敗：'+(e?.message||'未知錯誤'))+' 本機資料沒有被覆蓋。';
+  bridge.toast('玩家資料查詢失敗');
+ }finally{
+  if(button){button.disabled=false;button.textContent=previousLabel||'從 API 讀取'}
+ }
 }
 function refreshTeamDerived(cardIndex){
  const s=ensure(),x=s.team[cardIndex];const card=document.querySelector('[data-msk-team="'+cardIndex+'"]');if(!card)return;
