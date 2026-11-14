@@ -131,7 +131,7 @@
   font:inherit;
 }
 .server-picker-native{
-  position:absolute!important;width:1px!important;height:1px!important;min-width:1px!important;
+  display:none!important;position:absolute!important;width:1px!important;height:1px!important;min-width:1px!important;
   opacity:0!important;pointer-events:none!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
 }
 .server-picker-trigger{
