@@ -100,7 +100,7 @@ function renderProfile(result) {
   if (!level && !rank && !power && !team.length && !cards.length) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
-  card.append(createNode("p", "player-status", "資料來源 Hi Sekai 台灣區 " + new Date(result.fetchedAt).toLocaleString().replace(/[^\\p{L}\\p{N}\\s]/gu, " ").replace(/\\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
+  card.append(createNode("p", "player-status", "資料來源 Hi Sekai 台灣區 " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
 function messageFor(error) {
