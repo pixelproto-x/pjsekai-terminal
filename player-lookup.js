@@ -40,7 +40,7 @@ function createNode(tag, className, text) {
   if (text !== undefined) node.textContent = String(text);
   return node;
 }
-function renderProfile(result) {
+function renderProfile(result, eventRanking = null) {
   const objects = allObjects(result.data);
   const identity = extractPlayerIdentity(result.data, result.uid);
   const root = result.data && typeof result.data === "object" ? result.data : {};
@@ -68,6 +68,7 @@ function renderProfile(result) {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
+    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到" : eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : "暫時無法取得")],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -95,6 +96,16 @@ function renderProfile(result) {
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
+function normalizeEventRanking(payload) {
+  if (!payload || typeof payload !== "object") return { status: "UNAVAILABLE", row: null };
+  const row = payload.row ?? payload.ranking?.row ?? payload.ranking?.result?.row
+    ?? (payload.ranking?.rank != null ? payload.ranking : null);
+  if (row) return { ...payload, row };
+  if (payload.status === "OK" && payload.ranking?.searchedTo >= 2000) {
+    return { ...payload, status: "NOT_FOUND_TOP_2000", row: null };
+  }
+  return payload;
+}
 function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
@@ -117,8 +128,16 @@ async function lookup(rawUid, requestedRegion) {
   if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   results?.replaceChildren();
   try {
-    const result = await provider.getProfile(uid, region);
-    renderProfile(result);
+    const [profileResult, rankingResult] = await Promise.allSettled([
+      provider.getProfile(uid, region),
+      provider.getEventRanking(uid, region),
+    ]);
+    if (profileResult.status === "rejected") throw profileResult.reason;
+    const result = profileResult.value;
+    const eventRanking = rankingResult.status === "fulfilled"
+      ? normalizeEventRanking(rankingResult.value)
+      : { status: "UNAVAILABLE", row: null };
+    renderProfile(result, eventRanking);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
