@@ -1,4 +1,4 @@
-import { REGION_LABELS } from "./src/data/haruki-player.mjs";
+import { REGION_LABELS } from "./src/data/regions.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
 import { extractPlayerIdentity } from "./src/data/player-profile-fields.mjs";
 
