@@ -184,7 +184,7 @@ $("#songPlaylistForm").addEventListener("submit", (event) => {
   state.playlists.push({ name, songIds: [] });
   writeStorage(STORAGE.playlists, state.playlists);
   input.value = "";
-  renderPlaylists();
+  renderSongs();
   updateOverview();
 });
 $("#songPlaylistList").addEventListener("click", (event) => {
