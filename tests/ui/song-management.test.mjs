@@ -15,7 +15,7 @@ assert.match(html, /id="songLevel"/, "level filter exists");
 assert.match(html, /id="songRandom"/, "random song action exists");
 assert.match(html, /id="songPlaylistForm"/, "playlist creation exists");
 assert.match(html, /id="songList"/, "song results container exists");
-assert.match(html, /src="songs.js"/, "song manager module is loaded");
+assert.match(html, /src="songs\.js(?:\?[^"]*)?"/, "song manager module is loaded");
 assert.match(js, /sekai-master-db-tc-diff/, "Traditional Chinese server data source is configured");
 assert.match(js, /sekai-master-db-en-diff/, "English server data source is configured");
 assert.match(js, /sekai-master-db-kr-diff/, "Korean server data source is configured");
@@ -23,6 +23,7 @@ assert.match(js, /sekai-master-db-cn-diff/, "Simplified Chinese server data sour
 assert.ok(js.includes('"/musics.json"'), "song list endpoint is configured");
 assert.match(js, /musicDifficulties\.json/, "chart difficulty data source is configured");
 assert.match(js, /localStorage/, "personal data persists locally");
+assert.match(js, /pjskSongViewV1/, "song search and filter state persists locally");
 assert.match(js, /pjskSongFavorites/, "favorite list has a dedicated storage key");
 assert.match(js, /pjskSongRecords/, "play records have a dedicated storage key");
 assert.match(js, /pjskSongPlaylists/, "playlists have a dedicated storage key");
