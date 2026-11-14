@@ -226,6 +226,7 @@ try {
   applyOpacity(22);
 }
 go(savedUiState.activePage || location.hash.slice(1) || "home", false);
+restoreScrollPending = true;
 if (savedUiState.scrollY > 0) requestAnimationFrame(() => requestAnimationFrame(restoreSavedScroll));
 
 
