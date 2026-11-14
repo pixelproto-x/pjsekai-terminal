@@ -22,6 +22,12 @@ test("rejects malformed UIDs before contacting upstreams", async () => {
   assert.equal(response.status, 404);
 });
 
+test("rejects unsupported regions", async () => {
+  const response = await worker.fetch(request("/api/xx/user/123456/profile"), {});
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error, "REGION_UNSUPPORTED");
+});
+
 test("reports an explicit configuration error when no upstream is configured", async () => {
   const response = await worker.fetch(request("/api/jp/user/123456/profile"), {});
   assert.equal(response.status, 503);
@@ -46,4 +52,42 @@ test("uses the documented Taiwan HiSekai endpoint without an API token", async (
   const body = await response.json();
   assert.equal(body.source, "HiSekai");
   assert.equal(body.uid, "123456");
+});
+
+test("falls back to another configured provider when the first provider has no profile", async (t) => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (url, options) => {
+    requests.push({ url: String(url), headers: options.headers });
+    if (String(url).startsWith("https://api.hisekai.org/")) {
+      return new Response("not found", { status: 404 });
+    }
+    return new Response(JSON.stringify({ userGamedata: { userId: "123456", rank: 42 } }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  t.after(() => { globalThis.fetch = originalFetch; });
+
+  const response = await worker.fetch(request("/api/tw/user/123456/profile"), {
+    HARUKI_TOKEN: "test-token",
+  });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.source, "Haruki");
+  assert.equal(body.data.userGamedata.rank, 42);
+  assert.equal(requests.length, 2);
+  assert.equal(requests.find((item) => item.url.includes("public-api.haruki"))?.headers["X-Haruki-Sekai-Token"], "test-token");
+});
+
+test("does not expose upstream credentials in the response", async (t) => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ ok: true }), { status: 200 });
+  t.after(() => { globalThis.fetch = originalFetch; });
+
+  const response = await worker.fetch(request("/api/jp/user/123456/profile"), {
+    HARUKI_TOKEN: "secret-token",
+  });
+  const body = await response.text();
+  assert.equal(body.includes("secret-token"), false);
 });
