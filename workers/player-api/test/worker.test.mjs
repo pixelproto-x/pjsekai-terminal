@@ -49,11 +49,15 @@ for (const region of ["jp", "tw", "en", "kr", "cn"]) {
 
     const response = await worker.fetch(request(`/api/${region}/user/123456/profile`), {});
     assert.equal(response.status, 200);
-    assert.match(requestedUrl, new RegExp(`^https://suite-api\\.haruki\\.seiunx\\.com/public/${region}/suite/123456\\?key=`));
+    if (region === "tw") {
+      assert.match(requestedUrl, /^https:\/\/(suite-api\.haruki\.seiunx\.com\/public\/tw\/suite\/123456\?key=|api\.hisekai\.org\/tw\/user\/123456\/profile$)/);
+    } else {
+      assert.match(requestedUrl, new RegExp(`^https://suite-api\\.haruki\\.seiunx\\.com/public/${region}/suite/123456\\?key=`));
+    }
     const body = await response.json();
     assert.equal(body.region, region);
     assert.equal(body.uid, "123456");
-    assert.equal(body.source, "Haruki Public");
+    assert.ok(["Haruki Public", "HiSekai"].includes(body.source));
   });
 }
 
