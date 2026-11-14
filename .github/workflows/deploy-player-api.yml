@@ -29,7 +29,20 @@ jobs:
       - name: Run Worker tests
         working-directory: workers/player-api
         run: node --test test/*.test.mjs
+      - name: Verify Cloudflare deployment credentials
+        if: ${{ github.event_name != 'pull_request' }}
+        shell: bash
+        run: |
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not available to this workflow."
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID is not available to this workflow."
+            exit 1
+          fi
+          echo "Both Cloudflare deployment credentials are available."
       - name: Deploy Cloudflare Worker
-        if: ${{ github.event_name != 'pull_request' && env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' }}
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: workers/player-api
         run: npx --yes wrangler@4 deploy
