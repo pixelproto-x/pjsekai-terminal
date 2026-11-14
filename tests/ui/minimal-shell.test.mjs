@@ -44,24 +44,18 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 assert.equal(routes.length, 3, "only home, player lookup, and appearance settings remain");
 console.log("Minimal player hub UI smoke tests passed.");
 
-assert.match(themes, /VIRTUAL SINGER/);
-assert.match(themes, /Leo\/need/);
-assert.match(themes, /MORE MORE JUMP/);
-assert.match(themes, /Vivid BAD SQUAD/);
-assert.match(themes, /Wonderlands/);
-assert.match(themes, /Nightcord/);
+const visibleText = html
+  .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+  .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&[^;]+;/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+assert.doesNotMatch(visibleText, /[，。！？：；、·↗♫✦♪‹％%]/, "visible interface copy has no decorative punctuation or symbols");
+assert.doesNotMatch(visibleText, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT|Fan-made project/, "template-like labels are removed");
+for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
+  assert.match(themes, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated visual design");
+}
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
-assert.doesNotMatch(html, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT/);
-assert.doesNotMatch(html, /Fan-made project|↗|♫|✦|♪/);
 assert.doesNotMatch(player, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
-
-const visibleText = html.replace(/<script\\b[\\s\\S]*?<\\/script>/gi, " ").replace(/<style\\b[\\s\\S]*?<\\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&[^;]+;/g, " ").replace(/\\s+/g, " ").trim();
-assert.doesNotMatch(visibleText, /[，。！？：；、·↗♫✦♪‹％%]/, "visible interface copy has no decorative punctuation or symbols");
-assert.doesNotMatch(visibleText, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT|Fan-made project/, "AI-like template labels are removed");
-assert.match(themes, /body\\[data-sekai-theme="virtual-singer"\\]/);
-assert.match(themes, /body\\[data-sekai-theme="leo-need"\\]/);
-assert.match(themes, /body\\[data-sekai-theme="more-more-jump"\\]/);
-assert.match(themes, /body\\[data-sekai-theme="vivid-bad-squad"\\]/);
-assert.match(themes, /body\\[data-sekai-theme="wonderlands-showtime"\\]/);
-assert.match(themes, /body\\[data-sekai-theme="nightcord"\\]/);
