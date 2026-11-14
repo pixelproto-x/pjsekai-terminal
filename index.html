@@ -5,6 +5,7 @@
 <meta name="theme-color" content="#f3f4f8">
 <meta name="color-scheme" content="light">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="songs.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Telugu:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1062,6 +1063,40 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       </form>
     </section>
   </section>
+  <section class="page" data-page="songs">
+    <div class="page-head">
+      <div><div class="sekai-chip">歌曲管理中心</div><h1 class="page-title">歌曲資料庫</h1><p class="page-subtitle">搜尋歌曲 難度篩選 收藏管理 建立歌單和記錄遊玩進度</p></div>
+      <button class="back-btn" data-go="home" type="button">回到首頁</button>
+    </div>
+    <section class="songs-overview" aria-label="歌曲管理概況">
+      <div><span>歌曲數量</span><strong id="songTotal">載入中</strong></div>
+      <div><span>我的收藏</span><strong id="songFavoriteTotal">0</strong></div>
+      <div><span>遊玩紀錄</span><strong id="songRecordTotal">0</strong></div>
+      <div><span>自訂歌單</span><strong id="songPlaylistTotal">0</strong></div>
+    </section>
+    <section class="songs-workbench">
+      <div class="songs-toolbar">
+        <label class="songs-search"><span>搜尋歌曲</span><input id="songSearch" type="search" placeholder="輸入歌曲名稱或作曲者" autocomplete="off"></label>
+        <label><span>難度</span><select id="songDifficulty"><option value="">全部難度</option><option value="easy">EASY</option><option value="normal">NORMAL</option><option value="hard">HARD</option><option value="expert">EXPERT</option><option value="master">MASTER</option><option value="append">APPEND</option></select></label>
+        <label><span>等級</span><select id="songLevel"><option value="">全部等級</option><option value="1-19">19 以下</option><option value="20-24">20 至 24</option><option value="25-29">25 至 29</option><option value="30-32">30 至 32</option><option value="33-99">33 以上</option></select></label>
+        <label><span>排序</span><select id="songSort"><option value="title">歌曲名稱</option><option value="level-desc">難度由高至低</option><option value="level-asc">難度由低至高</option><option value="newest">最新收錄</option></select></label>
+      </div>
+      <div class="songs-filter-row">
+        <button class="song-filter-chip active" id="songShowAll" type="button">全部歌曲</button>
+        <button class="song-filter-chip" id="songShowFavorites" type="button">只看收藏</button>
+        <button class="song-filter-chip" id="songShowUnplayed" type="button">尚未記錄</button>
+        <button class="song-filter-chip" id="songRandom" type="button">隨機選曲</button>
+      </div>
+      <div class="songs-data-note" id="songDataStatus" role="status" aria-live="polite">正在載入歌曲資料</div>
+      <div class="song-list" id="songList" aria-live="polite"></div>
+      <div class="songs-empty" id="songEmpty" hidden>找不到符合條件的歌曲</div>
+    </section>
+    <section class="songs-playlists">
+      <div class="songs-section-heading"><div><span class="kicker">MY PLAYLISTS</span><h2>我的歌單</h2></div></div>
+      <form id="songPlaylistForm" class="song-playlist-form"><input id="songPlaylistName" maxlength="32" placeholder="輸入歌單名稱" required><button type="submit">建立歌單</button></form>
+      <div id="songPlaylistList" class="song-playlist-list"></div>
+    </section>
+  </section>
   <section class="page" data-page="profile">
     <div class="page-head">
       <div><div class="sekai-chip">五服公開資料</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">選擇伺服器並使用 UID 查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
@@ -1114,11 +1149,13 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 <nav class="bottom-bar" aria-label="主選單">
   <span class="tab-indicator" aria-hidden="true"></span>
   <button class="tab active" data-go="home" type="button">首頁</button>
+  <button class="tab" data-go="songs" type="button">歌曲</button>
   <button class="tab" data-go="profile" type="button">玩家</button>
   <button class="tab" data-go="settings" type="button">設定</button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="app-shell.js"></script>
 <script type="module" src="player-lookup.js"></script>
+<script type="module" src="songs.js"></script>
 </body>
 </html>
