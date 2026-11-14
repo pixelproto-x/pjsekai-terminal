@@ -51,12 +51,12 @@ function renderProfile(result) {
   const scoped = [identity, ...objects.filter((object) => object !== identity)];
   const name = getValue(scoped, ["name", "nickname", "userName", "playerName", "displayName"]) || "未提供名稱";
   const uid = getValue(scoped, ["userId", "user_id", "playerId", "player_id"]) || result.uid;
-  const level = getValue(scoped, ["level", "userLevel", "user_level"]);
-  const rank = getValue(scoped, ["rank", "playerRank", "player_rank"]);
+  const level = getValue(scoped, ["rank", "level", "userLevel", "user_level"]);
+  const rank = getValue(scoped, ["playerRank", "player_rank"]);
   const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
-  const team = getArray(objects, ["team", "teamMembers", "team_members", "mainTeam", "main_team"]);
-  const cards = getArray(objects, ["cards", "cardList", "card_list", "userCards", "user_cards"]);
+  const team = getArray(objects, ["userDecks", "team", "teamMembers", "team_members", "mainTeam", "main_team"]);
+  const characters = getArray(objects, ["userCharacters", "characters", "user_cards"]);
 
   results.replaceChildren();
   const card = createNode("section", "player-result-card");
@@ -73,7 +73,7 @@ function renderProfile(result) {
     ["玩家等級", level == null ? "未提供" : level],
     ["玩家排名", rank == null ? "未提供" : rank],
     ["隊伍戰力", power == null ? "未提供" : Number(power).toLocaleString()],
-    ["公開卡片資料", cards.length ? cards.length + " 筆" : "未提供"],
+    ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ];
   for (const [label, value] of fields) {
     const item = createNode("div", "player-stat");
@@ -87,8 +87,8 @@ function renderProfile(result) {
     card.append(createNode("h3", "", "公開隊伍資料"));
     const list = createNode("div", "player-team-list");
     team.slice(0, 6).forEach((member, index) => {
-      const title = member?.characterName || member?.character_name || member?.cardName || member?.card_name || member?.name || member?.characterId || member?.cardId || "隊伍成員 " + (index + 1);
-      const value = member?.talent ?? member?.power ?? member?.cardPower ?? "";
+      const title = member?.name || member?.deckName || member?.characterName || member?.character_name || "隊伍 " + (member?.deckId ?? index + 1);
+      const value = member?.talent ?? member?.power ?? member?.cardPower ?? (member?.leader ? "隊長卡片 " + member.leader : "");
       list.append(createNode("div", "player-team-row", ""));
       const row = list.lastElementChild;
       row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : "戰力 " + Number(value).toLocaleString()));
@@ -97,7 +97,7 @@ function renderProfile(result) {
   } else {
     card.append(createNode("div", "player-empty-note", "資料來源沒有提供可辨識的隊伍資料 這不代表玩家沒有隊伍"));
   }
-  if (!level && !rank && !power && !team.length && !cards.length) {
+  if (!level && !rank && !power && !team.length && !characters.length) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
@@ -107,6 +107,7 @@ function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
     if (error.details?.status === 404) return "找不到這個玩家 請確認 UID";
+    if (error.details?.status === 403) return "這個玩家沒有開放公開資料";
     if (error.details?.status === 429) return "查詢太頻繁 請稍後再試";
     return "資料來源暫時無法查詢 狀態碼 " + error.details?.status;
   }
