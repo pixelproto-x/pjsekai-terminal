@@ -1,6 +1,6 @@
 import { REGION_LABELS } from "./src/data/regions.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
-import { extractPlayerIdentity } from "./src/data/player-profile-fields.mjs";
+import { extractPlayerIdentity, extractPlayerRanking } from "./src/data/player-profile-fields.mjs";
 
 const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
@@ -50,11 +50,7 @@ function renderProfile(result, myName = "") {
   const name = identity.name;
   const uid = identity.uid;
   const level = identity.level;
-  const rank = getValue(scoped, [
-    "playerRank", "player_rank", "userRank", "user_rank",
-    "ranking", "rankingPosition", "ranking_position",
-    "rankPosition", "rank_position", "eventRank", "event_rank",
-  ]);
+  const rank = extractPlayerRanking(result.data);
   const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
   const team = getArray(objects, ["userDecks", "team", "teamMembers", "team_members", "mainTeam", "main_team"]);
