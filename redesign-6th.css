@@ -1,0 +1,84 @@
+/* Project SEKAI Player Hub — 6th Anniversary interface refresh */
+:root{--hub-ink:#18243a;--hub-muted:#68758b;--hub-line:rgba(85,112,155,.16)}
+html{background:#eaf0f8}
+body{color:var(--hub-ink);background:#eaf0f8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans TC","Noto Sans JP",sans-serif}
+.top-accent{height:3px;background:linear-gradient(90deg,#72c9e9,#a5a0ef 34%,#f2a4c5 67%,#f5d58c)}
+.sekai-ambience{background:#17243d}
+.sekai-ambience:before{background:url("https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp") center 24%/cover no-repeat;filter:saturate(1.02);transform:scale(1.015)}
+.sekai-ambience:after{background:linear-gradient(180deg,rgba(13,25,49,.24),rgba(16,31,58,.12) 42%,rgba(13,25,49,.44)),linear-gradient(90deg,rgba(16,29,52,.20),transparent 55%,rgba(16,29,52,.18))}
+.app-shell{max-width:1440px;padding:22px 30px 124px}
+.app-shell:before{background:rgba(244,248,255,.80);border:1px solid rgba(255,255,255,.64);border-radius:34px;box-shadow:0 30px 90px rgba(8,22,49,.24),inset 0 1px 0 rgba(255,255,255,.7);backdrop-filter:blur(16px) saturate(135%);-webkit-backdrop-filter:blur(16px) saturate(135%)}
+.topbar{top:14px;min-height:66px;padding:9px 12px 9px 17px;border:1px solid rgba(255,255,255,.82);border-radius:21px;background:rgba(250,252,255,.84);box-shadow:0 12px 34px rgba(30,53,91,.11),inset 0 1px 0 #fff;backdrop-filter:blur(18px) saturate(145%)!important;-webkit-backdrop-filter:blur(18px) saturate(145%)!important}
+.brand{min-width:0;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:14px;background:linear-gradient(145deg,#6dc9e8,#8b8ce1 54%,#e98db7);box-shadow:0 8px 20px rgba(105,139,210,.28)}
+.brand-mark:after{content:"✦";font-size:19px}
+.brand-text strong{font-size:14px;letter-spacing:.015em;color:#233451}
+.brand-text span{font-size:9px;letter-spacing:.14em;color:#8190a7}
+.top-icon{width:42px;height:42px;border-radius:14px;border:1px solid rgba(105,131,171,.16);background:rgba(255,255,255,.88);color:#536989}
+.page{padding:0 4px}.page:before{display:none!important}
+.anniversary-hero{min-height:430px;margin:24px 0 0;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;padding:clamp(28px,5vw,62px);border-radius:30px;color:#fff;background:#172b4d url("https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp") center 35%/cover no-repeat;box-shadow:0 26px 65px rgba(21,42,78,.24)}
+.anniversary-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(15,29,55,.94),rgba(20,38,69,.82) 38%,rgba(22,41,74,.18) 76%,rgba(22,41,74,.12)),linear-gradient(0deg,rgba(14,27,50,.34),transparent 45%)}
+.anniversary-hero:after{content:"";position:absolute;inset:14px;border:1px solid rgba(255,255,255,.22);border-radius:22px;pointer-events:none}
+.anniversary-hero-content{position:relative;z-index:2;max-width:640px}
+.anniversary-eyebrow{display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.82);font-size:10px;font-weight:850;letter-spacing:.2em}
+.anniversary-eyebrow span{width:8px;height:8px;border-radius:50%;background:#9be4ef;box-shadow:0 0 0 5px rgba(155,228,239,.16)}
+.anniversary-hero h1{margin:22px 0 14px;color:#fff;font-size:clamp(40px,6vw,76px);line-height:1.08;letter-spacing:-.055em;font-weight:900;text-shadow:0 4px 28px rgba(0,0,0,.2)}
+.anniversary-hero h1 em{color:#b9e9f3;font-style:normal}
+.anniversary-hero p{max-width:480px;margin:0;color:rgba(255,255,255,.82);font-size:13px;line-height:1.9}
+.anniversary-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:25px}
+.anniversary-actions .primary-btn,.anniversary-actions .secondary-btn{min-height:46px;padding:0 20px;border-radius:14px;font-size:12px;font-weight:850}
+.anniversary-actions .primary-btn{color:#1b3150;background:#fff;box-shadow:0 8px 22px rgba(7,18,39,.2)}
+.anniversary-actions .primary-btn span{margin-left:12px;color:#6488bc}
+.anniversary-actions .secondary-btn{color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.38);backdrop-filter:blur(8px)}
+.anniversary-mark{position:absolute;z-index:1;right:5%;bottom:8%;display:flex;flex-direction:column;align-items:center;color:rgba(255,255,255,.9);text-shadow:0 4px 24px rgba(0,0,0,.25);pointer-events:none}
+.anniversary-mark span{font-size:clamp(76px,13vw,166px);font-weight:900;line-height:.78;letter-spacing:-.1em}
+.anniversary-mark small{font-size:9px;font-weight:900;letter-spacing:.28em;margin-top:13px}
+.anniversary-credit{position:absolute;z-index:3;right:28px;top:25px;color:rgba(255,255,255,.78);font-size:8px;font-weight:800;letter-spacing:.12em}
+.section-head{margin:48px 4px 18px;align-items:center}
+.section-head .kicker{color:#7e8da5;font-size:10px;letter-spacing:.2em}
+.section-head h2{margin-top:7px;color:#253753;font-size:clamp(22px,3vw,30px);letter-spacing:-.04em}
+.section-head:after{color:#8e9ed0;opacity:.7}.section-link{color:#7184a3}
+.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:stretch}
+.home-grid>.home-column{display:contents}.home-grid>.home-column>.home-feature{min-width:0}
+.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide{width:100%;min-height:112px;height:100%;padding:18px 42px 18px 17px;border:1px solid rgba(255,255,255,.88);border-radius:20px;background:rgba(255,255,255,.78);box-shadow:0 12px 30px rgba(39,62,101,.075),inset 0 1px 0 #fff;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}
+.home-grid .app-card:hover{transform:translateY(-3px);border-color:rgba(133,169,218,.52);box-shadow:0 18px 38px rgba(39,62,101,.13),inset 0 1px 0 #fff}
+.home-grid .app-card .icon{width:48px;height:48px;border-radius:16px;font-size:20px;box-shadow:0 8px 18px rgba(46,69,111,.13)}
+.home-grid .app-card h3{font-size:14px;color:#263a5b!important}.home-grid .app-card p{font-size:10px;color:#71809a;white-space:normal}.home-grid .app-card .chev{color:#8b9bb4}
+.home-grid .card-cyan .icon{background:linear-gradient(145deg,#72cde5,#4b9fc9)}
+.home-grid .card-violet .icon{background:linear-gradient(145deg,#a89beb,#776cc8)}
+.home-grid .card-orange .icon{background:linear-gradient(145deg,#f3b17f,#e78c75)}
+.home-grid .card-yellow .icon{background:linear-gradient(145deg,#f5d887,#e7b85e);color:#59472c}
+.home-grid .card-dark .icon{background:linear-gradient(145deg,#91a3c4,#667b9e)}
+.home-grid .card-green .icon{background:linear-gradient(145deg,#8bd4c0,#5cae9e)}
+.page-head{padding-top:56px}.page-title{color:#243653}.kicker{color:#8392a9}.page-subtitle{color:#71809a}
+.sekai-chip{color:#536b90;border-color:rgba(255,255,255,.9);background:rgba(255,255,255,.72)}
+.list-panel,.settings-card,.stat,.search-input,.filter-btn{border-color:var(--hub-line);box-shadow:0 10px 28px rgba(39,62,101,.07)}
+.bottom-bar{width:min(620px,calc(100% - 28px));height:68px;padding:7px;border:1px solid rgba(255,255,255,.78);border-radius:23px;background:rgba(246,249,255,.82);box-shadow:0 15px 38px rgba(20,39,73,.20),inset 0 1px 0 #fff;backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%)}
+.tab{color:#8795ab;font-size:10px;border-radius:16px}.tab .tab-icon{font-size:18px}.tab.active,.tab.lens-near{color:#385b8e}
+.tab-indicator{background:linear-gradient(135deg,rgba(133,199,226,.28),rgba(167,158,225,.20));border-color:rgba(120,157,207,.3);box-shadow:0 5px 16px rgba(59,91,143,.12),inset 0 1px 0 rgba(255,255,255,.8)}
+.footer{color:#e5ecf7;text-shadow:0 2px 8px rgba(9,22,44,.55)}
+@media(max-width:980px){.app-shell{padding:18px 18px 120px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){
+.sekai-ambience:before{background-position:58% top;background-size:auto 100%}
+.app-shell{padding:9px 10px 116px}.app-shell:before{border-radius:24px;background:rgba(244,248,255,.82)}
+.topbar{top:8px;min-height:58px;padding:7px 8px 7px 11px;border-radius:17px}.brand-mark{width:36px;height:36px}
+.brand-text strong{font-size:12px}.brand-text span{display:block;font-size:8px;letter-spacing:.1em}
+.top-icon{width:40px;height:40px;min-width:40px}
+.anniversary-hero{min-height:420px;margin-top:15px;padding:28px 22px 34px;align-items:flex-end;border-radius:23px;background-position:59% center}
+.anniversary-hero:before{background:linear-gradient(0deg,rgba(13,27,51,.96),rgba(17,34,62,.82) 42%,rgba(17,34,62,.18))}
+.anniversary-hero:after{inset:9px;border-radius:17px}.anniversary-eyebrow{font-size:8px;letter-spacing:.14em}
+.anniversary-hero h1{font-size:42px;margin:13px 0 10px}.anniversary-hero p{font-size:11px;line-height:1.8}
+.anniversary-actions{gap:8px;margin-top:17px}.anniversary-actions .primary-btn,.anniversary-actions .secondary-btn{min-height:42px;padding:0 13px;font-size:10px;border-radius:12px}
+.anniversary-mark{right:18px;top:22px;bottom:auto}.anniversary-mark span{font-size:76px}.anniversary-mark small{font-size:7px;margin-top:8px}
+.anniversary-credit{right:17px;top:auto;bottom:14px;font-size:7px}
+.section-head{margin:34px 3px 13px}.section-head h2{font-size:22px}
+.home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.home-grid .app-card,.home-grid .app-card.feature,.home-grid .app-card.wide{min-height:100px;padding:13px 12px;border-radius:16px;gap:9px;align-items:flex-start;flex-direction:column}
+.home-grid .app-card .icon{width:36px;height:36px;border-radius:12px;font-size:16px}
+.home-grid .app-card h3{font-size:12px;margin-bottom:3px}.home-grid .app-card p{font-size:9px;line-height:1.45}
+.home-grid .app-card .chev{right:11px;top:18px;transform:none;font-size:14px}
+.page-head{padding:42px 3px 20px}.page-title{font-size:48px}
+.bottom-bar{bottom:calc(10px + var(--safe-bottom));height:62px;width:calc(100% - 20px);border-radius:20px}.tab{min-height:46px}
+.footer{padding-left:10px;padding-right:10px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
