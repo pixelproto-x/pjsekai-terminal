@@ -58,4 +58,4 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
-assert.doesNotMatch(player, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
+assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
