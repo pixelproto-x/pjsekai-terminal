@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Telugu:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>Project SEKAI｜玩家工具箱</title>
+<title>世界計畫玩家工具箱</title>
 <style>
 :root{
   --bg:#f2f3f7;--panel:rgba(255,255,255,.84);--panel-solid:#fff;--ink:#181a22;--muted:#7a7d88;
@@ -131,7 +131,7 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .official-gallery div:active img{transform:scale(1.015)}
 .section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:54px 3px 18px}
 .section-head h2{font-size:28px;letter-spacing:-.04em;margin:6px 0 0}
-.section-head:after{content:"✦  ♪  ♫";font-size:12px;letter-spacing:.18em;color:rgba(145,121,245,.42);margin-left:auto;margin-bottom:5px}
+.section-head:after{content:none}
 .section-link{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
 
 .home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start;grid-auto-rows:max-content}
@@ -917,7 +917,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   }
 }</style>
 <link rel="stylesheet" href="redesign-6th.css?v=1">
-<link rel="stylesheet" href="sekai-themes.css">
+<link rel="stylesheet" href="sekai-themes.css?v=2">
 <style>
 .hub-lookup{margin-top:18px}
 .player-panel{margin:18px 0;padding:clamp(18px,3vw,30px);border:1px solid rgba(255,255,255,.9);border-radius:24px;background:rgba(255,255,255,.88);box-shadow:0 14px 36px rgba(35,62,105,.085),inset 0 1px 0 #fff}
@@ -955,103 +955,103 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 <body>
 <div class="top-accent"></div>
 <div class="sekai-ambience" aria-hidden="true">
-  <div class="official-art art-left"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png" alt=""></div>
-  <div class="official-art art-right"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png" alt=""></div>
-  <div class="official-art art-bottom"><img src="https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png" alt=""></div>
+  
+  
+  
 </div>
 <div class="app-shell">
 <header class="topbar">
   <button class="brand" id="homeBrand" aria-label="回到首頁" type="button">
     <span class="brand-mark"></span>
-    <span class="brand-text"><strong>世界計畫玩家工具箱</strong><span>PLAYER HUB · 6TH ANNIVERSARY</span></span>
+    <span class="brand-text"><strong>世界計畫玩家工具箱</strong><span>六週年紀念</span></span>
   </button>
-  <div class="top-actions"><button class="top-icon" id="scrollTopBtn" aria-label="置頂" type="button">↑</button></div>
+  <div class="top-actions"><button class="top-icon" id="scrollTopBtn" aria-label="回到頂端" type="button">回到頂端</button></div>
 </header>
 <main>
   <section class="page active" data-page="home">
     <section class="anniversary-hero" aria-label="六週年主視覺">
       <div class="anniversary-hero-content">
-        <div class="anniversary-eyebrow"><span></span> PROJECT SEKAI · 6TH ANNIVERSARY</div>
-        <h1>每個人的 SEKAI<br><em>都值得被看見</em></h1>
-        <p>以玩家 UID 為起點，查看台灣區可取得的公開玩家資料。</p>
+        <div class="anniversary-eyebrow"><span></span>世界計畫六週年</div>
+        <h1>每個人的世界<br><em>都值得被看見</em></h1>
+        <p>輸入玩家 UID 查看台灣區公開玩家資料</p>
         <div class="anniversary-actions">
-          <button class="primary-btn" data-go="profile" type="button">查詢玩家資料 <span>↗</span></button>
-          <button class="secondary-btn" data-go="settings" type="button">自訂 SEKAI</button>
+          <button class="primary-btn" data-go="profile" type="button">查詢玩家資料</button>
+          <button class="secondary-btn" data-go="settings" type="button">更換主題</button>
         </div>
       </div>
-      <div class="anniversary-mark" aria-hidden="true"><span>6</span><small>ANNIVERSARY</small></div>
-      <a class="anniversary-credit" href="https://pjsekai.sega.jp/6th/index.html" target="_blank" rel="noopener noreferrer">6TH ANNIVERSARY · OFFICIAL SITE ↗</a>
+      <div class="anniversary-mark" aria-hidden="true"><span>6</span></div>
+      <a class="anniversary-credit" href="https://pjsekai.sega.jp/6th/index.html" target="_blank" rel="noopener noreferrer">六週年官方網站</a>
     </section>
     <section class="hub-lookup" aria-labelledby="hubLookupTitle">
       <div class="hub-lookup-copy">
-        <span class="hub-eyebrow"><i></i> PLAYER SEARCH · TAIWAN</span>
-        <h2 id="hubLookupTitle">從 UID 開始，<em>探索你的 SEKAI</em></h2>
-        <p>輸入台灣區玩家 UID，查看公開 Profile。無需登入，也不需要提供遊戲密碼。</p>
+        <span class="hub-eyebrow"><i></i>台灣區玩家查詢</span>
+        <h2 id="hubLookupTitle">從 UID 開始<br><em>探索玩家世界</em></h2>
+        <p>輸入台灣區玩家 UID 即可查詢 不需要登入或提供遊戲密碼</p>
       </div>
       <form class="hub-lookup-form" id="homePlayerLookup">
         <label for="homePlayerUid">玩家 UID</label>
         <div class="hub-lookup-control">
-          <span class="hub-region">TW</span>
+          <span class="hub-region">台灣</span>
           <input id="homePlayerUid" name="playerId" type="text" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" aria-describedby="homePlayerHint" required>
-          <button type="submit">查詢玩家 <span aria-hidden="true">↗</span></button>
+          <button type="submit">查詢玩家</button>
         </div>
-        <p id="homePlayerHint">目前只開放台灣區公開 Profile；資料依第三方來源實際提供內容顯示。</p>
+        <p id="homePlayerHint">目前開放台灣區公開資料 查詢結果依資料來源提供內容顯示</p>
       </form>
     </section>
   </section>
   <section class="page" data-page="profile">
     <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>PLAYER LOOKUP · TW</div><div class="kicker">PUBLIC PLAYER DATA</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">使用 UID 查詢公開 Profile。未登入也能使用；只顯示資料來源實際提供的欄位。</p></div>
-      <button class="back-btn" data-go="home" type="button">‹ 首頁</button>
+      <div><div class="sekai-chip">台灣區公開資料</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">使用 UID 查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
+      <button class="back-btn" data-go="home" type="button">回到首頁</button>
     </div>
     <section class="player-panel">
-      <div class="msk-card-kicker">HISEKAI · TAIWAN PUBLIC PROFILE</div>
+      <div class="msk-card-kicker">公開玩家資料</div>
       <form class="player-form" id="playerLookupForm">
-        <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入 1–20 位數字 UID" required></label>
+        <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" required></label>
         <button id="playerLookupButton" type="submit">查詢公開資料</button>
       </form>
-      <p class="player-status" id="playerLookupStatus" role="status" aria-live="polite">尚未查詢。輸入 UID 即可開始。</p>
+      <p class="player-status" id="playerLookupStatus" role="status" aria-live="polite">輸入 UID 開始查詢</p>
       <div class="player-results" id="playerLookupResults" aria-live="polite"></div>
     </section>
   </section>
   <section class="page" data-page="settings">
     <div class="page-head">
-      <div><div class="sekai-chip"><span class="chip-dot"></span>PROJECT SEKAI</div><div class="kicker">DISPLAY SETTINGS</div><h1 class="page-title">設定</h1><p class="page-subtitle">保留六週年介面與 SEKAI 主題自訂，不包含舊版遊戲工具設定。</p></div>
-      <button class="back-btn" data-go="home" type="button">‹ 首頁</button>
+      <div><div class="sekai-chip">外觀設定</div><h1 class="page-title">介面設定</h1><p class="page-subtitle">調整介面透明度和六大團體主題</p></div>
+      <button class="back-btn" data-go="home" type="button">回到首頁</button>
     </div>
     <div class="settings-card">
-      <div class="settings-row-head"><div><strong>介面透明度</strong><span>調整玻璃介面的透明程度。</span></div><strong id="opacityValue">22%</strong></div>
+      <div class="settings-row-head"><div><strong>介面透明度</strong><span>調整背景和卡片的透明程度</span></div><strong id="opacityValue">22</strong></div>
       <input id="opacityRange" class="opacity-range" aria-label="介面透明度" type="range" min="0" max="100" step="1" value="22">
-      <div class="settings-scale"><span>較透明</span><span>平衡</span><span>較明確</span></div>
+      <div class="settings-scale"><span>透亮</span><span>標準</span><span>清晰</span></div>
       <div class="settings-presets">
-        <button type="button" data-opacity="12">12% Glass</button><button type="button" data-opacity="22">22% Balanced</button><button type="button" data-opacity="35">35% Soft</button><button type="button" data-opacity="48">48% Solid</button>
+        <button type="button" data-opacity="12">透亮</button><button type="button" data-opacity="22">標準</button><button type="button" data-opacity="35">柔和</button><button type="button" data-opacity="48">清晰</button>
       </div>
     </div>
     <div class="settings-card preview-card">
-      <div class="kicker">即時預覽</div><h2>SEKAI STYLE</h2><p>調整透明度，立即預覽介面效果。</p>
-      <div class="preview-glass"><span>PROJECT SEKAI</span><strong>介面預覽</strong><span>♫ 世界計畫 ♫</span></div>
+      <div class="kicker">即時預覽</div><h2>介面預覽</h2><p>調整透明度查看實際效果</p>
+      <div class="preview-glass"><span>世界計畫</span><strong>介面預覽</strong><span>六大團體主題</span></div>
     </div>
     <div class="settings-card">
-      <div class="settings-row-head"><div><strong>SEKAI 世界主題</strong><span>六套依照各團體世界觀設計的完整介面風格</span></div></div>
+      <div class="settings-row-head"><div><strong>六大團體主題</strong><span>每個團體都有自己的背景和介面風格</span></div></div>
       <div class="theme-grid" id="themeGrid">
-        <button class="theme-choice theme-virtual" data-theme="virtual-singer" type="button" aria-label="VIRTUAL SINGER 主題"><span class="theme-dot"></span><span><strong>虛擬歌手</strong><small>VIRTUAL SINGER</small></span></button>
-        <button class="theme-choice theme-leo" data-theme="leo-need" type="button" aria-label="Leo need 主題"><span class="theme-dot"></span><span><strong>Leo/need</strong><small>BLUE HORIZON</small></span></button>
-        <button class="theme-choice theme-mmj" data-theme="more-more-jump" type="button" aria-label="MORE MORE JUMP 主題"><span class="theme-dot"></span><span><strong>MORE MORE JUMP!</strong><small>IDOL BLOOM</small></span></button>
-        <button class="theme-choice theme-vbs" data-theme="vivid-bad-squad" type="button" aria-label="Vivid BAD SQUAD 主題"><span class="theme-dot"></span><span><strong>Vivid BAD SQUAD</strong><small>STREET BEAT</small></span></button>
-        <button class="theme-choice theme-wxs" data-theme="wonderlands-showtime" type="button" aria-label="Wonderlands x Showtime 主題"><span class="theme-dot"></span><span><strong>Wonderlands×Showtime</strong><small>SHOWTIME</small></span></button>
-        <button class="theme-choice theme-n25" data-theme="nightcord" type="button" aria-label="25時 Nightcord 主題"><span class="theme-dot"></span><span><strong>25時 Nightcord</strong><small>AFTER THE END</small></span></button>
+        <button class="theme-choice theme-virtual" data-theme="virtual-singer" type="button" aria-label="虛擬歌手主題"><span class="theme-dot"></span><span><strong>虛擬歌手</strong><small>VIRTUAL SINGER</small></span></button>
+        <button class="theme-choice theme-leo" data-theme="leo-need" type="button" aria-label="Leo need 主題"><span class="theme-dot"></span><span><strong>Leo need</strong><small>星空樂團</small></span></button>
+        <button class="theme-choice theme-mmj" data-theme="more-more-jump" type="button" aria-label="MORE MORE JUMP 主題"><span class="theme-dot"></span><span><strong>MORE MORE JUMP</strong><small>偶像舞台</small></span></button>
+        <button class="theme-choice theme-vbs" data-theme="vivid-bad-squad" type="button" aria-label="Vivid BAD SQUAD 主題"><span class="theme-dot"></span><span><strong>Vivid BAD SQUAD</strong><small>街頭音樂</small></span></button>
+        <button class="theme-choice theme-wxs" data-theme="wonderlands-showtime" type="button" aria-label="Wonderlands Showtime 主題"><span class="theme-dot"></span><span><strong>Wonderlands Showtime</strong><small>繽紛劇場</small></span></button>
+        <button class="theme-choice theme-n25" data-theme="nightcord" type="button" aria-label="25時 Nightcord 主題"><span class="theme-dot"></span><span><strong>25時 Nightcord</strong><small>深夜音樂</small></span></button>
       </div>
-      <div class="data-status" id="themeStatus">目前主題：虛擬歌手</div>
+      <div class="data-status" id="themeStatus">目前主題 虛擬歌手</div>
     </div>
   </section>
 </main>
 </div>
-<footer class="footer">PROJECT SEKAI PLAYER HUB · Fan-made project · 本網站為非官方粉絲作品，與 SEGA、Colorful Palette 無隸屬關係。六週年主視覺由官方網站載入並連結至官方頁面。</footer>
+<footer class="footer">本網站為玩家製作的非官方作品 與 SEGA 及 Colorful Palette 無關 六週年主視覺連結至官方網站</footer>
 <nav class="bottom-bar" aria-label="主選單">
   <span class="tab-indicator" aria-hidden="true"></span>
-  <button class="tab active" data-go="home" type="button"><span class="tab-icon">⌂</span>首頁</button>
-  <button class="tab" data-go="profile" type="button"><span class="tab-icon">♙</span>玩家</button>
-  <button class="tab" data-go="settings" type="button"><span class="tab-icon">⚙</span>設定</button>
+  <button class="tab active" data-go="home" type="button">首頁</button>
+  <button class="tab" data-go="profile" type="button">玩家</button>
+  <button class="tab" data-go="settings" type="button">設定</button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="app-shell.js"></script>

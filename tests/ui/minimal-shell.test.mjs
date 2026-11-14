@@ -17,7 +17,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
   assert.match(themes, new RegExp('data-sekai-theme="' + theme + '"'), theme + " has its own visual system");
 }
 assert.match(html, /sekai-themes\.css/, "six-unit theme stylesheet is linked");
-for (const unit of ["VS","LN","MMJ","VBS","WxS","N25"]) assert.match(themes, new RegExp("Wallpapers_" + unit + "_iphone"), unit + " official wallpaper is referenced");
+assert.doesNotMatch(themes, /colorfulstage\.com|pjsekai\.sega\.jp/, "unit themes use original CSS artwork rather than embedded downloadable wallpaper assets");
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
 assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
@@ -43,3 +43,19 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 
 assert.equal(routes.length, 3, "only home, player lookup, and appearance settings remain");
 console.log("Minimal player hub UI smoke tests passed.");
+
+const visibleText = html
+  .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+  .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&[^;]+;/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+assert.doesNotMatch(visibleText, /[，。！？：；、·↗♫✦♪‹％%]/, "visible interface copy has no decorative punctuation or symbols");
+assert.doesNotMatch(visibleText, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT|Fan-made project/, "template-like labels are removed");
+for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
+  assert.match(themes, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated visual design");
+}
+assert.match(themes, /--unit-scene/);
+assert.match(themes, /--unit-pattern/);
+assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
