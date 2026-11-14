@@ -1,34 +1,18 @@
-# Public data source audit
+# Public player data source audit
 
-Last checked: 2026-11-14
+## Confirmed documentation
+- Hi Sekai documents the Taiwan profile endpoint: `GET https://api.hisekai.org/tw/user/{user_id}/profile`.
+- The documentation describes cached profile data and may include fields such as level, team, cards, and power.
+- Documentation does not guarantee every field exists for every player or that complete play history, AP/FC records, or full collection data are available.
+- Sekai Master API provides game master data; it is not a player-profile endpoint.
 
-## Player UID lookup
+## Current implementation
+- Browser-side adapter: `src/data/hisekai-player.mjs`.
+- UID is validated before requests; successful responses are cached locally for five minutes.
+- UI reports source, region, freshness, and errors. It does not claim missing fields are zero or that absent team data means an empty team.
+- The lookup does not request game passwords, private account tokens, or login credentials.
 
-### Hi Sekai
-- Documentation: https://docs.hisekai.org/en/docs/api/user/profile
-- Endpoint documented: GET https://api.hisekai.org/{region}/user/{user_id}/profile
-- Documented region coverage: TW only at the time checked.
-- The endpoint is described as cached data.
-- The documentation says the raw response includes level, team, cards, power, and additional fields.
-- The user lookup documentation currently lists the profile endpoint; it does not document a universal endpoint for every player record.
-
-Implementation decision:
-- Treat this as a TW profile provider, not a global player-data provider.
-- Show its source and retrieval time in the UI.
-- Keep profile fields optional and preserve the raw response for normalization tests.
-- Do not infer AP/FC history, full inventory, or other records from the existence of a profile response.
-- Before production use, verify CORS behavior, rate limits, terms, response shape, and endpoint availability from the deployed browser environment.
-
-## Implementation status\n\n- A browser-side Taiwan profile adapter now uses the documented endpoint, validates UIDs, applies a short local TTL cache, and exposes source/freshness metadata.\n- Automated tests cover request URL construction, caching, invalid UID rejection, and upstream HTTP errors.\n- Live browser CORS behavior, production rate limits, and current endpoint availability remain unverified; the UI must show failures rather than imply that every UID is retrievable.\n\n## Master game data
-
-### Sekai Master API
-- Project: https://github.com/Sekai-World/sekai-master-api
-- Documentation describes public master-data GET endpoints under /api/v1.
-- This is a source for game master data (for example cards, music, events, characters), not evidence of a public player UID profile endpoint.
-- Keep master-data adapters separate from player-profile adapters.
-
-## Other possible sources
-Community gateways and unofficial clients exist, but their existence alone does not establish that an endpoint is public, stable, region-complete, browser-accessible, or suitable for this site. Evaluate each candidate independently before registering it.
-
-## Coverage policy
-A region/capability pair is marked supported only after the exact endpoint has been verified. Unsupported regions must produce a clear unavailable state rather than silently querying a different region. No login, private credential, game-account token, or hidden account data is required or collected for public UID lookup.
+## Verification limits
+- Browser CORS behavior, live upstream availability, and production rate limits must be verified in the target browser/network.
+- The endpoint is documented for Taiwan only. Other regions are not marked supported.
+- The API's current response schema is not guaranteed by this static client; the UI displays only recognizable public fields and avoids inventing unavailable data.

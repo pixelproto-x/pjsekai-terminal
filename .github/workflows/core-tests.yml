@@ -2,7 +2,7 @@ name: Core refactor tests
 
 on:
   push:
-    branches: ["refactor/player-hub-core"]
+    branches: ["cleanup/keep-ui-player-lookup"]
   pull_request:
     branches: ["main"]
 
@@ -15,4 +15,7 @@ jobs:
         with:
           node-version: 22
       - name: Run core unit tests
-        run: node --test tests/core/*.test.mjs tests/data/*.test.mjs tests/ui/*.test.mjs
+        run: |
+          node --check app-shell.js
+          node --check player-lookup.js
+          node --test tests/core/*.test.mjs tests/data/*.test.mjs tests/ui/*.test.mjs
