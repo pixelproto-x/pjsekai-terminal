@@ -9,8 +9,8 @@
     event.preventDefault();
     const playerId = uidInput.value.trim();
 
-    if (!/^\d{1,32}$/.test(playerId)) {
-      uidInput.setCustomValidity("請輸入 1～32 位數字組成的玩家 UID。");
+    if (!/^\d{1,20}$/.test(playerId)) {
+      uidInput.setCustomValidity("請輸入 1～20 位數字組成的玩家 UID。");
       uidInput.reportValidity();
       return;
     }
