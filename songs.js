@@ -15,6 +15,19 @@ const STORAGE = {
 };
 const difficultyNames = { easy: "EASY", normal: "NORMAL", hard: "HARD", expert: "EXPERT", master: "MASTER", append: "APPEND" };
 const state = { songs: [], difficulties: [], favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
+const SONG_VIEW_KEY = "pjskSongViewV1";
+const savedSongView = readStorage(SONG_VIEW_KEY, {});
+function saveSongView() {
+  writeStorage(SONG_VIEW_KEY, {
+    search: $("#songSearch").value,
+    difficulty: $("#songDifficulty").value,
+    level: $("#songLevel").value,
+    sort: $("#songSort").value,
+    filter: state.filter,
+    randomId: state.randomId,
+    playlistFilterIds: state.playlistFilterIds ? [...state.playlistFilterIds] : null,
+  });
+}
 
 function readStorage(key, fallback) {
   try {
@@ -106,6 +119,7 @@ function setFilter(filter) {
   state.randomId = null;
   state.playlistFilterIds = null;
   ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[filter]));
+  saveSongView();
   renderSongs();
 }
 async function loadSongs(region = $("#songRegion").value) {
@@ -134,6 +148,14 @@ async function loadSongs(region = $("#songRegion").value) {
   }
 }
 $("#songRegion").value = readStorage("pjskSongRegion", "tw");
+$("#songSearch").value = savedSongView.search || "";
+$("#songDifficulty").value = savedSongView.difficulty || "";
+$("#songLevel").value = savedSongView.level || "";
+$("#songSort").value = savedSongView.sort || "title";
+state.filter = ["all", "favorites", "unplayed"].includes(savedSongView.filter) ? savedSongView.filter : "all";
+state.randomId = Number.isFinite(Number(savedSongView.randomId)) && savedSongView.randomId !== null ? Number(savedSongView.randomId) : null;
+state.playlistFilterIds = Array.isArray(savedSongView.playlistFilterIds) ? new Set(savedSongView.playlistFilterIds) : null;
+["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#"+id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[state.filter]));
 window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
 $("#songRegion").addEventListener("change", () => {
   writeStorage("pjskSongRegion", $("#songRegion").value);
@@ -143,8 +165,8 @@ $("#songRegion").addEventListener("change", () => {
 state.favorites = new Set(readStorage(STORAGE.favorites, []));
 state.records = readStorage(STORAGE.records, {});
 state.playlists = readStorage(STORAGE.playlists, []);
-$("#songSearch").addEventListener("input", () => { state.randomId = null; renderSongs(); });
-["songDifficulty", "songLevel", "songSort"].forEach((id) => $("#" + id).addEventListener("change", () => { state.randomId = null; renderSongs(); }));
+$("#songSearch").addEventListener("input", () => { state.randomId = null; saveSongView(); renderSongs(); });
+["songDifficulty", "songLevel", "songSort"].forEach((id) => $("#" + id).addEventListener("change", () => { state.randomId = null; saveSongView(); renderSongs(); }));
 $("#songShowAll").addEventListener("click", () => setFilter("all"));
 $("#songShowFavorites").addEventListener("click", () => setFilter("favorites"));
 $("#songShowUnplayed").addEventListener("click", () => setFilter("unplayed"));
@@ -152,6 +174,7 @@ $("#songRandom").addEventListener("click", () => {
   const songs = visibleSongs();
   if (!songs.length) return window.PJSEKAI?.toast("目前條件沒有可抽選的歌曲");
   state.randomId = songs[Math.floor(Math.random() * songs.length)].id;
+  saveSongView();
   renderSongs();
   $("#songList").scrollIntoView({ behavior: "smooth", block: "start" });
 });
@@ -222,6 +245,7 @@ $("#songPlaylistList").addEventListener("click", (event) => {
   } else {
     state.playlistFilterIds = new Set(playlist.songIds);
     state.filter = "playlist";
+    saveSongView();
     state.randomId = null;
     ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.remove("active"));
     renderSongs();
