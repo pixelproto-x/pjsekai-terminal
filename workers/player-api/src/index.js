@@ -1,7 +1,9 @@
-import { ALLOWED_ORIGIN, REGIONS, parseProfilePath } from "./routes.mjs";
+import { ALLOWED_ORIGIN, REGIONS, parseProfilePath, parseEventRankingPath } from "./routes.mjs";
 
 const UPSTREAM_TIMEOUT_MS = 8000;
 const CACHE_TTL_SECONDS = 300;
+const HANEOKA_BASE = "https://haneoka.org/api/v1/game/records";
+const HANEOKA_REGIONS = new Set(["jp", "tw", "en", "kr"]);
 const PUBLIC_PROFILE_KEYS = [
   "userGamedata", "userDecks", "userCharacters",
   "userChallengeLiveSoloStages", "userChallengeLiveSoloResults",
@@ -140,6 +142,55 @@ export default {
           optionalFallbacks: ["Haruki", "Exmeaning"],
         },
       }, 200, origin);
+    }
+
+    const eventRanking = parseEventRankingPath(url.pathname);
+    if (eventRanking) {
+      if (!HANEOKA_REGIONS.has(eventRanking.region)) {
+        return json({ error: "EVENT_RANKING_UNSUPPORTED", region: eventRanking.region }, 501, origin);
+      }
+      const eventCache = env.PROFILE_CACHE || globalThis.caches?.default;
+      const eventCacheKey = new Request(url.toString(), { method: "GET" });
+      if (eventCache) {
+        try {
+          const hit = await eventCache.match(eventCacheKey);
+          if (hit) return json({ ...(await hit.json()), cached: true }, 200, origin, { cacheSeconds: 60 });
+        } catch {}
+      }
+      const eventController = new AbortController();
+      const eventTimeout = setTimeout(() => eventController.abort(), UPSTREAM_TIMEOUT_MS);
+      try {
+        const fetchImpl = env.FETCH || fetch;
+        const currentResponse = await fetchImpl(HANEOKA_BASE + "/" + eventRanking.region + "/events/current", {
+          headers: { accept: "application/json" }, signal: eventController.signal,
+        });
+        if (currentResponse.status === 503) return json({ error: "EVENT_DATA_PENDING" }, 503, origin);
+        if (!currentResponse.ok) return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
+        const current = await currentResponse.json();
+        const event = current?.event ?? null;
+        if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
+        const searchUrl = HANEOKA_BASE + "/" + eventRanking.region + "/events/" + encodeURIComponent(String(event.id))
+          + "/points/search?profileId=" + encodeURIComponent(eventRanking.uid);
+        const rankingResponse = await fetchImpl(searchUrl, {
+          headers: { accept: "application/json" }, signal: eventController.signal,
+        });
+        if (rankingResponse.status === 503) return json({ error: "EVENT_DATA_PENDING", event }, 503, origin);
+        if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
+        if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE" }, 502, origin);
+        const ranking = await rankingResponse.json();
+        const payload = { event, ranking, row: ranking?.row ?? null, status: "OK", cached: false };
+        const response = json(payload, 200, origin, { cacheSeconds: 60 });
+        if (eventCache) {
+          const store = eventCache.put(eventCacheKey, response.clone());
+          if (ctx.waitUntil) ctx.waitUntil(store.catch(() => {}));
+        }
+        return response;
+      } catch {
+        return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
+      } finally {
+        eventController.abort();
+        clearTimeout(eventTimeout);
+      }
     }
 
     const profile = parseProfilePath(url.pathname);
