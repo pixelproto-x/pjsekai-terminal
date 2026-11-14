@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-const css = await readFile(new URL("../redesign-6th.css", import.meta.url), "utf8");
-const lookup = await readFile(new URL("../player-lookup.js", import.meta.url), "utf8");
-const shell = await readFile(new URL("../app-shell.js", import.meta.url), "utf8");
+const html = await readFile(new URL("../../index.html", import.meta.url), "utf8");
+const css = await readFile(new URL("../../redesign-6th.css", import.meta.url), "utf8");
+const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
+const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
 assert.match(html, /redesign-6th\.css/, "sixth anniversary UI stylesheet remains linked");
 assert.match(html, /class="anniversary-hero"/, "sixth anniversary hero remains");
