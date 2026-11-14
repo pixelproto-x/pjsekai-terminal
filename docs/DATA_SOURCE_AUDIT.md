@@ -19,7 +19,7 @@ Implementation decision:
 - Do not infer AP/FC history, full inventory, or other records from the existence of a profile response.
 - Before production use, verify CORS behavior, rate limits, terms, response shape, and endpoint availability from the deployed browser environment.
 
-## Master game data
+## Implementation status\n\n- A browser-side Taiwan profile adapter now uses the documented endpoint, validates UIDs, applies a short local TTL cache, and exposes source/freshness metadata.\n- Automated tests cover request URL construction, caching, invalid UID rejection, and upstream HTTP errors.\n- Live browser CORS behavior, production rate limits, and current endpoint availability remain unverified; the UI must show failures rather than imply that every UID is retrievable.\n\n## Master game data
 
 ### Sekai Master API
 - Project: https://github.com/Sekai-World/sekai-master-api
