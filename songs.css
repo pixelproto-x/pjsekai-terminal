@@ -39,3 +39,5 @@
 @media(max-width:820px){.songs-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.songs-toolbar .songs-search{grid-column:1/-1}}
 @media(max-width:640px){.songs-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.songs-overview>div{min-height:76px;padding:13px}.songs-overview strong{font-size:23px}.songs-workbench,.songs-playlists{padding:15px;border-radius:20px}.songs-toolbar{gap:9px}.song-list,.song-playlist-list{grid-template-columns:1fr}.song-card{padding:14px}.song-playlist-form{max-width:none}.song-playlist-form input{min-width:0}.songs-data-note{line-height:1.6}}
 @media(prefers-reduced-motion:reduce){.song-card{transition:none}}
+
+.bottom-bar{grid-template-columns:repeat(4,minmax(0,1fr))}
