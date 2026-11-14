@@ -950,6 +950,12 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 .footer{margin:16px auto 92px;max-width:1000px;text-align:center;font-size:9px;line-height:1.7}
 @media(max-width:640px){.player-form{grid-template-columns:1fr}.player-form button{width:100%}.player-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.player-result-card{padding:13px}.player-team-row{font-size:9px}}
 </style>
+<style>
+.hub-region-select{appearance:none;-webkit-appearance:none;cursor:pointer;max-width:88px;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:center;outline:none}
+.player-form{grid-template-columns:minmax(120px,.34fr) minmax(0,1fr) auto}
+.player-form label select{height:48px;width:100%;padding:0 12px;border:1px solid rgba(111,143,190,.24);border-radius:13px;background:#fff;color:#243b5c;font-size:13px;font-weight:750}
+@media(max-width:640px){.player-form{grid-template-columns:1fr}.hub-region-select{max-width:100%;text-align:left}}
+</style>
 </head>
 
 <body>
@@ -973,7 +979,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <div class="anniversary-hero-content">
         <div class="anniversary-eyebrow"><span></span>世界計畫六週年</div>
         <h1>每個人的世界<br><em>都值得被看見</em></h1>
-        <p>輸入玩家 UID 查看台灣區公開玩家資料</p>
+        <p>輸入玩家 UID 查看五個伺服器的公開玩家資料</p>
         <div class="anniversary-actions">
           <button class="primary-btn" data-go="profile" type="button">查詢玩家資料</button>
           <button class="secondary-btn" data-go="settings" type="button">更換主題</button>
@@ -984,29 +990,30 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     </section>
     <section class="hub-lookup" aria-labelledby="hubLookupTitle">
       <div class="hub-lookup-copy">
-        <span class="hub-eyebrow"><i></i>台灣區玩家查詢</span>
+        <span class="hub-eyebrow"><i></i>五服玩家查詢</span>
         <h2 id="hubLookupTitle">從 UID 開始<br><em>探索玩家世界</em></h2>
-        <p>輸入台灣區玩家 UID 即可查詢 不需要登入或提供遊戲密碼</p>
+        <p>選擇伺服器並輸入玩家 UID 不需要登入或提供遊戲密碼</p>
       </div>
       <form class="hub-lookup-form" id="homePlayerLookup">
         <label for="homePlayerUid">玩家 UID</label>
         <div class="hub-lookup-control">
-          <span class="hub-region">台灣</span>
+          <select class="hub-region hub-region-select" id="homePlayerRegion" aria-label="選擇伺服器"><option value="jp">日本</option><option value="en">國際</option><option value="tw" selected>台灣</option><option value="kr">韓國</option><option value="cn">中國</option></select>
           <input id="homePlayerUid" name="playerId" type="text" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" aria-describedby="homePlayerHint" required>
           <button type="submit">查詢玩家</button>
         </div>
-        <p id="homePlayerHint">目前開放台灣區公開資料 查詢結果依資料來源提供內容顯示</p>
+        <p id="homePlayerHint">支援日本 國際 台灣 韓國 中國五個伺服器 查詢結果依公開資料來源提供內容顯示</p>
       </form>
     </section>
   </section>
   <section class="page" data-page="profile">
     <div class="page-head">
-      <div><div class="sekai-chip">台灣區公開資料</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">使用 UID 查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
+      <div><div class="sekai-chip">五服公開資料</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">選擇伺服器並使用 UID 查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
       <button class="back-btn" data-go="home" type="button">回到首頁</button>
     </div>
     <section class="player-panel">
       <div class="msk-card-kicker">公開玩家資料</div>
       <form class="player-form" id="playerLookupForm">
+        <label for="playerRegion">伺服器<select id="playerRegion" name="region" required><option value="jp">日本</option><option value="en">國際</option><option value="tw" selected>台灣</option><option value="kr">韓國</option><option value="cn">中國</option></select></label>
         <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" required></label>
         <button id="playerLookupButton" type="submit">查詢公開資料</button>
       </form>
