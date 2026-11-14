@@ -162,3 +162,121 @@ try {
   applyOpacity(22);
 }
 go(location.hash.slice(1) || "home", false);
+
+
+const SERVER_FLAGS = {
+  jp: { label: "日服", image: "https://flagcdn.com/w40/jp.png", alt: "日本國旗" },
+  tw: { label: "台服", image: "https://flagcdn.com/w40/tw.png", alt: "台灣國旗" },
+  en: { label: "國際服", globe: true, alt: "國際服" },
+  kr: { label: "韓服", image: "https://flagcdn.com/w40/kr.png", alt: "韓國國旗" },
+  cn: { label: "簡中服", image: "https://flagcdn.com/w40/cn.png", alt: "中國國旗" },
+};
+
+function serverIcon(region, className = "server-flag") {
+  const info = SERVER_FLAGS[region] || SERVER_FLAGS.tw;
+  if (info.globe) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.classList.add("server-globe");
+    const circle = document.createElementNS(svg.namespaceURI, "circle");
+    circle.setAttribute("cx", "12"); circle.setAttribute("cy", "12"); circle.setAttribute("r", "9");
+    const path = document.createElementNS(svg.namespaceURI, "path");
+    path.setAttribute("d", "M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9s-1.1 6.5-3.5 9c-2.4-2.5-3.5-5.5-3.5-9S9.6 5.5 12 3Z");
+    svg.append(circle, path);
+    return svg;
+  }
+  const img = document.createElement("img");
+  img.className = className;
+  img.src = info.image;
+  img.alt = info.alt;
+  img.loading = "eager";
+  img.decoding = "async";
+  return img;
+}
+
+function initServerSelect(select) {
+  if (select.dataset.serverPickerReady) return;
+  select.dataset.serverPickerReady = "true";
+  const wrapper = document.createElement("div");
+  wrapper.className = "server-picker";
+  wrapper.dataset.serverPicker = select.id;
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "server-picker-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  const current = document.createElement("span");
+  current.className = "server-picker-current";
+  const chevron = document.createElement("span");
+  chevron.className = "server-picker-chevron";
+  chevron.setAttribute("aria-hidden", "true");
+  chevron.textContent = "⌄";
+  trigger.append(current, chevron);
+  const menu = document.createElement("div");
+  menu.className = "server-picker-menu";
+  menu.setAttribute("role", "listbox");
+  menu.hidden = true;
+  [...select.options].forEach((option) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "server-picker-option";
+    item.dataset.value = option.value;
+    item.setAttribute("role", "option");
+    item.append(serverIcon(option.value), document.createTextNode(SERVER_FLAGS[option.value]?.label || option.textContent.trim()));
+    item.addEventListener("click", () => {
+      select.value = option.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      syncServerSelect(select);
+      closeServerPicker(wrapper);
+      trigger.focus();
+    });
+    menu.append(item);
+  });
+  select.classList.add("server-picker-native");
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+  select.insertAdjacentElement("afterend", wrapper);
+  wrapper.append(trigger, menu);
+  trigger.addEventListener("click", () => {
+    const open = !menu.hidden;
+    document.querySelectorAll(".server-picker-menu:not([hidden])").forEach((node) => closeServerPicker(node.parentElement));
+    if (!open) {
+      menu.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      wrapper.classList.add("is-open");
+    }
+  });
+  select.addEventListener("change", () => syncServerSelect(select));
+  syncServerSelect(select);
+}
+
+function closeServerPicker(wrapper) {
+  if (!wrapper) return;
+  const menu = wrapper.querySelector(".server-picker-menu");
+  const trigger = wrapper.querySelector(".server-picker-trigger");
+  if (menu) menu.hidden = true;
+  if (trigger) trigger.setAttribute("aria-expanded", "false");
+  wrapper.classList.remove("is-open");
+}
+
+function syncServerSelect(select) {
+  const wrapper = document.querySelector('[data-server-picker="' + select.id + '"]');
+  if (!wrapper) return;
+  const info = SERVER_FLAGS[select.value] || SERVER_FLAGS.tw;
+  const current = wrapper.querySelector(".server-picker-current");
+  current.replaceChildren(serverIcon(select.value), document.createTextNode(info.label));
+  wrapper.querySelectorAll(".server-picker-option").forEach((item) => {
+    const active = item.dataset.value === select.value;
+    item.classList.toggle("active", active);
+    item.setAttribute("aria-selected", String(active));
+  });
+}
+
+document.querySelectorAll("#homePlayerRegion,#playerRegion,#songRegion").forEach(initServerSelect);
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".server-picker")) {
+    document.querySelectorAll(".server-picker.is-open").forEach(closeServerPicker);
+  }
+});
+window.PJSEKAI = { ...(window.PJSEKAI || {}), syncServerSelect };

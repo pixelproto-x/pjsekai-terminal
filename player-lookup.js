@@ -146,6 +146,7 @@ $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   const region = $("#homePlayerRegion")?.value || "tw";
   $("#playerUid").value = uid;
   $("#playerRegion").value = region;
+  window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
   window.PJSEKAI?.go("profile");
   lookup(uid, region);
 });

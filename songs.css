@@ -123,3 +123,59 @@
 @media(prefers-reduced-motion:reduce){
   .song-card,.song-playlist,.song-filter-chip,.song-favorite,.song-playlist-add,.song-playlist-remove{transition:none}
 }
+
+
+/* Image-based server picker shared by player lookup and song center */
+.server-picker{
+  position:relative;display:inline-block;vertical-align:middle;min-width:118px;z-index:20;
+  font:inherit;
+}
+.server-picker-native{
+  display:none!important;position:absolute!important;width:1px!important;height:1px!important;min-width:1px!important;
+  opacity:0!important;pointer-events:none!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
+}
+.server-picker-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:42px;
+  padding:0 12px;border:1px solid rgba(111,143,190,.24);border-radius:13px;
+  background:rgba(255,255,255,.82);color:#243b5c;font:inherit;font-size:12px;font-weight:800;
+  cursor:pointer;box-shadow:0 3px 12px rgba(35,62,105,.045),inset 0 1px 0 rgba(255,255,255,.9);
+  transition:border-color .18s,box-shadow .18s,background .18s;
+}
+.server-picker-trigger:hover,.server-picker.is-open .server-picker-trigger{
+  border-color:rgba(145,121,245,.55);background:#fff;box-shadow:0 0 0 3px rgba(145,121,245,.12);
+}
+.server-picker-current{display:flex;align-items:center;gap:9px;min-width:0;white-space:nowrap}
+.server-flag{display:block;width:25px;height:17px;flex:none;object-fit:cover;border-radius:3px;box-shadow:0 1px 3px rgba(20,30,50,.18)}
+.server-globe{display:block;width:19px;height:19px;flex:none;fill:none;stroke:#6c64bd;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.server-picker-chevron{color:#8272cf;font-size:17px;line-height:1;transition:transform .18s}
+.server-picker.is-open .server-picker-chevron{transform:rotate(180deg)}
+.server-picker-menu{
+  position:absolute;top:calc(100% + 8px);left:0;min-width:100%;width:max-content;max-width:min(230px,calc(100vw - 28px));
+  display:grid;gap:4px;padding:7px;border:1px solid rgba(255,255,255,.92);border-radius:16px;
+  background:rgba(250,251,255,.96);box-shadow:0 16px 42px rgba(25,35,60,.18),inset 0 1px 0 #fff;
+  backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);
+}
+.server-picker-menu[hidden]{display:none}
+.server-picker-option{
+  display:flex;align-items:center;gap:10px;width:100%;min-height:39px;padding:8px 11px;
+  border:0;border-radius:10px;background:transparent;color:#34435d;text-align:left;
+  font:700 12px/1.35 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;white-space:nowrap;cursor:pointer;
+  transition:background .16s,color .16s;
+}
+.server-picker-option:hover{background:rgba(145,121,245,.11)}
+.server-picker-option.active{background:linear-gradient(105deg,rgba(145,121,245,.19),rgba(82,207,232,.16));color:#5748a5}
+.hub-lookup-control>.server-picker{flex:0 0 92px;width:92px;min-width:92px}
+.hub-lookup-control>.server-picker .server-picker-trigger{height:42px;min-height:42px;padding:0 9px;gap:5px;font-size:11px}
+.hub-lookup-control>.server-picker .server-picker-current{gap:6px}
+.player-form label>.server-picker{display:block;width:100%;margin-top:7px}
+.player-form label>.server-picker .server-picker-trigger{height:48px}
+.songs-region-row>.server-picker{min-width:125px}
+.songs-region-row>.server-picker .server-picker-trigger{height:36px;min-height:36px;border-radius:11px;font-size:11px}
+@media(max-width:640px){
+  .hub-lookup-control>.server-picker{flex-basis:86px;width:86px;min-width:86px}
+  .hub-lookup-control>.server-picker .server-picker-trigger{font-size:10px;padding:0 6px}
+  .songs-region-row{flex-wrap:wrap}
+}
+
+/* Override legacy per-ID native-select layout rules after adding the visual picker */
+#homePlayerRegion.server-picker-native,#playerRegion.server-picker-native{display:none!important}
