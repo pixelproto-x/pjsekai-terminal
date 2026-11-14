@@ -996,6 +996,22 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   .hub-region-select:open::picker-icon,.player-form label select:open::picker-icon{transform:rotate(180deg)}
 }
 @media(max-width:640px){.player-form{grid-template-columns:1fr}.hub-region-select{max-width:100%;text-align:left}}
+
+/* Keep the selected server label vertically centered in the player panel */
+#playerRegion{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-sizing:border-box;
+  height:48px;
+  min-height:48px;
+  padding-top:0;
+  padding-bottom:0;
+  line-height:1.4;
+}
+#playerRegion::picker-icon{
+  align-self:center;
+}
 </style>
 </head>
 
