@@ -48,7 +48,7 @@ jobs:
             -o health.json
           node -e '
             const data = require("./health.json");
-            const expected = ["jp", "tw", "en", "kr", "cn"];
+            const expected = ["jp", "tw", "en", "kr", "cn"].sort();
             if (data.status !== "ok" || data.runtime !== "Cloudflare Workers Free") {
               throw new Error("Free Worker health check failed: " + JSON.stringify(data));
             }
