@@ -8,6 +8,6 @@ export function parseProfilePath(pathname) {
 }
 
 export function parseEventRankingPath(pathname) {
-  const match = pathname.match(/^\\/api\\/(jp|tw|en|kr|cn)\\/user\\/(\\d{1,20})\\/event-ranking$/);
+  const match = pathname.match(/^\/api\/(jp|tw|en|kr|cn)\/user\/(\d{1,20})\/event-ranking$/);
   return match ? { region: match[1], uid: match[2] } : null;
 }
