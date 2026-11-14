@@ -1,5 +1,13 @@
 const $ = (selector, root = document) => root.querySelector(selector);
-const DATA_ROOT = "https://sekai-world.github.io/sekai-master-db-diff";
+const DATA_REPOS = {
+  jp: "sekai-master-db-diff",
+  tw: "sekai-master-db-tc-diff",
+  en: "sekai-master-db-en-diff",
+  kr: "sekai-master-db-kr-diff",
+  cn: "sekai-master-db-cn-diff",
+};
+const REGION_NAMES = { jp: "日服", tw: "台服", en: "國際服", kr: "韓服", cn: "簡中服" };
+let loadVersion = 0;
 const STORAGE = {
   favorites: "pjskSongFavorites",
   records: "pjskSongRecords",
@@ -84,7 +92,7 @@ function renderSongs() {
       '<button class="song-playlist-add" type="button" data-action="playlist-add">加入歌單</button></div></article>';
   }).join("");
   $("#songEmpty").hidden = songs.length > 0;
-  $("#songDataStatus").textContent = "顯示 " + songs.length.toLocaleString("zh-TW") + " 首歌曲 資料來源為 Sekai World 日服主資料庫";
+  $("#songDataStatus").textContent = "顯示 " + songs.length.toLocaleString("zh-TW") + " 首歌曲 伺服器 " + REGION_NAMES[$("#songRegion").value];
   updateOverview();
   renderPlaylists();
 }
@@ -100,25 +108,37 @@ function setFilter(filter) {
   ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) => $("#" + id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[filter]));
   renderSongs();
 }
-async function loadSongs() {
+async function loadSongs(region = $("#songRegion").value) {
   const status = $("#songDataStatus");
+  const version = ++loadVersion;
+  const repo = DATA_REPOS[region] || DATA_REPOS.tw;
+  const dataRoot = "https://sekai-world.github.io/" + repo;
+  status.textContent = "正在載入" + REGION_NAMES[region] + "歌曲資料";
   try {
     const [songsResponse, chartsResponse] = await Promise.all([
-      fetch(DATA_ROOT + "/musics.json", { cache: "no-cache" }),
-      fetch(DATA_ROOT + "/musicDifficulties.json", { cache: "no-cache" }),
+      fetch(dataRoot + "/musics.json", { cache: "no-cache" }),
+      fetch(dataRoot + "/musicDifficulties.json", { cache: "no-cache" }),
     ]);
     if (!songsResponse.ok || !chartsResponse.ok) throw new Error("歌曲資料來源暫時無法連線");
     const [songs, charts] = await Promise.all([songsResponse.json(), chartsResponse.json()]);
+    if (version !== loadVersion) return;
     if (!Array.isArray(songs) || !Array.isArray(charts)) throw new Error("歌曲資料格式不正確");
     state.songs = songs.filter((song) => song.title && song.id);
     state.difficulties = charts.filter((chart) => chart.musicId && chart.musicDifficulty);
     renderSongs();
-    status.textContent = "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
+    status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
   } catch (error) {
-    status.textContent = error.message + " 請稍後重新整理";
+    if (version !== loadVersion) return;
+    status.textContent = REGION_NAMES[region] + " " + error.message + " 請稍後重新整理";
     $("#songTotal").textContent = "載入失敗";
   }
 }
+$("#songRegion").value = readStorage("pjskSongRegion", "tw");
+$("#songRegion").addEventListener("change", () => {
+  writeStorage("pjskSongRegion", $("#songRegion").value);
+  state.randomId = null;
+  loadSongs($("#songRegion").value);
+});
 state.favorites = new Set(readStorage(STORAGE.favorites, []));
 state.records = readStorage(STORAGE.records, {});
 state.playlists = readStorage(STORAGE.playlists, []);
