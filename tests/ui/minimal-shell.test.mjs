@@ -16,6 +16,11 @@ assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
 assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
 assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
+assert.match(html, /pointer-events:auto;touch-action:none;cursor:grab/, "selection bubble accepts pointer and touch dragging");
+assert.match(shell, /tabIndicator\.addEventListener\("pointerdown"/, "selection bubble starts dragging on pointer down");
+assert.match(shell, /tabIndicator\.addEventListener\("pointermove"/, "selection bubble follows pointer movement");
+assert.match(shell, /finishIndicatorDrag\(event, true\)/, "releasing dragged bubble selects the nearest tab");
+
 assert.match(html, /transition:left var\(--tab-duration\).*width var\(--tab-duration\)/, "bottom selection bubble smoothly animates its position and width");
 assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom selection bubble realigns after viewport resizing");
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
