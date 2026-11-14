@@ -1,6 +1,6 @@
 import { REGION_LABELS } from "./src/data/regions.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
-import { extractPlayerIdentity, extractPlayerRanking } from "./src/data/player-profile-fields.mjs";
+import { extractPlayerIdentity } from "./src/data/player-profile-fields.mjs";
 
 const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
@@ -40,16 +40,16 @@ function createNode(tag, className, text) {
   if (text !== undefined) node.textContent = String(text);
   return node;
 }
-function renderProfile(result, myName = "") {
+function renderProfile(result) {
   const objects = allObjects(result.data);
   const identity = extractPlayerIdentity(result.data, result.uid);
   const root = result.data && typeof result.data === "object" ? result.data : {};
   const gameData = root.userGamedata || root.user_gamedata || root.user || root;
   const profileData = root.userProfile || root.user_profile || root.profile || {};
+  const scoped = [gameData, profileData, root];
   const name = identity.name;
   const uid = identity.uid;
   const level = identity.level;
-  const rank = extractPlayerRanking(result.data);
   const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
   const team = getArray(objects, ["userDecks", "team", "teamMembers", "team_members", "mainTeam", "main_team"]);
@@ -61,7 +61,6 @@ function renderProfile(result, myName = "") {
   const heading = createNode("div");
   heading.append(createNode("div", "msk-card-kicker", "公開玩家資料"));
   heading.append(createNode("h2", "", name));
-  if (myName) heading.append(createNode("p", "player-custom-name", "我的名稱 " + myName));
   heading.append(createNode("p", "", "UID " + uid));
   header.append(heading, createNode("span", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase()));
   card.append(header);
@@ -69,7 +68,6 @@ function renderProfile(result, myName = "") {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
-    ["玩家排名", rank == null ? "未提供" : rank],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -91,7 +89,7 @@ function renderProfile(result, myName = "") {
     });
     card.append(list);
   } else card.append(createNode("div", "player-empty-note", "資料來源沒有提供可辨識的隊伍資料 這不代表玩家沒有隊伍"));
-  if (!level && !rank && !power && !team.length && !characters.length) {
+  if (!level && !power && !team.length && !characters.length) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
@@ -110,28 +108,8 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-const NAME_STORAGE_KEY = "pjsekai-player-display-name";
-const savedName = (() => {
-  try { return localStorage.getItem(NAME_STORAGE_KEY) || ""; } catch { return ""; }
-})();
-const profileNameInput = $("#myPlayerName");
-const homeNameInput = $("#homePlayerName");
-if (profileNameInput) profileNameInput.value = savedName;
-if (homeNameInput) homeNameInput.value = savedName;
-
-function saveMyName(value) {
-  const name = String(value ?? "").trim().slice(0, 24);
-  try { localStorage.setItem(NAME_STORAGE_KEY, name); } catch {}
-  if (profileNameInput && profileNameInput.value !== name) profileNameInput.value = name;
-  if (homeNameInput && homeNameInput.value !== name) homeNameInput.value = name;
-  return name;
-}
-profileNameInput?.addEventListener("input", () => saveMyName(profileNameInput.value));
-homeNameInput?.addEventListener("input", () => saveMyName(homeNameInput.value));
-
-async function lookup(rawUid, requestedRegion, customName = "") {
+async function lookup(rawUid, requestedRegion) {
   const uid = String(rawUid ?? "").trim();
-  const myName = saveMyName(customName);
   const region = requestedRegion || $("#playerRegion")?.value || $("#homePlayerRegion")?.value || "tw";
   const input = $("#playerUid");
   if (input) input.value = uid;
@@ -140,7 +118,7 @@ async function lookup(rawUid, requestedRegion, customName = "") {
   results?.replaceChildren();
   try {
     const result = await provider.getProfile(uid, region);
-    renderProfile(result, myName);
+    renderProfile(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
@@ -152,17 +130,15 @@ async function lookup(rawUid, requestedRegion, customName = "") {
 }
 $("#playerLookupForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  lookup($("#playerUid")?.value, $("#playerRegion")?.value, $("#myPlayerName")?.value);
+  lookup($("#playerUid")?.value, $("#playerRegion")?.value);
 });
 $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   event.preventDefault();
   const uid = $("#homePlayerUid")?.value;
   const region = $("#homePlayerRegion")?.value || "tw";
-  const myName = $("#homePlayerName")?.value || "";
   $("#playerUid").value = uid;
-  $("#myPlayerName").value = myName;
   $("#playerRegion").value = region;
   window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
   window.PJSEKAI?.go("profile");
-  lookup(uid, region, myName);
+  lookup(uid, region);
 });
