@@ -81,12 +81,12 @@ if (bottomBar && tabIndicator) {
 }
 const validRoutes = new Set(pages.map((page) => page.dataset.page));
 const themeNames = {
-  "virtual-singer": "虛擬歌手 · VIRTUAL SINGER",
-  "leo-need": "Leo/need · BLUE HORIZON",
-  "more-more-jump": "MORE MORE JUMP! · IDOL BLOOM",
-  "vivid-bad-squad": "Vivid BAD SQUAD · STREET BEAT",
-  "wonderlands-showtime": "Wonderlands×Showtime · SHOWTIME",
-  nightcord: "25時 Nightcord · AFTER THE END",
+  "virtual-singer": "虛擬歌手",
+  "leo-need": "Leo need",
+  "more-more-jump": "MORE MORE JUMP",
+  "vivid-bad-squad": "Vivid BAD SQUAD",
+  "wonderlands-showtime": "Wonderlands Showtime",
+  nightcord: "25時 Nightcord",
 };
 let toastTimer;
 
@@ -150,7 +150,7 @@ function applyOpacity(value) {
   root.style.setProperty("--highlight-opacity", Math.min(.36, opacity + .08).toFixed(3));
   root.style.setProperty("--dark-glass-opacity", Math.min(.72, .30 + opacity * .72).toFixed(3));
   if ($("#opacityRange")) $("#opacityRange").value = String(amount);
-  if ($("#opacityValue")) $("#opacityValue").textContent = amount + "%";
+  if ($("#opacityValue")) $("#opacityValue").textContent = String(amount);
   document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
   try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
 }
