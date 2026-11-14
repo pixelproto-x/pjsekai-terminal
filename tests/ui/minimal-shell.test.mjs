@@ -31,7 +31,7 @@ assert.match(shell, /finishIndicatorDrag\(event, true\)/, "releasing dragged bub
 assert.match(html, /transition:left var\(--tab-duration\).*width var\(--tab-duration\)/, "bottom selection bubble smoothly animates its position and width");
 assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom selection bubble realigns after viewport resizing");
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
-assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "only the intended three page sections remain");
+assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four intended page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
 assert.match(lookup, /createHarukiPlayerProvider/, "five-region public UID provider is connected");
 assert.match(html, /id="homePlayerRegion"/, "homepage server selector remains");
