@@ -40,14 +40,21 @@ function createNode(tag, className, text) {
   if (text !== undefined) node.textContent = String(text);
   return node;
 }
-function renderProfile(result) {
+function renderProfile(result, myName = "") {
   const objects = allObjects(result.data);
   const identity = extractPlayerIdentity(result.data, result.uid);
-  const scoped = objects;
+  const root = result.data && typeof result.data === "object" ? result.data : {};
+  const gameData = root.userGamedata || root.user_gamedata || root.user || root;
+  const profileData = root.userProfile || root.user_profile || root.profile || {};
+  const scoped = [gameData, profileData, root].filter((item) => item && typeof item === "object");
   const name = identity.name;
   const uid = identity.uid;
   const level = identity.level;
-  const rank = getValue(scoped, ["playerRank", "player_rank"]);
+  const rank = getValue(scoped, [
+    "playerRank", "player_rank", "userRank", "user_rank",
+    "ranking", "rankingPosition", "ranking_position",
+    "rankPosition", "rank_position", "eventRank", "event_rank",
+  ]);
   const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
   const team = getArray(objects, ["userDecks", "team", "teamMembers", "team_members", "mainTeam", "main_team"]);
@@ -59,6 +66,7 @@ function renderProfile(result) {
   const heading = createNode("div");
   heading.append(createNode("div", "msk-card-kicker", "公開玩家資料"));
   heading.append(createNode("h2", "", name));
+  if (myName) heading.append(createNode("p", "player-custom-name", "我的名稱 " + myName));
   heading.append(createNode("p", "", "UID " + uid));
   header.append(heading, createNode("span", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase()));
   card.append(header);
@@ -107,8 +115,28 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-async function lookup(rawUid, requestedRegion) {
+const NAME_STORAGE_KEY = "pjsekai-player-display-name";
+const savedName = (() => {
+  try { return localStorage.getItem(NAME_STORAGE_KEY) || ""; } catch { return ""; }
+})();
+const profileNameInput = $("#myPlayerName");
+const homeNameInput = $("#homePlayerName");
+if (profileNameInput) profileNameInput.value = savedName;
+if (homeNameInput) homeNameInput.value = savedName;
+
+function saveMyName(value) {
+  const name = String(value ?? "").trim().slice(0, 24);
+  try { localStorage.setItem(NAME_STORAGE_KEY, name); } catch {}
+  if (profileNameInput && profileNameInput.value !== name) profileNameInput.value = name;
+  if (homeNameInput && homeNameInput.value !== name) homeNameInput.value = name;
+  return name;
+}
+profileNameInput?.addEventListener("input", () => saveMyName(profileNameInput.value));
+homeNameInput?.addEventListener("input", () => saveMyName(homeNameInput.value));
+
+async function lookup(rawUid, requestedRegion, customName = "") {
   const uid = String(rawUid ?? "").trim();
+  const myName = saveMyName(customName);
   const region = requestedRegion || $("#playerRegion")?.value || $("#homePlayerRegion")?.value || "tw";
   const input = $("#playerUid");
   if (input) input.value = uid;
@@ -117,7 +145,7 @@ async function lookup(rawUid, requestedRegion) {
   results?.replaceChildren();
   try {
     const result = await provider.getProfile(uid, region);
-    renderProfile(result);
+    renderProfile(result, myName);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
@@ -129,15 +157,17 @@ async function lookup(rawUid, requestedRegion) {
 }
 $("#playerLookupForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  lookup($("#playerUid")?.value, $("#playerRegion")?.value);
+  lookup($("#playerUid")?.value, $("#playerRegion")?.value, $("#myPlayerName")?.value);
 });
 $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   event.preventDefault();
   const uid = $("#homePlayerUid")?.value;
   const region = $("#homePlayerRegion")?.value || "tw";
+  const myName = $("#homePlayerName")?.value || "";
   $("#playerUid").value = uid;
+  $("#myPlayerName").value = myName;
   $("#playerRegion").value = region;
   window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
   window.PJSEKAI?.go("profile");
-  lookup(uid, region);
+  lookup(uid, region, myName);
 });
