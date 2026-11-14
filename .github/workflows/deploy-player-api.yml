@@ -15,9 +15,6 @@ on:
 jobs:
   verify-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,6 +28,9 @@ jobs:
         run: node --test test/*.test.mjs
       - name: Verify Cloudflare deployment credentials
         if: ${{ github.event_name != 'pull_request' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
           if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
@@ -45,4 +45,7 @@ jobs:
       - name: Deploy Cloudflare Worker
         if: ${{ github.event_name != 'pull_request' }}
         working-directory: workers/player-api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4 deploy
