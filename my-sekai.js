@@ -65,8 +65,8 @@ function teamTalent(s){
 function renderIdentity(){
  const s=ensure(),p=s.profile; const total=teamTalent(s);
  $('mskPlayerId').value=p.playerId||'';$('mskPlayerName').value=p.name||'';$('mskSignature').value=p.signature||'';$('mskTitle').value=p.title||'';$('mskTitleSub').value=p.titleSub||'';
- $('mskProfileSource').textContent=p.source==='api'?'API · CACHE':'LOCAL';
- $('mskProfileStatus').textContent=p.source==='api'?'API 資料已載入並保存於本機。':'資料只保存在這台裝置。';
+ $('mskProfileSource').textContent=p.source==='api'?'HISEKAI · '+String(p.sourceRegion||'TW').toUpperCase():'LOCAL';
+ $('mskProfileStatus').textContent=p.source==='api'?'Hi Sekai 台灣區公開資料 · '+(p.loadedAt?new Date(p.loadedAt).toLocaleString():'已載入'):'資料只保存在這台裝置。';
  $('mskMiniTitle').textContent=p.title||'PLAYER';$('mskMiniRank').textContent=p.level?'LEVEL '+fmt(p.level):'RANK '+(p.rank?fmt(p.rank):'—');$('mskMiniName').textContent=p.name||'Player';$('mskMiniSignature').textContent=p.signature||'還沒有簽名。';$('mskMiniId').textContent='ID '+(p.playerId||'未設定');$('mskMiniPower').textContent='TALENT '+fmt(total);
 }
 function renderTeam(){
@@ -199,12 +199,14 @@ async function loadPlayer(){
   p.characterRanks=extractRanks(raw,p);
   p.publicTeamAvailable=hasTeam;
   p.publicCardGroups=cards.length;
+  p.publicCardCount=cards.reduce((sum,group)=>sum+group.cards.length,0);
   if(hasTeam)s.team=team;
   save();renderAll();
   const details=[];
   if(p.level)details.push('Lv. '+fmt(p.level));
   if(p.power)details.push('Power '+fmt(p.power));
   if(hasTeam)details.push('隊伍資料');
+  if(p.publicCardCount)details.push('卡片資料 '+fmt(p.publicCardCount)+' 筆');
   const stamp=new Date(result.fetchedAt).toLocaleString();
   $('mskProfileStatus').textContent='Hi Sekai · 台灣區公開資料 · '+(details.join(' / ')||'已取得部分資料')+' · '+(result.cached?'快取資料':'剛完成查詢')+' · '+stamp;
   bridge.toast(result.cached?'已載入快取玩家資料':'玩家資料已載入');
