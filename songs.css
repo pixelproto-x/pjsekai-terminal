@@ -176,3 +176,6 @@
   .hub-lookup-control>.server-picker .server-picker-trigger{font-size:10px;padding:0 6px}
   .songs-region-row{flex-wrap:wrap}
 }
+
+/* Override legacy per-ID native-select layout rules after adding the visual picker */
+#homePlayerRegion.server-picker-native,#playerRegion.server-picker-native{display:none!important}
