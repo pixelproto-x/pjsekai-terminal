@@ -182,7 +182,7 @@ export default {
         const currentResponse = await fetchImpl(HANEOKA_BASE + "/" + eventRanking.region + "/events/current", {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
-        if (currentResponse.status === 503) return pendingRankingResponse(currentResponse, null, origin);
+        if (currentResponse.status === 503) return await pendingRankingResponse(currentResponse, null, origin);
         if (!currentResponse.ok) return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
         const current = await currentResponse.json();
         const event = current?.event ?? null;
@@ -192,7 +192,7 @@ export default {
         const rankingResponse = await fetchImpl(searchUrl, {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
-        if (rankingResponse.status === 503) return pendingRankingResponse(rankingResponse, event, origin);
+        if (rankingResponse.status === 503) return await pendingRankingResponse(rankingResponse, event, origin);
         if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
         if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE" }, 502, origin);
         const ranking = await rankingResponse.json();
