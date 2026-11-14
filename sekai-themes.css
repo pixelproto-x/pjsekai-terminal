@@ -149,3 +149,14 @@ body[data-sekai-theme="nightcord"] .preview-glass{color:#eeeaf7}
 /* Keep navigation labels above the draggable selection bubble */
 .bottom-bar .tab-indicator{z-index:0}
 .bottom-bar .tab{position:relative;z-index:1}
+
+/* Optional personal display name field in both player lookup forms */
+#homePlayerName,#myPlayerName{
+  min-width:0;width:100%;height:44px;padding:0 13px;border:1px solid var(--line,rgba(24,26,34,.12));
+  border-radius:13px;background:rgba(255,255,255,.82);color:var(--ink,#181a22);font:inherit;font-size:12px;
+}
+#homePlayerName::placeholder,#myPlayerName::placeholder{color:#9297a4}
+.player-custom-name{margin:5px 0 0;color:var(--unit-muted,#71819a);font-size:12px;font-weight:700}
+@media(max-width:640px){
+  #homePlayerName{grid-column:1/-1}
+}
