@@ -15,6 +15,7 @@ function syncTabIndicator() {
 }
 
 let indicatorDrag = null;
+let suppressNextNavClick = false;
 function nearestTabAt(clientX) {
   return tabs.reduce((nearest, tab) => {
     const rect = tab.getBoundingClientRect();
@@ -24,24 +25,36 @@ function nearestTabAt(clientX) {
 }
 
 if (bottomBar && tabIndicator) {
-  tabIndicator.addEventListener("pointerdown", (event) => {
+  // Listen on the navigation container, not the decorative span. This remains
+  // reliable when a tab or pseudo-element wins hit-testing over the bubble.
+  bottomBar.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 && event.pointerType === "mouse") return;
-    const barRect = bottomBar.getBoundingClientRect();
     const indicatorRect = tabIndicator.getBoundingClientRect();
+    const insideIndicator = event.clientX >= indicatorRect.left &&
+      event.clientX <= indicatorRect.right &&
+      event.clientY >= indicatorRect.top &&
+      event.clientY <= indicatorRect.bottom;
+    if (!insideIndicator) return;
+
+    const barRect = bottomBar.getBoundingClientRect();
     indicatorDrag = {
       pointerId: event.pointerId,
+      startX: event.clientX,
       offsetX: event.clientX - indicatorRect.left,
       barLeft: barRect.left + bottomBar.clientLeft,
-      maxLeft: bottomBar.clientWidth - indicatorRect.width - bottomBar.clientLeft * 2,
-      width: indicatorRect.width,
+      maxLeft: bottomBar.clientWidth - indicatorRect.width,
+      moved: false,
     };
+    suppressNextNavClick = false;
     bottomBar.classList.add("is-dragging");
-    tabIndicator.setPointerCapture(event.pointerId);
+    bottomBar.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
 
-  tabIndicator.addEventListener("pointermove", (event) => {
+  bottomBar.addEventListener("pointermove", (event) => {
     if (!indicatorDrag || event.pointerId !== indicatorDrag.pointerId) return;
+    const deltaX = Math.abs(event.clientX - indicatorDrag.startX);
+    if (deltaX > 4) indicatorDrag.moved = true;
     const left = Math.max(0, Math.min(indicatorDrag.maxLeft,
       event.clientX - indicatorDrag.barLeft - indicatorDrag.offsetX));
     tabIndicator.style.setProperty("--tab-left", left + "px");
@@ -50,14 +63,21 @@ if (bottomBar && tabIndicator) {
   const finishIndicatorDrag = (event, shouldNavigate) => {
     if (!indicatorDrag || event.pointerId !== indicatorDrag.pointerId) return;
     const nearest = nearestTabAt(event.clientX);
+    suppressNextNavClick = indicatorDrag.moved;
     indicatorDrag = null;
     bottomBar.classList.remove("is-dragging");
     if (shouldNavigate && nearest) go(nearest.dataset.go);
     else syncTabIndicator();
   };
-  tabIndicator.addEventListener("pointerup", (event) => finishIndicatorDrag(event, true));
-  tabIndicator.addEventListener("pointercancel", (event) => finishIndicatorDrag(event, false));
-  tabIndicator.addEventListener("lostpointercapture", (event) => finishIndicatorDrag(event, false));
+  bottomBar.addEventListener("pointerup", (event) => finishIndicatorDrag(event, true));
+  bottomBar.addEventListener("pointercancel", (event) => finishIndicatorDrag(event, false));
+  bottomBar.addEventListener("lostpointercapture", (event) => finishIndicatorDrag(event, false));
+  bottomBar.addEventListener("click", (event) => {
+    if (!suppressNextNavClick) return;
+    suppressNextNavClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
 }
 const validRoutes = new Set(pages.map((page) => page.dataset.page));
 const themeNames = {
