@@ -70,3 +70,25 @@ test("does not pretend CN event rankings are supported by the provider", async (
   assert.equal(response.status, 501);
   assert.equal((await response.json()).error, "EVENT_RANKING_UNSUPPORTED");
 });
+
+
+test("converts Haneoka pending snapshots into a retryable application response", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        if (String(url).endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 321 } }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: { kind: "pending", retryAfter: 17 } }), { status: 503 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 202);
+  assert.equal(body.status, "DATA_PENDING");
+  assert.equal(body.retryAfter, 17);
+  assert.equal(response.headers.get("retry-after"), "17");
+});
