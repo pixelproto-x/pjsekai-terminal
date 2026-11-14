@@ -1,5 +1,6 @@
 const REGIONS = new Set(["jp", "tw", "en", "kr", "cn"]);
 const ALLOWED_ORIGIN = "https://pixelproto-x.github.io";
+const UPSTREAM_TIMEOUT_MS = 9000;
 
 function json(body, status, origin) {
   return new Response(JSON.stringify(body), {
@@ -19,18 +20,15 @@ function corsOrigin(request) {
   return origin === ALLOWED_ORIGIN ? origin : "";
 }
 
-async function fetchSource(url, headers = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 9000);
+async function fetchSource(url, headers, signal) {
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: { accept: "application/json", ...headers },
-      signal: controller.signal,
+      signal,
     });
-    if (!response.ok) {
-      return { ok: false, status: response.status };
-    }
+    if (!response.ok) return { ok: false, status: response.status };
+
     const data = await response.json();
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       return { ok: false, status: 502 };
@@ -38,8 +36,6 @@ async function fetchSource(url, headers = {}) {
     return { ok: true, data };
   } catch {
     return { ok: false, status: 502 };
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
@@ -68,6 +64,21 @@ function candidates(region, uid, env) {
     });
   }
   return list;
+}
+
+function upstreamError(statuses, region) {
+  const status = statuses.includes(404) ? 404
+    : statuses.includes(429) ? 429
+      : statuses.includes(403) ? 403 : 502;
+  return {
+    status,
+    body: {
+      error: status === 404 ? "PLAYER_NOT_FOUND"
+        : status === 429 ? "RATE_LIMITED"
+          : status === 403 ? "PROFILE_NOT_PUBLIC" : "UPSTREAM_UNAVAILABLE",
+      region,
+    },
+  };
 }
 
 export default {
@@ -111,12 +122,24 @@ export default {
       }, 503, origin);
     }
 
-    const results = await Promise.all(sources.map(async (source) => ({
-      source: source.name,
-      result: await fetchSource(source.url, source.headers),
-    })));
-    const success = results.find((item) => item.result.ok);
-    if (success) {
+    // Race configured providers and return the first valid response. A slow
+    // provider must not delay a successful response from another provider.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+    const statuses = [];
+
+    try {
+      const attempts = sources.map(async (source) => {
+        const result = await fetchSource(source.url, source.headers, controller.signal);
+        if (!result.ok) {
+          statuses.push(result.status);
+          throw new Error("Upstream request failed");
+        }
+        return { source: source.name, result };
+      });
+
+      const success = await Promise.any(attempts);
+      controller.abort();
       return json({
         data: success.result.data,
         uid,
@@ -125,13 +148,12 @@ export default {
         fetchedAt: new Date().toISOString(),
         cached: false,
       }, 200, origin);
+    } catch {
+      controller.abort();
+      const failure = upstreamError(statuses, region);
+      return json(failure.body, failure.status, origin);
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const statuses = results.map((item) => item.result.status);
-    const status = statuses.includes(404) ? 404 : statuses.includes(429) ? 429 : statuses.includes(403) ? 403 : 502;
-    return json({
-      error: status === 404 ? "PLAYER_NOT_FOUND" : status === 429 ? "RATE_LIMITED" : status === 403 ? "PROFILE_NOT_PUBLIC" : "UPSTREAM_UNAVAILABLE",
-      region,
-    }, status, origin);
   },
 };
