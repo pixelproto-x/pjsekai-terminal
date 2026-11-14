@@ -41,7 +41,7 @@ assert.match(html, /::picker\(select\)/, "server dropdown popup has its own CSS 
 assert.match(html, /option:checked/, "selected server has a custom highlighted state");
 assert.match(html, /position-area:block-end span-inline/, "server dropdown is anchored directly below and aligned to its selector");
 assert.match(html, /min-width:160px/, "homepage server dropdown remains wide enough for full server labels");
-for (const [region, label] of [["jp","日服"],["en","國際服"],["tw","台服"],["kr","韓服"],["cn","陸服"]]) {
+for (const [region, label] of [["jp","日服"],["tw","台服"],["en","國際服"],["kr","韓服"],["cn","簡中服"]]) {
   assert.match(html, new RegExp(`<option value="${region}"[^>]*>${label}</option>`), `${label} label is used for its server`);
 }
 
