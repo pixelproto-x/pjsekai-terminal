@@ -19,3 +19,15 @@ jobs:
           node --check app-shell.js
           node --check player-lookup.js
           node --test tests/core/*.test.mjs tests/data/*.test.mjs tests/ui/*.test.mjs
+      - name: Check Haruki Worker syntax and startup script
+        working-directory: workers/player-api
+        run: |
+          node --check src/index.js
+          node --check src/routes.mjs
+          sh -n container-entrypoint.sh
+      - name: Run Haruki Worker route tests
+        working-directory: workers/player-api
+        run: node --test test/*.test.mjs
+      - name: Build pinned Haruki v6.33.0 container image
+        working-directory: workers/player-api
+        run: docker build --tag pjsekai-player-api-ci .
