@@ -60,22 +60,30 @@ function candidates(region, uid, env) {
 }
 
 async function fetchSource(source, signal, fetchImpl) {
-  try {
-    const response = await fetchImpl(source.url, {
-      method: "GET",
-      headers: { accept: "application/json", ...source.headers },
-      signal,
-    });
-    if (!response.ok) return { ok: false, status: response.status };
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetchImpl(source.url, {
+        method: "GET",
+        headers: { accept: "application/json", ...source.headers },
+        signal,
+      });
+      if (!response.ok) {
+        if (response.status >= 500 && attempt === 0 && !signal.aborted) continue;
+        return { ok: false, status: response.status };
+      }
 
-    const data = await response.json();
-    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      const data = await response.json();
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        if (attempt === 0 && !signal.aborted) continue;
+        return { ok: false, status: 502 };
+      }
+      return { ok: true, data };
+    } catch {
+      if (attempt === 0 && !signal.aborted) continue;
       return { ok: false, status: 502 };
     }
-    return { ok: true, data };
-  } catch {
-    return { ok: false, status: 502 };
   }
+  return { ok: false, status: 502 };
 }
 
 function upstreamError(statuses, region) {
