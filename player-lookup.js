@@ -154,6 +154,7 @@ async function lookup(rawUid, requestedRegion) {
   const generation = ++lookupGeneration;
   const uid = String(rawUid ?? "").trim();
   const region = requestedRegion || $("#playerRegion")?.value || $("#homePlayerRegion")?.value || "tw";
+  try { localStorage.setItem("pjskLastPlayerLookup", JSON.stringify({ uid, region })); } catch {}
   const input = $("#playerUid");
   if (input) input.value = uid;
   if (button) { button.disabled = true; button.textContent = "查詢中"; }
@@ -196,3 +197,20 @@ $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   window.PJSEKAI?.go("profile");
   lookup(uid, region);
 });
+
+
+// Restore the most recent player lookup after a refresh without changing the
+// currently selected page.
+try {
+  const savedLookup = JSON.parse(localStorage.getItem("pjskLastPlayerLookup") || "null");
+  if (savedLookup && /^[0-9]{1,20}$/.test(String(savedLookup.uid || "")) &&
+      ["jp", "tw", "en", "kr", "cn"].includes(savedLookup.region)) {
+    $("#playerUid").value = String(savedLookup.uid);
+    $("#homePlayerUid").value = String(savedLookup.uid);
+    $("#playerRegion").value = savedLookup.region;
+    $("#homePlayerRegion").value = savedLookup.region;
+    window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
+    window.PJSEKAI?.syncServerSelect?.($("#homePlayerRegion"));
+    lookup(savedLookup.uid, savedLookup.region);
+  }
+} catch {}
