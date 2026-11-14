@@ -41,3 +41,7 @@
 @media(prefers-reduced-motion:reduce){.song-card{transition:none}}
 
 .bottom-bar{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+.songs-region-row{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
+.songs-region-row label{font-size:10px;font-weight:750;color:var(--muted)}
+.songs-region-row select{height:34px;min-width:110px;padding:0 10px;border:1px solid var(--hub-line);border-radius:10px;background:#fff;color:var(--ink);font-size:11px}
