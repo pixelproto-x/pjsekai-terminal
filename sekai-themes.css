@@ -144,3 +144,8 @@ body[data-sekai-theme="nightcord"] .preview-glass{color:#eeeaf7}
  body[data-sekai-theme] .anniversary-hero{min-height:360px}
 }
 @media(prefers-reduced-motion:reduce){body[data-sekai-theme] .theme-choice{transition:none}}
+
+
+/* Keep navigation labels above the draggable selection bubble */
+.bottom-bar .tab-indicator{z-index:0}
+.bottom-bar .tab{position:relative;z-index:1}
