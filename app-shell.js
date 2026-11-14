@@ -4,6 +4,58 @@ const tabs = [...document.querySelectorAll(".tab")];
 const bottomBar = $(".bottom-bar");
 const tabIndicator = $(".tab-indicator");
 
+// Preserve the current interface state across refreshes.
+const UI_STATE_KEY = "pjskUiStateV1";
+function readUiState() {
+  try {
+    const value = JSON.parse(localStorage.getItem(UI_STATE_KEY) || "null");
+    return value && typeof value === "object" ? value : {};
+  } catch { return {}; }
+}
+const savedUiState = readUiState();
+function saveUiState() {
+  const controls = {};
+  document.querySelectorAll("input[id],select[id],textarea[id]").forEach((element) => {
+    if (element.type === "password" || element.type === "file") return;
+    controls[element.id] = element.type === "checkbox" || element.type === "radio"
+      ? { checked: element.checked, value: element.value }
+      : element.value;
+  });
+  const activePage = document.querySelector(".page.active")?.dataset.page || "home";
+  try {
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify({
+      controls,
+      activePage,
+      scrollY: window.scrollY,
+      savedAt: Date.now(),
+    }));
+  } catch {}
+}
+function restoreUiState() {
+  for (const [id, saved] of Object.entries(savedUiState.controls || {})) {
+    const element = document.getElementById(id);
+    if (!element) continue;
+    if (saved && typeof saved === "object" && "checked" in saved) {
+      element.checked = Boolean(saved.checked);
+      if (saved.value != null) element.value = saved.value;
+    } else if (typeof saved === "string" || typeof saved === "number") {
+      element.value = String(saved);
+    }
+  }
+}
+restoreUiState();
+let restoreScrollY = Number(savedUiState.scrollY) || 0;
+let restoreScrollPending = true;
+function restoreSavedScroll() {
+  if (!restoreScrollPending) return;
+  restoreScrollPending = false;
+  if (restoreScrollY > 0) window.scrollTo({ top: restoreScrollY, behavior: "instant" });
+}
+document.addEventListener("input", saveUiState);
+document.addEventListener("change", saveUiState);
+window.addEventListener("pagehide", saveUiState);
+window.addEventListener("beforeunload", saveUiState);
+
 function syncTabIndicator() {
   const activeTab = tabs.find((tab) => tab.classList.contains("active"));
   if (!bottomBar || !tabIndicator || !activeTab) return;
@@ -96,7 +148,9 @@ export function go(route, updateHash = true) {
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.go === next));
   syncTabIndicator();
   if (updateHash && location.hash !== "#" + next) history.replaceState({}, "", "#" + next);
+  restoreScrollPending = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
+  saveUiState();
 }
 window.PJSEKAI = { go, toast };
 
@@ -171,7 +225,8 @@ try {
   applyTheme("virtual-singer");
   applyOpacity(22);
 }
-go(location.hash.slice(1) || "home", false);
+go(savedUiState.activePage || location.hash.slice(1) || "home", false);
+if (savedUiState.scrollY > 0) requestAnimationFrame(() => requestAnimationFrame(restoreSavedScroll));
 
 
 const SERVER_FLAGS = {
