@@ -2,7 +2,7 @@ name: Core refactor tests
 
 on:
   push:
-    branches: ["cleanup/keep-ui-player-lookup"]
+    branches: ["main", "cleanup/keep-ui-player-lookup"]
   pull_request:
     branches: ["main"]
 
