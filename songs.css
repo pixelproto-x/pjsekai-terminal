@@ -145,7 +145,7 @@
   border-color:rgba(145,121,245,.55);background:#fff;box-shadow:0 0 0 3px rgba(145,121,245,.12);
 }
 .server-picker-current{display:flex;align-items:center;gap:9px;min-width:0;white-space:nowrap}
-.server-flag{display:block;width:25px;height:17px;flex:none;object-fit:cover;border-radius:3px;box-shadow:0 1px 3px rgba(20,30,50,.18)}
+.server-flag,.server-flag-svg{display:block;width:25px;height:17px;flex:none;object-fit:cover;border-radius:3px;overflow:hidden;box-shadow:0 1px 3px rgba(20,30,50,.18)}
 .server-globe{display:block;width:19px;height:19px;flex:none;fill:none;stroke:#6c64bd;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .server-picker-chevron{color:#8272cf;font-size:17px;line-height:1;transition:transform .18s}
 .server-picker.is-open .server-picker-chevron{transform:rotate(180deg)}
