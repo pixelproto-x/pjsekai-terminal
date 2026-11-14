@@ -14,5 +14,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check minimal player hub UI
-        run: node scripts/test-ui-redesign.mjs
+      - name: Run minimal player hub UI tests
+        run: node --test tests/ui/*.test.mjs

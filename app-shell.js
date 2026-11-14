@@ -43,6 +43,7 @@ document.addEventListener("click", (event) => {
   const preset = event.target.closest("[data-opacity]");
   if (preset) applyOpacity(preset.dataset.opacity);
 });
+$("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.target.value));
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 window.addEventListener("hashchange", () => go(location.hash.slice(1), false));
