@@ -137,7 +137,7 @@ function applyTheme(value) {
     button.setAttribute("aria-pressed", String(active));
   });
   const status = $("#themeStatus");
-  if (status) status.textContent = "目前主題：" + themeNames[theme];
+  if (status) status.textContent = "目前主題 " + themeNames[theme];
   try { localStorage.setItem("sekaiTheme", theme); } catch {}
 }
 function applyOpacity(value) {
