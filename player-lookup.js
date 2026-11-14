@@ -91,7 +91,7 @@ function renderProfile(result) {
       const value = member?.talent ?? member?.power ?? member?.cardPower ?? (member?.leader ? "隊長卡片 " + member.leader : "");
       list.append(createNode("div", "player-team-row", ""));
       const row = list.lastElementChild;
-      row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : "戰力 " + Number(value).toLocaleString()));
+      row.append(createNode("span", "", title), createNode("span", "", value === "" ? "" : typeof value === "number" ? "戰力 " + value.toLocaleString() : String(value)));
     });
     card.append(list);
   } else {
