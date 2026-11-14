@@ -33,3 +33,22 @@ export function extractPlayerIdentity(data, fallbackUid = "") {
     level: firstValue([gameData], ["rank", "level", "userLevel", "user_level"]),
   };
 }
+
+const PLAYER_RANKING_KEYS = Object.freeze([
+  "playerRank", "player_rank", "userRank", "user_rank",
+  "ranking", "rankingPosition", "ranking_position",
+  "rankPosition", "rank_position", "eventRank", "event_rank",
+]);
+
+export function extractPlayerRanking(data) {
+  const root = asObject(data) || {};
+  const gameData = asObject(root.userGamedata)
+    || asObject(root.user_gamedata)
+    || asObject(root.user)
+    || root;
+  const profile = asObject(root.userProfile)
+    || asObject(root.user_profile)
+    || asObject(root.profile)
+    || {};
+  return firstValue([gameData, profile, root], PLAYER_RANKING_KEYS);
+}
