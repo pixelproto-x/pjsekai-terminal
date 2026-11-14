@@ -52,3 +52,26 @@ export function extractPlayerRanking(data) {
     || {};
   return firstValue([gameData, profile, root], PLAYER_RANKING_KEYS);
 }
+
+
+const PLAYER_POWER_KEYS = Object.freeze([
+  "totalPower", "total_power", "teamPower", "team_power",
+  "power", "powerValue", "power_value",
+]);
+
+export function extractPlayerPower(data) {
+  const root = asObject(data) || {};
+  const gameData = asObject(root.userGamedata)
+    || asObject(root.user_gamedata)
+    || asObject(root.user)
+    || root;
+  const profile = asObject(root.userProfile)
+    || asObject(root.user_profile)
+    || asObject(root.profile)
+    || {};
+  const decks = Array.isArray(root.userDecks) ? root.userDecks
+    : Array.isArray(root.user_decks) ? root.user_decks : [];
+  // Prefer account/profile-level totals; only use published deck totals as fallback.
+  // Never sum individual card power values or character stats.
+  return firstValue([gameData, profile, root, ...decks], PLAYER_POWER_KEYS);
+}
