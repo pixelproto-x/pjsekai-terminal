@@ -1,6 +1,6 @@
 import { REGION_LABELS } from "./src/data/regions.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
-import { extractPlayerIdentity } from "./src/data/player-profile-fields.mjs";
+import { extractPlayerIdentity, extractPlayerPower } from "./src/data/player-profile-fields.mjs";
 
 const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
@@ -51,7 +51,7 @@ function renderProfile(result, eventRanking = null) {
   const name = identity.name;
   const uid = identity.uid;
   const level = identity.level;
-  const power = getValue(scoped, ["totalPower", "teamPower", "power", "talent"]);
+  const power = extractPlayerPower(root);
   const bio = getValue(scoped, ["bio", "introduction", "profileComment"]);
   const team = getArray(objects, ["userDecks", "team", "teamMembers", "team_members", "mainTeam", "main_team"]);
   const characters = getArray(objects, ["userCharacters", "characters", "user_cards"]);
@@ -97,6 +97,39 @@ function renderProfile(result, eventRanking = null) {
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
+const PLAYER_LOOKUP_CACHE_PREFIX = "pjskPlayerLookupCacheV1:";
+
+function lookupCacheKey(uid, region) {
+  return PLAYER_LOOKUP_CACHE_PREFIX + region + ":" + uid;
+}
+function readLookupCache(uid, region) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(lookupCacheKey(uid, region)) || "null");
+    if (!saved?.profile?.data || typeof saved.profile.data !== "object") return null;
+    return {
+      profile: { ...saved.profile, cached: true },
+      eventRanking: saved.eventRanking || { status: "UNAVAILABLE", row: null },
+    };
+  } catch { return null; }
+}
+function saveLookupCache(uid, region, profile, eventRanking) {
+  try {
+    localStorage.setItem(lookupCacheKey(uid, region), JSON.stringify({
+      profile: {
+        data: profile.data,
+        uid: profile.uid,
+        region: profile.region,
+        source: profile.source,
+        fetchedAt: profile.fetchedAt,
+      },
+      eventRanking,
+      savedAt: Date.now(),
+    }));
+  } catch {
+    // Storage quota or serialization errors must not break player lookup.
+  }
+}
+
 function normalizeEventRanking(payload) {
   if (!payload || typeof payload !== "object") return { status: "UNAVAILABLE", row: null };
   const row = payload.row ?? payload.ranking?.row ?? payload.ranking?.result?.row
@@ -142,6 +175,8 @@ async function retryPendingEventRanking(uid, region, generation, payload, attemp
     const next = normalizeEventRanking(await provider.getEventRanking(uid, region));
     if (generation !== lookupGeneration) return;
     updateEventRankingValue(next);
+    const cached = readLookupCache(uid, region);
+    if (cached) saveLookupCache(uid, region, cached.profile, next);
     if (next.status === "DATA_PENDING") {
       retryPendingEventRanking(uid, region, generation, next, attempt + 1);
     }
@@ -159,7 +194,14 @@ async function lookup(rawUid, requestedRegion) {
   if (input) input.value = uid;
   if (button) { button.disabled = true; button.textContent = "查詢中"; }
   if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
-  results?.replaceChildren();
+  const saved = readLookupCache(uid, region);
+  if (saved) {
+    renderProfile(saved.profile, saved.eventRanking);
+    if (status) status.textContent = "已還原上次查詢資料 正在背景更新";
+  } else {
+    results?.replaceChildren();
+    if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
+  }
   try {
     const [profileResult, rankingResult] = await Promise.allSettled([
       provider.getProfile(uid, region),
@@ -171,14 +213,19 @@ async function lookup(rawUid, requestedRegion) {
       ? normalizeEventRanking(rankingResult.value)
       : { status: "UNAVAILABLE", row: null };
     renderProfile(result, eventRanking);
+    saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
       retryPendingEventRanking(uid, region, generation, eventRanking);
     }
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
-    if (status) status.textContent = messageFor(error);
-    window.PJSEKAI?.toast(messageFor(error));
+    if (saved) {
+      if (status) status.textContent = "已保留上次查詢資料 本次更新失敗 " + messageFor(error);
+    } else {
+      if (status) status.textContent = messageFor(error);
+      window.PJSEKAI?.toast(messageFor(error));
+    }
   } finally {
     if (button) { button.disabled = false; button.textContent = "查詢公開資料"; }
   }
