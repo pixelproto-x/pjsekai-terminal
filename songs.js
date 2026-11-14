@@ -134,6 +134,7 @@ async function loadSongs(region = $("#songRegion").value) {
   }
 }
 $("#songRegion").value = readStorage("pjskSongRegion", "tw");
+window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
 $("#songRegion").addEventListener("change", () => {
   writeStorage("pjskSongRegion", $("#songRegion").value);
   state.randomId = null;
