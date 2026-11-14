@@ -46,7 +46,6 @@ function renderProfile(result, myName = "") {
   const root = result.data && typeof result.data === "object" ? result.data : {};
   const gameData = root.userGamedata || root.user_gamedata || root.user || root;
   const profileData = root.userProfile || root.user_profile || root.profile || {};
-  const scoped = [gameData, profileData, root].filter((item) => item && typeof item === "object");
   const name = identity.name;
   const uid = identity.uid;
   const level = identity.level;
