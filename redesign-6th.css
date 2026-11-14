@@ -229,3 +229,33 @@ body{color:var(--hub-ink)}
 @media(prefers-reduced-motion:reduce){
   .hub-shortcuts>button,.hub-lookup-control button{transition:none}
 }
+
+
+/* Keep the homepage server selector wide enough for horizontal CJK labels. */
+.hub-lookup-control .hub-region-select{
+  display:block;
+  flex:0 0 88px;
+  width:88px;
+  min-width:88px;
+  max-width:88px;
+  height:38px;
+  padding:0 7px;
+  white-space:nowrap;
+  word-break:keep-all;
+  overflow-wrap:normal;
+  writing-mode:horizontal-tb;
+  text-orientation:mixed;
+  text-align:center;
+  letter-spacing:0;
+  line-height:1.2;
+}
+@media(max-width:640px){
+  .hub-lookup-control .hub-region-select{
+    flex-basis:82px;
+    width:82px;
+    min-width:82px;
+    max-width:82px;
+    padding:0 5px;
+    font-size:11px;
+  }
+}
