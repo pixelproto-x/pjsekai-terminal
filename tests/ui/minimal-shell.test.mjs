@@ -36,8 +36,8 @@ assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|m
 assert.match(lookup, /createHarukiPlayerProvider/, "five-region public UID provider is connected");
 assert.match(html, /id="homePlayerRegion"/, "homepage server selector remains");
 assert.match(html, /id="playerRegion"/, "player page server selector remains");
-assert.match(html, /@supports \\(appearance:base-select\\)/, "server selector enables the customizable CSS picker where supported");
-assert.match(html, /::picker\\(select\\)/, "server dropdown popup has its own CSS styling");
+assert.match(html, /@supports \(appearance:base-select\)/, "server selector enables the customizable CSS picker where supported");
+assert.match(html, /::picker\(select\)/, "server dropdown popup has its own CSS styling");
 assert.match(html, /option:checked/, "selected server has a custom highlighted state");
 
 for (const region of ["jp", "en", "tw", "kr", "cn"]) {
