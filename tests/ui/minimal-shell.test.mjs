@@ -33,7 +33,7 @@ assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom sele
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
 assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four intended page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
-assert.match(lookup, /createHarukiPlayerProvider/, "five-region public UID provider is connected");
+assert.match(lookup, /createCloudflarePlayerProvider/, "five-region public UID provider is connected");
 assert.match(html, /id="homePlayerRegion"/, "homepage server selector remains");
 assert.match(html, /id="playerRegion"/, "player page server selector remains");
 assert.match(html, /@supports \(appearance:base-select\)/, "server selector enables the customizable CSS picker where supported");
