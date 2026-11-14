@@ -10,7 +10,7 @@ export function createCloudflarePlayerProvider({
   fetchImpl,
   cache = createCache({ namespace: "pjsekai-cloudflare-profile", version: "1" }),
   now = () => Date.now(),
-  timeoutMs = 12000,
+  timeoutMs = 45000,
 } = {}) {
   return Object.freeze({
     id: "cloudflare-player-api",
