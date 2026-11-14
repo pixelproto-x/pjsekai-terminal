@@ -209,9 +209,12 @@ async function lookup(rawUid, requestedRegion) {
     ]);
     if (profileResult.status === "rejected") throw profileResult.reason;
     const result = profileResult.value;
-    const eventRanking = rankingResult.status === "fulfilled"
+    const freshRanking = rankingResult.status === "fulfilled"
       ? normalizeEventRanking(rankingResult.value)
-      : { status: "UNAVAILABLE", row: null };
+      : null;
+    const eventRanking = freshRanking && freshRanking.status !== "UNAVAILABLE" && !freshRanking.error
+      ? freshRanking
+      : (saved?.eventRanking || freshRanking || { status: "UNAVAILABLE", row: null });
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
