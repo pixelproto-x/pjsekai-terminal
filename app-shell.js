@@ -165,34 +165,26 @@ go(location.hash.slice(1) || "home", false);
 
 
 const SERVER_FLAGS = {
-  jp: { label: "日服", image: "https://flagcdn.com/w40/jp.png", alt: "日本國旗" },
-  tw: { label: "台服", image: "https://flagcdn.com/w40/tw.png", alt: "台灣國旗" },
+  jp: { label: "日服", alt: "日本國旗", svg: '<rect width="60" height="40" fill="#fff"/><circle cx="30" cy="20" r="12" fill="#bc002d"/>' },
+  tw: { label: "台服", alt: "台灣國旗", svg: '<rect width="60" height="40" fill="#fe0000"/><rect width="30" height="20" fill="#000095"/><g fill="#fff" transform="translate(15 10)"><circle r="5.5"/><path d="M0-8 1.3-5.2 4.2-6.2 3-3.2 6-2 3.2-.6 4.2 2.4 1.2 1.2 0 4-1.2 1.2-4.2 2.4-3.2-.6-6-2-3-3.2-4.2-6.2-1.3-5.2Z"/></g>' },
   en: { label: "國際服", globe: true, alt: "國際服" },
-  kr: { label: "韓服", image: "https://flagcdn.com/w40/kr.png", alt: "韓國國旗" },
-  cn: { label: "簡中服", image: "https://flagcdn.com/w40/cn.png", alt: "中國國旗" },
+  kr: { label: "韓服", alt: "韓國國旗", svg: '<rect width="60" height="40" fill="#fff"/><g transform="translate(30 20)"><path d="M0-9a9 9 0 0 1 0 18 4.5 4.5 0 0 0 0-9 4.5 4.5 0 0 1 0-9" fill="#cd2e3a"/><path d="M0 9a9 9 0 0 1 0-18 4.5 4.5 0 0 0 0 9 4.5 4.5 0 0 1 0 9" fill="#0047a0"/></g><g stroke="#111" stroke-width="2.2"><path d="M8 7h10m-10 3h10M42 30h10m-10 3h10M8 30h10m-10 3h10M42 7h10m-10 3h10"/></g><path d="M8 7v6m10-6v6M42 27v6m10-6v6" stroke="#fff" stroke-width="1.2"/>' },
+  cn: { label: "簡中服", alt: "中國國旗", svg: '<rect width="60" height="40" fill="#de2910"/><g fill="#ffde00"><path d="M12 5 13.7 10.2 19 10.2 14.7 13.4 16.3 18.5 12 15.3 7.7 18.5 9.3 13.4 5 10.2 10.3 10.2Z"/><path d="M24 4.5 24.7 6.5 26.8 6.5 25.1 7.8 25.7 9.8 24 8.6 22.3 9.8 22.9 7.8 21.2 6.5 23.3 6.5Z"/><path d="M28 10 28.7 12 30.8 12 29.1 13.3 29.7 15.3 28 14.1 26.3 15.3 26.9 13.3 25.2 12 27.3 12Z"/><path d="M28 18 28.7 20 30.8 20 29.1 21.3 29.7 23.3 28 22.1 26.3 23.3 26.9 21.3 25.2 20 27.3 20Z"/><path d="M24 24 24.7 26 26.8 26 25.1 27.3 25.7 29.3 24 28.1 22.3 29.3 22.9 27.3 21.2 26 23.3 26Z"/></g>' },
 };
 
-function serverIcon(region, className = "server-flag") {
+function serverIcon(region) {
   const info = SERVER_FLAGS[region] || SERVER_FLAGS.tw;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", info.globe ? "0 0 24 24" : "0 0 60 40");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", info.alt);
+  svg.classList.add(info.globe ? "server-globe" : "server-flag-svg");
   if (info.globe) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("aria-hidden", "true");
-    svg.classList.add("server-globe");
-    const circle = document.createElementNS(svg.namespaceURI, "circle");
-    circle.setAttribute("cx", "12"); circle.setAttribute("cy", "12"); circle.setAttribute("r", "9");
-    const path = document.createElementNS(svg.namespaceURI, "path");
-    path.setAttribute("d", "M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9s-1.1 6.5-3.5 9c-2.4-2.5-3.5-5.5-3.5-9S9.6 5.5 12 3Z");
-    svg.append(circle, path);
-    return svg;
+    svg.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.5 5.5 3.5 9s-1.1 6.5-3.5 9c-2.4-2.5-3.5-5.5-3.5-9S9.6 5.5 12 3Z"/>';
+  } else {
+    svg.innerHTML = info.svg;
   }
-  const img = document.createElement("img");
-  img.className = className;
-  img.src = info.image;
-  img.alt = info.alt;
-  img.loading = "eager";
-  img.decoding = "async";
-  return img;
+  return svg;
 }
 
 function initServerSelect(select) {
