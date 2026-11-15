@@ -24,10 +24,6 @@
   songList.before(songScroll);
   songScroll.append(songList);
   if (songEmpty) songScroll.append(songEmpty);
-  const playlistScroll = document.createElement('div');
-  playlistScroll.className = 'songs-inner-scroll playlists-list-scroll';
-  playlistList.before(playlistScroll);
-  playlistScroll.append(playlistList);
 
   function setPanel(panel) {
     const showPlaylists = panel === 'playlists';
