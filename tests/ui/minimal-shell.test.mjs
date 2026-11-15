@@ -169,6 +169,6 @@ assert.doesNotMatch(css, /Batch 2: saved player workspace/, "removed player work
 
 assert.match(html, /透明與清楚平衡/, "opacity scale explains the standard visual effect");
 assert.match(html, /卡片更有層次/, "opacity scale includes the soft visual effect");
-assert.match(html, /介面更實、更易讀/, "opacity scale includes the clear visual effect");
+assert.match(html, /介面更實更易讀/, "opacity scale includes the clear visual effect");
 assert.match(app, /opacityLevels = \[/, "opacity readout maps percentages to visual levels");
 assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
