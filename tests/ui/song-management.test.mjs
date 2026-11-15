@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 const html = await readFile(new URL("../../index.html", import.meta.url), "utf8");
 const js = await readFile(new URL("../../songs.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
+const themeCss = await readFile(new URL("../../sekai-themes.css", import.meta.url), "utf8");
 
 assert.match(html, /data-page="songs"/, "song management route exists");
 assert.match(html, /data-go="songs"/, "song navigation tab exists");
@@ -40,6 +41,14 @@ assert.match(js, /pjskSongPlaylists/, "playlists have a dedicated storage key");
 assert.match(js, /Full Combo/, "FC record option exists");
 assert.match(js, /All Perfect/, "AP record option exists");
 assert.match(css, /\.song-card/, "song cards have dedicated styling");
+assert.doesNotMatch(themeCss, /\.song-difficulty:nth-child\(/, "difficulty colors are not assigned by badge position");
+assert.match(themeCss, /\.page\[data-page="songs"\] \.song-card[\s\S]*?var\(--unit-panel-strong\)/, "song cards inherit the selected unit theme");
+for (const unit of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
+  assert.ok(themeCss.includes('body[data-sekai-theme="' + unit + '"] .page[data-page="songs"] .song-card'), unit + " has a matching song-card treatment");
+}
+for (const difficulty of ["easy","normal","hard","expert","master","append"]) {
+  assert.ok(themeCss.includes('option[value="' + difficulty + '"]'), difficulty + " difficulty option uses its game color");
+}
 assert.match(css, /@media\(max-width:640px\)/, "song manager has mobile styling");
 console.log("Song management UI smoke tests passed.");
 
