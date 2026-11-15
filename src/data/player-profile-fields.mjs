@@ -92,7 +92,7 @@ function publishedDeckPower(value, depth = 0, seen = new WeakSet()) {
     }
   }
   for (const [key, child] of Object.entries(object)) {
-    if (/^\\d+$/.test(key) && child && typeof child === "object") {
+    if (/^\d+$/.test(key) && child && typeof child === "object") {
       const found = publishedDeckPower(child, depth + 1, seen);
       if (found != null) return found;
     }
