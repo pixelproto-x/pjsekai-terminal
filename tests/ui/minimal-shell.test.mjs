@@ -175,6 +175,7 @@ assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matc
 assert.match(app, /const OPACITY_DETENTS = \[12, 22, 35\]/, "the first three opacity presets use detents while the final preset remains the natural end");
 assert.match(app, /const OPACITY_DETENT_HOLD_PX = 7/, "detents hold the thumb for a short physical pointer distance");
 assert.match(html, /data-opacity-marker="12"[\s\S]*data-opacity-marker="22"[\s\S]*data-opacity-marker="35"[\s\S]*data-opacity-marker="48"/, "all four opacity preset positions have visible marker dots");
+assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling while handling horizontal drags");
 assert.match(app, /previous < point && amount >= point/, "dragging right detects crossing a detent instead of requiring an exact input value");
 assert.match(app, /previous > point && amount <= point/, "dragging left also detects crossing a detent");
 assert.match(app, /opacityDragState\.detent/, "opacity thumb is held at a detent while the pointer passes through its resistance zone");
