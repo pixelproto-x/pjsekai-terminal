@@ -11,6 +11,7 @@ let applyingCloud = false;
 
 const button = document.getElementById("googleAccountButton");
 const status = document.getElementById("googleAccountStatus");
+const signOutButton = document.getElementById("googleAccountSignOut");
 function showStatus(message) {
   if (status) status.textContent = message;
 }
@@ -66,6 +67,9 @@ function scheduleSync() {
 }
 function signOut() {
   idToken = "";
+  clearTimeout(syncTimer);
+  window.google?.accounts?.id?.disableAutoSelect?.();
+  if (signOutButton) signOutButton.hidden = true;
   if (button) {
     button.textContent = "使用 Google 登入";
     button.disabled = false;
@@ -92,8 +96,11 @@ async function onGoogleCredential(response) {
       button.textContent = "已連結 Google 帳號";
       button.disabled = false;
     }
+    if (signOutButton) signOutButton.hidden = false;
     window.PJSEKAI?.toast("Google 帳號已連結");
   } catch (error) {
+    idToken = "";
+    if (signOutButton) signOutButton.hidden = true;
     showStatus("登入成功，但資料同步失敗：" + error.message);
     if (button) button.disabled = false;
   }
@@ -140,4 +147,5 @@ async function initializeGoogleSignIn() {
     showStatus("Google 登入元件載入失敗，請檢查網路後重新整理");
   }
 }
+signOutButton?.addEventListener("click", signOut);
 initializeGoogleSignIn();
