@@ -174,12 +174,17 @@ function messageFor(error) {
 async function lookup(rawUid, requestedRegion = "auto") {
   const generation = ++lookupGeneration;
   const uid = String(rawUid ?? "").trim();
-  const region = "auto";
+  const region = ["jp", "tw", "en", "kr", "cn"].includes(requestedRegion) ? requestedRegion : "auto";
   try { localStorage.setItem("pjskLastPlayerLookup", JSON.stringify({ uid, region })); } catch {}
   const input = $("#playerUid");
   if (input) input.value = uid;
+  const regionSelect = $("#playerRegion");
+  if (regionSelect) {
+    regionSelect.value = region;
+    regionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   if (button) { button.disabled = true; button.textContent = "查詢中"; }
-  if (status) status.textContent = "正在自動檢查五個伺服器的公開資料";
+  if (status) status.textContent = region === "auto" ? "正在自動檢查五個伺服器的公開資料" : "正在查詢" + ({jp:"日服",tw:"台服",en:"國際服",kr:"韓服",cn:"簡中服"}[region]) + "公開資料";
   const saved = readLookupCache(uid, region);
   if (saved) {
     renderProfile(saved.profile);
@@ -228,7 +233,7 @@ try {
     $("#playerUid").value = uid;
     $("#homePlayerUid").value = uid;
     const savedRegion = ["auto", "jp", "tw", "en", "kr", "cn"].includes(savedLookup.region) ? savedLookup.region : "auto";
-    if ($("#playerRegion")) $("#playerRegion").value = savedRegion;
+    if ($("#playerRegion")) {\n      $("#playerRegion").value = savedRegion;\n      $("#playerRegion").dispatchEvent(new Event("change", { bubbles: true }));\n    }
     const cached = readLookupCache(uid, savedRegion);
     if (cached) {
       renderProfile(cached.profile);
