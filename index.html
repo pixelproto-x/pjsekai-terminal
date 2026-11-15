@@ -1178,6 +1178,25 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
       <p class="player-status" id="playerLookupStatus" role="status" aria-live="polite">輸入 UID 開始查詢</p>
       <div class="player-results" id="playerLookupResults" aria-live="polite"></div>
     </section>
+    <section class="player-workspace" aria-labelledby="playerWorkspaceTitle">
+      <div class="player-workspace-heading">
+        <div><span class="kicker">MY PLAYERS</span><h2 id="playerWorkspaceTitle">我的玩家</h2><p>收藏多個 UID 管理跨伺服器玩家 並保留最近查詢紀錄</p></div>
+        <span class="player-workspace-count" id="savedPlayerCount">0 / 50</span>
+      </div>
+      <form class="player-save-form" id="savePlayerForm">
+        <label>自訂名稱<input id="playerAlias" type="text" maxlength="24" placeholder="例如 我的台服帳號 可留空"></label>
+        <label>玩家標籤<input id="playerTags" type="text" maxlength="100" placeholder="用逗號分隔 例如 主帳,朋友"></label>
+        <button type="submit" id="savePlayerButton" disabled>儲存目前玩家</button>
+      </form>
+      <div class="player-workspace-section">
+        <div class="player-workspace-subhead"><h3>已收藏玩家</h3><span>資料只儲存在目前瀏覽器</span></div>
+        <div class="saved-player-list" id="savedPlayerList"><p class="player-workspace-empty">查詢玩家後即可加入收藏</p></div>
+      </div>
+      <div class="player-workspace-section">
+        <div class="player-workspace-subhead"><h3>最近查詢</h3><button class="player-text-button" id="clearPlayerHistory" type="button">清除紀錄</button></div>
+        <div class="player-history-list" id="playerLookupHistory"><p class="player-workspace-empty">尚無查詢紀錄</p></div>
+      </div>
+    </section>
   </section>
   <section class="page" data-page="settings">
     <div class="page-head">
