@@ -2,6 +2,9 @@ import { ALLOWED_ORIGIN, REGIONS, parseProfilePath, parseEventRankingPath } from
 
 const UPSTREAM_TIMEOUT_MS = 8000;
 const EVENT_UPSTREAM_TIMEOUT_MS = 12000;
+const EVENT_SCAN_DEFAULT_PAGES = 12;
+const EVENT_SCAN_MAX_PAGES = 20;
+const EVENT_SCAN_PAGE_SIZE = 100;
 const CACHE_TTL_SECONDS = 300;
 const HANEOKA_BASE = "https://haneoka.org/api/v1/game/records";
 const HANEOKA_REGIONS = new Set(["jp", "tw", "en", "kr"]);
@@ -42,6 +45,105 @@ async function pendingRankingResponse(upstreamResponse, event, origin) {
     event,
     retryAfter,
   }, 202, origin, { extraHeaders: { "retry-after": String(retryAfter) } });
+}
+
+function unwrapRankingPayload(payload) {
+  return payload?.data && typeof payload.data === "object" ? payload.data
+    : payload?.result && typeof payload.result === "object" ? payload.result
+      : payload;
+}
+
+function rankingRows(payload) {
+  const root = unwrapRankingPayload(payload);
+  if (Array.isArray(root?.rows)) return root.rows;
+  if (Array.isArray(root?.ranking?.rows)) return root.ranking.rows;
+  if (Array.isArray(root?.data?.rows)) return root.data.rows;
+  return [];
+}
+
+function rankingMaxRank(payload) {
+  const root = unwrapRankingPayload(payload);
+  const value = root?.maxRank ?? root?.max_rank ?? root?.ranking?.maxRank ?? root?.data?.maxRank;
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+function rankingRowMatches(row, uid) {
+  const profileId = row?.profileId ?? row?.profile_id ?? row?.userId ?? row?.user_id ?? row?.uid;
+  return profileId != null && String(profileId) === String(uid);
+}
+
+async function scanEventRankingPages(fetchImpl, region, event, uid, start, pages, signal) {
+  const starts = Array.from({ length: pages }, (_, index) => start + index * EVENT_SCAN_PAGE_SIZE);
+  const results = await Promise.all(starts.map(async (pageStart) => {
+    try {
+      const response = await fetchImpl(
+        HANEOKA_BASE + "/" + region + "/events/" + encodeURIComponent(String(event.id))
+          + "/points/ranking?start=" + encodeURIComponent(String(pageStart)),
+        { headers: { accept: "application/json" }, signal },
+      );
+      if (response.status === 503) {
+        let body = {};
+        try { body = await response.json(); } catch {}
+        return {
+          pending: true,
+          retryAfter: body?.error?.retryAfter ?? response.headers.get("Retry-After") ?? 30,
+        };
+      }
+      if (!response.ok) return { error: response.status };
+      return { pageStart, body: await response.json() };
+    } catch (error) {
+      return { error: signal.aborted ? 504 : 502 };
+    }
+  }));
+
+  const pending = results.find((item) => item.pending);
+  if (pending) {
+    return {
+      status: "DATA_PENDING",
+      event,
+      scanStart: start,
+      scanPages: pages,
+      retryAfter: Math.max(5, Math.min(300, Number(pending.retryAfter) || 30)),
+    };
+  }
+
+  const failure = results.find((item) => item.error);
+  if (failure) {
+    return {
+      status: "UPSTREAM_ERROR",
+      error: "EVENT_RANKING_PAGE_UNAVAILABLE",
+      upstreamStatus: failure.error,
+      event,
+      scannedTo: start - 1,
+    };
+  }
+
+  const rows = results.flatMap((item) => rankingRows(item.body));
+  const row = rows.find((item) => rankingRowMatches(item, uid));
+  const maxRank = results.map((item) => rankingMaxRank(item.body)).filter((value) => value != null)
+    .reduce((maximum, value) => Math.max(maximum, value), 0) || null;
+  const lastRank = rows.reduce((maximum, item) => {
+    const rank = Number(item?.rank);
+    return Number.isFinite(rank) ? Math.max(maximum, rank) : maximum;
+  }, 0);
+  if (row) return { status: "OK", event, row, maxRank, scannedTo: Number(row.rank) || lastRank };
+
+  const nextStart = start + pages * EVENT_SCAN_PAGE_SIZE;
+  const scannedTo = lastRank || nextStart - 1;
+  if (maxRank != null && nextStart > maxRank) {
+    return { status: "NOT_FOUND", event, row: null, maxRank, scannedTo: Math.min(scannedTo, maxRank) };
+  }
+  if (rows.length === 0) {
+    return {
+      status: "DATA_PENDING",
+      event,
+      scanStart: start,
+      scanPages: pages,
+      retryAfter: 30,
+    };
+  }
+  return { status: "SCAN_PROGRESS", event, row: null, nextStart, scannedTo, maxRank };
 }
 
 function candidates(region, uid, env) {
@@ -193,29 +295,60 @@ export default {
         const current = await currentResponse.json();
         const event = current?.event ?? null;
         if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
-        // Haneoka's documented points/search contract requires the in-game profileId.
-        // The website UID is the player ID shown in-game; player-name search is not supported.
-        const searchUrl = HANEOKA_BASE + "/" + eventRanking.region + "/events/" + encodeURIComponent(String(event.id))
-          + "/points/search?profileId=" + encodeURIComponent(eventRanking.uid);
-        const rankingResponse = await fetchImpl(searchUrl, {
-          headers: { accept: "application/json" }, signal: eventController.signal,
+        const requestedEventId = url.searchParams.get("eventId");
+        if (requestedEventId && requestedEventId !== String(event.id)) {
+          return json({ event, row: null, status: "EVENT_CHANGED" }, 200, origin);
+        }
+
+        const requestedStart = Number(url.searchParams.get("start"));
+        const requestedPages = Number(url.searchParams.get("pages"));
+        const scanPages = Number.isInteger(requestedPages) && requestedPages > 0
+          ? Math.min(EVENT_SCAN_MAX_PAGES, requestedPages)
+          : EVENT_SCAN_DEFAULT_PAGES;
+        let payload;
+
+        if (Number.isInteger(requestedStart) && requestedStart >= 101) {
+          payload = await scanEventRankingPages(
+            fetchImpl, eventRanking.region, event, eventRanking.uid, requestedStart, scanPages, eventController.signal,
+          );
+        } else {
+          // Haneoka's profileId search is the fast path for the first 2,000 ranks.
+          const searchUrl = HANEOKA_BASE + "/" + eventRanking.region + "/events/" + encodeURIComponent(String(event.id))
+            + "/points/search?profileId=" + encodeURIComponent(eventRanking.uid);
+          const rankingResponse = await fetchImpl(searchUrl, {
+            headers: { accept: "application/json" }, signal: eventController.signal,
+          });
+          if (rankingResponse.status === 503) return await pendingRankingResponse(rankingResponse, event, origin);
+          if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
+          if (!rankingResponse.ok) return json({
+            event,
+            row: null,
+            status: "UPSTREAM_ERROR",
+            error: "EVENT_RANKING_UNAVAILABLE",
+            upstreamStatus: rankingResponse.status,
+          }, 200, origin);
+          const ranking = await rankingResponse.json();
+          const searchRoot = unwrapRankingPayload(ranking);
+          const row = searchRoot?.row ?? searchRoot?.ranking?.row ?? null;
+          if (row) {
+            payload = { event, ranking, row, status: "OK", cached: false };
+          } else {
+            const searchedTo = Number(searchRoot?.searchedTo ?? searchRoot?.searched_to ?? 2000);
+            const maxRank = rankingMaxRank(ranking);
+            if (maxRank != null && searchedTo >= maxRank) {
+              payload = { event, ranking, row: null, status: "NOT_FOUND", maxRank, scannedTo: maxRank };
+            } else {
+              const scanStart = Math.max(101, Math.floor((searchedTo || 2000) / EVENT_SCAN_PAGE_SIZE) * EVENT_SCAN_PAGE_SIZE + 1);
+              payload = await scanEventRankingPages(
+                fetchImpl, eventRanking.region, event, eventRanking.uid, scanStart, scanPages, eventController.signal,
+              );
+              payload.ranking = ranking;
+            }
+          }
+        }
+        const response = json({ ...payload, cached: false }, payload.status === "DATA_PENDING" ? 202 : 200, origin, {
+          cacheSeconds: payload.status === "DATA_PENDING" ? 0 : 60,
         });
-        if (rankingResponse.status === 503) return await pendingRankingResponse(rankingResponse, event, origin);
-        if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
-        if (!rankingResponse.ok) return json({
-          event,
-          row: null,
-          status: "UPSTREAM_ERROR",
-          error: "EVENT_RANKING_UNAVAILABLE",
-          upstreamStatus: rankingResponse.status,
-        }, 200, origin);
-        const ranking = await rankingResponse.json();
-        const row = ranking?.row ?? ranking?.result?.row ?? ranking?.data?.row ?? null;
-        const searchedTo = ranking?.searchedTo ?? ranking?.result?.searchedTo ?? ranking?.data?.searchedTo;
-        const status = row ? "OK"
-          : searchedTo >= 2000 ? "NOT_FOUND_TOP_2000" : "NOT_FOUND";
-        const payload = { event, ranking, row, status, cached: false };
-        const response = json(payload, 200, origin, { cacheSeconds: 60 });
         if (eventCache) {
           const store = eventCache.put(eventCacheKey, response.clone());
           if (ctx.waitUntil) ctx.waitUntil(store.catch(() => {}));
