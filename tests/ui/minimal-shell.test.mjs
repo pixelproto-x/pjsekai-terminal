@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../../index.html", import.meta.url), "utf8");
 const css = await readFile(new URL("../../redesign-6th.css", import.meta.url), "utf8");
+const app = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
