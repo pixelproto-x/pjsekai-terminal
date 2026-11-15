@@ -139,19 +139,29 @@ function enhanceFilterSelect(select) {
   const placeMenu = () => {
     const rect = trigger.getBoundingClientRect();
     const gap = 8;
+    const margin = 8;
     const below = window.innerHeight - rect.bottom - gap;
     const above = rect.top - gap;
-    const maxHeight = Math.max(120, Math.min(260, Math.max(below, above) - 8));
+    const maxHeight = Math.max(96, Math.min(260, Math.max(below, above) - margin));
+    const width = Math.max(140, Math.min(rect.width, window.innerWidth - margin * 2));
     menu.style.position = "fixed";
     menu.style.zIndex = "2147483647";
-    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)) + "px";
-    menu.style.width = rect.width + "px";
+    menu.style.left = Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin)) + "px";
+    menu.style.width = width + "px";
+    menu.style.maxWidth = width + "px";
     menu.style.maxHeight = maxHeight + "px";
     menu.style.top = below >= Math.min(180, maxHeight) || below >= above
-      ? Math.min(window.innerHeight - maxHeight - 8, rect.bottom + gap) + "px"
-      : Math.max(8, rect.top - maxHeight - gap) + "px";
+      ? Math.min(window.innerHeight - maxHeight - margin, rect.bottom + gap) + "px"
+      : Math.max(margin, rect.top - maxHeight - gap) + "px";
   };
-  const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); wrapper.classList.remove("is-open"); };
+  const close = () => {
+    menu.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+    wrapper.classList.remove("is-open");
+    if (wrapper.isConnected && menu.parentNode !== wrapper) wrapper.append(menu);
+    if (!wrapper.isConnected) menu.remove();
+    ["position","z-index","left","top","width","max-width","max-height"].forEach((property) => menu.style.removeProperty(property));
+  };
   const refresh = () => {
     trigger.textContent = select.selectedOptions[0]?.textContent || "請選擇";
     menu.replaceChildren();
