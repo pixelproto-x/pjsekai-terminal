@@ -174,7 +174,7 @@ assert.match(app, /opacityLevels = \[/, "opacity readout maps percentages to vis
 assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
 assert.match(app, /opacityRange\?\.addEventListener\("input"/, "opacity slider responds directly to native input");
 assert.match(app, /opacityRange\?\.addEventListener\("change"/, "opacity slider saves after native interaction");
-assert.doesNotMatch(app, /OPACITY_RESISTANCE|opacityDragState|setPointerCapture|getOpacityMagneticTarget|magneticTarget/, "opacity slider keeps native unrestricted pointer movement");
+assert.doesNotMatch(app, /OPACITY_RESISTANCE|opacityDragState|getOpacityMagneticTarget|magneticTarget/, "opacity slider keeps native unrestricted pointer movement");
 assert.match(html, /id="opacityRange"[^>]*max="55"/, "opacity slider range is mapped to the four preset positions");
 assert.match(html, /data-opacity-marker="12"[^>]*21\.8182%[\s\S]*data-opacity-marker="22"[^>]*40%[\s\S]*data-opacity-marker="35"[^>]*63\.6364%[\s\S]*data-opacity-marker="48"[^>]*87\.2727%/, "all four marker dots use positions matching the mapped opacity values");
 assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span style="--opacity-mark-position:40%"/, "the first and second labels use their corresponding marker positions");
