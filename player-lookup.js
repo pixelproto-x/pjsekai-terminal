@@ -168,19 +168,19 @@ function updateEventRankingValue(payload) {
                 : "暫時無法取得");
 }
 
-async function retryPendingEventRanking(uid, region, generation, payload, attempt = 0) {
+async function retryPendingEventRanking(uid, region, generation, payload, playerName = "", attempt = 0) {
   if (attempt >= 2) return;
   const seconds = Math.max(5, Math.min(60, Number(payload?.retryAfter) || 30));
   await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   if (generation !== lookupGeneration) return;
   try {
-    const next = normalizeEventRanking(await provider.getEventRanking(uid, region));
+    const next = normalizeEventRanking(await provider.getEventRanking(uid, region, playerName ? { name: playerName } : {}));
     if (generation !== lookupGeneration) return;
     updateEventRankingValue(next);
     const cached = readLookupCache(uid, region);
     if (cached) saveLookupCache(uid, region, cached.profile, next);
     if (next.status === "DATA_PENDING") {
-      retryPendingEventRanking(uid, region, generation, next, attempt + 1);
+      retryPendingEventRanking(uid, region, generation, next, playerName, attempt + 1);
     }
   } catch {
     // Keep the explicit pending state; the user can retry the lookup manually.
@@ -221,7 +221,7 @@ async function lookup(rawUid, requestedRegion) {
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
-      retryPendingEventRanking(uid, region, generation, eventRanking);
+      retryPendingEventRanking(uid, region, generation, eventRanking, identity.name);
     }
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
