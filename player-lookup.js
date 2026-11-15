@@ -187,8 +187,8 @@ async function continueEventRankingSearch(uid, region, generation, initialPayloa
 
     if (current.status === "OK" || current.status === "NOT_FOUND"
       || current.status === "NO_ACTIVE_EVENT" || current.status === "POINT_BOARD_UNAVAILABLE"
-      || current.status === "UNSUPPORTED_REGION" || current.status === "UPSTREAM_ERROR"
-      || current.status === "UNAVAILABLE") return;
+      || current.status === "RANKING_INACTIVE" || current.status === "UNSUPPORTED_REGION"
+      || current.status === "UPSTREAM_ERROR" || current.status === "UNAVAILABLE") return;
 
     let options = {};
     if (current.status === "DATA_PENDING") {
