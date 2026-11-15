@@ -342,3 +342,51 @@
 .page[data-page="songs"] .songs-list-scroll .song-list{min-height:min-content}
 
 .song-load-more{display:block;width:min(100%,420px);margin:14px auto 4px;padding:13px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.78);color:var(--ink);font-size:12px;font-weight:800;box-shadow:var(--shadow-sm);transition:transform .18s ease,background .18s ease}.song-load-more:hover{transform:translateY(-1px);background:#fff}.song-load-more[hidden]{display:none}
+
+
+/* Keep song cards and their difficulty chips comfortably separated. */
+.page[data-page="songs"] .song-list{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));
+  column-gap:18px;
+  row-gap:18px;
+  align-items:start;
+}
+.page[data-page="songs"] .song-card{
+  padding:20px;
+}
+.page[data-page="songs"] .song-card-head{
+  gap:16px;
+}
+.page[data-page="songs"] .song-card-head>div{
+  min-width:0;
+}
+.page[data-page="songs"] .song-difficulties{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:9px 10px;
+  margin:17px 0;
+  padding:2px 0;
+}
+.page[data-page="songs"] .song-difficulty{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:7px 11px;
+  gap:8px;
+  border-radius:10px;
+  line-height:1.2;
+}
+.page[data-page="songs"] .song-record{
+  gap:10px;
+  row-gap:10px;
+  padding-top:14px;
+}
+@media(max-width:640px){
+  .page[data-page="songs"] .song-list{
+    grid-template-columns:minmax(0,1fr);
+    gap:14px;
+  }
+  .page[data-page="songs"] .song-card{padding:16px}
+  .page[data-page="songs"] .song-difficulties{gap:8px;margin:14px 0}
+  .page[data-page="songs"] .song-difficulty{min-height:33px;padding:7px 10px}
+}
