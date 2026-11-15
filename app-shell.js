@@ -209,7 +209,7 @@ function updateOpacityFromPointer(clientX) {
   const travel = Math.max(1, rect.width - thumbRadius * 2);
   const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbRadius) / travel));
   const rawValue = ratio * 55;
-  opacityRange.value = String(Math.round(mapOpacityDetentResistance(rawValue)));
+  opacityRange.value = String(mapOpacityDetentResistance(rawValue));
   opacityRange.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
