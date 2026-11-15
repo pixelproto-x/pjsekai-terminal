@@ -191,7 +191,7 @@ async function lookup(rawUid, requestedRegion = "auto") {
     if (status) status.textContent = "已還原上次查詢資料 正在背景更新";
   } else {
     results?.replaceChildren();
-    if (status) status.textContent = "正在自動檢查五個伺服器的公開資料";
+    if (status) status.textContent = region === "auto" ? "正在自動檢查五個伺服器的公開資料" : "正在查詢指定伺服器的公開資料";
   }
   try {
     const result = region === "auto" ? await provider.getProfileAuto(uid) : await provider.getProfile(uid, region);
