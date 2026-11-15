@@ -107,28 +107,56 @@ function upstreamError(statuses, region) {
 
 const MAX_ACCOUNT_DATA_BYTES = 128 * 1024;
 const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
+const GOOGLE_TOKEN_CACHE_TTL_MS = 30_000;
+const GOOGLE_TOKEN_CACHE_LIMIT = 128;
+const verifiedGoogleTokens = new Map();
 
 async function verifyGoogleIdentity(request, env) {
   const authorization = request.headers.get("Authorization") || "";
   const match = authorization.match(/^Bearer ([A-Za-z0-9._~-]+)$/);
   if (!match || !env.GOOGLE_CLIENT_ID) return null;
+
+  const accessToken = match[1];
+  const cached = verifiedGoogleTokens.get(accessToken);
+  if (cached && cached.expiresAt > Date.now()) return cached.identity;
+  if (cached) verifiedGoogleTokens.delete(accessToken);
+
   try {
-    // Validate the OAuth access token server-side. This is the popup OAuth
-    // flow, not the FedCM-based Sign in with Google credential flow.
-    const response = await fetch(GOOGLE_TOKENINFO_URL + "?access_token=" + encodeURIComponent(match[1]), {
-      headers: { accept: "application/json" },
-    });
+    // Google access tokens are opaque. Their "aud" can differ from "azp"
+    // when OAuth clients in the same Google Cloud project are involved.
+    // "azp" identifies the client that actually requested this token.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    let response;
+    try {
+      response = await fetch(GOOGLE_TOKENINFO_URL + "?access_token=" + encodeURIComponent(accessToken), {
+        headers: { accept: "application/json" },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) return null;
+
     const token = await response.json();
-    const scopes = String(token.scope || "").split(/\s+/);
-    if (token.aud !== env.GOOGLE_CLIENT_ID ||
-        (token.azp && token.azp !== env.GOOGLE_CLIENT_ID) ||
+    const scopes = String(token.scope || "").split(/\s+/).filter(Boolean);
+    if (token.azp !== env.GOOGLE_CLIENT_ID ||
         !token.sub || !Number.isFinite(Number(token.exp)) ||
         Number(token.exp) * 1000 <= Date.now() ||
         !["true", true].includes(token.email_verified) ||
         !scopes.includes("openid") ||
         !scopes.some((scope) => scope.endsWith("/auth/userinfo.email"))) return null;
-    return { sub: String(token.sub), email: String(token.email || "") };
+
+    const identity = { sub: String(token.sub), email: String(token.email || "") };
+    if (verifiedGoogleTokens.size >= GOOGLE_TOKEN_CACHE_LIMIT) {
+      const oldestKey = verifiedGoogleTokens.keys().next().value;
+      if (oldestKey) verifiedGoogleTokens.delete(oldestKey);
+    }
+    verifiedGoogleTokens.set(accessToken, {
+      identity,
+      expiresAt: Math.min(Number(token.exp) * 1000, Date.now() + GOOGLE_TOKEN_CACHE_TTL_MS),
+    });
+    return identity;
   } catch {
     return null;
   }
