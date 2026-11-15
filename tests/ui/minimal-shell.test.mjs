@@ -172,7 +172,7 @@ assert.match(html, /initialPageStyle\.id = "initial-page-bootstrap-style"/, "fir
 assert.match(shell, /getElementById\("initial-page-bootstrap-style"\)\?\.remove\(\)/, "first-paint page visibility rule is removed after route initialization");
 assert.match(shell, /removeAttribute\("data-initial-page"\)/, "first-paint route selector is cleared before later navigation");
 assert.match(html, /html\[data-restore-scroll="pending"\] body\{visibility:hidden\}/, "page stays hidden until saved scroll position is restored");
-assert.match(html, /app-shell\.js\?v=20261115-game-tools-redesign-v2/, "app shell cache is refreshed for instant scroll restoration");
+assert.match(html, /app-shell\.js\?v=20261115-game-tools-transparent-dropdown-v1/, "app shell cache is refreshed for instant scroll restoration");
 assert.match(app, /go\(savedUiState\.activePage[^\n]+\{ preserveScroll: true \}\)/, "initial route restoration does not scroll to the top");
 assert.match(app, /window\.scrollTo\(\{ top: Number\(savedUiState\.scrollY\), behavior: "instant" \}\)/, "saved scroll position is restored instantly before showing the page");
 assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
@@ -220,7 +220,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\.css\?v=20261115-game-tools-redesign-v2/, "player workspace theme stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-game-tools-transparent-dropdown-v1/, "player workspace theme stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
@@ -229,7 +229,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
-assert.match(html, /20261115-game-tools-redesign-v2/, "player workspace assets use the custom dropdown cache version");
+assert.match(html, /20261115-game-tools-transparent-dropdown-v1/, "player workspace assets use the custom dropdown cache version");
 assert.ok(workspaceCss.includes(".player-filter-menu") && workspaceCss.includes("animation:player-filter-pop"), "player database filter popup has a themed opening animation");
 assert.ok(workspaceCss.includes(".player-filter-option.is-selected"), "expanded filter popup highlights the selected option");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
@@ -257,7 +257,7 @@ assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span
 assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(html, /app-shell\.js\?v=20261115-game-tools-redesign-v2/, "app shell script cache is refreshed");
+assert.match(html, /app-shell\.js\?v=20261115-game-tools-transparent-dropdown-v1/, "app shell script cache is refreshed");
 assert.match(app, /opacityRange\?\.addEventListener\("pointerdown"/, "opacity slider uses pointer tracking for localized detent resistance");
 assert.match(app, /OPACITY_DETENTS = \[12, 22, 35, 48\]/, "opacity resistance is limited to the four marked values");
 assert.match(app, /OPACITY_DETENT_WIDTH = 2\.6/, "opacity resistance is confined to a narrow zone around each marker");
@@ -282,3 +282,6 @@ assert.match(gameToolsJs, /event.key==="Escape"/, "game-tool dropdowns can be di
 assert.match(gameToolsCss, /\.gt-select-menu\[hidden\]\{display:none\}/, "game-tool dropdowns have an explicit closed state");
 assert.match(gameToolsCss, /gt-menu-in/, "game-tool dropdowns use the redesigned opening animation");
 assert.match(gameToolsCss, /\.gt-region-control \.gt-select-trigger/, "server selector uses the same fully styled dropdown");
+
+assert.match(gameToolsCss, /\.gt-select-menu\{[^}]*background:transparent!important/s, "dropdown popup bubbles use a fully transparent background");
+assert.match(gameToolsCss, /\.gt-select-menu\{[^}]*backdrop-filter:none!important/s, "dropdown popup bubbles do not inherit theme glass effects");
