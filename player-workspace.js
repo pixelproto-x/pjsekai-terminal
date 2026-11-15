@@ -124,9 +124,10 @@ function renderSaved() {
   const players = read(SAVED_KEY);
   const search = ($("#playerWorkspaceSearch")?.value || "").trim().toLowerCase();
   const tag = $("#playerWorkspaceTag")?.value || "";
+  const favoritesOnly = $("#playerWorkspaceFavorite")?.value === "yes";
   const filtered = players.filter((p) => {
     const haystack = [p.uid, p.name, p.alias, ...(p.tags || [])].join(" ").toLowerCase();
-    return (!search || haystack.includes(search)) && (!tag || (p.tags || []).includes(tag));
+    return (!search || haystack.includes(search)) && (!tag || (p.tags || []).includes(tag)) && (!favoritesOnly || p.favorite);
   });
   const count = $("#playerSavedCount");
   if (count) count.textContent = players.length + " / " + MAX_SAVED;
@@ -231,6 +232,7 @@ function handlePlayerLoaded(event) {
   addHistory(currentProfile);
 }
 window.addEventListener("pjsk:player-loaded", handlePlayerLoaded);
+window.addEventListener("pjsk:cloud-data-applied", () => { renderSaved(); renderHistory(); });
 $("#playerLookupResults")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-result-action]");
   if (!button || !currentProfile) return;
@@ -274,6 +276,7 @@ list?.addEventListener("click", (event) => {
 });
 $("#playerWorkspaceSearch")?.addEventListener("input", renderSaved);
 $("#playerWorkspaceTag")?.addEventListener("change", renderSaved);
+$("#playerWorkspaceFavorite")?.addEventListener("change", renderSaved);
 $("#playerCompareButton")?.addEventListener("click", compareSelected);
 historyList?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-history-key]");
