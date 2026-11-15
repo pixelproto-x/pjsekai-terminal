@@ -218,3 +218,89 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
 .server-picker-option svg{width:28px;height:19px;flex:none;border-radius:3px}
 .server-picker-option .server-globe{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6}
 @media(prefers-reduced-motion:reduce){.server-picker-trigger,.server-picker-chevron{transition:none}}
+
+
+/* Match the song database's expanding select picker on browsers that support it. */
+@supports (appearance:base-select){
+  body[data-sekai-theme] .player-workspace-tools select{
+    appearance:base-select;
+    -webkit-appearance:base-select;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-inline:12px 10px;
+  }
+  body[data-sekai-theme] .player-workspace-tools select::picker(select){
+    appearance:base-select;
+    position-area:block-end span-inline;
+    position-try-fallbacks:none;
+    justify-self:start;
+    margin-block-start:7px;
+    min-width:anchor-size(width);
+    max-width:calc(100vw - 28px);
+    box-sizing:border-box;
+    padding:7px;
+    border:1px solid var(--unit-line);
+    border-radius:15px;
+    background:var(--unit-panel-strong);
+    color:var(--unit-ink);
+    box-shadow:0 16px 40px rgba(18,28,48,.2),inset 0 1px 0 rgba(255,255,255,.55);
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+    opacity:0;
+    transform:translateY(-7px) scale(.985);
+    transform-origin:top center;
+    transition:opacity .18s ease,transform .18s ease,display .18s allow-discrete,overlay .18s allow-discrete;
+  }
+  body[data-sekai-theme] .player-workspace-tools select:open::picker(select){
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+  @starting-style{
+    body[data-sekai-theme] .player-workspace-tools select:open::picker(select){
+      opacity:0;
+      transform:translateY(-7px) scale(.985);
+    }
+  }
+  body[data-sekai-theme] .player-workspace-tools select::picker-icon{
+    content:"⌃";
+    color:var(--unit-accent);
+    font-size:15px;
+    line-height:1;
+    transition:transform .2s ease,color .2s ease;
+  }
+  body[data-sekai-theme] .player-workspace-tools select:open::picker-icon{transform:rotate(180deg)}
+  body[data-sekai-theme] .player-workspace-tools select option{
+    min-height:37px;
+    padding:9px 11px;
+    border-radius:9px;
+    background:transparent;
+    color:var(--unit-ink);
+    font:700 11px/1.4 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  }
+  body[data-sekai-theme] .player-workspace-tools select option:checked{
+    background:color-mix(in srgb,var(--unit-accent) 17%,transparent);
+    color:var(--unit-ink);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-sekai-theme] .player-workspace-tools select::picker(select),
+  body[data-sekai-theme] .player-workspace-tools select::picker-icon{transition:none}
+}
+
+/* Keep player workspace search fields directly tappable on iOS. */
+.player-workspace-tools .player-workspace-search{position:relative;z-index:2}
+.player-workspace-tools input,
+.saved-player-edit input{
+  position:relative;
+  z-index:2;
+  display:block;
+  pointer-events:auto;
+  touch-action:auto;
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  -webkit-appearance:none;
+  appearance:none;
+  cursor:text;
+}
