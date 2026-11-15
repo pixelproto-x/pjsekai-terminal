@@ -125,7 +125,7 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 assert.equal(routes.length, 4, "home, player lookup, song management, and appearance settings remain");
 
 const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
-assert.doesNotMatch(accountSync, /pjskUiStateV1|pjskSongViewV1/, "scroll position and transient song filters stay on each device");
+assert.match(accountSync, /pjskUiStateV1|pjskSongViewV1/, "saved interface and song filter state sync across devices");
 assert.match(accountSync, /ACCOUNT_BACKUP_PREFIX/, "each Google account keeps a separate local settings backup");
 assert.match(accountSync, /localStorage\.setItem\(ACCOUNT_BACKUP_PREFIX \+ previousSubject/, "switching accounts preserves the previous account's local settings before changing scope");
 assert.match(accountSync, /accountLocalData = readAccountBackup\(subject\)/, "switching accounts restores only the selected account's local settings");
@@ -133,6 +133,11 @@ assert.doesNotMatch(accountSync, /for \(const key of SYNC_KEYS\) localStorage\.r
 assert.match(accountSync, /Storage\.prototype\.setItem/, "cloud sync observes actual persistent storage changes");
 assert.doesNotMatch(accountSync, /document\.addEventListener\("click", scheduleSync\)/, "ordinary clicks do not trigger cloud writes");
 assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized to prevent stale requests overwriting newer data");
+assert.doesNotMatch(accountSync, /700\);/, "persistent changes are not held behind the old 700ms sync delay");
+for (const key of ["pjskSongViewV1", "pjskUiStateV1", "pjskLastPlayerLookup"]) {
+  assert.ok(accountSync.includes('"'+key+'"'), key + " is included in cross-device account sync");
+}
+assert.match(accountSync, /setInterval\(pullCloudChanges, 15000\)/, "signed-in devices receive remote updates automatically");
 assert.match(accountSync, /window\.confirm\("確定要登出 Google 帳號嗎？登出後將停止雲端同步。"\)/, "Google sign-out requires explicit confirmation");
 assert.match(accountSync, /if \(!accessToken\) return;[\s\S]*?window\.confirm\([\s\S]*?\)[\s\S]*?signOut\(\);/, "canceling the sign-out confirmation keeps the Google session connected");
 assert.doesNotMatch(accountSync, /window\.location\.reload\(\)/, "cloud updates do not reload and jump the page");
@@ -140,6 +145,8 @@ assert.match(app, /applyCloudSettings/, "cloud appearance settings apply without
 assert.match(await readFile(new URL("../../songs.js", import.meta.url), "utf8"), /refreshCloudSongData/, "cloud song data refreshes in place");
 const songsModule = await readFile(new URL("../../songs.js", import.meta.url), "utf8");
 assert.match(songsModule, /const SONGS_PER_RENDER = 60/, "song catalogue renders in small batches to avoid blocking the interface");
+assert.match(songsModule, /SONG_CACHE_TTL/, "regional song catalogue uses a persistent freshness cache");
+assert.match(songsModule, /readSongCache\(region\)/, "refresh reuses locally cached regional song data");
 assert.match(songsModule, /visibleBatch = songs\.slice\(0, renderedSongLimit\)/, "only the current song batch is inserted into the DOM");
 assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are indexed once instead of repeatedly scanning the full chart list");
 assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
