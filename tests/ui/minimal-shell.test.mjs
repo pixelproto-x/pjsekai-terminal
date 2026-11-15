@@ -87,7 +87,7 @@ assert.match(songsCss, /server-picker-close/, "song server dropdown has a closin
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
-assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-top-layer-v2/, "settings dropdown stylesheet cache is refreshed");
+assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-toplayer-repair-v6/, "settings dropdown stylesheet cache is refreshed");
 assert.match(html, /language\.js\?v=20261115-dropdown-top-layer-v2/, "language dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
@@ -172,7 +172,7 @@ assert.match(html, /initialPageStyle\.id = "initial-page-bootstrap-style"/, "fir
 assert.match(shell, /getElementById\("initial-page-bootstrap-style"\)\?\.remove\(\)/, "first-paint page visibility rule is removed after route initialization");
 assert.match(shell, /removeAttribute\("data-initial-page"\)/, "first-paint route selector is cleared before later navigation");
 assert.match(html, /html\[data-restore-scroll="pending"\] body\{visibility:hidden\}/, "page stays hidden until saved scroll position is restored");
-assert.match(html, /app-shell\.js\?v=20261115-game-tools-label-click-fix-v5/, "app shell cache is refreshed for instant scroll restoration");
+assert.match(html, /app-shell\.js\?v=20261115-dropdown-toplayer-repair-v6/, "app shell cache is refreshed for instant scroll restoration");
 assert.match(app, /go\(savedUiState\.activePage[^\n]+\{ preserveScroll: true \}\)/, "initial route restoration does not scroll to the top");
 assert.match(app, /window\.scrollTo\(\{ top: Number\(savedUiState\.scrollY\), behavior: "instant" \}\)/, "saved scroll position is restored instantly before showing the page");
 assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
@@ -235,7 +235,7 @@ assert.ok(workspaceCss.includes(".player-filter-option.is-selected"), "expanded 
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
 assert.match(workspaceJs, /function enhanceFilterSelect\(/, "player database filters use custom page-rendered dropdowns");
 assert.match(workspaceJs, /enhanceFilterSelect\(\$\("#playerWorkspaceFavorite"\)\)/, "favorite filter is upgraded to the custom dropdown");
-assert.match(workspaceJs, /document\.body\.append\(menu\)/, "player filter popup escapes parent stacking and overflow contexts");
+assert.match(workspaceJs, /menu\.showPopover\(\)/, "player filter popup uses the browser top layer");
 assert.match(workspaceJs, /menu\.style\.position = "fixed"/, "player filter popup is viewport-positioned in the top layer");
 assert.match(workspaceJs, /tagSelect\._refreshCustomFilter\?\.\(\)/, "tag filter popup refreshes when dynamic tags change");
 assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
