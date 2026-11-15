@@ -275,3 +275,80 @@ test("keeps pending full-ranking windows retryable without advancing the scan", 
   assert.equal(body.scanPages, 3);
   assert.equal(body.retryAfter, 19);
 });
+
+
+test("does not retry an inactive Haneoka ranking search", async () => {
+  const rankingCalls = [];
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 321, pointRankingEnabled: true } }), { status: 200 });
+        }
+        rankingCalls.push(value);
+        return new Response(JSON.stringify({ error: { kind: "inactive", retryAfter: null } }), { status: 503 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "RANKING_INACTIVE");
+  assert.equal(body.upstreamKind, "inactive");
+  assert.equal(rankingCalls.length, 1);
+});
+
+test("does not call the points endpoint when the current event disables point ranking", async () => {
+  const calls = [];
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        calls.push(value);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({
+            event: {
+              id: 321,
+              pointRankingEnabled: false,
+              pointRankingStatus: "disabled",
+              totalRankingEnabled: true,
+              totalRankingStatus: "collecting",
+            },
+          }), { status: 200 });
+        }
+        throw new Error("points endpoint must not be requested");
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "POINT_BOARD_UNAVAILABLE");
+  assert.equal(body.availableRankingType, "total");
+  assert.equal(calls.length, 1);
+});
+
+test("does not treat inactive ranking pages as pending scans", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking?start=2001&pages=1&eventId=321", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 321, pointRankingEnabled: true } }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: { kind: "inactive", retryAfter: null } }), { status: 503 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "RANKING_INACTIVE");
+});
