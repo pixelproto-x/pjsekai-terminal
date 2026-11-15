@@ -102,7 +102,8 @@ window.addEventListener("storage", (event) => {
   if (SYNC_KEYS.includes(event.key)) scheduleSync();
 });
 document.addEventListener("input", scheduleSync);
-document.addEventListener("change", scheduleSync);\ndocument.addEventListener("click", scheduleSync);
+document.addEventListener("change", scheduleSync);
+document.addEventListener("click", scheduleSync);
 window.addEventListener("pagehide", () => {
   if (idToken) {
     const payload = JSON.stringify({ data: snapshot() });
