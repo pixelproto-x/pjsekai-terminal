@@ -260,3 +260,7 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
   .player-workspace-tools .player-filter-trigger,.player-workspace-tools .player-filter-option{transition:none}
   .player-workspace-tools .player-filter-menu{animation:none}
 }
+
+
+/* Filter menus are portaled to body to escape parent stacking and overflow contexts. */
+.player-workspace-tools .player-filter-menu[style*="position: fixed"]{z-index:2147483647!important;overflow-y:auto;overscroll-behavior:contain}
