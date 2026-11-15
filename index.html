@@ -18,7 +18,15 @@
     const hashPage = location.hash.slice(1);
     if (validPages.has(hashPage)) page = hashPage;
   }
-  document.documentElement.dataset.initialPage = page || "home";
+  const initialPage = page || "home";
+  document.documentElement.dataset.initialPage = initialPage;
+
+  // Apply the saved route before the browser paints the page. The markup's
+  // default active page is home, so hide it until the saved page is selected.
+  const initialPageStyle = document.createElement("style");
+  initialPageStyle.textContent =
+    '.page{display:none!important}.page[data-page="' + initialPage + '"]{display:block!important}';
+  document.head.append(initialPageStyle);
 })();
 </script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
