@@ -1,0 +1,40 @@
+.player-workspace-panel{margin-top:22px;padding:24px;border:1px solid var(--line);border-radius:26px;background:var(--panel);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.player-workspace-heading,.player-history-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.player-workspace-heading h2{margin:6px 0;font-size:clamp(24px,4vw,34px);letter-spacing:-.04em}
+.player-workspace-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.player-workspace-count{white-space:nowrap;padding:8px 12px;border-radius:999px;background:rgba(145,121,245,.12);font-size:12px;font-weight:800}
+.player-workspace-tools{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.5fr) auto;gap:10px;align-items:end;margin:20px 0}
+.player-workspace-tools label,.player-workspace-search{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--ink)}
+.player-workspace-tools input,.player-workspace-tools select,.saved-player-edit input,.player-form select{width:100%;min-width:0;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.82);color:var(--ink);font:inherit;font-size:12px}
+.player-workspace-tools button,.player-action-button{min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.78);color:var(--ink);font-size:11px;font-weight:800;cursor:pointer}
+.player-workspace-tools button:disabled{opacity:.4;cursor:not-allowed}
+.saved-player-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+.saved-player-card{min-width:0;padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.58)}
+.saved-player-top{display:flex;align-items:center;gap:10px;min-width:0}
+.player-compare-pick{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:10px;color:var(--muted)}
+.player-compare-pick input{accent-color:var(--unit-accent,var(--violet))}
+.saved-player-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.saved-player-title strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.saved-player-title small,.player-history-row small{color:var(--muted);font-size:10px}
+.player-action-button.is-favorite{background:color-mix(in srgb,#ffca55 22%,white);border-color:#e7b94c}
+.saved-player-edit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.saved-player-edit input{min-height:36px;font-size:11px}
+.saved-player-actions,.player-result-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.player-action-button.primary,.player-result-actions .primary{background:var(--unit-accent,var(--violet));border-color:transparent;color:white}
+.player-workspace-empty{grid-column:1/-1;margin:0;padding:22px;border:1px dashed var(--line);border-radius:16px;text-align:center;color:var(--muted);font-size:12px}
+.player-compare-result{overflow-x:auto;margin:0 0 16px}
+.player-compare-result h3,.player-history-heading h3{margin:0 0 10px;font-size:15px}
+.player-compare-table{width:100%;border-collapse:collapse;font-size:11px;min-width:420px}
+.player-compare-table th,.player-compare-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.player-compare-table th{font-weight:800;background:rgba(145,121,245,.08)}
+.player-history-block{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.player-history-heading h3{margin:0}
+.player-history-heading button{border:0;background:transparent;color:var(--muted);font-size:10px;font-weight:800;cursor:pointer}
+.player-history-list{display:grid;gap:8px;margin-top:10px}
+.player-history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.42)}
+.player-history-row>div{display:flex;min-width:0;flex-direction:column;gap:4px}
+.player-history-row strong{font-size:12px}
+.player-history-row button{flex:none}
+.player-result-actions{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.player-form select{min-height:44px}
+@media(max-width:680px){.player-workspace-panel{padding:17px}.player-workspace-tools{grid-template-columns:1fr 1fr}.player-workspace-search{grid-column:1/-1}.player-workspace-tools>button{grid-column:1/-1}.saved-player-list{grid-template-columns:1fr}.saved-player-edit{grid-template-columns:1fr}.player-history-row{align-items:flex-start}.player-history-row button{white-space:nowrap}}
