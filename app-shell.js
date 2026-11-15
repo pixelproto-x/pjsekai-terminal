@@ -182,7 +182,8 @@ document.addEventListener("click", (event) => {
   const preset = event.target.closest("[data-opacity]");
   if (preset) applyOpacity(preset.dataset.opacity);
 });
-$("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.target.value));
+$("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.target.value, { persist: false, syncPresets: false }));
+$("#opacityRange")?.addEventListener("change", (event) => applyOpacity(event.target.value));
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 const scrollTopButton = $("#scrollTopBtn");
@@ -298,7 +299,7 @@ function applyAnniversaryCover(value) {
 $("#anniversaryCoverSelect")?.addEventListener("change", (event) => {
   applyAnniversaryCover(event.target.value);
 });
-function applyOpacity(value) {
+function applyOpacity(value, { persist = true, syncPresets = true } = {}) {
   const amount = Math.max(0, Math.min(100, Number(value) || 0));
   const opacity = amount / 100;
   const root = document.documentElement;
@@ -319,8 +320,12 @@ function applyOpacity(value) {
   );
   if ($("#opacityValue")) $("#opacityValue").textContent = `${closestLevel.label} ${amount}`;
   if ($("#opacityRange")) $("#opacityRange").setAttribute("aria-valuetext", `${closestLevel.label}，介面透明度 ${amount}%`);
-  document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
-  try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
+  if (syncPresets) {
+    document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
+  }
+  if (persist) {
+    try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
+  }
 }
 window.PJSEKAI.applyCloudSettings = () => {
   applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
