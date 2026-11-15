@@ -57,8 +57,12 @@ function render(){
  $("#gtRegion").addEventListener("change",async e=>{const next=e.target.value;if(!REGION_REPOSITORIES[next]||next===s.region)return;save();s.region=next;applyRegionState(next);s.tab="cards";s.q="";s.character="";s.unit="";s.attr="";s.rarity="";s.event="";s.songId="";s.difficulty="expert";save();render();await load()});
  if(!root.dataset.bound){
  root.addEventListener("click",click);
- root.addEventListener("change",change);
- root.addEventListener("input",input);
+ root.addEventListener("change",change,true);
+ root.addEventListener("input",input,true);
+ root.addEventListener("pointerdown",event=>{
+  const search=event.target.closest?.("#gtQuery");
+  if(search&&!search.disabled)search.focus({preventScroll:true});
+ },true);
  root.dataset.bound="1";
 }
  panel();
