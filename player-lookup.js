@@ -69,7 +69,7 @@ function renderProfile(result, eventRanking = null) {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
-    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_100" ? "此服目前只取得前 100 名資料" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "正在擴大搜尋範圍" : eventRanking?.status === "SCAN_PROGRESS" ? "正在搜尋第 " + (eventRanking.nextStart || 2001).toLocaleString() + " 名之後" : eventRanking?.status === "NOT_FOUND" ? "已查完整份榜單 未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : eventRanking?.status === "RETRY_FAILED" ? "排名來源連線失敗" : eventRanking?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (eventRanking.upstreamStatus ? " " + eventRanking.upstreamStatus : "") : "暫時無法取得")],
+    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? (eventRanking.availableRankingType === "total" ? "本期點數榜未開放 總排名來源尚未接入" : "本期點數榜未開放") : eventRanking?.status === "RANKING_INACTIVE" ? "排名來源目前未啟用" : eventRanking?.status === "NOT_FOUND_TOP_100" ? "此服目前只取得前 100 名資料" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "正在擴大搜尋範圍" : eventRanking?.status === "SCAN_PROGRESS" ? "正在搜尋第 " + (eventRanking.nextStart || 2001).toLocaleString() + " 名之後" : eventRanking?.status === "NOT_FOUND" ? "已查完整份榜單 未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : eventRanking?.status === "RETRY_FAILED" ? "排名來源連線失敗" : eventRanking?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (eventRanking.upstreamStatus ? " " + eventRanking.upstreamStatus : "") : "暫時無法取得")],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -165,7 +165,8 @@ function updateEventRankingValue(payload) {
     ?? (payload?.status === "DATA_PENDING" ? "資料收集中 正在等待榜單"
       : payload?.status === "SCAN_PROGRESS" ? "正在搜尋第 " + Number(payload.nextStart || 2001).toLocaleString() + " 名之後 已查至 " + Number(payload.scannedTo || 0).toLocaleString()
         : payload?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動"
-          : payload?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜"
+          : payload?.status === "POINT_BOARD_UNAVAILABLE" ? (payload.availableRankingType === "total" ? "本期點數榜未開放 總排名來源尚未接入" : "本期點數榜未開放")
+            : payload?.status === "RANKING_INACTIVE" ? "排名來源目前未啟用 請稍後再手動重試"
             : payload?.status === "NOT_FOUND_TOP_100" ? "此服目前只取得前 100 名資料" : payload?.status === "NOT_FOUND_TOP_2000" ? "正在擴大搜尋範圍"
               : payload?.status === "NOT_FOUND" ? "已查完整份榜單 未找到此玩家排名"
                 : payload?.status === "EVENT_CHANGED" ? "活動已更新 正在重新查詢"
@@ -286,7 +287,11 @@ async function lookup(rawUid, requestedRegion) {
     }
     if (status) status.textContent = eventRanking.status === "SCAN_PROGRESS" || eventRanking.status === "DATA_PENDING"
       ? "玩家資料已載入 正在搜尋完整活動排名"
-      : "查詢完成 以下為資料來源提供的公開內容";
+      : eventRanking.status === "RANKING_INACTIVE"
+        ? "玩家資料已載入 但排名來源目前未啟用 請稍後手動重試"
+        : eventRanking.status === "POINT_BOARD_UNAVAILABLE"
+          ? "玩家資料已載入 但本期點數榜未開放"
+          : "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
     if (saved) {
