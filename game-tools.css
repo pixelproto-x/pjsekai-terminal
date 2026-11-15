@@ -115,3 +115,22 @@ to{opacity:1;transform:translateY(0)}}
 @media(max-width:900px){#gameToolsRoot .gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}#gameToolsRoot .gt-filter-field:first-child{grid-column:span 3}}
 @media(max-width:620px){#gameToolsRoot .gt-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px;gap:11px}#gameToolsRoot .gt-filter-field:first-child{grid-column:1/-1}#gameToolsRoot .gt-dropdown-menu{border-radius:14px}}
 @media(prefers-reduced-motion:reduce){#gameToolsRoot .gt-dropdown-trigger,#gameToolsRoot .gt-dropdown-option{transition:none}#gameToolsRoot .gt-dropdown-menu:popover-open{animation:none}}
+
+
+/* Final card layout: larger artwork, readable metadata, balanced desktop grid. */
+#gameToolsRoot .gt-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px;max-height:min(70vh,760px)}
+#gameToolsRoot .gt-card{min-height:310px;border-radius:19px}
+#gameToolsRoot .gt-art{height:148px;min-height:148px;padding:15px 16px;background:radial-gradient(circle at 82% 18%,color-mix(in srgb,var(--unit-accent-2) 58%,transparent),transparent 35%),linear-gradient(130deg,color-mix(in srgb,var(--unit-accent) 38%,#fff),color-mix(in srgb,var(--unit-accent-2) 30%,#fff))}
+#gameToolsRoot .gt-art:after{width:190px;height:190px;right:13%;top:-112px}
+#gameToolsRoot .gt-art b{padding:6px 10px;font-size:11px}
+#gameToolsRoot .gt-card-body{padding:18px 19px 16px;gap:3px}
+#gameToolsRoot .gt-card h3{font-size:16px;line-height:1.55;margin:0 0 7px}
+#gameToolsRoot .gt-card p{font-size:12px;line-height:1.8;margin:3px 0}
+#gameToolsRoot .gt-card small{font-size:11px;line-height:1.75}
+#gameToolsRoot .gt-actions{gap:9px;padding:0 19px 18px}
+#gameToolsRoot .gt-actions button{min-height:40px;padding:9px 14px;font-size:11px;border-radius:11px}
+#gameToolsRoot #gtQuery{position:relative;z-index:2;display:block;pointer-events:auto;cursor:text;-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation}
+#gameToolsRoot #gtQuery:focus{outline:none;border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 18%,transparent)}
+#gameToolsRoot .gt-filter-field:has(#gtQuery){position:relative;z-index:1}
+@media(max-width:900px){#gameToolsRoot .gt-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding:13px}#gameToolsRoot .gt-art{height:132px;min-height:132px}}
+@media(max-width:620px){#gameToolsRoot .gt-cards{grid-template-columns:1fr;gap:12px;padding:10px;max-height:62vh}#gameToolsRoot .gt-card{min-height:0}#gameToolsRoot .gt-art{height:150px;min-height:150px}#gameToolsRoot .gt-card-body{padding:15px 16px 13px}#gameToolsRoot .gt-card h3{font-size:15px}#gameToolsRoot .gt-actions{padding:0 16px 15px}}
