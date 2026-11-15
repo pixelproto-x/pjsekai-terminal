@@ -114,38 +114,54 @@ const verifiedGoogleTokens = new Map();
 async function verifyGoogleIdentity(request, env) {
   const authorization = request.headers.get("Authorization") || "";
   const match = authorization.match(/^Bearer ([A-Za-z0-9._~-]+)$/);
-  if (!match || !env.GOOGLE_CLIENT_ID) return null;
+  if (!match || !env.GOOGLE_CLIENT_ID) return { identity: null, status: 401 };
 
   const accessToken = match[1];
   const cached = verifiedGoogleTokens.get(accessToken);
-  if (cached && cached.expiresAt > Date.now()) return cached.identity;
+  if (cached && cached.expiresAt > Date.now()) {
+    return { identity: cached.identity, status: 200 };
+  }
   if (cached) verifiedGoogleTokens.delete(accessToken);
 
-  try {
-    // Google access tokens are opaque. Their "aud" can differ from "azp"
-    // when OAuth clients in the same Google Cloud project are involved.
-    // "azp" identifies the client that actually requested this token.
+  let response = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    let response;
     try {
       response = await fetch(GOOGLE_TOKENINFO_URL + "?access_token=" + encodeURIComponent(accessToken), {
         headers: { accept: "application/json" },
         signal: controller.signal,
       });
+    } catch {
+      response = null;
     } finally {
       clearTimeout(timeout);
     }
-    if (!response.ok) return null;
 
+    if (response?.ok) break;
+    const transient = !response || response.status === 429 || response.status >= 500;
+    if (!transient) return { identity: null, status: 401 };
+    if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+
+  if (!response?.ok) {
+    return { identity: null, status: 503, error: "GOOGLE_AUTH_PROVIDER_UNAVAILABLE" };
+  }
+
+  try {
     const token = await response.json();
-    const scopes = String(token.scope || "").split(/\s+/).filter(Boolean);
+    const scopes = String(token.scope || "").split(/\\s+/).filter(Boolean);
+    // Google documents that an access token's aud can differ from azp when
+    // OAuth clients in one Cloud project request tokens for one another.
+    // azp is the requesting client, so it is the claim bound to this site.
     if (token.azp !== env.GOOGLE_CLIENT_ID ||
         !token.sub || !Number.isFinite(Number(token.exp)) ||
         Number(token.exp) * 1000 <= Date.now() ||
         !["true", true].includes(token.email_verified) ||
         !scopes.includes("openid") ||
-        !scopes.some((scope) => scope.endsWith("/auth/userinfo.email"))) return null;
+        !scopes.some((scope) => scope.endsWith("/auth/userinfo.email"))) {
+      return { identity: null, status: 401 };
+    }
 
     const identity = { sub: String(token.sub), email: String(token.email || "") };
     if (verifiedGoogleTokens.size >= GOOGLE_TOKEN_CACHE_LIMIT) {
@@ -156,16 +172,24 @@ async function verifyGoogleIdentity(request, env) {
       identity,
       expiresAt: Math.min(Number(token.exp) * 1000, Date.now() + GOOGLE_TOKEN_CACHE_TTL_MS),
     });
-    return identity;
+    return { identity, status: 200 };
   } catch {
-    return null;
+    return { identity: null, status: 503, error: "GOOGLE_AUTH_RESPONSE_INVALID" };
   }
 }
 
 async function handleAccountData(request, env, origin) {
   if (!env.USER_DATA_DB) return json({ error: "USER_DATA_DB_NOT_CONFIGURED" }, 503, origin);
-  const identity = await verifyGoogleIdentity(request, env);
-  if (!identity) return json({ error: "UNAUTHORIZED" }, 401, origin);
+  const verification = await verifyGoogleIdentity(request, env);
+  if (!verification.identity) {
+    return json(
+      { error: verification.error || "UNAUTHORIZED" },
+      verification.status,
+      origin,
+      { extraHeaders: verification.status === 503 ? { "retry-after": "2" } : {} },
+    );
+  }
+  const identity = verification.identity;
 
   if (request.method === "GET") {
     const row = await env.USER_DATA_DB.prepare(
