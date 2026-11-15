@@ -224,6 +224,9 @@ function handlePlayerLoaded(event) {
   currentProfile = event.detail;
   const resultCard = $("#playerLookupResults .player-result-card");
   if (!resultCard) return;
+  const sharedName = new URLSearchParams(location.search).get("name");
+  const sharedHeading = resultCard.querySelector("h2");
+  if (sharedName && sharedHeading) sharedHeading.textContent = sharedName.slice(0, 40);
   const actions = node("div", "player-result-actions");
   const save = node("button", "player-action-button primary", "加入玩家工作台"); save.type = "button"; save.dataset.resultAction = "save";
   const share = node("button", "player-action-button", "分享個人頁面"); share.type = "button"; share.dataset.resultAction = "share";
