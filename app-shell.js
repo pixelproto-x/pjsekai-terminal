@@ -208,12 +208,54 @@ function applyTheme(value) {
   try { localStorage.setItem("sekaiTheme", theme); } catch {}
 }
 const anniversaryCoverOptions = {
-  "1": { label: "一週年", image: "https://pjsekai.sega.jp/assets/images/1st/ogp.png", officialUrl: "https://pjsekai.sega.jp/1st/index.html" },
-  "2": { label: "二週年", image: "https://pjsekai.sega.jp/2nd/assets/img/ogp.jpg", officialUrl: "https://pjsekai.sega.jp/2nd/index.html" },
-  "3": { label: "三週年", image: "https://pjsekai.sega.jp/3rd/assets/images/common/0927_ogp.png", officialUrl: "https://pjsekai.sega.jp/3rd/index.html" },
-  "4": { label: "四週年", image: "https://pjsekai.sega.jp/4th/assets/images/common/ogp.png", officialUrl: "https://pjsekai.sega.jp/4th/index.html" },
-  "5": { label: "五週年", image: "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png", officialUrl: "https://pjsekai.sega.jp/5th/index.html" },
-  "6": { label: "六週年", image: "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp", officialUrl: "https://pjsekai.sega.jp/6th/index.html" }
+  "1": {
+    label: "一週年",
+    image: "https://pjsekai.sega.jp/assets/images/1st/ogp.png",
+    officialUrl: "https://pjsekai.sega.jp/1st/index.html",
+    headline: "群青讚歌",
+    emphasis: "一週年紀念歌曲",
+    copyType: "官方週年紀念歌曲名稱"
+  },
+  "2": {
+    label: "二週年",
+    image: "https://pjsekai.sega.jp/2nd/assets/img/ogp.jpg",
+    officialUrl: "https://pjsekai.sega.jp/2nd/index.html",
+    headline: "Journey",
+    emphasis: "二週年紀念歌曲",
+    copyType: "官方週年紀念歌曲名稱"
+  },
+  "3": {
+    label: "三週年",
+    image: "https://pjsekai.sega.jp/3rd/assets/images/common/0927_ogp.png",
+    officialUrl: "https://pjsekai.sega.jp/3rd/index.html",
+    headline: "少年少女打開的門扉之後",
+    emphasis: "還有無人知曉的故事等待著",
+    copyType: "官方主視覺文案"
+  },
+  "4": {
+    label: "四週年",
+    image: "https://pjsekai.sega.jp/4th/assets/images/common/ogp.png",
+    officialUrl: "https://pjsekai.sega.jp/4th/index.html",
+    headline: "你的心意所創造的",
+    emphasis: "嶄新的世界",
+    copyType: "官方主視覺文案"
+  },
+  "5": {
+    label: "五週年",
+    image: "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png",
+    officialUrl: "https://pjsekai.sega.jp/5th/index.html",
+    headline: "聲音的軌跡",
+    emphasis: "將連繫至未來",
+    copyType: "官方主視覺文案"
+  },
+  "6": {
+    label: "六週年",
+    image: "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp",
+    officialUrl: "https://pjsekai.sega.jp/6th/index.html",
+    headline: "少年少女向前邁進、選擇、決定",
+    emphasis: "親手寫下心意交會的故事結局",
+    copyType: "官方主視覺文案"
+  }
 };
 function applyAnniversaryCover(value) {
   const year = Object.hasOwn(anniversaryCoverOptions, String(value)) ? String(value) : "6";
@@ -228,6 +270,11 @@ function applyAnniversaryCover(value) {
   if (select) select.value = year;
   const eyebrow = $("#anniversaryCoverEyebrow");
   if (eyebrow) eyebrow.textContent = "世界計畫" + option.label;
+  const headline = $("#anniversaryCoverHeadline");
+  if (headline) headline.textContent = option.headline;
+  const emphasis = $("#anniversaryCoverEmphasis");
+  if (emphasis) emphasis.textContent = option.emphasis;
+  if (hero) hero.dataset.anniversaryCopyType = option.copyType;
   const number = $("#anniversaryCoverNumber");
   if (number) number.textContent = year;
   const credit = $("#anniversaryCoverCredit");
