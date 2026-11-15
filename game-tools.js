@@ -40,6 +40,17 @@ const characterUnitName=id=>characterUnits(id,s.gameCharacterUnits).map(unit=>un
 function setStatus(t){const n=$("#gtStatus");if(n)n.textContent=t}
 function tabs(){return [["cards","卡片資料庫"],["characters","角色資料庫"],["honors","稱號查詢"],["events","活動資料庫"],["team","隊伍編輯器"],["calculator","活動加成"],["score","分數估算"],["compare","隊伍比較"],["favorites","我的收藏"]]}
 
+function bindGameToolsSelects(root){
+ if(!root||root.dataset.selectEnhancerBound==="1")return;
+ const enhance=()=>{
+  if(typeof window.enhanceStyledSelect!=="function")return;
+  root.querySelectorAll("select:not([data-styled-select='true'])").forEach(select=>window.enhanceStyledSelect(select));
+ };
+ const observer=new MutationObserver(enhance);
+ observer.observe(root,{childList:true,subtree:true});
+ root.dataset.selectEnhancerBound="1";
+ enhance();
+}
 function render(){
  const root=$("#gameToolsRoot");if(!root)return;
  root.innerHTML=`<div class="gt-head"><div><span class="kicker">SEKAI GAME DATABASE</span><h2>遊戲資料庫</h2><p>各伺服器官方遊戲資料與個人隊伍工具</p></div><label class="gt-region-label">選擇伺服器<span class="gt-region-control"><span class="gt-region-flag">${regionFlag(s.region)}</span><select id="gtRegion" aria-label="選擇資料伺服器">${Object.entries(regions).map(([k,v])=>`<option value="${k}" ${k===s.region?"selected":""}>${v}</option>`).join("")}</select></span></label></div><div class="gt-tabs">${tabs().map(([k,v])=>`<button type="button" data-tab="${k}" class="${s.tab===k?"active":""}>${v}</button>`).join("")}</div><p id="gtStatus" class="gt-status" role="status" aria-live="polite">${s.loading?"正在載入資料…":"資料已載入"}</p><div id="gtPanel"></div><div class="gt-source">資料來源：<a href="https://github.com/sekai-world/sekai-master-db-diff" target="_blank" rel="noopener">日服</a> · <a href="https://github.com/sekai-world/sekai-master-db-tc-diff" target="_blank" rel="noopener">台服</a> · <a href="https://github.com/sekai-world/sekai-master-db-en-diff" target="_blank" rel="noopener">國際服</a> · <a href="https://github.com/sekai-world/sekai-master-db-kr-diff" target="_blank" rel="noopener">韓服</a> · <a href="https://github.com/sekai-world/sekai-master-db-cn-diff" target="_blank" rel="noopener">簡中服</a><br>資料庫內容依各服上游更新；估算結果不等於遊戲內最終結果。</div>`;
@@ -51,6 +62,7 @@ function render(){
  root.dataset.bound="1";
 }
  panel();
+ bindGameToolsSelects(root);
 }
 function filters(){return `<div class="gt-filters"><div class="gt-filter-field"><label for="gtQuery">搜尋</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="卡片或角色名稱"></div><div class="gt-filter-field"><label for="gtCharacter">角色</label><select id="gtCharacter"><option value="">全部角色</option>${s.characters.map(c=>`<option value="${c.id}" ${String(s.character)===String(c.id)?"selected":""}>${esc(cname(c))}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtUnit">團體</label><select id="gtUnit"><option value="">全部團體</option>${Object.entries(units).map(([k,v])=>`<option value="${k}" ${s.unit===k?"selected":""}>${v}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtAttr">屬性</label><select id="gtAttr"><option value="">全部屬性</option>${Object.entries(attrs).map(([k,v])=>`<option value="${k}" ${s.attr===k?"selected":""}>${v}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtRarity">稀有度</label><select id="gtRarity"><option value="">全部</option>${Object.entries(rarities).map(([k,v])=>`<option value="${k}" ${s.rarity===k?"selected":""}>${v}</option>`).join("")}</select></div></div>`}
 function updateSearchResults(){
