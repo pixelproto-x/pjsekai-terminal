@@ -5,3 +5,8 @@ workers_dev = true
 
 [observability]
 enabled = true
+
+[[d1_databases]]
+binding = "USER_DATA_DB"
+database_name = "pjsekai-player-data"
+database_id = "0a801cea-1808-42d0-b32a-d2a4f9efc342"
