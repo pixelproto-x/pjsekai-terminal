@@ -88,14 +88,14 @@ assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
 assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-toplayer-repair-v6/, "settings dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-dropdown-top-layer-v2/, "language dropdown script cache is refreshed");
+assert.match(html, /language\.js\?v=20261115-dropdown-toplayer-repair-v6/, "language dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
 assert.match(languageModule, /function enhanceStyledSelect\(/, "settings selectors use shared custom dropdown behavior");
 assert.match(languageModule, /enhanceStyledSelect\(document\.getElementById\("anniversaryCoverSelect"\)\)/, "anniversary selector uses the custom dropdown");
 assert.match(languageModule, /enhanceStyledSelect\(select\)/, "language selector uses the custom dropdown");
-assert.match(languageModule, /document\.body\.append\(menu\)/, "settings dropdown popup escapes parent stacking and overflow contexts");
+assert.match(languageModule, /menu\.showPopover\(\)/, "settings dropdown popup uses the browser top layer");
 assert.match(languageModule, /menu\.style\.position = "fixed"/, "settings dropdown popup is viewport-positioned in the top layer");
 assert.match(app, /refreshStyledSelect\?\.\(select\)/, "anniversary selector label stays synchronized after programmatic cover changes");
 for (const year of ["1","2","3","4","5","6"]) {
@@ -229,7 +229,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
-assert.match(html, /20261115-game-tools-label-click-fix-v5/, "player workspace assets use the custom dropdown cache version");
+assert.match(html, /20261115-dropdown-toplayer-repair-v6/, "player workspace assets use the repaired dropdown cache version");
 assert.ok(workspaceCss.includes(".player-filter-menu") && workspaceCss.includes("animation:player-filter-pop"), "player database filter popup has a themed opening animation");
 assert.ok(workspaceCss.includes(".player-filter-option.is-selected"), "expanded filter popup highlights the selected option");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
