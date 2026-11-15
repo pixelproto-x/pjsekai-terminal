@@ -3,7 +3,7 @@
 .player-workspace-heading h2{margin:6px 0;font-size:clamp(24px,4vw,34px);letter-spacing:-.04em}
 .player-workspace-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
 .player-workspace-count{white-space:nowrap;padding:8px 12px;border-radius:999px;background:rgba(145,121,245,.12);font-size:12px;font-weight:800}
-.player-workspace-tools{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.5fr) auto;gap:10px;align-items:end;margin:20px 0}
+.player-workspace-tools{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.5fr) minmax(120px,.5fr) auto;gap:10px;align-items:end;margin:20px 0}
 .player-workspace-tools label,.player-workspace-search{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--ink)}
 .player-workspace-tools input,.player-workspace-tools select,.saved-player-edit input,.player-form select{width:100%;min-width:0;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.82);color:var(--ink);font:inherit;font-size:12px}
 .player-workspace-tools button,.player-action-button{min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.78);color:var(--ink);font-size:11px;font-weight:800;cursor:pointer}
