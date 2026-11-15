@@ -328,3 +328,5 @@
   padding:2px 5px 12px 1px;
 }
 .page[data-page="songs"] .songs-list-scroll .song-list{min-height:min-content}
+
+.song-load-more{display:block;width:min(100%,420px);margin:14px auto 4px;padding:13px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.78);color:var(--ink);font-size:12px;font-weight:800;box-shadow:var(--shadow-sm);transition:transform .18s ease,background .18s ease}.song-load-more:hover{transform:translateY(-1px);background:#fff}.song-load-more[hidden]{display:none}
