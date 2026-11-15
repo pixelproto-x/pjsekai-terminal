@@ -1,8 +1,8 @@
 /* Six original visual directions inspired by each unit's established identity */
 :root{
  --unit-accent:#26c9d6;--unit-accent-2:#738cff;--unit-ink:#1c2940;--unit-muted:#71819a;
- --unit-panel:rgba(244,251,255,.60);--unit-panel-strong:rgba(250,253,255,.76);--unit-line:rgba(85,151,190,.24);
- --unit-shell:rgba(236,247,255,.42);--unit-radius:20px;--unit-shadow:0 18px 48px rgba(26,71,112,.13);
+ --unit-panel:rgba(244,251,255,var(--sub-glass-opacity));--unit-panel-strong:rgba(250,253,255,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(85,151,190,.24);
+ --unit-shell:rgba(236,247,255,var(--shell-opacity));--unit-radius:20px;--unit-shadow:0 18px 48px rgba(26,71,112,.13);
  --unit-scene:radial-gradient(ellipse at 18% 20%,#bceff5 0,transparent 34%),radial-gradient(ellipse at 82% 70%,#c9d8ff 0,transparent 38%),linear-gradient(145deg,#e8f8fc,#dbe7ff 55%,#f9e9f6);
  --unit-pattern:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0 1px,transparent 1px 54px),repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 1px,transparent 1px 54px);
 }
@@ -61,7 +61,7 @@ body[data-sekai-theme] .section-head:after{display:none}
 /* Virtual Singer — luminous digital stage */
 body[data-sekai-theme="virtual-singer"]{
  --unit-accent:#19b9d0;--unit-accent-2:#8279f4;--unit-ink:#18334b;--unit-muted:#648398;
- --unit-panel:rgba(235,252,255,.58);--unit-panel-strong:rgba(250,255,255,.76);--unit-line:rgba(41,181,207,.28);--unit-shell:rgba(227,249,255,.42);--unit-radius:18px;
+ --unit-panel:rgba(235,252,255,var(--sub-glass-opacity));--unit-panel-strong:rgba(250,255,255,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(41,181,207,.28);--unit-shell:rgba(227,249,255,var(--shell-opacity));--unit-radius:18px;
  --unit-scene:radial-gradient(circle at 18% 22%,rgba(75,235,238,.6),transparent 22%),radial-gradient(circle at 82% 18%,rgba(158,133,255,.42),transparent 24%),radial-gradient(circle at 55% 90%,rgba(255,133,194,.36),transparent 32%),linear-gradient(135deg,#d9f9fb,#dce5ff 54%,#f8e7fa);
  --unit-pattern:linear-gradient(90deg,rgba(40,177,211,.08) 1px,transparent 1px),linear-gradient(rgba(40,177,211,.08) 1px,transparent 1px),radial-gradient(circle,rgba(255,255,255,.8) 1px,transparent 2px);
 }
@@ -72,7 +72,7 @@ body[data-sekai-theme="virtual-singer"] .theme-choice .theme-dot{border-radius:9
 /* Leo need — clear sky and band rehearsal room */
 body[data-sekai-theme="leo-need"]{
  --unit-accent:#477fca;--unit-accent-2:#9ac9ed;--unit-ink:#233852;--unit-muted:#7188a5;
- --unit-panel:rgba(246,251,255,.66);--unit-panel-strong:rgba(255,255,255,.80);--unit-line:rgba(75,126,192,.23);--unit-shell:rgba(241,248,255,.48);--unit-radius:13px;
+ --unit-panel:rgba(246,251,255,var(--sub-glass-opacity));--unit-panel-strong:rgba(255,255,255,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(75,126,192,.23);--unit-shell:rgba(241,248,255,var(--shell-opacity));--unit-radius:13px;
  --unit-scene:radial-gradient(ellipse at 18% 16%,#fff 0,transparent 26%),radial-gradient(ellipse at 82% 28%,#c6e7fb 0,transparent 35%),linear-gradient(155deg,#e5f3ff,#cbdff6 58%,#e7efff);
  --unit-pattern:repeating-linear-gradient(0deg,transparent 0 43px,rgba(67,125,190,.12) 44px 45px),linear-gradient(115deg,transparent 0 49%,rgba(255,255,255,.26) 50%,transparent 51%);
 }
@@ -84,7 +84,7 @@ body[data-sekai-theme="leo-need"] .anniversary-hero{border-radius:18px}
 /* MORE MORE JUMP — bright idol stage with soft petals */
 body[data-sekai-theme="more-more-jump"]{
  --unit-accent:#42ae86;--unit-accent-2:#f18eb8;--unit-ink:#31594c;--unit-muted:#78978b;
- --unit-panel:rgba(246,255,250,.60);--unit-panel-strong:rgba(255,255,255,.78);--unit-line:rgba(93,190,151,.25);--unit-shell:rgba(239,255,247,.44);--unit-radius:28px;
+ --unit-panel:rgba(246,255,250,var(--sub-glass-opacity));--unit-panel-strong:rgba(255,255,255,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(93,190,151,.25);--unit-shell:rgba(239,255,247,var(--shell-opacity));--unit-radius:28px;
  --unit-scene:radial-gradient(ellipse at 14% 20%,rgba(255,178,210,.64),transparent 23%),radial-gradient(ellipse at 86% 20%,rgba(174,241,205,.75),transparent 27%),radial-gradient(ellipse at 52% 100%,rgba(255,224,164,.55),transparent 38%),linear-gradient(145deg,#fff0f6,#e8fff4 54%,#fff7e7);
  --unit-pattern:radial-gradient(ellipse at center,rgba(255,255,255,.72) 0 20%,transparent 22%);
 }
@@ -96,7 +96,7 @@ body[data-sekai-theme="more-more-jump"] .hub-lookup-control button,body[data-sek
 /* Vivid BAD SQUAD — underground street venue */
 body[data-sekai-theme="vivid-bad-squad"]{
  --unit-accent:#ff596f;--unit-accent-2:#27c9c3;--unit-ink:#f1f2f7;--unit-muted:#a6adbd;
- --unit-panel:rgba(26,30,42,.70);--unit-panel-strong:rgba(34,39,53,.82);--unit-line:rgba(255,91,111,.3);--unit-shell:rgba(19,23,34,.56);--unit-radius:9px;
+ --unit-panel:rgba(26,30,42,var(--sub-glass-opacity));--unit-panel-strong:rgba(34,39,53,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(255,91,111,.3);--unit-shell:rgba(19,23,34,var(--shell-opacity));--unit-radius:9px;
  --unit-shadow:0 22px 54px rgba(4,7,15,.4);
  --unit-scene:radial-gradient(ellipse at 15% 18%,rgba(255,67,93,.34),transparent 24%),radial-gradient(ellipse at 88% 74%,rgba(30,203,197,.24),transparent 30%),linear-gradient(135deg,#111522,#242536 52%,#111b25);
  --unit-pattern:repeating-linear-gradient(132deg,transparent 0 34px,rgba(255,255,255,.045) 35px 36px),repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 5px);
@@ -114,7 +114,7 @@ body[data-sekai-theme="vivid-bad-squad"] .settings-presets button{background:#25
 /* Wonderlands Showtime — carnival lights and stage curtains */
 body[data-sekai-theme="wonderlands-showtime"]{
  --unit-accent:#8966d8;--unit-accent-2:#f2ad4c;--unit-ink:#44345e;--unit-muted:#83769c;
- --unit-panel:rgba(252,246,255,.62);--unit-panel-strong:rgba(255,252,255,.80);--unit-line:rgba(143,104,217,.26);--unit-shell:rgba(248,239,255,.46);--unit-radius:22px;
+ --unit-panel:rgba(252,246,255,var(--sub-glass-opacity));--unit-panel-strong:rgba(255,252,255,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(143,104,217,.26);--unit-shell:rgba(248,239,255,var(--shell-opacity));--unit-radius:22px;
  --unit-scene:radial-gradient(ellipse at 16% 12%,rgba(255,205,105,.7),transparent 20%),radial-gradient(ellipse at 82% 15%,rgba(238,132,190,.48),transparent 25%),radial-gradient(ellipse at 50% 100%,rgba(144,105,224,.4),transparent 40%),linear-gradient(145deg,#fff0d9,#eee3ff 52%,#ffe4f2);
  --unit-pattern:radial-gradient(circle,rgba(255,255,255,.86) 0 2px,transparent 2.7px);
 }
@@ -126,7 +126,7 @@ body[data-sekai-theme="wonderlands-showtime"] .settings-card,body[data-sekai-the
 /* Nightcord at 25 — quiet midnight workspace */
 body[data-sekai-theme="nightcord"]{
  --unit-accent:#aa91e2;--unit-accent-2:#687eb7;--unit-ink:#e9e6f2;--unit-muted:#aaa5bd;
- --unit-panel:rgba(26,27,43,.72);--unit-panel-strong:rgba(34,35,54,.82);--unit-line:rgba(162,143,211,.22);--unit-shell:rgba(18,19,32,.58);--unit-radius:15px;
+ --unit-panel:rgba(26,27,43,var(--sub-glass-opacity));--unit-panel-strong:rgba(34,35,54,min(1,calc(var(--glass-opacity) + .55)));--unit-line:rgba(162,143,211,.22);--unit-shell:rgba(18,19,32,var(--shell-opacity));--unit-radius:15px;
  --unit-shadow:0 22px 54px rgba(5,5,17,.46);
  --unit-scene:radial-gradient(ellipse at 20% 18%,rgba(123,100,174,.3),transparent 28%),radial-gradient(ellipse at 85% 80%,rgba(61,77,126,.28),transparent 34%),linear-gradient(145deg,#111321,#202137 56%,#111523);
  --unit-pattern:repeating-linear-gradient(0deg,rgba(177,161,219,.055) 0 1px,transparent 1px 5px),linear-gradient(90deg,transparent 0 49.8%,rgba(167,147,216,.05) 50%,transparent 50.2%);
