@@ -285,6 +285,9 @@ assert.ok(gameToolsJs.includes('<label for="gtQuery">搜尋</label><input id="gt
 assert.doesNotMatch(gameToolsJs, /function enhanceGameToolSelects\(|showPopover\(|hidePopover\(/, "selectors use the native iOS-safe picker rather than detached popovers");
 assert.match(gameToolsJs, /if\(e\.target\.id==="gtQuery"\)\{const input=e\.target;s\.q=input\.value;updateSearchResults\(\);\}/, "search input updates results without replacing or refocusing the input");
 assert.match(gameToolsJs, /calculateCardEventBonus\(c,id,s\.eventDeckBonuses,s\.gameCharacterUnits\)/, "event bonus uses the official event deck bonus rules and character-unit mapping");
+assert.match(gameToolsJs, /calculateCardRarityBonus\(c,s\.masterRanks\[String\(c\.id\)\]\?\?0,s\.eventRarityBonusRates\)/, "event bonus includes the selected card mastery rank");
+assert.match(gameToolsJs, /data-master-rank/, "team editor exposes mastery rank controls");
+assert.match(gameToolsJs, /characterUnits\(c\.id,s\.gameCharacterUnits\)\.includes\(s\.unit\)/, "character search supports group filtering");
 assert.match(gameToolsJs, /async function load\(\)\{const generation=\+\+loadGeneration;/, "new region loads supersede stale in-flight requests");
 assert.match(gameToolsJs, /const list=p\.querySelector\("\.gt-cards"\);if\(list\)list\.innerHTML=/, "card search replaces only the scrollable result list");
 assert.doesNotMatch(gameToolsCss, /gt-select-menu|gt-region-menu|background:transparent!important/, "obsolete transparent popup styling is removed");
