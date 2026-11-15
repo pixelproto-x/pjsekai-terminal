@@ -1,0 +1,32 @@
+.page[data-page="game-tools"] .page-head{padding-bottom:16px}
+#gameToolsRoot{padding:0 2px 45px}
+.gt-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:20px 0}
+.gt-head h2{margin:7px 0;font-size:clamp(28px,4vw,42px);color:var(--unit-ink,var(--ink))}
+.gt-head p{margin:0;color:var(--unit-muted,var(--muted));font-size:12px}
+.gt-head label,.gt-filters label,.gt-event-select{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:800;color:var(--unit-ink,var(--ink))}
+.gt-head select,.gt-filters input,.gt-filters select,.gt-team select,.gt-event-select select{min-height:42px;min-width:0;width:100%;padding:9px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px}
+.gt-tabs{display:flex;gap:7px;overflow-x:auto;padding:8px 0 14px}
+.gt-tabs button,.gt-actions button,#gtPanel button{border:1px solid var(--unit-line);border-radius:999px;padding:8px 12px;background:var(--unit-panel-strong);color:var(--unit-ink);font-size:10px;font-weight:800}
+.gt-tabs button{white-space:nowrap}.gt-tabs button.active{background:var(--unit-accent);color:white}
+.gt-status{padding:10px 13px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel);font-size:11px;color:var(--unit-muted)}
+.gt-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;padding:13px;margin:12px 0;border:1px solid var(--unit-line);border-radius:17px;background:var(--unit-panel)}
+.gt-count{margin:12px 2px;font-size:12px;font-weight:900;color:var(--unit-ink)}
+.gt-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.gt-card,.gt-characters article,.gt-list article,.gt-team label,.gt-compare section{min-width:0;border:1px solid var(--unit-line);border-radius:16px;background:var(--unit-panel);color:var(--unit-ink);box-shadow:var(--unit-shadow);backdrop-filter:blur(12px)}
+.gt-card{overflow:hidden;display:flex;flex-direction:column}
+.gt-art{height:75px;display:flex;justify-content:space-between;padding:10px;background:linear-gradient(130deg,color-mix(in srgb,var(--unit-accent) 35%,transparent),color-mix(in srgb,var(--unit-accent-2) 25%,transparent))}
+.gt-art b{height:max-content;padding:5px 8px;border-radius:99px;background:rgba(255,255,255,.78);color:#263044;font-size:10px}
+.gt-card-body{padding:11px 12px;flex:1}.gt-card h3{font-size:13px;margin:0 0 6px}.gt-card p,.gt-card small{font-size:10px;line-height:1.6;color:var(--unit-muted);margin:3px 0}
+.gt-actions{display:flex;gap:6px;flex-wrap:wrap;padding:0 11px 11px}.gt-actions button{padding:7px 9px}
+.gt-characters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.gt-characters article{padding:15px}
+.gt-characters h3{font-size:19px;margin:7px 0}.gt-characters p,.gt-characters small{font-size:10px;line-height:1.7;color:var(--unit-muted)}
+.gt-list{display:grid;gap:8px}.gt-list article{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;font-size:11px}.gt-list span,.gt-list small{color:var(--unit-muted)}
+.gt-intro{padding:14px 16px;margin:10px 0 14px;border:1px solid var(--unit-line);border-radius:15px;background:var(--unit-panel)}.gt-intro h3{margin:0 0 6px}.gt-intro p{margin:0;font-size:11px;line-height:1.7;color:var(--unit-muted)}
+.gt-team{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.gt-team label{padding:11px;display:grid;gap:8px;font-size:11px}
+.gt-summary,.gt-metrics{display:flex;justify-content:space-between;gap:12px;padding:13px;margin-top:10px;border:1px solid var(--unit-line);border-radius:13px;background:var(--unit-panel);font-size:11px}
+.gt-event-select{max-width:480px}.gt-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.gt-metrics div{display:grid;gap:6px}.gt-metrics small{color:var(--unit-muted)}.gt-metrics b{font-size:20px}
+.gt-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.gt-compare section{padding:16px}.gt-compare h3{margin:0 0 8px}.gt-compare p{font-size:11px;line-height:1.7;color:var(--unit-muted)}
+.gt-empty{padding:28px;text-align:center;border:1px dashed var(--unit-line);border-radius:15px;color:var(--unit-muted);font-size:12px}
+.gt-note,.gt-source{font-size:10px;line-height:1.8;color:var(--unit-muted);margin:12px 2px}.gt-source{border-top:1px solid var(--unit-line);padding-top:14px;margin-top:24px}.gt-source a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){.gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.gt-cards,.gt-characters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-team{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.gt-head{align-items:stretch;flex-direction:column}.gt-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-cards,.gt-characters,.gt-compare{grid-template-columns:1fr}.gt-team{grid-template-columns:1fr}.gt-metrics{grid-template-columns:1fr 1fr}.gt-tabs button{padding:8px 10px}}
