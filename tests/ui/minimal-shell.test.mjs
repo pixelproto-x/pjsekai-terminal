@@ -297,4 +297,7 @@ assert.match(gameToolsJs, /select\.value=option\.dataset\.value;wrapper\._closeG
 assert.match(gameToolsCss, /gt-dropdown-option\.is-selected:after/, "selected option has a visible checkmark");
 assert.match(gameToolsCss, /gt-picker-in/, "game-tool dropdown has an opening animation");
 assert.match(gameToolsCss, /background-image:url/, "game-tool search field has a search icon");
-assert.match(html, /game-tools\.css\?v=20261115-game-tools-picker-polish-v7/, "game-tool styles use a fresh cache version");
+assert.match(gameToolsJs, /root\.addEventListener\("pointerup",event=>\{[\s\S]*?field\.focus\(\{preventScroll:true\}\)/, "search regains focus on pointer release without replacing its node");
+assert.match(gameToolsCss, /#gameToolsRoot \.gt-cards\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "card grid uses larger two-column desktop layout");
+assert.match(gameToolsCss, /#gameToolsRoot \.gt-art\{[\s\S]*?height:148px/, "card artwork is restored to a larger size");
+assert.match(html, /game-tools\.css\?v=20261115-search-focus-card-layout-v8/, "game-tool styles use a fresh cache version");
