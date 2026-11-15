@@ -69,7 +69,7 @@ function renderProfile(result, eventRanking = null) {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
-    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到" : eventRanking?.status === "NOT_FOUND" ? "未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : "暫時無法取得")],
+    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到" : eventRanking?.status === "NOT_FOUND" ? "未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : eventRanking?.status === "RETRY_FAILED" ? "排名來源連線失敗" : eventRanking?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (eventRanking.upstreamStatus ? " " + eventRanking.upstreamStatus : "") : "暫時無法取得")],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -165,7 +165,9 @@ function updateEventRankingValue(payload) {
           : payload?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到"
             : payload?.status === "NOT_FOUND" ? "未找到此玩家排名"
               : payload?.status === "PENDING_TIMEOUT" ? "排名來源仍未完成 請稍後重查"
-                : "暫時無法取得");
+                : payload?.status === "RETRY_FAILED" ? "排名來源連線失敗 請稍後重查"
+                  : payload?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (payload.upstreamStatus ? " " + payload.upstreamStatus : "")
+                    : "暫時無法取得");
 }
 
 async function retryPendingEventRanking(uid, region, generation, payload, attempt = 0) {
@@ -187,8 +189,17 @@ async function retryPendingEventRanking(uid, region, generation, payload, attemp
     if (next.status === "DATA_PENDING") {
       retryPendingEventRanking(uid, region, generation, next, attempt + 1);
     }
-  } catch {
-    // Keep the explicit pending state; the user can retry the lookup manually.
+  } catch (error) {
+    if (generation !== lookupGeneration) return;
+    const failed = {
+      status: "RETRY_FAILED",
+      row: null,
+      upstreamStatus: error?.details?.status ?? null,
+      event: payload?.event ?? null,
+    };
+    updateEventRankingValue(failed);
+    const cached = readLookupCache(uid, region);
+    if (cached) saveLookupCache(uid, region, cached.profile, failed);
   }
 }
 
@@ -216,12 +227,15 @@ async function lookup(rawUid, requestedRegion) {
     try {
       // Haneoka searches by the in-game numeric profile ID, not player name.
       freshRanking = normalizeEventRanking(await provider.getEventRanking(uid, region));
-    } catch {
-      freshRanking = null;
+    } catch (error) {
+      freshRanking = {
+        status: "UPSTREAM_ERROR",
+        row: null,
+        upstreamStatus: error?.details?.status ?? null,
+      };
     }
-    const eventRanking = freshRanking && freshRanking.status !== "UNAVAILABLE" && !freshRanking.error
-      ? freshRanking
-      : (saved?.eventRanking || freshRanking || { status: "UNAVAILABLE", row: null });
+    // A failed fresh request must never resurrect an old "資料收集中" cache entry.
+    const eventRanking = freshRanking || saved?.eventRanking || { status: "UNAVAILABLE", row: null };
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
