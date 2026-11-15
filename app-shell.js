@@ -449,15 +449,19 @@ function positionServerPickerMenu(wrapper) {
   if (!trigger || !menu || !menu.matches(":popover-open")) return;
 
   const triggerRect = trigger.getBoundingClientRect();
-  const menuRect = menu.getBoundingClientRect();
   const margin = 12;
-  const left = Math.max(margin, Math.min(triggerRect.left, window.innerWidth - menuRect.width - margin));
+  /* Keep the popup exactly as wide as its trigger; never size it from option text. */
+  const width = Math.max(160, Math.min(triggerRect.width, window.innerWidth - margin * 2));
+  const left = Math.max(margin, Math.min(triggerRect.left, window.innerWidth - width - margin));
   /* Always open downward; when space is limited, scroll inside the list. */
   const top = triggerRect.bottom + 8;
   const availableHeight = Math.max(120, window.innerHeight - top - margin);
 
   menu.style.left = left + "px";
   menu.style.top = top + "px";
+  menu.style.width = width + "px";
+  menu.style.minWidth = width + "px";
+  menu.style.maxWidth = width + "px";
   menu.style.maxHeight = availableHeight + "px";
   menu.style.overflowY = "auto";
 }
@@ -530,6 +534,9 @@ function closeServerPicker(wrapper) {
   menu.style.removeProperty("left");
   menu.style.removeProperty("top");
   menu.style.removeProperty("max-height");
+  menu.style.removeProperty("width");
+  menu.style.removeProperty("min-width");
+  menu.style.removeProperty("max-width");
   menu.style.removeProperty("overflow-y");
 }
 
