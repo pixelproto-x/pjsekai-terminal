@@ -94,3 +94,13 @@ assert.match(themes, /\.bottom-bar \.tab\{position:relative;z-index:1\}/, "navig
 assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached across refreshes");
 assert.match(lookup, /已還原上次查詢資料/, "cached player results render before background refresh");
 assert.match(lookup, /saveLookupCache\(uid, region, result\)/, "successful player profile results are persisted");
+
+assert.match(html, /id="savePlayerForm"/, "player workspace can save multiple player UIDs");
+assert.match(html, /id="savedPlayerList"/, "saved player list is rendered");
+assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is rendered");
+assert.match(lookup, /pjskSavedPlayersV1/, "saved players persist in browser storage");
+assert.match(lookup, /pjskPlayerHistoryV1/, "recent player history persists in browser storage");
+assert.match(lookup, /MAX_SAVED_PLAYERS = 50/, "saved player collection has a clear capacity limit");
+assert.match(lookup, /favorite-current/, "current player can be favorited");
+assert.match(lookup, /rememberPlayer\(result\)/, "successful lookups are added to recent history");
+assert.match(css, /Batch 2: saved player workspace/, "saved player workspace has dedicated responsive styling");
