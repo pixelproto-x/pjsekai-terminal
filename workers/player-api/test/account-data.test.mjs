@@ -56,13 +56,14 @@ function request(method = "GET", body) {
 function mockGoogleTokenInfo(overrides = {}) {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url) => {
-    assert.match(String(url), /^https:\/\/oauth2\.googleapis\.com\/tokeninfo\?id_token=/);
+    assert.match(String(url), /^https:\/\/oauth2\.googleapis\.com\/tokeninfo\?access_token=/);
     return new Response(JSON.stringify({
       aud: GOOGLE_CLIENT_ID,
-      iss: "https://accounts.google.com",
+      azp: GOOGLE_CLIENT_ID,
       sub: "google-user-123",
       email: "player@example.com",
       email_verified: "true",
+      scope: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
       exp: String(Math.floor(Date.now() / 1000) + 3600),
       ...overrides,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
@@ -104,6 +105,7 @@ test("returns only the authenticated Google account's stored data", async () => 
     assert.deepEqual(await response.json(), {
       data: { sekaiTheme: "nightcord", pjskSongFavorites: "[1,2]" },
       updatedAt: "2026-11-15T00:00:00.000Z",
+      accountSub: "google-user-123",
     });
     assert.match(db.state.statements[0], /WHERE google_sub = \?/);
   } finally {
