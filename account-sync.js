@@ -6,7 +6,7 @@ const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists",
   "pjskSongRegion", "pjskSongViewV1", "pjskUiStateV1",
-  "pjskLastPlayerLookup"
+  "pjskLastPlayerLookup", "pjskSavedPlayersV2", "pjskPlayerHistoryV1"
 ];
 
 let accessToken = "";
