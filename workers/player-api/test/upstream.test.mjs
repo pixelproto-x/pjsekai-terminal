@@ -301,7 +301,7 @@ test("does not retry an inactive Haneoka ranking search", async () => {
   assert.equal(rankingCalls.length, 1);
 });
 
-test("does not call the points endpoint when the current event disables point ranking", async () => {
+test("uses the total board instead of the disabled point board", async () => {
   const calls = [];
   const response = await worker.fetch(
     new Request("https://worker.example/api/tw/user/123456/event-ranking", {
@@ -322,15 +322,22 @@ test("does not call the points endpoint when the current event disables point ra
             },
           }), { status: 200 });
         }
-        throw new Error("points endpoint must not be requested");
+        if (value.endsWith("/tw/events/321/total/latest")) {
+          return new Response(JSON.stringify({
+            rows: [{ rank: 42, profileId: "123456", scoreExact: "98765" }],
+            stale: false,
+          }), { status: 200 });
+        }
+        throw new Error("Unexpected upstream URL: " + value);
       },
     },
   );
   const body = await response.json();
   assert.equal(response.status, 200);
-  assert.equal(body.status, "POINT_BOARD_UNAVAILABLE");
-  assert.equal(body.availableRankingType, "total");
-  assert.equal(calls.length, 1);
+  assert.equal(body.status, "OK");
+  assert.equal(body.row.rank, 42);
+  assert.equal(body.source, "Haneoka Total");
+  assert.equal(calls.length, 2);
 });
 
 test("does not treat inactive ranking pages as pending scans", async () => {
