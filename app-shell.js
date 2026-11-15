@@ -207,6 +207,41 @@ function applyTheme(value) {
   if (status) status.textContent = "目前主題 " + themeNames[theme];
   try { localStorage.setItem("sekaiTheme", theme); } catch {}
 }
+const anniversaryCoverOptions = {
+  "1": { label: "一週年", image: "https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png", officialUrl: "https://pjsekai.sega.jp/1st/index.html" },
+  "2": { label: "二週年", image: "https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png", officialUrl: "https://pjsekai.sega.jp/2nd/index.html" },
+  "3": { label: "三週年", image: "https://pjsekai.sega.jp/3rd/assets/images/common/production/bg_kv-virtual-prd.png", officialUrl: "https://pjsekai.sega.jp/3rd/index.html" },
+  "4": { label: "四週年", image: "https://pjsekai.sega.jp/4th/assets/images/sp/mock/img_sky.png", officialUrl: "https://pjsekai.sega.jp/4th/index.html" },
+  "5": { label: "五週年", image: "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png", officialUrl: "https://pjsekai.sega.jp/5th/index.html" },
+  "6": { label: "六週年", image: "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp", officialUrl: "https://pjsekai.sega.jp/6th/index.html" }
+};
+function applyAnniversaryCover(value) {
+  const year = Object.hasOwn(anniversaryCoverOptions, String(value)) ? String(value) : "6";
+  const option = anniversaryCoverOptions[year];
+  const hero = $(".anniversary-hero");
+  if (hero) {
+    hero.dataset.anniversaryCover = year;
+    hero.style.setProperty("--anniversary-cover-image", 'url("' + option.image + '")');
+    hero.setAttribute("aria-label", option.label + "主視覺");
+  }
+  const select = $("#anniversaryCoverSelect");
+  if (select) select.value = year;
+  const eyebrow = $("#anniversaryCoverEyebrow");
+  if (eyebrow) eyebrow.textContent = "世界計畫" + option.label;
+  const number = $("#anniversaryCoverNumber");
+  if (number) number.textContent = year;
+  const credit = $("#anniversaryCoverCredit");
+  if (credit) {
+    credit.href = option.officialUrl;
+    credit.textContent = option.label + "官方網站";
+  }
+  const status = $("#anniversaryCoverStatus");
+  if (status) status.textContent = "目前封面 " + option.label;
+  try { localStorage.setItem("pjskAnniversaryCover", year); } catch {}
+}
+$("#anniversaryCoverSelect")?.addEventListener("change", (event) => {
+  applyAnniversaryCover(event.target.value);
+});
 function applyOpacity(value) {
   const amount = Math.max(0, Math.min(100, Number(value) || 0));
   const opacity = amount / 100;
@@ -224,9 +259,11 @@ function applyOpacity(value) {
 try {
   applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
   applyOpacity(localStorage.getItem("sekaiGlassOpacity") ?? 22);
+  applyAnniversaryCover(localStorage.getItem("pjskAnniversaryCover") || "6");
 } catch {
   applyTheme("virtual-singer");
   applyOpacity(22);
+  applyAnniversaryCover("6");
 }
 go(savedUiState.activePage || location.hash.slice(1) || "home", false);
 restoreScrollPending = true;
