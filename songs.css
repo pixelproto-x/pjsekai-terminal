@@ -297,3 +297,21 @@
   .server-picker-menu,.server-picker-menu.is-closing{animation:none}
   .server-picker-chevron{transition:none}
 }
+
+
+/* Mobile song library / playlist switcher */
+.songs-mobile-tabs{display:none}
+@media(max-width:640px){
+  .songs-mobile-tabs{
+    position:sticky;top:8px;z-index:35;display:grid;grid-template-columns:1fr 1fr;gap:5px;
+    margin:0 0 13px;padding:5px;border:1px solid rgba(255,255,255,.82);border-radius:16px;
+    background:rgba(248,249,255,.84);box-shadow:0 8px 24px rgba(35,45,75,.12);
+    backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);
+  }
+  .songs-mobile-tab{min-height:42px;border:0;border-radius:11px;background:transparent;color:var(--muted);font:800 12px/1.2 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;cursor:pointer;transition:background .18s,color .18s,box-shadow .18s}
+  .songs-mobile-tab.is-active{color:#fff;background:linear-gradient(110deg,#7865dc,#a17ce9 55%,#e46ca5);box-shadow:0 4px 12px rgba(145,121,245,.2)}
+  .songs-mobile-tab span{display:inline-grid;place-items:center;min-width:19px;height:19px;margin-left:4px;padding:0 5px;border-radius:999px;background:rgba(120,101,220,.12);font-size:10px}
+  .songs-mobile-tab.is-active span{background:rgba(255,255,255,.2)}
+  .page[data-page="songs"] .songs-overview[hidden],.page[data-page="songs"] .songs-workbench[hidden],.page[data-page="songs"] .songs-playlists[hidden]{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.songs-mobile-tab{transition:none}}
