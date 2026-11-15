@@ -23,37 +23,6 @@ const characterUnitName=id=>characterUnits(id,s.gameCharacterUnits).map(unit=>un
 function setStatus(t){const n=$("#gtStatus");if(n)n.textContent=t}
 function tabs(){return [["cards","卡片資料庫"],["characters","角色資料庫"],["honors","稱號查詢"],["events","活動資料庫"],["team","隊伍編輯器"],["calculator","活動加成"],["score","分數估算"],["compare","隊伍比較"],["favorites","我的收藏"]]}
 
-function enhanceGameToolSelects(root=document){
- root.querySelectorAll("select").forEach(select=>{
-  if(select.dataset.gtDropdown==="true")return;
-  select.dataset.gtDropdown="true";
-  const wrapper=document.createElement("div");wrapper.className="gt-dropdown";
-  const trigger=document.createElement("button");trigger.type="button";trigger.className="gt-dropdown-trigger";trigger.setAttribute("aria-haspopup","listbox");trigger.setAttribute("aria-expanded","false");
-  const menu=document.createElement("div");menu.className="gt-dropdown-menu";menu.setAttribute("popover","manual");menu.setAttribute("role","listbox");
-  const refresh=()=>{
-   trigger.textContent=select.selectedOptions[0]?.textContent||"請選擇";menu.replaceChildren();
-   Array.from(select.options).forEach(option=>{const item=document.createElement("button");item.type="button";item.className="gt-dropdown-option"+(option.value===select.value?" is-selected":"");item.dataset.value=option.value;item.setAttribute("role","option");item.setAttribute("aria-selected",String(option.value===select.value));item.textContent=option.textContent;menu.append(item)});
-  };
-  const close=()=>{
-   if(menu.matches(":popover-open"))menu.hidePopover();
-   trigger.setAttribute("aria-expanded","false");wrapper.classList.remove("is-open");
-   ["position","left","top","width","min-width","max-width","max-height"].forEach(property=>menu.style.removeProperty(property));
-  };
-  wrapper._closeGtDropdown=close;wrapper._refreshGtDropdown=refresh;select.addEventListener("change",refresh);
-  select.parentNode.insertBefore(wrapper,select);wrapper.append(select,trigger,menu);select.classList.add("gt-native-select");refresh();
- });
-}
-function closeGameToolDropdowns(except=null){
- document.querySelectorAll("#gameToolsRoot .gt-dropdown.is-open").forEach(wrapper=>{if(wrapper!==except)wrapper._closeGtDropdown?.()});
-}
-function openGameToolDropdown(wrapper){
- const trigger=wrapper.querySelector(".gt-dropdown-trigger"),menu=wrapper.querySelector(".gt-dropdown-menu");if(!trigger||!menu)return;
- closeGameToolDropdowns(wrapper);
- const rect=trigger.getBoundingClientRect(),margin=12,gap=8,width=Math.min(Math.max(160,rect.width),window.innerWidth-margin*2);
- const left=Math.max(margin,Math.min(rect.left,window.innerWidth-width-margin)),top=rect.bottom+gap,maxHeight=Math.max(120,window.innerHeight-top-margin);
- menu.style.position="fixed";menu.style.left=left+"px";menu.style.top=top+"px";menu.style.width=width+"px";menu.style.minWidth=width+"px";menu.style.maxWidth=width+"px";menu.style.maxHeight=Math.min(320,maxHeight)+"px";
- menu.showPopover();trigger.setAttribute("aria-expanded","true");wrapper.classList.add("is-open");
-}
 function render(){
  const root=$("#gameToolsRoot");if(!root)return;
  root.innerHTML=`<div class="gt-head"><div><span class="kicker">SEKAI GAME DATABASE</span><h2>遊戲資料庫</h2><p>各伺服器官方遊戲資料與個人隊伍工具</p></div><label class="gt-region-label">選擇伺服器<span class="gt-region-control"><span class="gt-region-flag">${regionFlag(s.region)}</span><select id="gtRegion" aria-label="選擇資料伺服器">${Object.entries(regions).map(([k,v])=>`<option value="${k}" ${k===s.region?"selected":""}>${v}</option>`).join("")}</select><span class="gt-region-chevron" aria-hidden="true">⌄</span></span></label></div><div class="gt-tabs">${tabs().map(([k,v])=>`<button type="button" data-tab="${k}" class="${s.tab===k?"active":""}>${v}</button>`).join("")}</div><p id="gtStatus" class="gt-status" role="status" aria-live="polite">${s.loading?"正在載入資料…":"資料已載入"}</p><div id="gtPanel"></div><div class="gt-source">資料來源：<a href="https://github.com/sekai-world/sekai-master-db-diff" target="_blank" rel="noopener">日服</a> · <a href="https://github.com/sekai-world/sekai-master-db-tc-diff" target="_blank" rel="noopener">台服</a> · <a href="https://github.com/sekai-world/sekai-master-db-en-diff" target="_blank" rel="noopener">國際服</a> · <a href="https://github.com/sekai-world/sekai-master-db-kr-diff" target="_blank" rel="noopener">韓服</a> · <a href="https://github.com/sekai-world/sekai-master-db-cn-diff" target="_blank" rel="noopener">簡中服</a><br>資料庫內容依各服上游更新；估算結果不等於遊戲內最終結果。</div>`;
@@ -79,7 +48,7 @@ function cardHtml(c,withAdd=false){const id=String(c.id),fav=s.favorites.has(id)
 function panel(){
  const p=$("#gtPanel");if(!p)return;if(s.loading){p.innerHTML='<div class="gt-empty">正在載入所需資料…</div>';return}
  if(s.tab==="cards"){const rows=filtered();p.innerHTML=filters()+`<div class="gt-count">符合條件 ${rows.length.toLocaleString()} 張卡片</div><div class="gt-cards">${rows.slice(0,150).map(c=>cardHtml(c,true)).join("")||'<div class="gt-empty">沒有符合條件的卡片</div>'}</div>${rows.length>150?'<p class="gt-note">目前顯示前 150 筆，請縮小篩選範圍</p>':""}`;return}
- if(s.tab==="characters"){const rows=s.characters.filter(c=>!s.q||cname(c).toLowerCase().includes(s.q.toLowerCase()));p.innerHTML=`<div class="gt-filters gt-search-only"><div class="gt-filter-field"><label for="gtQuery">搜尋角色</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="輸入角色名稱"></div></div><div class="gt-characters">${rows.map(c=>{const d=s.profiles.find(x=>Number(x.characterId)===Number(c.id))||{};return `<article><small>${esc(units[c.unit]||c.unit||"團體未提供")}</small><h3>${esc(cname(c))}</h3><p>${esc(d.birthday||"生日未提供")} · ${esc(d.school||"學校未提供")}</p><p>${esc(d.hobby||"興趣未提供")}</p><small>${esc(d.introduction||"角色介紹未提供")}</small></article>`}).join("")}</div>`;return}
+ if(s.tab==="characters"){const rows=s.characters.filter(c=>(!s.q||cname(c).toLowerCase().includes(s.q.toLowerCase()))&&(!s.unit||characterUnits(c.id,s.gameCharacterUnits).includes(s.unit)));p.innerHTML=`<div class="gt-filters gt-search-only"><div class="gt-filter-field"><label for="gtQuery">搜尋角色</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="輸入角色名稱"></div><div class="gt-filter-field"><label for="gtUnit">團體</label><select id="gtUnit"><option value="">全部團體</option>${Object.entries(units).map(([k,v])=>`<option value="${k}" ${s.unit===k?"selected":""}>${v}</option>`).join("")}</select></div></div><div class="gt-characters">${rows.map(c=>{const d=s.profiles.find(x=>Number(x.characterId)===Number(c.id))||{};return `<article><small>${esc(characterUnitName(c.id))}</small><h3>${esc(cname(c))}</h3><p>${esc(d.birthday||"生日未提供")} · ${esc(d.school||"學校未提供")}</p><p>${esc(d.hobby||"興趣未提供")}</p><small>${esc(d.introduction||"角色介紹未提供")}</small></article>`}).join("")}</div>`;return}
  if(s.tab==="honors"){const rows=s.honors.filter(h=>!s.q||String(h.name||"").toLowerCase().includes(s.q.toLowerCase()));p.innerHTML=`<div class="gt-filters gt-search-only"><div class="gt-filter-field"><label for="gtQuery">搜尋稱號</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="輸入稱號"></div></div><div class="gt-list">${rows.slice(0,300).map(h=>`<article><b>${esc(h.name||"稱號")}</b><span>${esc(h.honorType||"類型未提供")}</span></article>`).join("")||'<div class="gt-empty">找不到稱號</div>'}</div><p class="gt-note">共 ${rows.length} 筆稱號群組；若上游未提供個別等級或解鎖條件，這裡不會自行推測。</p>`;return}
  if(s.tab==="events"){const rows=s.events.filter(e=>!s.q||JSON.stringify(e).toLowerCase().includes(s.q.toLowerCase())).sort((a,b)=>Number(b.startAt||0)-Number(a.startAt||0));p.innerHTML=`<div class="gt-filters gt-search-only"><div class="gt-filter-field"><label for="gtQuery">搜尋活動</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="活動名稱"></div></div><div class="gt-list">${rows.slice(0,150).map(e=>`<article><div><b>${esc(e.name||e.assetbundleName||"活動 #"+e.id)}</b><small>${esc(e.eventType||"活動")} · ID ${e.id}</small></div><button data-event="${e.id}" type="button">計算此活動</button></article>`).join("")||'<div class="gt-empty">找不到活動</div>'}</div>`;return}
  if(s.tab==="team"){p.innerHTML=`<datalist id="gtCardOptions">${s.cards.map(c=>`<option value="${esc(cardLabel(c))}"></option>`).join("")}</datalist><div class="gt-intro"><h3>五人隊伍編輯器</h3><p>從目前伺服器卡片中選擇五名隊員，隊伍保存在本裝置。</p></div><div class="gt-team">${s.slots.map((id,i)=>`<label><b>隊員 ${i+1}</b><input list="gtCardOptions" data-slot-input="${i}" value="${esc(id&&card(id)?cardLabel(card(id)):"")}" placeholder="搜尋卡片名稱或 ID"></label>`).join("")}</div><div class="gt-summary"><b>已選 ${team().length}/5 人</b><b>資料庫可讀能力值合計：${team().reduce((n,c)=>n+stats(c),0).toLocaleString()}</b></div><div class="gt-preset-save"><input id="gtTeamName" maxlength="24" placeholder="輸入隊伍名稱"><button data-save-team type="button">收藏這組隊伍</button></div><div class="gt-saved-teams"><h4>已收藏的隊伍組合</h4>${s.savedTeams.map((x,i)=>`<article><b>${esc(x.name||"隊伍 "+(i+1))}</b><span>${(x.slots||[]).filter(Boolean).length}/5 人</span><div><button data-load-team="${i}" type="button">載入</button><button data-delete-team="${i}" type="button">刪除</button></div></article>`).join("")||'<p>還沒有收藏的隊伍組合</p>'}</div><p class="gt-note">能力值只加總卡片資料中明確標記的 power、performance、technique、stamina 或 talent 欄位。若資料未包含這些欄位，會顯示 0，不會用稀有度猜測。</p><button data-clear type="button">清空隊伍</button>`;return}
