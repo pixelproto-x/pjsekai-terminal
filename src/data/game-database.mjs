@@ -15,14 +15,14 @@ export const GAME_DATABASE_FILES = Object.freeze([
   "honors",
   "honorGroups",
   "events",
-  "eventCards"
+  "eventCards", "eventDeckBonuses", "eventTotalPowerLimits", "eventSkillScoreUpLimits", "eventRarityBonusRates"
 ]);
 
 export const GAME_DATABASE_BUNDLES = Object.freeze({
   cards: Object.freeze(["cards", "gameCharacters", "characterProfiles", "cardRarities", "skills"]),
   characters: Object.freeze(["gameCharacters", "characterProfiles"]),
   honors: Object.freeze(["honors", "honorGroups", "gameCharacters"]),
-  events: Object.freeze(["events", "eventCards", "cards", "gameCharacters"])
+  events: Object.freeze(["events", "eventCards", "eventDeckBonuses", "eventTotalPowerLimits", "eventSkillScoreUpLimits", "eventRarityBonusRates", "cards", "gameCharacters"])
 });
 
 const DATA_ROOT = "https://sekai-world.github.io";
