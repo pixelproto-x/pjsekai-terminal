@@ -22,6 +22,50 @@ const SONGS_PER_RENDER = 60;
 let renderedSongLimit = SONGS_PER_RENDER;
 let loadMoreButton = null;
 const SONG_VIEW_KEY = "pjskSongViewV1";
+const SONG_CACHE_DB = "pjsk-song-catalogue";
+const SONG_CACHE_STORE = "regional-data";
+const SONG_CACHE_TTL = 6 * 60 * 60 * 1000;
+
+function openSongCache() {
+  if (!("indexedDB" in window)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.open(SONG_CACHE_DB, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains(SONG_CACHE_STORE)) {
+          request.result.createObjectStore(SONG_CACHE_STORE);
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+      request.onblocked = () => resolve(null);
+    } catch { resolve(null); }
+  });
+}
+async function readSongCache(region) {
+  const db = await openSongCache();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const request = db.transaction(SONG_CACHE_STORE, "readonly").objectStore(SONG_CACHE_STORE).get(region);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => resolve(null);
+    } catch { resolve(null); }
+  });
+}
+async function writeSongCache(region, songs, charts) {
+  const db = await openSongCache();
+  if (!db) return;
+  await new Promise((resolve) => {
+    try {
+      const transaction = db.transaction(SONG_CACHE_STORE, "readwrite");
+      transaction.objectStore(SONG_CACHE_STORE).put({ songs, charts, savedAt: Date.now() }, region);
+      transaction.oncomplete = resolve;
+      transaction.onerror = resolve;
+      transaction.onabort = resolve;
+    } catch { resolve(); }
+  });
+}
 const savedSongView = readStorage(SONG_VIEW_KEY, {});
 function saveSongView() {
   writeStorage(SONG_VIEW_KEY, {
@@ -156,12 +200,40 @@ function setFilter(filter) {
   saveSongView();
   renderSongs();
 }
+function applySongCatalogue(songs, charts) {
+  const now = Date.now();
+  state.songs = songs.filter((song) =>
+    song.title && !song.isFullLength &&
+    Number.isInteger(Number(song.id)) &&
+    Number.isFinite(Number(song.publishedAt)) &&
+    Number(song.publishedAt) <= now
+  );
+  const availableSongIds = new Set(state.songs.map((song) => Number(song.id)));
+  state.difficulties = charts.filter((chart) =>
+    availableSongIds.has(Number(chart.musicId)) && chart.musicDifficulty
+  );
+  indexCharts(state.difficulties);
+  songsLoaded = true;
+  renderedSongLimit = SONGS_PER_RENDER;
+  renderSongs();
+}
+
 async function loadSongs(region = $("#songRegion").value) {
   const status = $("#songDataStatus");
   const version = ++loadVersion;
   const repo = DATA_REPOS[region] || DATA_REPOS.tw;
   const dataRoot = "https://sekai-world.github.io/" + repo;
   status.textContent = "正在載入" + REGION_NAMES[region] + "歌曲資料";
+  const cached = await readSongCache(region);
+  if (version !== loadVersion) return;
+  if (cached && Array.isArray(cached.songs) && Array.isArray(cached.charts)) {
+    applySongCatalogue(cached.songs, cached.charts);
+    const fresh = Date.now() - Number(cached.savedAt || 0) < SONG_CACHE_TTL;
+    status.textContent = REGION_NAMES[region] + "歌曲資料已從本機快取載入 共 " +
+      state.songs.length.toLocaleString("zh-TW") + " 首";
+    if (fresh) return;
+    status.textContent += " 正在背景檢查更新";
+  }
   try {
     const [songsResponse, chartsResponse] = await Promise.all([
       fetch(dataRoot + "/musics.json"),
@@ -171,33 +243,17 @@ async function loadSongs(region = $("#songRegion").value) {
     const [songs, charts] = await Promise.all([songsResponse.json(), chartsResponse.json()]);
     if (version !== loadVersion) return;
     if (!Array.isArray(songs) || !Array.isArray(charts)) throw new Error("歌曲資料格式不正確");
-
-    // Each regional master DB can contain songs scheduled for a future release.
-    // Only include songs whose regional publishedAt time has arrived.
-    const now = Date.now();
-    state.songs = songs.filter((song) =>
-      song.title &&
-      // Full-length/event-only records are not separate standard rhythm-game songs.
-      !song.isFullLength &&
-      Number.isInteger(Number(song.id)) &&
-      Number.isFinite(Number(song.publishedAt)) &&
-      Number(song.publishedAt) <= now
-    );
-
-    // Keep only charts belonging to songs currently available in this region.
-    const availableSongIds = new Set(state.songs.map((song) => Number(song.id)));
-    state.difficulties = charts.filter((chart) =>
-      availableSongIds.has(Number(chart.musicId)) &&
-      chart.musicDifficulty
-    );
-    indexCharts(state.difficulties);
-    songsLoaded = true;
-    renderedSongLimit = SONGS_PER_RENDER;
-
-    renderSongs();
-    status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
+    await writeSongCache(region, songs, charts);
+    if (version !== loadVersion) return;
+    applySongCatalogue(songs, charts);
+    status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " +
+      state.songs.length.toLocaleString("zh-TW") + " 首";
   } catch (error) {
     if (version !== loadVersion) return;
+    if (cached && songsLoaded) {
+      status.textContent = REGION_NAMES[region] + "目前使用已儲存的歌曲資料 更新失敗";
+      return;
+    }
     songsLoaded = false;
     status.textContent = REGION_NAMES[region] + " " + error.message + " 請稍後重新整理";
     $("#songTotal").textContent = "載入失敗";
@@ -322,6 +378,16 @@ window.PJSEKAI = { ...(window.PJSEKAI || {}), refreshCloudSongData: () => {
   state.records = readStorage(STORAGE.records, {});
   state.playlists = readStorage(STORAGE.playlists, []);
   const cloudRegion = readStorage("pjskSongRegion", "tw");
+  const cloudView = readStorage(SONG_VIEW_KEY, {});
+  $("#songSearch").value = cloudView.search || "";
+  $("#songDifficulty").value = cloudView.difficulty || "";
+  $("#songLevel").value = cloudView.level || "";
+  $("#songSort").value = cloudView.sort || "title";
+  state.filter = ["all", "favorites", "unplayed", "playlist"].includes(cloudView.filter) ? cloudView.filter : "all";
+  state.randomId = Number.isFinite(Number(cloudView.randomId)) && cloudView.randomId !== null ? Number(cloudView.randomId) : null;
+  state.playlistFilterIds = Array.isArray(cloudView.playlistFilterIds) ? new Set(cloudView.playlistFilterIds) : null;
+  ["songShowAll", "songShowFavorites", "songShowUnplayed"].forEach((id) =>
+    $("#" + id).classList.toggle("active", id === ({ all: "songShowAll", favorites: "songShowFavorites", unplayed: "songShowUnplayed" })[state.filter]));
   if (cloudRegion !== $("#songRegion").value) {
     $("#songRegion").value = cloudRegion;
     window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
