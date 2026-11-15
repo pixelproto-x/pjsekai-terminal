@@ -81,7 +81,18 @@ function renderProfile(result) {
   heading.append(createNode("div", "msk-card-kicker", "公開玩家資料"));
   heading.append(createNode("h2", "", name));
   heading.append(createNode("p", "", "UID " + uid));
-  header.append(heading, createNode("span", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase()));
+  const sourceUrl = sourceUrlFor(result);
+  const sourceLink = createNode("a", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase());
+  if (sourceUrl) {
+    sourceLink.href = sourceUrl;
+    sourceLink.target = "_blank";
+    sourceLink.rel = "noopener noreferrer";
+    sourceLink.setAttribute("aria-label", "在新分頁開啟 " + result.source + " 玩家資料來源");
+  } else {
+    sourceLink.removeAttribute("href");
+    sourceLink.setAttribute("aria-disabled", "true");
+  }
+  header.append(heading, sourceLink);
   card.append(header);
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
@@ -111,15 +122,6 @@ function renderProfile(result) {
     card.append(createNode("div", "player-empty-note", "已取得公開資料 但沒有找到可顯示的玩家欄位 請稍後再試"));
   }
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
-  const sourceUrl = sourceUrlFor(result);
-  if (sourceUrl) {
-    const sourceLink = createNode("a", "player-source-link", "開啟資料來源");
-    sourceLink.href = sourceUrl;
-    sourceLink.target = "_blank";
-    sourceLink.rel = "noopener noreferrer";
-    sourceLink.setAttribute("aria-label", "在新分頁開啟 " + result.source + " 玩家資料來源");
-    card.append(sourceLink);
-  }
   results.append(card);
 }
 const PLAYER_LOOKUP_CACHE_PREFIX = "pjskPlayerLookupCacheV3:";
