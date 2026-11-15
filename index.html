@@ -4,6 +4,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f4f8">
 <meta name="color-scheme" content="light">
+<script>
+(() => {
+  const validPages = new Set(["home", "profile", "settings", "songs"]);
+  let page = "";
+  try {
+    const saved = JSON.parse(localStorage.getItem("pjskUiStateV1") || "null");
+    if (saved && validPages.has(saved.activePage)) page = saved.activePage;
+  } catch {}
+  if (!page) {
+    const hashPage = location.hash.slice(1);
+    if (validPages.has(hashPage)) page = hashPage;
+  }
+  document.documentElement.dataset.initialPage = page || "home";
+})();
+</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="songs.css?v=20261115-song-card-spacing">
 <link rel="stylesheet" href="player-workspace.css?v=20261115-player-workspace-v1">
@@ -96,6 +111,14 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 .page[data-page="tools"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png")}
 .page[data-page="profile"]:before{background-image:url("https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite05_iphone_1.png")}
 .page.active{display:block}
+/* Select the remembered page before app-shell.js runs, avoiding a home-page flash on refresh. */
+html[data-initial-page="profile"] .page[data-page="home"],
+html[data-initial-page="settings"] .page[data-page="home"],
+html[data-initial-page="songs"] .page[data-page="home"]{display:none}
+html[data-initial-page="profile"] .page[data-page="profile"],
+html[data-initial-page="settings"] .page[data-page="settings"],
+html[data-initial-page="songs"] .page[data-page="songs"]{display:block}
+
 @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:66px 6px 30px}
@@ -1283,7 +1306,7 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
 </nav>
 <button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script type="module" src="app-shell.js?v=20261115-refresh-sync-fix"></script>
+<script type="module" src="app-shell.js?v=20261115-restore-page-before-paint"></script>
 <script type="module" src="player-lookup.js?v=20261115-player-workspace-v1"></script>
 <script type="module" src="player-workspace.js?v=20261115-player-workspace-v1"></script>
 <script type="module" src="songs.js?v=20261115-level-filter-exact"></script>
