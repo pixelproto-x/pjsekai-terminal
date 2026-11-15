@@ -220,3 +220,13 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
 @media(prefers-reduced-motion:reduce){.server-picker-trigger,.server-picker-chevron{transition:none}}
 
 
+
+
+/* Match the working song controls: keep player filters as real native selects. */
+body[data-sekai-theme] .player-workspace-tools select{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  pointer-events:auto!important;
+  touch-action:manipulation;
+  background-image:none!important;
+}
