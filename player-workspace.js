@@ -102,7 +102,7 @@ function saveCurrent(result) {
   }
   write(SAVED_KEY, players);
   renderSaved();
-  window.PJSEKAI?.toast(existing ? "玩家資料已更新" : "已加入玩家工作台");
+  window.PJSEKAI?.toast(existing ? "玩家資料已更新" : "已加入玩家資料庫");
 }
 function addHistory(result) {
   const summary = profileSummary(result);
@@ -228,7 +228,7 @@ function handlePlayerLoaded(event) {
   const sharedHeading = resultCard.querySelector("h2");
   if (sharedName && sharedHeading) sharedHeading.textContent = sharedName.slice(0, 40);
   const actions = node("div", "player-result-actions");
-  const save = node("button", "player-action-button primary", "加入玩家工作台"); save.type = "button"; save.dataset.resultAction = "save";
+  const save = node("button", "player-action-button primary", "加入玩家資料庫"); save.type = "button"; save.dataset.resultAction = "save";
   const share = node("button", "player-action-button", "分享個人頁面"); share.type = "button"; share.dataset.resultAction = "share";
   actions.append(save, share);
   resultCard.append(actions);
