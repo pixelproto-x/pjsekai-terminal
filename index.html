@@ -984,6 +984,9 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 .player-result-head h2{margin:4px 0;color:#263b5a;font-size:clamp(20px,3vw,28px);letter-spacing:-.04em;overflow-wrap:anywhere}
 .player-result-head p{margin:0;color:#8291a8;font-size:9px}
 .player-source-pill{flex:none;padding:7px 10px;border:1px solid rgba(105,155,190,.22);border-radius:999px;background:#edf6fa;color:#5a86a7;font-size:8px;font-weight:900}
+.player-source-link{display:inline-flex;align-items:center;gap:6px;width:max-content;max-width:100%;margin:8px 2px 0;padding:7px 11px;border:1px solid color-mix(in srgb,var(--unit-accent,#5a86a7) 30%,transparent);border-radius:999px;background:color-mix(in srgb,var(--unit-accent,#5a86a7) 9%,white);color:var(--unit-accent,#527da8);font-size:10px;font-weight:850;text-decoration:none;transition:background .18s ease,transform .18s ease}
+.player-source-link:hover{background:color-mix(in srgb,var(--unit-accent,#5a86a7) 16%,white);transform:translateY(-1px)}
+body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-theme="nightcord"] .player-source-link{background:color-mix(in srgb,var(--unit-accent) 18%,#171a28);color:color-mix(in srgb,var(--unit-accent-2) 45%,white)}
 .player-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .player-stat{min-width:0;padding:13px;border:1px solid rgba(112,143,188,.15);border-radius:13px;background:#fff}
 .player-stat small{display:block;color:#8796aa;font-size:8px;font-weight:800}
@@ -1264,7 +1267,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 <button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="app-shell.js?v=20261115-adaptive-performance-v2"></script>
-<script type="module" src="player-lookup.js?v=remove-player-workspace"></script>
+<script type="module" src="player-lookup.js?v=20261115-source-links"></script>
 <script type="module" src="songs.js?v=20261115-lazy-cache-indexed"></script>
 <script type="module" src="songs-mobile.js?v=20261115-song-list-only-scroll"></script>
 <script type="module" src="account-sync.js?v=20261115-account-scope-fix-98b3e7f"></script>
