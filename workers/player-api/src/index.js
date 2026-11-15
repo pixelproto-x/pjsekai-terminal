@@ -120,7 +120,7 @@ async function verifyGoogleIdentity(request, env) {
     });
     if (!response.ok) return null;
     const token = await response.json();
-    const scopes = String(token.scope || "").split(/\\s+/);
+    const scopes = String(token.scope || "").split(/\s+/);
     if (token.aud !== env.GOOGLE_CLIENT_ID ||
         (token.azp && token.azp !== env.GOOGLE_CLIENT_ID) ||
         !token.sub || !Number.isFinite(Number(token.exp)) ||
