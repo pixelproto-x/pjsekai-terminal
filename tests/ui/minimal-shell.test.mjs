@@ -34,19 +34,20 @@ const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"
 assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four intended page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
 assert.match(lookup, /createCloudflarePlayerProvider/, "five-region public UID provider is connected");
-assert.match(html, /id="homePlayerRegion"/, "homepage server selector remains");
-assert.match(html, /id="playerRegion"/, "player page server selector remains");
-assert.match(html, /@supports \(appearance:base-select\)/, "server selector enables the customizable CSS picker where supported");
-assert.match(html, /::picker\(select\)/, "server dropdown popup has its own CSS styling");
-assert.match(html, /option:checked/, "selected server has a custom highlighted state");
-assert.match(html, /position-area:block-end span-inline/, "server dropdown is anchored directly below and aligned to its selector");
-assert.match(html, /min-width:160px/, "homepage server dropdown remains wide enough for full server labels");
+assert.match(lookup, /const region = "auto"/, "player UID lookup automatically checks the supported regions");
+assert.match(html, /自動檢查日服 台服 國際服 韓服 簡中服五個伺服器/, "homepage explains automatic five-region lookup");
+assert.doesNotMatch(html, /id="homePlayerRegion"|id="playerRegion"/, "player lookup does not require manual region selection");
+assert.match(html, /id="songRegion"/, "song manager keeps its independent server selector");
+assert.match(html, /@supports \(appearance:base-select\)/, "song server selector enables the customizable CSS picker where supported");
+assert.match(html, /::picker\(select\)/, "song server dropdown popup has its own CSS styling");
+assert.match(html, /option:checked/, "selected song server has a custom highlighted state");
+assert.match(html, /position-area:block-end span-inline/, "song server dropdown is anchored directly below its selector");
+assert.match(html, /min-width:160px/, "song server dropdown remains wide enough for full server labels");
 for (const [region, label] of [["jp","日服"],["tw","台服"],["en","國際服"],["kr","韓服"],["cn","簡中服"]]) {
-  assert.match(html, new RegExp(`<option value="${region}"[^>]*>[^<]*${label}</option>`), `${label} label is used for its server`);
+  assert.match(html, new RegExp(`<option value="${region}"[^>]*>[^<]*${label}</option>`), `${label} song data is selectable`);
 }
-
 for (const region of ["jp", "en", "tw", "kr", "cn"]) {
-  assert.match(html, new RegExp('option value="' + region + '"'), region + " server can be selected");
+  assert.match(html, new RegExp(`id="songRegion"[\\s\\S]*?<option value="${region}"`), region + " song database can be selected");
 }
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /applyTheme/, "theme switching is functional");
@@ -81,7 +82,7 @@ assert.match(themes, /--unit-panel:rgba\\(244,251,255,var\\(--sub-glass-opacity\
 assert.match(themes, /--unit-shell:rgba\\(236,247,255,var\\(--shell-opacity\\)\\)/, "main shell keeps visible background transparency");
 assert.match(themes, /--unit-panel-strong:rgba\\(250,253,255,min\\(1,calc\\(var\\(--glass-opacity\\) \\+ .55\\)\\)\\)/, "strong glass surfaces retain transparency");
 assert.ok(html.includes("#toast.toast{") && html.includes("var(--unit-accent,#52cfe8)"), "success toast follows the active unit accent");
-assert.ok(html.includes("var(--unit-accent-2,#9179f5)"), "success toast includes the active unit secondary accent");
+assert.ok(html.includes("background-color:#fff!important") && html.includes("color:#181a22!important"), "success toast keeps readable contrast");
 assert.ok(html.includes("color:#fff!important"), "success toast keeps high-contrast text");
 assert.match(themes, /\.sekai-ambience\{z-index:0\}/, "unit-specific background is above the body canvas");
 assert.match(themes, /\.app-shell\{position:relative;z-index:1\}/, "application surfaces remain above the unit background");
