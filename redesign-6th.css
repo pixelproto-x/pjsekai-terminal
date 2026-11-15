@@ -16,7 +16,7 @@ body{color:var(--hub-ink);background:#eaf0f8;font-family:-apple-system,BlinkMacS
 .brand-text span{font-size:9px;letter-spacing:.14em;color:#8190a7}
 .top-icon{width:42px;height:42px;border-radius:14px;border:1px solid rgba(105,131,171,.16);background:rgba(255,255,255,.88);color:#536989}
 .page{padding:0 4px}.page:before{display:none!important}
-.anniversary-hero{min-height:430px;margin:24px 0 0;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;padding:clamp(28px,5vw,62px);border-radius:30px;color:#fff;background:#172b4d url("https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp") center 35%/cover no-repeat;box-shadow:0 26px 65px rgba(21,42,78,.24)}
+.anniversary-hero{--anniversary-cover-image:url("https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp");min-height:430px;margin:24px 0 0;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;padding:clamp(28px,5vw,62px);border-radius:30px;color:#fff;background-color:#172b4d;background-image:var(--anniversary-cover-image);background-position:center 35%;background-size:cover;background-repeat:no-repeat;box-shadow:0 26px 65px rgba(21,42,78,.24)}
 .anniversary-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(15,29,55,.94),rgba(20,38,69,.82) 38%,rgba(22,41,74,.18) 76%,rgba(22,41,74,.12)),linear-gradient(0deg,rgba(14,27,50,.34),transparent 45%)}
 .anniversary-hero:after{content:"";position:absolute;inset:14px;border:1px solid rgba(255,255,255,.22);border-radius:22px;pointer-events:none}
 .anniversary-hero-content{position:relative;z-index:2;max-width:640px}
@@ -352,3 +352,16 @@ body[data-sekai-theme] .player-workspace-heading h2,body[data-sekai-theme] .play
  .player-workspace-heading p{max-width:250px;line-height:1.6}
  .saved-player-item{padding:10px}
 }
+
+
+/* Anniversary cover selector */
+.cover-select-label{position:relative;z-index:1;display:block;margin:17px 0 7px 2px;color:var(--muted);font-size:10px;font-weight:800}
+.anniversary-cover-select{position:relative;z-index:1}
+.anniversary-cover-settings .data-status{position:relative;z-index:1;margin-top:12px}
+.anniversary-hero{transition:background-image .28s ease}
+.anniversary-hero[data-anniversary-cover="1"]{background-position:center 42%}
+.anniversary-hero[data-anniversary-cover="2"]{background-position:center 40%}
+.anniversary-hero[data-anniversary-cover="3"]{background-position:center 44%}
+.anniversary-hero[data-anniversary-cover="4"]{background-position:center 48%}
+.anniversary-hero[data-anniversary-cover="5"]{background-position:center 35%}
+.anniversary-hero[data-anniversary-cover="6"]{background-position:center 35%}
