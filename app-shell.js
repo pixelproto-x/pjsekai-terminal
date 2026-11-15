@@ -183,121 +183,69 @@ document.addEventListener("click", (event) => {
   if (preset) applyOpacity(preset.dataset.opacity);
 });
 const opacityRange = $("#opacityRange");
-// Adapted from the detent interaction used by TentUI Elastic Slider:
-// the thumb catches briefly on a mark, then continues with the pointer.
-const OPACITY_DETENTS = [12, 22, 35]; // The final preset is already the end of this scale.
-const OPACITY_DETENT_HOLD_PX = 7;
-let opacityPointerId = null;
-let opacityDragState = null;
+// Magnetic attraction adapted from loucadufault/MagneticSlider (MIT):
+// https://github.com/loucadufault/MagneticSlider
+// Keep the native range control; only its value is magnetically attracted to marks.
+const OPACITY_MAGNETIC_MARKS = [
+  { value: 12, magneticScale: 1 },
+  { value: 22, magneticScale: 1 },
+  { value: 35, magneticScale: 1 },
+  { value: 48, magneticScale: 1 },
+];
+const OPACITY_MAGNETIC_RADIUS = 3.5;
+const OPACITY_MAGNETIC_BOUNDARY_DEADZONE = 0.6;
 
-function opacityPointerMetrics(range) {
-  const rect = range.getBoundingClientRect();
-  const thumbInset = 11;
-  return {
-    left: rect.left + thumbInset,
-    width: Math.max(1, rect.width - thumbInset * 2),
-    min: Number(range.min) || 0,
-    max: Number(range.max) || 100,
-    step: Number(range.step) || 1,
-  };
-}
-
-function opacityValueFromPointer(range, clientX) {
-  const metrics = opacityPointerMetrics(range);
-  const ratio = Math.max(0, Math.min(1, (clientX - metrics.left) / metrics.width));
-  return Math.round((metrics.min + ratio * (metrics.max - metrics.min)) / metrics.step) * metrics.step;
-}
-
-function opacityPointerFromValue(range, value) {
-  const metrics = opacityPointerMetrics(range);
-  const ratio = (value - metrics.min) / Math.max(1, metrics.max - metrics.min);
-  return metrics.left + Math.max(0, Math.min(1, ratio)) * metrics.width;
-}
-
-function updateOpacityFromPointer(range, clientX) {
-  if (!opacityDragState) return;
-  const amount = opacityValueFromPointer(range, clientX);
-  let displayedAmount = amount;
-
-  // Keep the thumb on the detent until the pointer has travelled a few
-  // pixels beyond it. Reversing direction also releases the detent naturally.
-  if (opacityDragState.detent) {
-    const detent = opacityDragState.detent;
-    const travelled = (clientX - detent.anchorX) * detent.direction;
-    if (travelled < OPACITY_DETENT_HOLD_PX && travelled > -OPACITY_DETENT_HOLD_PX) {
-      displayedAmount = detent.value;
-      range.value = String(displayedAmount);
-      applyOpacity(displayedAmount, { persist: false, syncPresets: false });
-      return;
-    }
-    opacityDragState.detent = null;
+function computeOpacityMagneticTarget(value, lowMark, highMark) {
+  if (lowMark === undefined && highMark === undefined) return null;
+  if (lowMark === undefined) {
+    return Math.abs(highMark.value - value) < OPACITY_MAGNETIC_RADIUS * highMark.magneticScale
+      ? highMark.value : null;
+  }
+  if (highMark === undefined) {
+    return Math.abs(value - lowMark.value) < OPACITY_MAGNETIC_RADIUS * lowMark.magneticScale
+      ? lowMark.value : null;
   }
 
-  const previous = opacityDragState.lastValue;
-  const direction = amount - previous;
-  const crossed = OPACITY_DETENTS.find((point) =>
-    direction > 0
-      ? previous < point && amount >= point
-      : direction < 0
-        ? previous > point && amount <= point
-        : false
+  const lowDistance = Math.abs(value - lowMark.value);
+  const highDistance = Math.abs(highMark.value - value);
+  const midpoint = (lowMark.value + highMark.value) / 2;
+  if (value > midpoint - OPACITY_MAGNETIC_BOUNDARY_DEADZONE &&
+      value < midpoint + OPACITY_MAGNETIC_BOUNDARY_DEADZONE) return null;
+
+  if (lowDistance < highDistance) {
+    return lowDistance < OPACITY_MAGNETIC_RADIUS * lowMark.magneticScale ? lowMark.value : null;
+  }
+  return highDistance < OPACITY_MAGNETIC_RADIUS * highMark.magneticScale ? highMark.value : null;
+}
+
+function getOpacityMagneticTarget(value) {
+  let lesserMarkIndex = -1;
+  for (let index = 0; index < OPACITY_MAGNETIC_MARKS.length; index += 1) {
+    if (OPACITY_MAGNETIC_MARKS[index].value <= value) lesserMarkIndex = index;
+    else break;
+  }
+  if (lesserMarkIndex === -1) {
+    return computeOpacityMagneticTarget(value, undefined, OPACITY_MAGNETIC_MARKS[0]);
+  }
+  if (lesserMarkIndex === OPACITY_MAGNETIC_MARKS.length - 1) {
+    return computeOpacityMagneticTarget(value, OPACITY_MAGNETIC_MARKS[lesserMarkIndex], undefined);
+  }
+  return computeOpacityMagneticTarget(
+    value,
+    OPACITY_MAGNETIC_MARKS[lesserMarkIndex],
+    OPACITY_MAGNETIC_MARKS[lesserMarkIndex + 1]
   );
-
-  if (crossed !== undefined) {
-    const directionSign = direction > 0 ? 1 : -1;
-    const detentX = opacityPointerFromValue(range, crossed);
-    const distancePastDetent = (clientX - detentX) * directionSign;
-    if (distancePastDetent < OPACITY_DETENT_HOLD_PX) {
-      opacityDragState.detent = {
-        value: crossed,
-        direction: directionSign,
-        anchorX: detentX,
-      };
-      displayedAmount = crossed;
-    }
-  }
-
-  opacityDragState.lastValue = displayedAmount;
-  range.value = String(displayedAmount);
-  applyOpacity(displayedAmount, { persist: false, syncPresets: false });
 }
-
-opacityRange?.addEventListener("pointerdown", (event) => {
-  if (event.button !== 0 && event.pointerType === "mouse") return;
-  event.preventDefault();
-  opacityPointerId = event.pointerId;
-  opacityDragState = {
-    lastValue: Number(opacityRange.value) || 0,
-    detent: null,
-  };
-  opacityRange.focus({ preventScroll: true });
-  opacityRange.setPointerCapture(event.pointerId);
-  updateOpacityFromPointer(opacityRange, event.clientX);
-});
-
-opacityRange?.addEventListener("pointermove", (event) => {
-  if (event.pointerId !== opacityPointerId) return;
-  updateOpacityFromPointer(opacityRange, event.clientX);
-});
-
-function finishOpacityPointer(event) {
-  if (event.pointerId !== opacityPointerId) return;
-  opacityPointerId = null;
-  opacityDragState = null;
-  applyOpacity(opacityRange.value);
-}
-
-opacityRange?.addEventListener("pointerup", finishOpacityPointer);
-opacityRange?.addEventListener("pointercancel", finishOpacityPointer);
-opacityRange?.addEventListener("lostpointercapture", finishOpacityPointer);
 
 opacityRange?.addEventListener("input", (event) => {
-  if (opacityPointerId !== null) return;
-  applyOpacity(event.target.value);
+  const range = event.currentTarget;
+  const rawValue = Number(range.value);
+  const magneticTarget = getOpacityMagneticTarget(rawValue);
+  if (magneticTarget !== null) range.value = String(magneticTarget);
+  applyOpacity(range.value, { persist: false });
 });
 opacityRange?.addEventListener("change", (event) => {
-  if (opacityPointerId !== null) return;
-  applyOpacity(event.target.value);
+  applyOpacity(event.currentTarget.value);
 });
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -415,7 +363,7 @@ $("#anniversaryCoverSelect")?.addEventListener("change", (event) => {
   applyAnniversaryCover(event.target.value);
 });
 function applyOpacity(value, { persist = true, syncPresets = true } = {}) {
-  const amount = Math.max(0, Math.min(100, Number(value) || 0));
+  const amount = Math.max(0, Math.min(55, Number(value) || 0));
   const opacity = amount / 100;
   const root = document.documentElement;
   root.style.setProperty("--glass-opacity", opacity.toFixed(3));
