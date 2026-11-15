@@ -19,12 +19,43 @@ function stats(c){let total=0;const walk=(v,d=0)=>{if(!v||d>3)return;if(Array.is
 function bonus(c,id){const x=s.eventCards.find(r=>Number(r.cardId)===Number(c.id)&&Number(r.eventId)===Number(id));return x?Number(x.bonusRate)||0:null}
 function setStatus(t){const n=$("#gtStatus");if(n)n.textContent=t}
 function tabs(){return [["cards","卡片資料庫"],["characters","角色資料庫"],["honors","稱號查詢"],["events","活動資料庫"],["team","隊伍編輯器"],["calculator","活動加成"],["score","分數估算"],["compare","隊伍比較"],["favorites","我的收藏"]]}
+
+// All game-tool selects use the same accessible page-level popup instead of
+// browser-native option sheets that can be clipped or difficult to activate.
+function closeGameToolSelect(wrapper){
+ const menu=wrapper?.querySelector(".gt-select-menu");
+ const trigger=wrapper?.querySelector(".gt-select-trigger");
+ if(trigger)trigger.setAttribute("aria-expanded","false");
+ wrapper?.classList.remove("is-open");
+ if(menu){menu.hidden=true;if(wrapper.isConnected&&menu.parentNode!==wrapper)wrapper.append(menu);if(!wrapper.isConnected)menu.remove();["position","z-index","left","top","width","max-width","max-height"].forEach(k=>menu.style.removeProperty(k));}
+}
+function enhanceGameToolSelect(select){
+ if(!select||select.id==="gtRegion"||select.dataset.gtDropdownReady==="true")return;
+ select.dataset.gtDropdownReady="true";
+ const wrapper=document.createElement("div");wrapper.className="gt-select-dropdown";
+ const trigger=document.createElement("button");trigger.type="button";trigger.className="gt-select-trigger";trigger.setAttribute("aria-haspopup","listbox");trigger.setAttribute("aria-expanded","false");
+ const menu=document.createElement("div");menu.className="gt-select-menu";menu.setAttribute("role","listbox");menu.hidden=true;
+ select.parentNode.insertBefore(wrapper,select);wrapper.append(select,trigger,menu);select.classList.add("gt-select-native");
+ const place=()=>{const r=trigger.getBoundingClientRect(),gap=8,margin=8,below=innerHeight-r.bottom-gap,above=r.top-gap,h=Math.max(96,Math.min(280,Math.max(below,above)-margin)),w=Math.max(140,Math.min(r.width,innerWidth-margin*2));menu.style.position="fixed";menu.style.zIndex="2147483647";menu.style.left=Math.max(margin,Math.min(r.left,innerWidth-w-margin))+"px";menu.style.width=w+"px";menu.style.maxWidth=w+"px";menu.style.maxHeight=h+"px";menu.style.top=below>=Math.min(180,h)||below>=above?Math.min(innerHeight-h-margin,r.bottom+gap)+"px":Math.max(margin,r.top-h-gap)+"px";};
+ const refresh=()=>{trigger.textContent=select.selectedOptions[0]?.textContent?.trim()||"請選擇";menu.replaceChildren();[...select.options].forEach(option=>{const item=document.createElement("button");item.type="button";item.className="gt-select-option"+(option.value===select.value?" is-selected":"");item.setAttribute("role","option");item.setAttribute("aria-selected",String(option.value===select.value));item.textContent=option.textContent.trim();item.disabled=option.disabled;item.addEventListener("click",()=>{select.value=option.value;select.dispatchEvent(new Event("change",{bubbles:true}));closeGameToolSelect(wrapper);trigger.focus();});menu.append(item);});};
+ trigger.addEventListener("click",()=>{const opening=menu.hidden;document.querySelectorAll(".gt-select-dropdown.is-open").forEach(closeGameToolSelect);if(!opening)return;menu.hidden=false;wrapper.classList.add("is-open");trigger.setAttribute("aria-expanded","true");document.body.append(menu);place();});
+ select.addEventListener("change",refresh);refresh();wrapper._closeGameToolSelect=()=>closeGameToolSelect(wrapper);
+}
+function enhanceGameToolSelects(root=document){root.querySelectorAll("#gameToolsRoot select:not(#gtRegion)").forEach(enhanceGameToolSelect);}
+document.addEventListener("click",event=>{if(!event.target.closest(".gt-select-dropdown")&&!event.target.closest(".gt-select-menu"))document.querySelectorAll(".gt-select-dropdown.is-open").forEach(closeGameToolSelect);});
+window.addEventListener("resize",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=document.querySelector(".gt-select-menu[style*='position: fixed']");if(trigger&&menu&&wrapper.contains(trigger)){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";}}));
+window.addEventListener("scroll",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=document.querySelector(".gt-select-menu[style*='position: fixed']");if(trigger&&menu){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";menu.style.top=Math.min(innerHeight-menu.offsetHeight-8,Math.max(8,r.bottom+8))+"px";}}),true);
+const gameToolSelectObserver=new MutationObserver(()=>enhanceGameToolSelects($("#gameToolsRoot")||document));
+let gameToolSelectObserverStarted=false;
+
 function render(){
  const root=$("#gameToolsRoot");if(!root)return;
  root.innerHTML=`<div class="gt-head"><div><span class="kicker">SEKAI GAME DATABASE</span><h2>遊戲資料庫</h2><p>各伺服器官方遊戲資料與個人隊伍工具</p></div><label class="gt-region-label">資料伺服器<span class="gt-region-control"><span class="gt-region-flag">${regionFlag(s.region)}</span><select id="gtRegion" aria-label="選擇資料伺服器">${Object.entries(regions).map(([k,v])=>`<option value="${k}" ${k===s.region?"selected":""}>${v}</option>`).join("")}</select><span class="gt-region-chevron" aria-hidden="true">⌄</span></span></label></div><div class="gt-tabs">${tabs().map(([k,v])=>`<button type="button" data-tab="${k}" class="${s.tab===k?"active":""}>${v}</button>`).join("")}</div><p id="gtStatus" class="gt-status" role="status" aria-live="polite">${s.loading?"正在載入資料…":"資料已載入"}</p><div id="gtPanel"></div><div class="gt-source">資料來源：<a href="https://github.com/sekai-world/sekai-master-db-diff" target="_blank" rel="noopener">日服</a> · <a href="https://github.com/sekai-world/sekai-master-db-tc-diff" target="_blank" rel="noopener">台服</a> · <a href="https://github.com/sekai-world/sekai-master-db-en-diff" target="_blank" rel="noopener">國際服</a> · <a href="https://github.com/sekai-world/sekai-master-db-kr-diff" target="_blank" rel="noopener">韓服</a> · <a href="https://github.com/sekai-world/sekai-master-db-cn-diff" target="_blank" rel="noopener">簡中服</a><br>資料庫內容依各服上游更新；估算結果不等於遊戲內最終結果。</div>`;
  $("#gtRegion").addEventListener("change",async e=>{s.region=e.target.value;s.tab="cards";save();render();await load()});
  if(!root.dataset.bound){root.addEventListener("click",click);root.addEventListener("change",change);root.addEventListener("input",input);root.dataset.bound="1";}
  panel();
+ enhanceGameToolSelects(root);
+ if(!gameToolSelectObserverStarted){gameToolSelectObserver.observe(root,{childList:true,subtree:true});gameToolSelectObserverStarted=true;}
 }
 function filters(){return `<div class="gt-filters"><label>搜尋<input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="卡片或角色名稱"></label><label>角色<select id="gtCharacter"><option value="">全部角色</option>${s.characters.map(c=>`<option value="${c.id}" ${String(s.character)===String(c.id)?"selected":""}>${esc(cname(c))}</option>`).join("")}</select></label><label>團體<select id="gtUnit"><option value="">全部團體</option>${Object.entries(units).map(([k,v])=>`<option value="${k}" ${s.unit===k?"selected":""}>${v}</option>`).join("")}</select></label><label>屬性<select id="gtAttr"><option value="">全部屬性</option>${Object.entries(attrs).map(([k,v])=>`<option value="${k}" ${s.attr===k?"selected":""}>${v}</option>`).join("")}</select></label><label>稀有度<select id="gtRarity"><option value="">全部</option>${Object.entries(rarities).map(([k,v])=>`<option value="${k}" ${s.rarity===k?"selected":""}>${v}</option>`).join("")}</select></label></div>`}
 function filtered(){const q=s.q.toLowerCase();return s.cards.filter(c=>{const ch=char(c.characterId);return(!q||[ctitle(c),cname(ch),c.attr].join(" ").toLowerCase().includes(q))&&(!s.character||String(c.characterId)===s.character)&&(!s.unit||ch?.unit===s.unit)&&(!s.attr||c.attr===s.attr)&&(!s.rarity||c.cardRarityType===s.rarity)})}
