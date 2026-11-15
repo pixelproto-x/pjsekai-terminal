@@ -17,6 +17,7 @@ jobs:
       - name: Run core unit tests
         run: |
           node --check app-shell.js
+          node --check language.js
           node --check player-lookup.js
           node --check player-workspace.js
           node --test tests/core/*.test.mjs tests/data/*.test.mjs tests/ui/*.test.mjs
