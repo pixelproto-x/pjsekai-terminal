@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createGameDatabaseClient, GAME_DATABASE_BUNDLES, REGION_REPOSITORIES } from "../../src/data/game-database.mjs";
-import { calculateCardEventBonus, cardUnit, characterUnits } from "../../src/data/game-tools-logic.mjs";
+import { calculateCardEventBonus, calculateCardRarityBonus, cardUnit, characterUnits } from "../../src/data/game-tools-logic.mjs";
 test("regional game data has independent repositories",()=>{assert.equal(REGION_REPOSITORIES.tw,"sekai-master-db-tc-diff");assert.equal(REGION_REPOSITORIES.jp,"sekai-master-db-diff");assert.equal(Object.keys(REGION_REPOSITORIES).length,5)});
 test("all batch three catalog and event data bundles are declared",()=>{for(const key of ["cards","characters","honors","events"])assert.ok(GAME_DATABASE_BUNDLES[key]);assert.ok(GAME_DATABASE_BUNDLES.events.includes("eventCards"));assert.ok(GAME_DATABASE_BUNDLES.events.includes("eventDeckBonuses"));assert.ok(GAME_DATABASE_BUNDLES.events.includes("gameCharacterUnits"));assert.ok(GAME_DATABASE_BUNDLES.cards.includes("gameCharacterUnits"));assert.ok(GAME_DATABASE_BUNDLES.score.includes("musics"));assert.ok(GAME_DATABASE_BUNDLES.score.includes("musicDifficulties"))});
 test("database falls back to stale cache rather than another server",async()=>{const c=createGameDatabaseClient({cache:{get:async()=>({data:[{id:5}],savedAt:0}),set:async()=>true},fetchImpl:async()=>({ok:false,status:503}),now:()=>999999,ttl:1});const r=await c.loadDataset("tw","cards");assert.equal(r.source,"stale-cache");assert.equal(r.data[0].id,5)});
@@ -27,4 +27,15 @@ test("card unit helpers resolve unit variants without assuming one group per cha
   ];
   assert.equal(cardUnit({ characterId: 21, gameCharacterUnitId: 43 }, units), "idol");
   assert.deepEqual(characterUnits(21, units), ["light_sound", "idol"]);
+});
+
+test("rarity event bonus follows the selected mastery rank and rarity", () => {
+  const rates = [
+    { cardRarityType: "rarity_3", masterRank: 0, bonusRate: 0 },
+    { cardRarityType: "rarity_3", masterRank: 2, bonusRate: 2 },
+    { cardRarityType: "rarity_4", masterRank: 0, bonusRate: 10 }
+  ];
+  assert.equal(calculateCardRarityBonus({ cardRarityType: "rarity_3" }, 2, rates), 2);
+  assert.equal(calculateCardRarityBonus({ cardRarityType: "rarity_4" }, 0, rates), 10);
+  assert.equal(calculateCardRarityBonus({ cardRarityType: "rarity_4" }, 5, rates), null);
 });
