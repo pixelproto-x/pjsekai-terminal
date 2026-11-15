@@ -13,7 +13,9 @@ function readUiState() {
   } catch { return {}; }
 }
 const savedUiState = readUiState();
+let uiStateSaveTimer = 0;
 function saveUiState() {
+  clearTimeout(uiStateSaveTimer);
   const controls = {};
   document.querySelectorAll("input[id],select[id],textarea[id]").forEach((element) => {
     if (element.type === "password" || element.type === "file") return;
@@ -51,8 +53,12 @@ function restoreSavedScroll() {
   restoreScrollPending = false;
   if (restoreScrollY > 0) window.scrollTo({ top: restoreScrollY, behavior: "instant" });
 }
-document.addEventListener("input", saveUiState);
-document.addEventListener("change", saveUiState);
+function scheduleUiStateSave() {
+  clearTimeout(uiStateSaveTimer);
+  uiStateSaveTimer = setTimeout(saveUiState, 180);
+}
+document.addEventListener("input", scheduleUiStateSave, { passive: true });
+document.addEventListener("change", scheduleUiStateSave);
 window.addEventListener("pagehide", saveUiState);
 window.addEventListener("beforeunload", saveUiState);
 
