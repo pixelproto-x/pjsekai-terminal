@@ -196,7 +196,7 @@ assert.match(html, /id="anniversaryCoverHeadline">心意交會的故事<\/span>/
 assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniversary headline line stays hidden initially");
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
-assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
+assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");\nassert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
 assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
 assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");
 assert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
