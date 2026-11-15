@@ -72,6 +72,11 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
+assert.match(themes, /--unit-panel:rgba\\(244,251,255,var\\(--sub-glass-opacity\\)\\)/, "base theme glass opacity follows the live slider");
+assert.match(themes, /--unit-shell:rgba\\(236,247,255,var\\(--shell-opacity\\)\\)/, "base theme shell opacity follows the live slider");
+assert.match(themes, /--unit-panel-strong:rgba\\(250,253,255,min\\(1,calc\\(var\\(--glass-opacity\\) \\+ .55\\)\\)\\)/, "strong theme glass opacity follows the live slider");
+assert.equal((themes.match(/--unit-panel:rgba\\([^;]+var\\(--sub-glass-opacity\\)/g) || []).length, 6, "all six themes use the live panel opacity");
+assert.equal((themes.match(/--unit-shell:rgba\\([^;]+var\\(--shell-opacity\\)/g) || []).length, 6, "all six themes use the live shell opacity");
 assert.match(themes, /--unit-panel:rgba\\(244,251,255,\\.60\\)/, "glass panels remain visibly translucent");
 assert.match(themes, /--unit-shell:rgba\\(236,247,255,\\.42\\)/, "main shell keeps visible background transparency");
 assert.match(themes, /--unit-panel-strong:rgba\\(250,253,255,\\.76\\)/, "strong glass surfaces retain transparency");
