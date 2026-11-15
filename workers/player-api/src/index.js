@@ -184,7 +184,7 @@ export default {
         if (matches.length > 1) {
           return json({ error: "AMBIGUOUS_REGION", regions: matches.map((item) => item.region) }, 409, origin);
         }
-        if (matches.length === 1 && failures.length === 0) {
+        if (matches.length === 1 && failures.every((status) => status === 404)) {
           const match = matches[0];
           const payload = {
             data: match.data,
