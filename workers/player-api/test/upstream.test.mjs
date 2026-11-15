@@ -93,3 +93,40 @@ test("converts Haneoka pending snapshots into a retryable application response",
   assert.equal(body.retryAfter, 17);
   assert.equal(response.headers.get("retry-after"), "17");
 });
+
+
+test("preserves current-event upstream failures as a visible ranking status", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async () => new Response(JSON.stringify({ error: "rate limited" }), { status: 429 }),
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "UPSTREAM_ERROR");
+  assert.equal(body.upstreamStatus, 429);
+});
+
+test("preserves event point-board upstream failures as a visible ranking status", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        if (String(url).endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 321 } }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: "upstream unavailable" }), { status: 502 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "UPSTREAM_ERROR");
+  assert.equal(body.upstreamStatus, 502);
+  assert.equal(body.event.id, 321);
+});
