@@ -117,6 +117,11 @@ assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized
 assert.doesNotMatch(accountSync, /window\.location\.reload\(\)/, "cloud updates do not reload and jump the page");
 assert.match(app, /applyCloudSettings/, "cloud appearance settings apply without a page reload");
 assert.match(await readFile(new URL("../../songs.js", import.meta.url), "utf8"), /refreshCloudSongData/, "cloud song data refreshes in place");
+const songsModule = await readFile(new URL("../../songs.js", import.meta.url), "utf8");
+assert.match(songsModule, /const SONGS_PER_RENDER = 60/, "song catalogue renders in small batches to avoid blocking the interface");
+assert.match(songsModule, /visibleBatch = songs\.slice\(0, renderedSongLimit\)/, "only the current song batch is inserted into the DOM");
+assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are indexed once instead of repeatedly scanning the full chart list");
+assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
 console.log("Minimal player hub UI smoke tests passed.");
 
 const visibleText = html
