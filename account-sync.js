@@ -134,6 +134,7 @@ async function initializeGoogleSignIn() {
       type: "standard", theme: "outline", size: "large",
       text: "signin_with", shape: "pill", width: 210
     });
+    window.google.accounts.id.prompt();
     showStatus("可使用 Google 帳號登入並同步資料");
   } catch {
     showStatus("Google 登入元件載入失敗，請檢查網路後重新整理");
