@@ -184,7 +184,7 @@ assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span
 assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(html, /app-shell\.js\?v=20261115-magnetic-opacity/, "opacity slider script cache is refreshed");
+assert.match(html, /app-shell\.js\?v=20261115-opacity-resistance/, "opacity slider script cache is refreshed");
 assert.match(app, /setPointerCapture/, "opacity slider tracks the pointer while applying movement resistance");
 assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity detents do not use a fake time-based pause");
 
