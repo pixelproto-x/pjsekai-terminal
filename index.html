@@ -320,20 +320,15 @@ html[dir="rtl"] .field-label,html[dir="rtl"] .field-help{text-align:right}
   touch-action:none;user-select:none;overflow:hidden;isolation:isolate;
 }
 .tab-indicator{
-  /* Keep the moving glass highlight behind tab labels so it never covers text. */
+  /* Keep the animated indicator fully transparent so it cannot obscure labels. */
   position:absolute;z-index:0;left:var(--tab-left,0px);top:50%;width:var(--tab-w);height:var(--tab-h);min-width:72px;
   margin-left:0;margin-top:-24px;border-radius:14px;
-  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
-  border:1px solid rgba(255,255,255,.68);
-  box-shadow:0 5px 16px rgba(35,42,65,.11),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(120,140,190,.08);
+  background:transparent;border:1px solid transparent;box-shadow:none;
   transform:translate3d(0,var(--tab-y),0) rotate(var(--tab-rotate)) scaleX(var(--tab-scale-x)) scaleY(var(--tab-scale-y));
   transform-origin:center;transition:left var(--tab-duration) var(--tab-ease),width var(--tab-duration) var(--tab-ease),transform var(--tab-duration) var(--tab-ease),border-radius .32s var(--tab-ease),box-shadow .25s ease;
-  pointer-events:auto;touch-action:none;cursor:grab;will-change:transform;
+  pointer-events:none;touch-action:pan-y;cursor:default;will-change:transform;
 }
-.tab-indicator:before{
-  content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(135deg,rgba(255,255,255,.26),transparent 42%,rgba(160,180,255,.08));
-}
+.tab-indicator:before{content:none;}
 .bottom-bar.is-dragging .tab-indicator{
   transition:none;cursor:grabbing;
   box-shadow:0 8px 22px rgba(35,42,65,.15),inset 0 1px 0 rgba(255,255,255,.75);
