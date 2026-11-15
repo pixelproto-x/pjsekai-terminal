@@ -137,8 +137,24 @@ async function loadSongs(region = $("#songRegion").value) {
     const [songs, charts] = await Promise.all([songsResponse.json(), chartsResponse.json()]);
     if (version !== loadVersion) return;
     if (!Array.isArray(songs) || !Array.isArray(charts)) throw new Error("歌曲資料格式不正確");
-    state.songs = songs.filter((song) => song.title && song.id);
-    state.difficulties = charts.filter((chart) => chart.musicId && chart.musicDifficulty);
+
+    // Each regional master DB can contain songs scheduled for a future release.
+    // Only include songs whose regional publishedAt time has arrived.
+    const now = Date.now();
+    state.songs = songs.filter((song) =>
+      song.title &&
+      Number.isInteger(Number(song.id)) &&
+      Number.isFinite(Number(song.publishedAt)) &&
+      Number(song.publishedAt) <= now
+    );
+
+    // Keep only charts belonging to songs currently available in this region.
+    const availableSongIds = new Set(state.songs.map((song) => Number(song.id)));
+    state.difficulties = charts.filter((chart) =>
+      availableSongIds.has(Number(chart.musicId)) &&
+      chart.musicDifficulty
+    );
+
     renderSongs();
     status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
   } catch (error) {
