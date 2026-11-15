@@ -188,44 +188,20 @@ export default {
         const current = await currentResponse.json();
         const event = current?.event ?? null;
         if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
-        const requestedName = url.searchParams.get("name")?.trim() || "";
-        const searchQuery = requestedName
-          ? "?query=" + encodeURIComponent(requestedName) + "&partial=1"
-          : "?profileId=" + encodeURIComponent(eventRanking.uid);
+        // Haneoka's documented points/search contract requires the in-game profileId.
+        // The website UID is the player ID shown in-game; player-name search is not supported.
         const searchUrl = HANEOKA_BASE + "/" + eventRanking.region + "/events/" + encodeURIComponent(String(event.id))
-          + "/points/search" + searchQuery;
+          + "/points/search?profileId=" + encodeURIComponent(eventRanking.uid);
         const rankingResponse = await fetchImpl(searchUrl, {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
         if (rankingResponse.status === 503) return await pendingRankingResponse(rankingResponse, event, origin);
         if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
-        if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE" }, 502, origin);
+        if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE", upstreamStatus: rankingResponse.status }, 502, origin);
         const ranking = await rankingResponse.json();
-        let row = ranking?.row ?? null;
-        let status = "OK";
-        if (requestedName) {
-          // A partial index may not have found every duplicate name yet.
-          // Wait for a complete search before choosing any exact-name match.
-          if (ranking?.complete === false) {
-            const retryAfter = Math.max(5, Math.min(300, Number(ranking?.retryAfter) || 30));
-            return json({ event, row: null, status: "DATA_PENDING", retryAfter }, 202, origin, {
-              extraHeaders: { "retry-after": String(retryAfter) },
-            });
-          }
-          const normalizedName = requestedName.normalize("NFKC").toLocaleLowerCase();
-          const exactMatches = (Array.isArray(ranking?.matches) ? ranking.matches : [])
-            .filter((match) => String(match?.name ?? "").normalize("NFKC").toLocaleLowerCase() === normalizedName);
-          if (exactMatches.length === 1) {
-            const match = exactMatches[0];
-            row = { rank: match.rank, name: match.name, point: match.point, profileId: match.profileId ?? null };
-          } else if (exactMatches.length > 1) {
-            status = "AMBIGUOUS_NAME";
-          } else {
-            status = "NOT_FOUND";
-          }
-        } else if (!row && ranking?.searchedTo >= 2000) {
-          status = "NOT_FOUND_TOP_2000";
-        }
+        const row = ranking?.row ?? null;
+        const status = row ? "OK"
+          : ranking?.searchedTo >= 2000 ? "NOT_FOUND_TOP_2000" : "NOT_FOUND";
         const payload = { event, ranking, row, status, cached: false };
         const response = json(payload, 200, origin, { cacheSeconds: 60 });
         if (eventCache) {
