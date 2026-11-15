@@ -34,7 +34,7 @@ The active website includes:
 - Card catalogue with search and character, unit, attribute, and rarity filters.
 - Character catalogue with upstream profile information.
 - Honor-group catalogue and event catalogue.
-- Five-slot team editor with device-local persistence.
+- Five-slot team editor with device-local persistence.\n- Team score baseline estimator using the selected song chart level and user-entered total talent; estimates PERFECT base score without skill, combo, FEVER, or event modifiers.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.
 - Ability-value aggregation only from numeric fields actually present in upstream card data; missing values are not fabricated.
 - Event bonus calculator using upstream event-card bonusRate values. The displayed total is a raw sum and excludes leader bonus, event caps, and other in-game modifiers.
 - Team comparison view for team size and readable ability values.
@@ -44,7 +44,7 @@ The active website includes:
 
 ### Batch 3 verification boundaries
 - The public upstream database is the source of truth; availability and update cadence are controlled upstream.
-- Team ability totals are not exact live score predictions. Exact score simulation is not claimed without validated song-note, skill activation, leader, support, area-item, and event-rule inputs.
+- The score tool estimates only the AP base-score baseline using `total talent × (3.9 + chart level ÷ 50)`. It does not predict final live score because skill activation timing, note weights, combo, FEVER, support and event effects are not simulated.
 - Card artwork is not yet rendered; the catalogue displays metadata rather than constructing unverified asset URLs.
 
 ## Removed from the active product
