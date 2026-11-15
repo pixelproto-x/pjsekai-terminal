@@ -61,6 +61,13 @@ assert.match(songsCss, /server-picker-open/, "song server dropdown has an openin
 assert.match(songsCss, /server-picker-close/, "song server dropdown has a closing animation");
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
+assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
+for (const year of ["1","2","3","4","5","6"]) {
+  assert.match(html, new RegExp('<option value="' + year + '"'), year + " anniversary cover is selectable");
+}
+assert.match(app, /pjskAnniversaryCover/, "selected anniversary cover is persisted");
+assert.match(app, /applyAnniversaryCover/, "selected anniversary cover updates the home hero");
+assert.match(css, /--anniversary-cover-image/, "home hero uses the selected anniversary image");
 assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual remains");
 assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
 assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
