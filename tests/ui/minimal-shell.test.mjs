@@ -10,11 +10,11 @@ const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url)
 const workspace = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
 assert.match(workspace, /return select;/, "player workspace filters use the same native select controls as other database sections");
 assert.doesNotMatch(workspace, /document\.body\.append\(menu\)/, "player workspace does not create detached custom filter popups");
-assert.match(workspaceCss, /player-workspace-tools select::picker\\(select\\)/, "player filters use the same expanding picker pattern as song filters where supported");
-assert.match(workspaceCss, /player-workspace-tools input[\\s\\S]*?touch-action:auto/, "player workspace text inputs remain directly tappable on iOS");
+assert.match(workspaceCss, /player-workspace-tools select::picker\(select\)/, "player filters use the same expanding picker pattern as song filters where supported");
+assert.match(workspaceCss, /player-workspace-tools input[\s\S]*?touch-action:auto/, "player workspace text inputs remain directly tappable on iOS");
 const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
-assert.match(gameToolsCss, /#gameToolsRoot input:not\\(\\[type=checkbox\\]\\)[\\s\\S]*?touch-action:auto/, "game tool search inputs use normal text-field touch behavior");
-assert.match(gameToolsCss, /#gameToolsRoot input:not\\(\\[type=checkbox\\]\\)[\\s\\S]*?pointer-events:auto/, "game tool search inputs receive pointer events");
+assert.match(gameToolsCss, /#gameToolsRoot input:not\(\[type=checkbox\]\)[\s\S]*?touch-action:auto/, "game tool search inputs use normal text-field touch behavior");
+assert.match(gameToolsCss, /#gameToolsRoot input:not\(\[type=checkbox\]\)[\s\S]*?pointer-events:auto/, "game tool search inputs receive pointer events");
 
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
@@ -80,7 +80,7 @@ for (const [region, label] of [["jp","日服"],["tw","台服"],["en","國際服"
   assert.match(html, new RegExp(`<option value="${region}"[^>]*>[^<]*${label}</option>`), `${label} song data is selectable`);
 }
 for (const region of ["jp", "en", "tw", "kr", "cn"]) {
-  assert.match(html, new RegExp(`id="songRegion"[\\s\\S]*?<option value="${region}"`), region + " song database can be selected");
+  assert.match(html, new RegExp(`id="songRegion"[\s\S]*?<option value="${region}"`), region + " song database can be selected");
 }
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /chevron\.textContent = "⌃"/, "song server picker points upward while closed");
@@ -199,7 +199,7 @@ const visibleText = html
 assert.doesNotMatch(visibleText, /[，。！？：；、·↗♫✦♪‹％%]/, "visible interface copy has no decorative punctuation or symbols");
 assert.doesNotMatch(visibleText, /PLAYER HUB|PLAYER SEARCH|PUBLIC PLAYER DATA|DISPLAY SETTINGS|AFTER THE END|BLUE HORIZON|IDOL BLOOM|STREET BEAT|Fan-made project/, "template-like labels are removed");
 for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
-  assert.match(themes, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated visual design");
+  assert.match(themes, new RegExp('body\[data-sekai-theme="' + theme + '"\]'), theme + " has a dedicated visual design");
 }
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
@@ -236,7 +236,7 @@ assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
 for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
-  assert.match(workspaceCss, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated player workspace treatment");
+  assert.match(workspaceCss, new RegExp('body\[data-sekai-theme="' + theme + '"\]'), theme + " has a dedicated player workspace treatment");
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
