@@ -218,13 +218,21 @@ $("#homePlayerLookup")?.addEventListener("submit", (event) => {
 });
 
 
-// Restore the most recent player lookup after a refresh without changing the
-// currently selected page.
+// Restore the last result from the local cache only. A page refresh must not
+// start another upstream player lookup; users can refresh data deliberately
+// by submitting the lookup form again.
 try {
   const savedLookup = JSON.parse(localStorage.getItem("pjskLastPlayerLookup") || "null");
   if (savedLookup && /^[0-9]{1,20}$/.test(String(savedLookup.uid || ""))) {
-    $("#playerUid").value = String(savedLookup.uid);
-    $("#homePlayerUid").value = String(savedLookup.uid);
-    lookup(savedLookup.uid);
+    const uid = String(savedLookup.uid);
+    $("#playerUid").value = uid;
+    $("#homePlayerUid").value = uid;
+    const cached = readLookupCache(uid, "auto");
+    if (cached) {
+      renderProfile(cached.profile);
+      if (status) status.textContent = "已還原上次查詢的玩家資料";
+    } else if (status) {
+      status.textContent = "已還原上次查詢的 UID 按下查詢即可取得最新資料";
+    }
   }
 } catch {}
