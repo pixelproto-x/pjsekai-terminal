@@ -130,9 +130,7 @@
     trigger.addEventListener("click", () => {
       const opening = menu.hidden;
       document.querySelectorAll(".styled-select.is-open").forEach((other) => {
-        other.classList.remove("is-open");
-        other.querySelector(".styled-select-menu").hidden = true;
-        other.querySelector(".styled-select-trigger").setAttribute("aria-expanded", "false");
+        other._closeStyledSelect?.();
       });
       menu.hidden = !opening;
       trigger.setAttribute("aria-expanded", String(opening));
@@ -150,6 +148,7 @@
     select.addEventListener("change", refresh);
     refresh();
     wrapper._refreshStyledSelect = refresh;
+    wrapper._closeStyledSelect = close;
     return wrapper;
   }
 
