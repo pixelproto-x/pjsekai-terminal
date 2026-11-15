@@ -54,8 +54,9 @@ function sourceUrlFor(result) {
       return "https://public-api.haruki.seiunx.com/sekai-api/v5/api/" + region + "/user/" + uid + "/profile";
     case "exmeaning":
       return "https://seka-api.exmeaning.com/api/" + region + "/user/" + uid + "/profile";
+    case "cloudflare player api":
     default:
-      return "";
+      return "https://pjsekai-player-api.a0983439343.workers.dev/api/" + region + "/user/" + uid + "/profile";
   }
 }
 function renderProfile(result) {
