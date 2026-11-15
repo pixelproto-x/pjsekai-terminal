@@ -2,6 +2,7 @@ const GOOGLE_CLIENT_ID = "724422617291-j4req87o5hn7bckbpom1fnpflqumbl2q.apps.goo
 const API_BASE = "https://pjsekai-player-api.a0983439343.workers.dev";
 const ACCOUNT_SCOPE_KEY = "pjskCloudAccountSub";
 const ACCESS_TOKEN_SESSION_KEY = "pjskGoogleAccessToken";
+const ACCESS_TOKEN_EXPIRES_AT_KEY = "pjskGoogleAccessTokenExpiresAt";
 const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists",
@@ -85,6 +86,21 @@ function applySnapshot(data) {
   window.dispatchEvent(new Event("pjsk:cloud-data-applied"));
 }
 
+function clearGoogleSession(message = "Google 登入已逾期，請重新登入") {
+  accessToken = "";
+  sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
+  sessionStorage.removeItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
+  clearInterval(cloudPollTimer);
+  cloudPollTimer = 0;
+  syncQueued = false;
+  if (signOutButton) signOutButton.hidden = true;
+  if (button) {
+    button.textContent = "使用 Google 登入";
+    button.disabled = false;
+  }
+  showStatus(message);
+}
+
 async function api(method, body) {
   const response = await fetch(API_BASE + "/api/account/data", {
     method,
@@ -95,6 +111,12 @@ async function api(method, body) {
     ...(body ? { body: JSON.stringify(body) } : {})
   });
   const payload = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    clearGoogleSession();
+    const error = new Error("GOOGLE_AUTH_EXPIRED");
+    error.status = 401;
+    throw error;
+  }
   if (!response.ok) throw new Error(payload.error || "SYNC_FAILED");
   return payload;
 }
@@ -163,17 +185,7 @@ Storage.prototype.removeItem = function(key) {
 };
 
 function signOut() {
-  accessToken = "";
-  sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
-  clearInterval(cloudPollTimer);
-  cloudPollTimer = 0;
-  syncQueued = false;
-  if (signOutButton) signOutButton.hidden = true;
-  if (button) {
-    button.textContent = "使用 Google 登入";
-    button.disabled = false;
-  }
-  showStatus("尚未登入");
+  clearGoogleSession("尚未登入");
 }
 
 const ACCOUNT_BACKUP_PREFIX = "pjskCloudBackup:";
@@ -243,16 +255,22 @@ async function onGoogleCredential(response) {
   }
 
   sessionStorage.setItem(ACCESS_TOKEN_SESSION_KEY, accessToken);
+  const expiresIn = Number(response.expires_in);
+  if (Number.isFinite(expiresIn) && expiresIn > 0) {
+    // Leave a 60-second safety margin before Google's one-hour token expiry.
+    sessionStorage.setItem(ACCESS_TOKEN_EXPIRES_AT_KEY, String(Date.now() + Math.max(0, expiresIn - 60) * 1000));
+  } else {
+    sessionStorage.removeItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
+  }
   if (button) button.disabled = true;
   showStatus("正在載入雲端資料…");
   try {
     await finishAccountConnection(await api("GET"));
     window.PJSEKAI?.toast("Google 帳號已連結");
   } catch (error) {
-    accessToken = "";
-    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
-    if (signOutButton) signOutButton.hidden = true;
-    showStatus("登入成功，但資料同步失敗：" + error.message);
+    clearGoogleSession(error.status === 401
+      ? "Google 授權無效，請重新登入"
+      : "登入成功，但資料同步失敗：" + error.message);
     if (button) button.disabled = false;
   }
 }
@@ -305,6 +323,13 @@ async function restoreSession() {
   const savedToken = sessionStorage.getItem(ACCESS_TOKEN_SESSION_KEY);
   if (!savedToken) return;
 
+  const expiresAt = Number(sessionStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY));
+  // Tokens saved before expiry tracking was added are deliberately not reused.
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() + 30000) {
+    clearGoogleSession();
+    return;
+  }
+
   accessToken = savedToken;
   if (button) button.disabled = true;
   showStatus("正在確認 Google 登入狀態…");
@@ -313,14 +338,7 @@ async function restoreSession() {
     showStatus("Google 帳號已連結，雲端設定與資料已同步");
     if (!cloudPollTimer) cloudPollTimer = window.setInterval(pullCloudChanges, 15000);
   } catch {
-    accessToken = "";
-    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
-    if (button) {
-      button.textContent = "使用 Google 登入";
-      button.disabled = false;
-    }
-    if (signOutButton) signOutButton.hidden = true;
-    showStatus("Google 登入已逾期，請重新登入");
+    clearGoogleSession();
   }
 }
 
