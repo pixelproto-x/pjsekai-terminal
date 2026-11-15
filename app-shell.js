@@ -183,59 +183,95 @@ document.addEventListener("click", (event) => {
   if (preset) applyOpacity(preset.dataset.opacity);
 });
 const opacityRange = $("#opacityRange");
-let lastOpacitySliderValue = Number(opacityRange?.value) || 22;
+// Adapted from the detent interaction used by TentUI Elastic Slider:
+// the thumb catches briefly on a mark, then continues with the pointer.
+const OPACITY_DETENTS = [12, 22, 35]; // The final preset is already the end of this scale.
+const OPACITY_DETENT_HOLD_PX = 7;
 let opacityPointerId = null;
-let opacityPauseUntil = 0;
-let opacityPauseTimer = 0;
+let opacityDragState = null;
 
-function opacityValueFromPointer(range, clientX) {
+function opacityPointerMetrics(range) {
   const rect = range.getBoundingClientRect();
   const thumbInset = 11;
-  const usableWidth = Math.max(1, rect.width - thumbInset * 2);
-  const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbInset) / usableWidth));
-  const min = Number(range.min) || 0;
-  const max = Number(range.max) || 100;
-  const step = Number(range.step) || 1;
-  return Math.round((min + ratio * (max - min)) / step) * step;
+  return {
+    left: rect.left + thumbInset,
+    width: Math.max(1, rect.width - thumbInset * 2),
+    min: Number(range.min) || 0,
+    max: Number(range.max) || 100,
+    step: Number(range.step) || 1,
+  };
+}
+
+function opacityValueFromPointer(range, clientX) {
+  const metrics = opacityPointerMetrics(range);
+  const ratio = Math.max(0, Math.min(1, (clientX - metrics.left) / metrics.width));
+  return Math.round((metrics.min + ratio * (metrics.max - metrics.min)) / metrics.step) * metrics.step;
+}
+
+function opacityPointerFromValue(range, value) {
+  const metrics = opacityPointerMetrics(range);
+  const ratio = (value - metrics.min) / Math.max(1, metrics.max - metrics.min);
+  return metrics.left + Math.max(0, Math.min(1, ratio)) * metrics.width;
 }
 
 function updateOpacityFromPointer(range, clientX) {
+  if (!opacityDragState) return;
   const amount = opacityValueFromPointer(range, clientX);
-  if (performance.now() < opacityPauseUntil) return;
+  let displayedAmount = amount;
 
-  const direction = amount - lastOpacitySliderValue;
-  const snapPoint = [12, 22, 35, 48].find((point) =>
+  // Keep the thumb on the detent until the pointer has travelled a few
+  // pixels beyond it. Reversing direction also releases the detent naturally.
+  if (opacityDragState.detent) {
+    const detent = opacityDragState.detent;
+    const travelled = (clientX - detent.anchorX) * detent.direction;
+    if (travelled < OPACITY_DETENT_HOLD_PX && travelled > -OPACITY_DETENT_HOLD_PX) {
+      displayedAmount = detent.value;
+      range.value = String(displayedAmount);
+      applyOpacity(displayedAmount, { persist: false, syncPresets: false });
+      return;
+    }
+    opacityDragState.detent = null;
+  }
+
+  const previous = opacityDragState.lastValue;
+  const direction = amount - previous;
+  const crossed = OPACITY_DETENTS.find((point) =>
     direction > 0
-      ? lastOpacitySliderValue < point && amount >= point
+      ? previous < point && amount >= point
       : direction < 0
-        ? lastOpacitySliderValue > point && amount <= point
+        ? previous > point && amount <= point
         : false
   );
 
-  if (snapPoint !== undefined) {
-    lastOpacitySliderValue = snapPoint;
-    range.value = String(snapPoint);
-    applyOpacity(snapPoint, { persist: false, syncPresets: false });
-    opacityPauseUntil = performance.now() + 140;
-    clearTimeout(opacityPauseTimer);
-    opacityPauseTimer = setTimeout(() => {
-      opacityPauseUntil = 0;
-    }, 140);
-    return;
+  if (crossed !== undefined) {
+    const directionSign = direction > 0 ? 1 : -1;
+    const detentX = opacityPointerFromValue(range, crossed);
+    const distancePastDetent = (clientX - detentX) * directionSign;
+    if (distancePastDetent < OPACITY_DETENT_HOLD_PX) {
+      opacityDragState.detent = {
+        value: crossed,
+        direction: directionSign,
+        anchorX: detentX,
+      };
+      displayedAmount = crossed;
+    }
   }
 
-  lastOpacitySliderValue = amount;
-  range.value = String(amount);
-  applyOpacity(amount, { persist: false, syncPresets: false });
+  opacityDragState.lastValue = displayedAmount;
+  range.value = String(displayedAmount);
+  applyOpacity(displayedAmount, { persist: false, syncPresets: false });
 }
 
 opacityRange?.addEventListener("pointerdown", (event) => {
-  if (event.button !== 0) return;
+  if (event.button !== 0 && event.pointerType === "mouse") return;
   event.preventDefault();
   opacityPointerId = event.pointerId;
-  opacityRange.focus();
+  opacityDragState = {
+    lastValue: Number(opacityRange.value) || 0,
+    detent: null,
+  };
+  opacityRange.focus({ preventScroll: true });
   opacityRange.setPointerCapture(event.pointerId);
-  opacityPauseUntil = 0;
   updateOpacityFromPointer(opacityRange, event.clientX);
 });
 
@@ -247,23 +283,20 @@ opacityRange?.addEventListener("pointermove", (event) => {
 function finishOpacityPointer(event) {
   if (event.pointerId !== opacityPointerId) return;
   opacityPointerId = null;
-  opacityPauseUntil = 0;
-  clearTimeout(opacityPauseTimer);
-  lastOpacitySliderValue = Number(opacityRange.value) || 0;
+  opacityDragState = null;
   applyOpacity(opacityRange.value);
 }
 
 opacityRange?.addEventListener("pointerup", finishOpacityPointer);
 opacityRange?.addEventListener("pointercancel", finishOpacityPointer);
+opacityRange?.addEventListener("lostpointercapture", finishOpacityPointer);
 
 opacityRange?.addEventListener("input", (event) => {
   if (opacityPointerId !== null) return;
-  lastOpacitySliderValue = Number(event.target.value) || 0;
   applyOpacity(event.target.value);
 });
 opacityRange?.addEventListener("change", (event) => {
   if (opacityPointerId !== null) return;
-  lastOpacitySliderValue = Number(event.target.value) || 0;
   applyOpacity(event.target.value);
 });
 $("#homeBrand")?.addEventListener("click", () => go("home"));
