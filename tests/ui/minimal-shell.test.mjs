@@ -154,8 +154,8 @@ assert.match(songsModule, /readSongCache\(region\)/, "refresh reuses locally cac
 assert.match(songsModule, /visibleBatch = songs\.slice\(0, renderedSongLimit\)/, "only the current song batch is inserted into the DOM");
 assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are indexed once instead of repeatedly scanning the full chart list");
 assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
-assert.match(html, /dataset\.initialPage = page \|\| "home"/, "remembered page is selected in the document head before first paint");
-assert.match(html, /html\[data-initial-page="songs"\] \.page\[data-page="songs"\]\{display:block\}/, "saved page is visible before app-shell navigation initializes");
+assert.match(html, /const initialPage = page \|\| "home"/, "remembered page is selected in the document head before first paint");
+assert.match(html, /initialPageStyle\.textContent[\s\S]*?display:none!important[\s\S]*?display:block!important/, "only the remembered page is visible before app-shell navigation initializes");
 assert.match(html, /html\[data-restore-scroll="pending"\] body\{visibility:hidden\}/, "page stays hidden until saved scroll position is restored");
 assert.match(html, /app-shell\.js\?v=20261115-instant-scroll-restore/, "app shell cache is refreshed for instant scroll restoration");
 assert.match(app, /go\(savedUiState\.activePage[^\n]+\{ preserveScroll: true \}\)/, "initial route restoration does not scroll to the top");
