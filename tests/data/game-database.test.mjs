@@ -66,7 +66,7 @@ test("invalid region, dataset and bundle are rejected instead of silently switch
   await assert.rejects(client.loadDataset("xx", "cards"), /不支援的伺服器/);
   await assert.rejects(client.loadDataset("tw", "unknown"), /不支援的資料集/);
   await assert.rejects(client.loadBundle("tw", "unknown"), /不支援的資料組合/);
-  assert.deepEqual(Object.keys(GAME_DATABASE_BUNDLES).sort(), ["cards", "characters", "events", "honors"]);
+  assert.deepEqual(Object.keys(GAME_DATABASE_BUNDLES).sort(), ["cards", "characters", "events", "honors", "score"]);
 });
 
 test("concurrent requests for the same region and dataset share one request", async () => {
