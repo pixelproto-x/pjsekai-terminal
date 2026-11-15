@@ -1,0 +1,6 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { createGameDatabaseClient, GAME_DATABASE_BUNDLES, REGION_REPOSITORIES } from "../../src/data/game-database.mjs";
+test("regional game data has independent repositories",()=>{assert.equal(REGION_REPOSITORIES.tw,"sekai-master-db-tc-diff");assert.equal(REGION_REPOSITORIES.jp,"sekai-master-db-diff");assert.equal(Object.keys(REGION_REPOSITORIES).length,5)});
+test("all batch three catalog and event data bundles are declared",()=>{for(const key of ["cards","characters","honors","events"])assert.ok(GAME_DATABASE_BUNDLES[key]);assert.ok(GAME_DATABASE_BUNDLES.events.includes("eventCards"));assert.ok(GAME_DATABASE_BUNDLES.events.includes("eventDeckBonuses"))});
+test("database falls back to stale cache rather than another server",async()=>{const c=createGameDatabaseClient({cache:{get:async()=>({data:[{id:5}],savedAt:0}),set:async()=>true},fetchImpl:async()=>({ok:false,status:503}),now:()=>999999,ttl:1});const r=await c.loadDataset("tw","cards");assert.equal(r.source,"stale-cache");assert.equal(r.data[0].id,5)});
