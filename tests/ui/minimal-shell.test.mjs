@@ -274,11 +274,12 @@ assert.match(themes, /body\[data-sekai-theme\].*:where\([\s\S]*\.brand-text span
 const gameToolsJs = await readFile(new URL("../../game-tools.js", import.meta.url), "utf8");
 
 const sharedStyles = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
-assert.ok(sharedStyles.includes("select:not(.server-picker-native)::picker(select)"), "all visible select controls share the song database expanding picker");
+assert.match(sharedStyles, /select:not\\(\\.server-picker-native\\)\\{[\\s\\S]*?appearance:auto!important;[\\s\\S]*?-webkit-appearance:auto!important;[\\s\\S]*?pointer-events:auto!important;/, "all visible selects use reliable native pickers and receive taps");
+assert.doesNotMatch(sharedStyles, /select:not\\(\\.server-picker-native\\)::picker\\(select\\)/, "shared controls do not use experimental detached select popovers");
 assert.ok(sharedStyles.includes("#gameToolsRoot input:not([type=checkbox])"), "game tools inputs receive the shared clickable input hitbox");
 assert.ok(sharedStyles.includes(".player-workspace-tools input"), "player workspace inputs receive the shared clickable input hitbox");
 const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
-assert.ok(sharedStyles.includes("select:not(.server-picker-native)::picker(select)"), "player filters share the song dropdown picker");
+assert.match(sharedStyles, /select:not\\(\\.server-picker-native\\)\\{[\\s\\S]*?appearance:auto!important;/, "player filters use the same reliable native picker behavior");
 assert.ok(sharedStyles.includes(".player-workspace-tools input"), "player workspace search hit target is restored");
 assert.ok(sharedStyles.includes("#gameToolsRoot input:not([type=checkbox])"), "game tool search hit target is restored");
 
