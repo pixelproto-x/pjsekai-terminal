@@ -150,12 +150,12 @@
 .server-picker-chevron{color:#8272cf;font-size:17px;line-height:1;transition:transform .18s}
 .server-picker.is-open .server-picker-chevron{transform:rotate(180deg)}
 .server-picker-menu{
-  position:absolute;top:calc(100% + 8px);left:0;min-width:100%;width:max-content;max-width:min(230px,calc(100vw - 28px));
-  display:grid;gap:4px;padding:7px;border:1px solid rgba(255,255,255,.92);border-radius:16px;
+  position:fixed;inset:auto;margin:0;z-index:2147483647;min-width:100%;width:max-content;max-width:min(230px,calc(100vw - 28px));
+  display:none;gap:4px;padding:7px;border:1px solid rgba(255,255,255,.92);border-radius:16px;
   background:rgba(250,251,255,.96);box-shadow:0 16px 42px rgba(25,35,60,.18),inset 0 1px 0 #fff;
   backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);
 }
-.server-picker-menu[hidden]{display:none}
+.server-picker-menu:popover-open{display:grid}
 .server-picker-option{
   display:flex;align-items:center;gap:10px;width:100%;min-height:39px;padding:8px 11px;
   border:0;border-radius:10px;background:transparent;color:#34435d;text-align:left;
