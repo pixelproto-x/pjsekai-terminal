@@ -447,13 +447,14 @@ function positionServerPickerMenu(wrapper) {
   const menuRect = menu.getBoundingClientRect();
   const margin = 12;
   const left = Math.max(margin, Math.min(triggerRect.left, window.innerWidth - menuRect.width - margin));
-  const below = triggerRect.bottom + 8;
-  const top = below + menuRect.height <= window.innerHeight - margin
-    ? below
-    : Math.max(margin, triggerRect.top - menuRect.height - 8);
+  /* Always open downward; when space is limited, scroll inside the list. */
+  const top = triggerRect.bottom + 8;
+  const availableHeight = Math.max(120, window.innerHeight - top - margin);
 
   menu.style.left = left + "px";
   menu.style.top = top + "px";
+  menu.style.maxHeight = availableHeight + "px";
+  menu.style.overflowY = "auto";
 }
 
 function initServerSelect(select) {
@@ -523,6 +524,8 @@ function closeServerPicker(wrapper) {
   menu.hidePopover();
   menu.style.removeProperty("left");
   menu.style.removeProperty("top");
+  menu.style.removeProperty("max-height");
+  menu.style.removeProperty("overflow-y");
 }
 
 function syncServerSelect(select) {
