@@ -112,3 +112,17 @@ test("reads combined power inside a wrapped provider profile", () => {
     },
   }), 265432);
 });
+
+
+test("extracts HiSekai's documented totalPower.totalPower aggregate", () => {
+  assert.equal(extractPlayerPower({
+    user: { name: "測試玩家", rank: 300 },
+    userProfile: { word: "hello" },
+    totalPower: {
+      totalPower: 312345,
+      basicCardTotalPower: 250000,
+      areaItemBonus: 30000,
+      honorBonus: 20000,
+    },
+  }), 312345);
+});
