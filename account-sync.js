@@ -28,7 +28,20 @@ function snapshot() {
   const data = {};
   for (const key of SYNC_KEYS) {
     const value = localStorage.getItem(key);
-    if (value !== null) data[key] = value;
+    if (value === null) continue;
+
+    // The active page and scroll position belong to this device, never the account.
+    if (key === "pjskUiStateV1") {
+      try {
+        const state = JSON.parse(value);
+        if (state && typeof state === "object" && !Array.isArray(state)) {
+          const { activePage, scrollY, ...sharedState } = state;
+          data[key] = JSON.stringify(sharedState);
+        }
+      } catch {}
+      continue;
+    }
+    data[key] = value;
   }
   return data;
 }
@@ -38,8 +51,25 @@ function applySnapshot(data) {
   try {
     for (const key of SYNC_KEYS) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
-        localStorage.setItem(key, String(data[key]));
-      } else {
+        if (key === "pjskUiStateV1") {
+          // Merge shared controls while retaining this device's own route and scroll.
+          let localState = {};
+          let incomingState = {};
+          try {
+            localState = JSON.parse(localStorage.getItem(key) || "{}") || {};
+            incomingState = JSON.parse(String(data[key]) || "{}") || {};
+          } catch {}
+          const mergedState = {
+            ...incomingState,
+            activePage: localState.activePage || "home",
+            scrollY: Number(localState.scrollY) || 0,
+            savedAt: localState.savedAt || incomingState.savedAt || Date.now()
+          };
+          localStorage.setItem(key, JSON.stringify(mergedState));
+        } else {
+          localStorage.setItem(key, String(data[key]));
+        }
+      } else if (key !== "pjskUiStateV1") {
         localStorage.removeItem(key);
       }
     }
