@@ -69,6 +69,74 @@
   root.dataset.interfaceLanguage = activeLanguage;
   writeTranslateCookie(activeLanguage);
 
+  function enhanceStyledSelect(select) {
+    if (!select || select.dataset.styledSelect === "true") return;
+    select.dataset.styledSelect = "true";
+    const wrapper = document.createElement("div");
+    wrapper.className = "styled-select";
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "styled-select-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    const menu = document.createElement("div");
+    menu.className = "styled-select-menu";
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.append(select, trigger, menu);
+    select.classList.add("styled-select-native");
+    const close = () => {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+      wrapper.classList.remove("is-open");
+    };
+    const refresh = () => {
+      const selected = select.selectedOptions[0];
+      trigger.textContent = selected?.textContent || "請選擇";
+      menu.replaceChildren();
+      [...select.options].forEach((option) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "styled-select-option" + (option.value === select.value ? " is-selected" : "");
+        item.setAttribute("role", "option");
+        item.setAttribute("aria-selected", option.value === select.value ? "true" : "false");
+        item.textContent = option.textContent;
+        item.addEventListener("click", () => {
+          select.value = option.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          refresh();
+          close();
+          trigger.focus();
+        });
+        menu.append(item);
+      });
+    };
+    trigger.addEventListener("click", () => {
+      const opening = menu.hidden;
+      document.querySelectorAll(".styled-select.is-open").forEach((other) => {
+        other.classList.remove("is-open");
+        other.querySelector(".styled-select-menu").hidden = true;
+        other.querySelector(".styled-select-trigger").setAttribute("aria-expanded", "false");
+      });
+      menu.hidden = !opening;
+      trigger.setAttribute("aria-expanded", String(opening));
+      wrapper.classList.toggle("is-open", opening);
+    });
+    document.addEventListener("click", (event) => {
+      if (!wrapper.contains(event.target)) close();
+    });
+    select.addEventListener("change", refresh);
+    refresh();
+    wrapper._refreshStyledSelect = refresh;
+    return wrapper;
+  }
+
+  window.refreshStyledSelect = (select) => {
+    const element = typeof select === "string" ? document.querySelector(select) : select;
+    element?.closest(".styled-select")?._refreshStyledSelect?.();
+  };
+
   function initializeSelector() {
     const select = document.getElementById("interfaceLanguageSelect");
     const status = document.getElementById("interfaceLanguageStatus");
@@ -80,6 +148,8 @@
       select.append(option);
     }
     select.value = preference;
+    enhanceStyledSelect(select);
+    enhanceStyledSelect(document.getElementById("anniversaryCoverSelect"));
     if (status) {
       const name = activeLanguage === SOURCE_LANGUAGE ? "繁體中文" : supported.get(activeLanguage);
       status.textContent = preference === "auto"
