@@ -10,6 +10,13 @@ test("lists all five supported regions", () => {
   assert.deepEqual(REGIONS, ["jp", "tw", "en", "kr", "cn"]);
 });
 
+test("parses the automatic region detection route", () => {
+  assert.deepEqual(parseProfilePath("/api/auto/user/123456/profile"), {
+    region: "auto",
+    uid: "123456",
+  });
+});
+
 test("parses all five public profile routes", () => {
   for (const region of REGIONS) {
     assert.deepEqual(
