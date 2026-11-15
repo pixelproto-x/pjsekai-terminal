@@ -272,7 +272,7 @@ function initServerSelect(select) {
   const chevron = document.createElement("span");
   chevron.className = "server-picker-chevron";
   chevron.setAttribute("aria-hidden", "true");
-  chevron.textContent = "⌄";
+  chevron.textContent = "⌃";
   trigger.append(current, chevron);
   const menu = document.createElement("div");
   menu.className = "server-picker-menu";
@@ -316,9 +316,14 @@ function closeServerPicker(wrapper) {
   if (!wrapper) return;
   const menu = wrapper.querySelector(".server-picker-menu");
   const trigger = wrapper.querySelector(".server-picker-trigger");
-  if (menu) menu.hidden = true;
   if (trigger) trigger.setAttribute("aria-expanded", "false");
   wrapper.classList.remove("is-open");
+  if (!menu || menu.hidden || menu.classList.contains("is-closing")) return;
+  menu.classList.add("is-closing");
+  menu.addEventListener("animationend", () => {
+    menu.hidden = true;
+    menu.classList.remove("is-closing");
+  }, { once: true });
 }
 
 function syncServerSelect(select) {
