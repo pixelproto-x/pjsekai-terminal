@@ -88,3 +88,26 @@ test("event ranking always uses the documented in-game profile ID search", async
   assert.equal(requested, CLOUDFLARE_PLAYER_API + "/api/tw/user/123456789/event-ranking");
   assert.equal(result.row.rank, 12);
 });
+
+
+test("Cloudflare provider forwards event-ranking scan cursors", async () => {
+  let requested = "";
+  const provider = createCloudflarePlayerProvider({
+    fetchImpl: async (url) => {
+      requested = String(url);
+      return jsonResponse({ status: "SCAN_PROGRESS", nextStart: 3201 });
+    },
+    cache: createCache({ storage: null }),
+  });
+  const result = await provider.getEventRanking("123456789", "tw", {
+    start: 2001,
+    pages: 12,
+    eventId: 987,
+  });
+  const parsed = new URL(requested);
+  assert.equal(parsed.pathname, "/api/tw/user/123456789/event-ranking");
+  assert.equal(parsed.searchParams.get("start"), "2001");
+  assert.equal(parsed.searchParams.get("pages"), "12");
+  assert.equal(parsed.searchParams.get("eventId"), "987");
+  assert.equal(result.nextStart, 3201);
+});
