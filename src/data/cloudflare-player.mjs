@@ -24,7 +24,8 @@ export function createCloudflarePlayerProvider({
         throw error;
       }
       if (region === "cn") return { status: "UNSUPPORTED_REGION", row: null, event: null };
-      const url = CLOUDFLARE_PLAYER_API + "/api/" + region + "/user/" + encodeURIComponent(uid) + "/event-ranking";
+      const url = CLOUDFLARE_PLAYER_API + "/api/" + region + "/user/" + encodeURIComponent(uid)
+        + "/event-ranking" + (options.name ? "?name=" + encodeURIComponent(String(options.name)) : "");
       return fetchJson(url, { fetchImpl, signal: options.signal, timeoutMs });
     },
     async getProfile(input, region = "tw", options = {}) {
