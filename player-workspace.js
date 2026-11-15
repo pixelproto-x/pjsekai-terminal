@@ -119,12 +119,6 @@ function openPlayer(player) {
   window.PJSEKAI?.go("profile");
   window.PJSEKAI_LOOKUP?.(player.uid, player.region);
 }
-function enhanceFilterSelect(select) {
-  if (!select) return select;
-  window.enhanceStyledSelect?.(select);
-  window.refreshStyledSelect?.(select);
-  return select;
-}
 function renderSaved() {
   if (!list) return;
   const players = read(SAVED_KEY);
@@ -145,7 +139,6 @@ function renderSaved() {
     tagSelect.options[0].value = "";
     tags.forEach((value) => { const option = node("option", "", value); option.value = value; tagSelect.append(option); });
     tagSelect.value = tags.includes(selected) ? selected : "";
-    enhanceFilterSelect(tagSelect);
   }
   list.replaceChildren();
   if (!filtered.length) {
@@ -297,7 +290,6 @@ historyList?.addEventListener("click", (event) => {
 $("#clearPlayerHistory")?.addEventListener("click", () => {
   write(HISTORY_KEY, []); renderHistory();
 });
-enhanceFilterSelect($("#playerWorkspaceFavorite"));
 renderSaved();
 renderHistory();
 
