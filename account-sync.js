@@ -5,14 +5,16 @@ const ACCESS_TOKEN_SESSION_KEY = "pjskGoogleAccessToken";
 const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists",
-  "pjskSongRegion"
+  "pjskSongRegion", "pjskSongViewV1", "pjskUiStateV1",
+  "pjskLastPlayerLookup"
 ];
 
 let accessToken = "";
-let syncTimer = 0;
 let applyingCloud = false;
 let syncRunning = false;
 let syncQueued = false;
+let lastCloudUpdatedAt = null;
+let cloudPollTimer = 0;
 
 const button = document.getElementById("googleAccountButton");
 const status = document.getElementById("googleAccountStatus");
@@ -48,6 +50,7 @@ function applySnapshot(data) {
   // Update visible controls and lists in place. Do not reload the whole page:
   // a reload resets scroll position, animations and the user's current view.
   window.PJSEKAI?.applyCloudSettings?.();
+  window.PJSEKAI?.applyCloudUiState?.();
   window.PJSEKAI?.refreshCloudSongData?.();
 }
 
@@ -78,9 +81,10 @@ async function syncNow() {
   try {
     do {
       syncQueued = false;
-      await api("PUT", { data: snapshot() });
+      const result = await api("PUT", { data: snapshot() });
+      lastCloudUpdatedAt = result.updatedAt || lastCloudUpdatedAt;
     } while (syncQueued && accessToken);
-    showStatus("已同步至 Google 帳號");
+    showStatus("已即時同步至 Google 帳號");
   } catch (error) {
     showStatus("同步失敗：" + error.message);
   } finally {
@@ -90,11 +94,24 @@ async function syncNow() {
 
 function scheduleSync() {
   if (!accessToken || applyingCloud) return;
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    syncQueued = true;
-    syncNow();
-  }, 700);
+  syncQueued = true;
+  syncNow();
+}
+
+async function pullCloudChanges() {
+  if (!accessToken || applyingCloud || syncRunning || syncQueued) return;
+  try {
+    const cloud = await api("GET");
+    if (!accessToken || syncQueued || syncRunning) return;
+    if (cloud.accountSub !== localStorage.getItem(ACCOUNT_SCOPE_KEY)) return;
+    if (cloud.updatedAt && cloud.updatedAt !== lastCloudUpdatedAt) {
+      lastCloudUpdatedAt = cloud.updatedAt;
+      applySnapshot(cloud.data || {});
+      showStatus("已接收其他裝置的最新變更");
+    }
+  } catch {
+    // A temporary network failure must not interrupt the local interface.
+  }
 }
 
 // Watch only actual changes to allowlisted persistent data. Clicks, scrolling,
@@ -117,7 +134,8 @@ Storage.prototype.removeItem = function(key) {
 function signOut() {
   accessToken = "";
   sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
-  clearTimeout(syncTimer);
+  clearInterval(cloudPollTimer);
+  cloudPollTimer = 0;
   syncQueued = false;
   if (signOutButton) signOutButton.hidden = true;
   if (button) {
@@ -157,6 +175,7 @@ async function finishAccountConnection(cloud) {
     showStatus("正在切換 Google 帳號並載入該帳號的資料…");
   }
 
+  lastCloudUpdatedAt = cloud.updatedAt || null;
   const cloudData = cloud.data || {};
   // Cloud values win, while account-scoped local backups fill keys not yet in
   // the cloud. This also prevents a newly selected account from inheriting
@@ -181,6 +200,7 @@ async function finishAccountConnection(cloud) {
     button.disabled = false;
   }
   if (signOutButton) signOutButton.hidden = false;
+  if (!cloudPollTimer) cloudPollTimer = window.setInterval(pullCloudChanges, 15000);
 }
 
 async function onGoogleCredential(response) {
@@ -208,6 +228,10 @@ async function onGoogleCredential(response) {
 
 window.addEventListener("storage", (event) => {
   if (SYNC_KEYS.includes(event.key)) scheduleSync();
+});
+window.addEventListener("focus", pullCloudChanges);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") pullCloudChanges();
 });
 
 async function initializeGoogleSignIn() {
@@ -256,6 +280,7 @@ async function restoreSession() {
   try {
     await finishAccountConnection(await api("GET"));
     showStatus("Google 帳號已連結，雲端設定與資料已同步");
+    if (!cloudPollTimer) cloudPollTimer = window.setInterval(pullCloudChanges, 15000);
   } catch {
     accessToken = "";
     sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
