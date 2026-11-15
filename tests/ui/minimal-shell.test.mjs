@@ -37,7 +37,7 @@ assert.match(shell, /finishIndicatorDrag\(event, true\)/, "releasing dragged bub
 assert.match(html, /transition:left var\(--tab-duration\).*width var\(--tab-duration\)/, "bottom selection bubble smoothly animates its position and width");
 assert.match(shell, /addEventListener\("resize", syncTabIndicator/, "bottom selection bubble realigns after viewport resizing");
 const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"/g)].map((match) => match[1]);
-assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four intended page sections remain");
+assert.deepEqual(routes.sort(), ["game-tools", "home", "profile", "settings", "songs"], "five intended page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
 assert.match(lookup, /createCloudflarePlayerProvider/, "five-region public UID provider is connected");
 assert.match(lookup, /requestedRegion = "auto"/, "player UID lookup defaults to automatic server detection");
@@ -136,7 +136,7 @@ assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual
 assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
 assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 
-assert.equal(routes.length, 4, "home, player lookup, song management, and appearance settings remain");
+assert.equal(routes.length, 5, "home, player lookup, song management, game tools, and appearance settings remain");
 
 const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
 assert.match(accountSync, /pjskSavedPlayersV2/, "saved players sync across signed-in devices");
