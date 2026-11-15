@@ -415,6 +415,10 @@ go(savedUiState.activePage || location.hash.slice(1) || "home", false, { preserv
 if (Number(savedUiState.scrollY) > 0) {
   window.scrollTo({ top: Number(savedUiState.scrollY), behavior: "instant" });
 }
+// The bootstrap rule is only for the first paint. Leaving its !important
+// page selector installed would permanently pin navigation to the first page.
+document.getElementById("initial-page-bootstrap-style")?.remove();
+document.documentElement.removeAttribute("data-initial-page");
 document.documentElement.removeAttribute("data-restore-scroll");
 
 
