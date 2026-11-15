@@ -112,10 +112,10 @@ async function onGoogleCredential(response) {
     if (hasCloudData) {
       // Cloud values win when present, but preserve local keys that were not
       // part of an older cloud snapshot (for example newly added settings).
-      applySnapshot(mergedData);
       if (Object.keys(mergedData).some((key) => !Object.prototype.hasOwnProperty.call(cloudData, key))) {
         await api("PUT", { data: mergedData });
       }
+      applySnapshot(mergedData);
     } else {
       await api("PUT", { data: localData });
       showStatus("已將這台裝置的資料首次備份至雲端");
@@ -204,10 +204,10 @@ async function restoreSession() {
     const localData = snapshot();
     if (Object.keys(cloudData).length) {
       const mergedData = { ...localData, ...cloudData };
-      applySnapshot(mergedData);
       if (Object.keys(mergedData).some((key) => !Object.prototype.hasOwnProperty.call(cloudData, key))) {
         await api("PUT", { data: mergedData });
       }
+      applySnapshot(mergedData);
     } else {
       await api("PUT", { data: localData });
     }
