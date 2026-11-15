@@ -76,3 +76,8 @@
 @media(max-width:900px){.gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.gt-cards,.gt-characters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-team{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.gt-head{align-items:stretch;flex-direction:column}.gt-head .gt-region-label{width:100%}.gt-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.gt-cards,.gt-characters,.gt-compare{grid-template-columns:1fr}.gt-cards{max-height:58vh;padding:8px}.gt-team{grid-template-columns:1fr}.gt-metrics{grid-template-columns:1fr 1fr}.gt-score-form{grid-template-columns:1fr}.gt-preset-save{flex-direction:column}.gt-saved-teams article{align-items:flex-start;flex-wrap:wrap}.gt-tabs button{padding:9px 12px}}
 @media(prefers-reduced-motion:reduce){#gameToolsRoot *,#gameToolsRoot *:before,#gameToolsRoot *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Dropdown option bubbles: transparent, independent from SEKAI theme. */
+.gt-select-menu{background:transparent!important;border-color:transparent!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.gt-select-option{background:transparent!important;color:inherit!important}
+.gt-select-option:hover,.gt-select-option:focus-visible,.gt-select-option.is-selected{background:transparent!important;color:inherit!important;text-decoration:underline;text-decoration-color:currentColor;text-underline-offset:4px}
