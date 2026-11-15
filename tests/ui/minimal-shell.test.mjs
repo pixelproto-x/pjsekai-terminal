@@ -40,7 +40,16 @@ assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four 
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
 assert.match(lookup, /createCloudflarePlayerProvider/, "five-region public UID provider is connected");
 assert.match(lookup, /const region = "auto"/, "player UID lookup automatically checks the supported regions");
+assert.match(lookup, /function sourceUrlFor\(result\)/, "player result resolves the exact upstream data source URL");
+for (const source of ["hisekai", "haruki public", "haruki", "exmeaning"]) {
+  assert.ok(lookup.toLowerCase().includes('case "' + source + '"'), source + " source link is supported");
+}
+assert.match(lookup, /player-source-link/, "player results display a clickable source link");
 assert.match(html, /自動檢查日服 台服 國際服 韓服 簡中服五個伺服器/, "homepage explains automatic five-region lookup");
+assert.match(html, /玩家查詢/, "player lookup label uses the shorter title");
+assert.doesNotMatch(html, /五服玩家查詢|五服公開資料/, "old five-region feature labels are removed");
+assert.match(html, /選擇主題/, "theme section uses the concise selection label");
+assert.match(html, /<span aria-hidden="true">↑<\\/span>/, "back-to-top circle uses an upward arrow");
 assert.doesNotMatch(html, /id="homePlayerRegion"|id="playerRegion"/, "player lookup does not require manual region selection");
 assert.match(html, /id="songRegion"/, "song manager keeps its independent server selector");
 assert.match(html, /@supports \(appearance:base-select\)/, "song server selector enables the customizable CSS picker where supported");
