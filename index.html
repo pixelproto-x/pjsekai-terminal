@@ -1065,16 +1065,15 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 .player-result-head{flex-wrap:wrap;align-items:center}
 .player-result-head>div{min-width:0;flex:1}
 .player-source-pill{max-width:100%;white-space:normal;text-align:center;overflow-wrap:anywhere}
-/* The success toast follows the active unit palette while keeping readable contrast. */
+/* Keep toast text readable across all six unit themes. */
 #toast.toast{
-  background:linear-gradient(118deg,
-    color-mix(in srgb,var(--unit-ink,#182235) 88%,var(--unit-accent,#52cfe8) 12%),
-    color-mix(in srgb,var(--unit-ink,#182235) 76%,var(--unit-accent-2,#9179f5) 24%))!important;
-  background-color:var(--unit-ink,#182235)!important;
-  color:#fff!important;
-  border:1px solid color-mix(in srgb,var(--unit-accent,#52cfe8) 58%,rgba(255,255,255,.42));
-  box-shadow:0 12px 32px color-mix(in srgb,var(--unit-accent,#52cfe8) 24%,rgba(12,20,38,.30)),inset 0 1px 0 rgba(255,255,255,.14);
-  text-shadow:0 1px 1px rgba(0,0,0,.18)
+  background:color-mix(in srgb,#fff 94%,var(--unit-accent,#52cfe8) 6%)!important;
+  background-color:#fff!important;
+  color:#181a22!important;
+  border:1px solid color-mix(in srgb,var(--unit-accent,#52cfe8) 62%,rgba(255,255,255,.7));
+  box-shadow:0 12px 32px rgba(12,20,38,.22),inset 0 1px 0 rgba(255,255,255,.95);
+  text-shadow:none;
+  font-weight:800
 }
 #toast.toast.show{opacity:1}
 @media(max-width:640px){
