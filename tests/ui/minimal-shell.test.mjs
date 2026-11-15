@@ -218,7 +218,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
-assert.match(s, /20261115-custom-filter-dropdown-v1/, "player workspace assets use the custom dropdown cache version");
+assert.match(html, /20261115-custom-filter-dropdown-v1/, "player workspace assets use the custom dropdown cache version");
 assert.match(workspaceCss, /\.player-filter-menu[\\s\\S]*?animation:player-filter-pop/, "player database filter popup has a themed opening animation");
 assert.match(workspaceCss, /\.player-filter-option\.is-selected/, "expanded filter popup highlights the selected option");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
