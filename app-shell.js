@@ -1,3 +1,15 @@
+// Enable lighter rendering when the browser reports multiple low-resource signals.
+const lowResourceSignals = [
+  Number.isFinite(Number(navigator.deviceMemory)) && Number(navigator.deviceMemory) > 0 && Number(navigator.deviceMemory) <= 4,
+  Number.isFinite(Number(navigator.hardwareConcurrency)) && Number(navigator.hardwareConcurrency) > 0 && Number(navigator.hardwareConcurrency) <= 4,
+  navigator.connection?.saveData === true,
+  ["slow-2g", "2g"].includes(navigator.connection?.effectiveType)
+].filter(Boolean).length;
+if (lowResourceSignals >= 2 || navigator.connection?.saveData === true ||
+    ["slow-2g", "2g"].includes(navigator.connection?.effectiveType)) {
+  document.documentElement.classList.add("low-performance");
+}
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const pages = [...document.querySelectorAll(".page")];
 const tabs = [...document.querySelectorAll(".tab")];
@@ -155,7 +167,8 @@ export function go(route, updateHash = true) {
   syncTabIndicator();
   if (updateHash && location.hash !== "#" + next) history.replaceState({}, "", "#" + next);
   restoreScrollPending = false;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: document.documentElement.classList.contains("low-performance") ? "auto" : "smooth" });
+  window.dispatchEvent(new CustomEvent("pjsekai:pagechange", { detail: { page: next } }));
   saveUiState();
 }
 window.PJSEKAI = { go, toast };
