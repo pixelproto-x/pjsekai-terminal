@@ -94,9 +94,9 @@ for (const url of anniversaryCoverUrls) {
   assert.ok(app.includes(url), "anniversary cover points to its official hosted artwork: " + url);
 }
 assert.match(css, /--anniversary-cover-image/, "home hero uses the selected anniversary image");
-assert.match(css, /anniversary-hero h1 span\\{display:inline;background:linear-gradient/, "anniversary headline uses a readable pearl-to-aqua gradient");
-assert.match(css, /anniversary-hero h1 em\\{color:#b9e9f3/, "anniversary supporting headline uses a soft aqua accent");
-assert.match(themes, /body\\[data-sekai-theme\\] \.anniversary-hero h1 span/, "anniversary headline gradient adapts to the selected unit theme");
+assert.match(css, /anniversary-hero h1 span\{display:inline;background:linear-gradient/, "anniversary headline uses a readable pearl-to-aqua gradient");
+assert.match(css, /anniversary-hero h1 em\{color:#b9e9f3/, "anniversary supporting headline uses a soft aqua accent");
+assert.match(themes, /body\[data-sekai-theme\] \.anniversary-hero h1 span/, "anniversary headline gradient adapts to the selected unit theme");
 assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual remains");
 assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
 assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
