@@ -26,7 +26,7 @@ export const GAME_DATABASE_BUNDLES = Object.freeze({
   score: Object.freeze(["musics", "musicDifficulties"])
 });
 
-const DATA_ROOT = "https://sekai-world.github.io";
+const DATA_ROOT = "https://raw.githubusercontent.com/Sekai-World";
 const DEFAULT_TTL = 6 * 60 * 60 * 1000;
 const CACHE_DB = "pjsk-game-database";
 const CACHE_STORE = "regional-data";
@@ -117,7 +117,7 @@ export function createGameDatabaseClient({
         return { data: cached.data, region, file, source: "cache", updatedAt: cached.savedAt };
       }
 
-      const url = DATA_ROOT + "/" + repository + "/" + file + ".json";
+      const url = DATA_ROOT + "/" + repository + "/main/" + file + ".json";
       try {
         const response = await fetchImpl(url, { headers: { Accept: "application/json" } });
         if (!response?.ok) throw new Error("資料來源回應 " + (response?.status ?? "無狀態碼"));
