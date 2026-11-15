@@ -122,6 +122,7 @@ assert.match(songsModule, /const SONGS_PER_RENDER = 60/, "song catalogue renders
 assert.match(songsModule, /visibleBatch = songs\.slice\(0, renderedSongLimit\)/, "only the current song batch is inserted into the DOM");
 assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are indexed once instead of repeatedly scanning the full chart list");
 assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
+assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
 console.log("Minimal player hub UI smoke tests passed.");
 
 const visibleText = html
