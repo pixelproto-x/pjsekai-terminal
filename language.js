@@ -248,31 +248,8 @@
 
   initializeSelector();
 
-  // All visible single-select controls share one interactive popup.
-  // Flag-aware server selectors keep their dedicated app-shell picker.
-  enhanceSelectTree(document);
-  const styledSelectObserver = new MutationObserver((records) => {
-    const refresh = new Set();
-    for (const record of records) {
-      if (record.type === "childList") {
-        for (const added of record.addedNodes) {
-          if (added.nodeType === Node.ELEMENT_NODE) enhanceSelectTree(added);
-        }
-      }
-      const target = record.target.nodeType === Node.ELEMENT_NODE ? record.target : record.target.parentElement;
-      const select = target instanceof HTMLSelectElement ? target : target?.closest?.("select");
-      if (select) refresh.add(select);
-    }
-    refresh.forEach(refreshStyledSelect);
-  });
-  styledSelectObserver.observe(document.documentElement, {
-    subtree: true,
-    childList: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ["disabled", "selected", "label"]
-  });
-
+  // Only the two appearance-setting selectors use the custom settings popup.
+  // Song, player-workspace, and game-tool controls stay native like the working song filters.
   const script = document.createElement("script");
   script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
   script.async = true;
