@@ -278,7 +278,7 @@ assert.match(themes, /--unit-muted:#c9c4d9/, "Nightcord secondary text uses a re
 assert.match(themes, /body\[data-sekai-theme\].*:where\([\s\S]*\.brand-text span/, "theme legibility rules cover shared secondary text");
 
 const gameToolsJs = await readFile(new URL("../../game-tools.js", import.meta.url), "utf8");
-const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
+
 
 assert.match(gameToolsJs, /function updateSearchResults\(/, "game-tool search updates only result containers");
 assert.match(gameToolsJs, /選擇伺服器/, "game database region label uses the requested wording");
