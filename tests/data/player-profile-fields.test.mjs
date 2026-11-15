@@ -102,3 +102,13 @@ test("does not treat an individual member or card value as team power", () => {
     userDecks: [{ deckId: 1, members: [{ talent: 999999 }], cards: [{ power: 888888 }] }],
   }), null);
 });
+
+
+test("reads combined power inside a wrapped provider profile", () => {
+  assert.equal(extractPlayerPower({
+    data: {
+      userGamedata: { rank: 88 },
+      userDecks: { "1": { deckPower: 265432 } },
+    },
+  }), 265432);
+});
