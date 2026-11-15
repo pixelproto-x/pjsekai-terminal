@@ -234,15 +234,8 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
-assert.match(html, /20261115-dropdown-toplayer-repair-v6/, "player workspace assets use the repaired dropdown cache version");
-assert.ok(workspaceCss.includes(".player-filter-menu") && workspaceCss.includes("animation:player-filter-pop"), "player database filter popup has a themed opening animation");
-assert.ok(workspaceCss.includes(".player-filter-option.is-selected"), "expanded filter popup highlights the selected option");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
-assert.match(workspaceJs, /function enhanceFilterSelect\(/, "player database filters use custom page-rendered dropdowns");
-assert.match(workspaceJs, /enhanceFilterSelect\(\$\("#playerWorkspaceFavorite"\)\)/, "favorite filter is upgraded to the custom dropdown");
-assert.match(workspaceJs, /menu\.showPopover\(\)/, "player filter popup uses the browser top layer");
-assert.match(workspaceJs, /menu\.style\.position = "fixed"/, "player filter popup is viewport-positioned in the top layer");
-assert.match(workspaceJs, /tagSelect\._refreshCustomFilter\?\.\(\)/, "tag filter popup refreshes when dynamic tags change");
+assert.match(workspaceJs, /return select;/, "player filters use native selects like the game database");
 assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
 assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");
 assert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
