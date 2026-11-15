@@ -138,6 +138,15 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 
 assert.equal(routes.length, 5, "home, player lookup, song management, game tools, and appearance settings remain");
 
+const gameTools = await readFile(new URL("../../game-tools.js", import.meta.url), "utf8");
+const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
+assert.match(gameTools, /function openGameToolDropdown\(/, "game-tool filters use the top-layer dropdown");
+assert.match(gameTools, /select\.value=option\.dataset\.value;wrapper\._closeGtDropdown\?\.\(\);select\.dispatchEvent/, "dropdown closes before a change rerenders its panel");
+assert.match(gameToolsCss, /gt-dropdown-option\.is-selected:after/, "selected option has a visible checkmark");
+assert.match(gameToolsCss, /gt-picker-in/, "game-tool dropdown has an opening animation");
+assert.match(gameToolsCss, /background-image:url/, "game-tool search field has a search icon");
+assert.match(html, /game-tools\.css\?v=20261115-game-tools-picker-polish-v7/, "game-tool styles use a fresh cache version");
+
 const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
 assert.match(accountSync, /pjskSavedPlayersV2/, "saved players sync across signed-in devices");
 assert.match(accountSync, /pjskPlayerHistoryV1/, "lookup history syncs across signed-in devices");
