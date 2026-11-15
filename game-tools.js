@@ -23,7 +23,7 @@ function tabs(){return [["cards","卡片資料庫"],["characters","角色資料�
 // All game-tool selects use the same accessible page-level popup instead of
 // browser-native option sheets that can be clipped or difficult to activate.
 function closeGameToolSelect(wrapper){
- const menu=wrapper?.querySelector(".gt-select-menu");
+ const menu=wrapper?._menu||wrapper?.querySelector(".gt-select-menu");
  const trigger=wrapper?.querySelector(".gt-select-trigger");
  if(trigger)trigger.setAttribute("aria-expanded","false");
  wrapper?.classList.remove("is-open");
@@ -34,7 +34,7 @@ function enhanceGameToolSelect(select){
  select.dataset.gtDropdownReady="true";
  const wrapper=document.createElement("div");wrapper.className="gt-select-dropdown";
  const trigger=document.createElement("button");trigger.type="button";trigger.className="gt-select-trigger";trigger.setAttribute("aria-haspopup","listbox");trigger.setAttribute("aria-expanded","false");
- const menu=document.createElement("div");menu.className="gt-select-menu";menu.setAttribute("role","listbox");menu.hidden=true;
+ const menu=document.createElement("div");menu.className="gt-select-menu";menu.setAttribute("role","listbox");menu.hidden=true;wrapper._menu=menu;
  select.parentNode.insertBefore(wrapper,select);wrapper.append(select,trigger,menu);select.classList.add("gt-select-native");
  const place=()=>{const r=trigger.getBoundingClientRect(),gap=8,margin=8,below=innerHeight-r.bottom-gap,above=r.top-gap,h=Math.max(96,Math.min(280,Math.max(below,above)-margin)),w=Math.max(140,Math.min(r.width,innerWidth-margin*2));menu.style.position="fixed";menu.style.zIndex="2147483647";menu.style.left=Math.max(margin,Math.min(r.left,innerWidth-w-margin))+"px";menu.style.width=w+"px";menu.style.maxWidth=w+"px";menu.style.maxHeight=h+"px";menu.style.top=below>=Math.min(180,h)||below>=above?Math.min(innerHeight-h-margin,r.bottom+gap)+"px":Math.max(margin,r.top-h-gap)+"px";};
  const refresh=()=>{trigger.textContent=select.selectedOptions[0]?.textContent?.trim()||"請選擇";menu.replaceChildren();[...select.options].forEach(option=>{const item=document.createElement("button");item.type="button";item.className="gt-select-option"+(option.value===select.value?" is-selected":"");item.setAttribute("role","option");item.setAttribute("aria-selected",String(option.value===select.value));item.textContent=option.textContent.trim();item.disabled=option.disabled;item.addEventListener("click",()=>{select.value=option.value;select.dispatchEvent(new Event("change",{bubbles:true}));closeGameToolSelect(wrapper);trigger.focus();});menu.append(item);});};
@@ -43,8 +43,8 @@ function enhanceGameToolSelect(select){
 }
 function enhanceGameToolSelects(root=document){root.querySelectorAll("#gameToolsRoot select:not(#gtRegion)").forEach(enhanceGameToolSelect);}
 document.addEventListener("click",event=>{if(!event.target.closest(".gt-select-dropdown")&&!event.target.closest(".gt-select-menu"))document.querySelectorAll(".gt-select-dropdown.is-open").forEach(closeGameToolSelect);});
-window.addEventListener("resize",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=document.querySelector(".gt-select-menu[style*='position: fixed']");if(trigger&&menu&&wrapper.contains(trigger)){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";}}));
-window.addEventListener("scroll",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=document.querySelector(".gt-select-menu[style*='position: fixed']");if(trigger&&menu){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";menu.style.top=Math.min(innerHeight-menu.offsetHeight-8,Math.max(8,r.bottom+8))+"px";}}),true);
+window.addEventListener("resize",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=wrapper._menu;if(trigger&&menu&&wrapper.contains(trigger)){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";}}));
+window.addEventListener("scroll",()=>document.querySelectorAll(".gt-select-dropdown.is-open").forEach(wrapper=>{const trigger=wrapper.querySelector(".gt-select-trigger"),menu=wrapper._menu;if(trigger&&menu){const r=trigger.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+"px";menu.style.top=Math.min(innerHeight-menu.offsetHeight-8,Math.max(8,r.bottom+8))+"px";}}),true);
 const gameToolSelectObserver=new MutationObserver(()=>enhanceGameToolSelects($("#gameToolsRoot")||document));
 let gameToolSelectObserverStarted=false;
 
