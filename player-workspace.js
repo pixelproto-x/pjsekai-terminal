@@ -120,99 +120,9 @@ function openPlayer(player) {
   window.PJSEKAI_LOOKUP?.(player.uid, player.region);
 }
 function enhanceFilterSelect(select) {
-  if (!select || select.dataset.customized === "true") return;
-  select.dataset.customized = "true";
-  const wrapper = document.createElement("div");
-  wrapper.className = "player-filter-dropdown";
-  const trigger = document.createElement("button");
-  trigger.type = "button";
-  trigger.className = "player-filter-trigger";
-  trigger.setAttribute("aria-haspopup", "listbox");
-  trigger.setAttribute("aria-expanded", "false");
-  const menu = document.createElement("div");
-  menu.className = "player-filter-menu";
-  menu.setAttribute("role", "listbox");
-  menu.setAttribute("popover", "manual");
-  menu.hidden = true;
-  select.parentNode.insertBefore(wrapper, select);
-  wrapper.append(select, trigger);
-  // Keep the popup outside every panel/grid/scroll container so it cannot be
-  // clipped or covered by the player workspace stacking context.
-  document.body.append(menu);
-  select.classList.add("player-filter-native");
-
-  const placeMenu = () => {
-    const rect = trigger.getBoundingClientRect();
-    const gap = 8;
-    const margin = 8;
-    const below = window.innerHeight - rect.bottom - gap;
-    const above = rect.top - gap;
-    const maxHeight = Math.max(96, Math.min(260, Math.max(below, above) - margin));
-    const width = Math.max(140, Math.min(rect.width, window.innerWidth - margin * 2));
-    menu.style.position = "fixed";
-    menu.style.zIndex = "2147483647";
-    menu.style.left = Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin)) + "px";
-    menu.style.width = width + "px";
-    menu.style.maxWidth = width + "px";
-    menu.style.maxHeight = maxHeight + "px";
-    menu.style.top = below >= Math.min(180, maxHeight) || below >= above
-      ? Math.min(window.innerHeight - maxHeight - margin, rect.bottom + gap) + "px"
-      : Math.max(margin, rect.top - maxHeight - gap) + "px";
-  };
-  const close = () => {
-    if (menu.matches(":popover-open")) menu.hidePopover();
-    menu.hidden = true;
-    trigger.setAttribute("aria-expanded", "false");
-    wrapper.classList.remove("is-open");
-    ["position","z-index","left","top","width","max-width","max-height"].forEach((property) => menu.style.removeProperty(property));
-  };
-  const refresh = () => {
-    trigger.textContent = select.selectedOptions[0]?.textContent || "請選擇";
-    menu.replaceChildren();
-    [...select.options].forEach((option) => {
-      const item = document.createElement("button");
-      item.type = "button";
-      item.className = "player-filter-option" + (option.value === select.value ? " is-selected" : "");
-      item.setAttribute("role", "option");
-      item.setAttribute("aria-selected", option.value === select.value ? "true" : "false");
-      item.textContent = option.textContent;
-      item.addEventListener("click", () => {
-        select.value = option.value;
-        select.dispatchEvent(new Event("change", { bubbles: true }));
-        refresh();
-        close();
-        trigger.focus();
-      });
-      menu.append(item);
-    });
-  };
-  trigger.addEventListener("click", () => {
-    const opening = menu.hidden;
-    document.querySelectorAll(".player-filter-dropdown.is-open").forEach((other) => {
-      other._closePlayerFilter?.();
-    });
-    if (!opening) { close(); return; }
-    menu.hidden = false;
-    if (typeof menu.showPopover === "function") menu.showPopover();
-    trigger.setAttribute("aria-expanded", "true");
-    wrapper.classList.add("is-open");
-    placeMenu();
-  });
-  document.addEventListener("pointerdown", (event) => {
-    if (!wrapper.contains(event.target) && !menu.contains(event.target)) close();
-  }, true);
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !menu.hidden) {
-      close();
-      trigger.focus();
-    }
-  });
-  window.addEventListener("resize", () => { if (!menu.hidden) placeMenu(); });
-  window.addEventListener("scroll", () => { if (!menu.hidden) placeMenu(); }, true);
-  select.addEventListener("change", refresh);
-  refresh();
-  wrapper._closePlayerFilter = close;
-  select._refreshCustomFilter = refresh;
+  // Match other database sections: keep the real native select visible.
+  // Safari/iOS owns its option picker, so it remains tappable and accessible.
+  return select;
 }
 function renderSaved() {
   if (!list) return;
@@ -235,7 +145,6 @@ function renderSaved() {
     tags.forEach((value) => { const option = node("option", "", value); option.value = value; tagSelect.append(option); });
     tagSelect.value = tags.includes(selected) ? selected : "";
     enhanceFilterSelect(tagSelect);
-    tagSelect._refreshCustomFilter?.();
   }
   list.replaceChildren();
   if (!filtered.length) {
