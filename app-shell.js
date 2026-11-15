@@ -184,8 +184,8 @@ document.addEventListener("click", (event) => {
 });
 const opacityRange = $("#opacityRange");
 const OPACITY_DETENTS = [12, 22, 35, 48];
-const OPACITY_DETENT_WIDTH = 3.2;
-const OPACITY_DETENT_STRENGTH = 1.1;
+const OPACITY_DETENT_WIDTH = 2.6;
+const OPACITY_DETENT_STRENGTH = 0.45;
 let opacityDragPointerId = null;
 
 function mapOpacityDetentResistance(rawValue) {
