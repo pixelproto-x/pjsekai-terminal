@@ -172,18 +172,18 @@ assert.match(html, /卡片更有層次/, "opacity scale includes the soft visual
 assert.match(html, /介面更實更易讀/, "opacity scale includes the clear visual effect");
 assert.match(app, /opacityLevels = \[/, "opacity readout maps percentages to visual levels");
 assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
-assert.match(app, /const OPACITY_DETENTS = \[12, 22, 35\]/, "the first three opacity presets use detents while the final preset remains the natural end");
-assert.match(app, /const OPACITY_DETENT_HOLD_PX = 7/, "detents hold the thumb for a short physical pointer distance");
-assert.match(html, /data-opacity-marker="12"[\s\S]*data-opacity-marker="22"[\s\S]*data-opacity-marker="35"[\s\S]*data-opacity-marker="48"/, "all four opacity preset positions have visible marker dots");
-assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling while handling horizontal drags");
+assert.match(app, /const OPACITY_MAGNETIC_MARKS = \[/, "opacity slider uses magnetic marks adapted from an open-source slider");
+assert.match(app, /const OPACITY_MAGNETIC_RADIUS = 3\.5/, "opacity slider has a defined magnetic attraction radius");
+assert.match(app, /computeOpacityMagneticTarget\(/, "opacity slider computes magnetic attraction to the nearest preset");
+assert.match(app, /magneticTarget !== null/, "opacity slider snaps to a nearby preset mark");
+assert.match(html, /id="opacityRange"[^>]*max="55"/, "opacity slider range is mapped to the four preset positions");
+assert.match(html, /data-opacity-marker="12"[^>]*21\.8182%[\s\S]*data-opacity-marker="22"[^>]*40%[\s\S]*data-opacity-marker="35"[^>]*63\.6364%[\s\S]*data-opacity-marker="48"[^>]*87\.2727%/, "all four marker dots use positions matching the mapped opacity values");
+assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span style="--opacity-mark-position:40%"/, "the first and second labels use their corresponding marker positions");
+assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
+assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(app, /previous < point && amount >= point/, "dragging right detects crossing a detent instead of requiring an exact input value");
-assert.match(app, /previous > point && amount <= point/, "dragging left also detects crossing a detent");
-assert.match(app, /opacityDragState\.detent/, "opacity thumb is held at a detent while the pointer passes through its resistance zone");
-assert.match(app, /opacityPointerFromValue\(range, crossed\)/, "detent alignment uses the actual track geometry");
-assert.match(app, /pointerdown/, "opacity slider uses pointer dragging to provide detent resistance");
-assert.match(app, /setPointerCapture/, "opacity slider keeps tracking the pointer while dragging");
-assert.match(app, /pointerup/, "opacity slider saves the final value when dragging ends");
+assert.match(html, /app-shell\.js\?v=20261115-magnetic-opacity/, "opacity slider script cache is refreshed");
+assert.doesNotMatch(app, /opacityPointerId|setPointerCapture|OPACITY_DETENT_HOLD_PX/, "the failed custom pointer drag implementation is removed");
 assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity detents do not use a fake time-based pause");
 
 
