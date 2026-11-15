@@ -182,20 +182,26 @@ document.addEventListener("click", (event) => {
   const preset = event.target.closest("[data-opacity]");
   if (preset) applyOpacity(preset.dataset.opacity);
 });
-let lastOpacitySliderValue = Number($("#opacityRange")?.value) || 22;
-let opacitySnapTimer = 0;
-let opacitySnapPending = null;
-let opacitySnapLocked = false;
+const opacityRange = $("#opacityRange");
+let lastOpacitySliderValue = Number(opacityRange?.value) || 22;
+let opacityPointerId = null;
+let opacityPauseUntil = 0;
+let opacityPauseTimer = 0;
 
-$("#opacityRange")?.addEventListener("input", (event) => {
-  const range = event.currentTarget;
-  const amount = Math.max(0, Math.min(100, Number(event.target.value) || 0));
+function opacityValueFromPointer(range, clientX) {
+  const rect = range.getBoundingClientRect();
+  const thumbInset = 8;
+  const usableWidth = Math.max(1, rect.width - thumbInset * 2);
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbInset) / usableWidth));
+  const min = Number(range.min) || 0;
+  const max = Number(range.max) || 100;
+  const step = Number(range.step) || 1;
+  return Math.round((min + ratio * (max - min)) / step) * step;
+}
 
-  if (opacitySnapLocked) {
-    opacitySnapPending = amount;
-    range.value = String(lastOpacitySliderValue);
-    return;
-  }
+function updateOpacityFromPointer(range, clientX) {
+  const amount = opacityValueFromPointer(range, clientX);
+  if (performance.now() < opacityPauseUntil) return;
 
   const direction = amount - lastOpacitySliderValue;
   const snapPoint = [12, 22, 35].find((point) =>
@@ -208,31 +214,55 @@ $("#opacityRange")?.addEventListener("input", (event) => {
 
   if (snapPoint !== undefined) {
     lastOpacitySliderValue = snapPoint;
-    opacitySnapPending = amount;
-    opacitySnapLocked = true;
     range.value = String(snapPoint);
     applyOpacity(snapPoint, { persist: false, syncPresets: false });
-    clearTimeout(opacitySnapTimer);
-    opacitySnapTimer = setTimeout(() => {
-      opacitySnapLocked = false;
-      const pending = opacitySnapPending;
-      opacitySnapPending = null;
-      if (pending !== null && pending !== snapPoint) {
-        range.value = String(pending);
-        lastOpacitySliderValue = pending;
-        applyOpacity(pending, { persist: false, syncPresets: false });
-      }
+    opacityPauseUntil = performance.now() + 140;
+    clearTimeout(opacityPauseTimer);
+    opacityPauseTimer = setTimeout(() => {
+      opacityPauseUntil = 0;
     }, 140);
     return;
   }
 
   lastOpacitySliderValue = amount;
+  range.value = String(amount);
   applyOpacity(amount, { persist: false, syncPresets: false });
+}
+
+opacityRange?.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  event.preventDefault();
+  opacityPointerId = event.pointerId;
+  opacityRange.focus();
+  opacityRange.setPointerCapture(event.pointerId);
+  opacityPauseUntil = 0;
+  updateOpacityFromPointer(opacityRange, event.clientX);
 });
-$("#opacityRange")?.addEventListener("change", (event) => {
-  clearTimeout(opacitySnapTimer);
-  opacitySnapLocked = false;
-  opacitySnapPending = null;
+
+opacityRange?.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== opacityPointerId) return;
+  updateOpacityFromPointer(opacityRange, event.clientX);
+});
+
+function finishOpacityPointer(event) {
+  if (event.pointerId !== opacityPointerId) return;
+  opacityPointerId = null;
+  opacityPauseUntil = 0;
+  clearTimeout(opacityPauseTimer);
+  lastOpacitySliderValue = Number(opacityRange.value) || 0;
+  applyOpacity(opacityRange.value);
+}
+
+opacityRange?.addEventListener("pointerup", finishOpacityPointer);
+opacityRange?.addEventListener("pointercancel", finishOpacityPointer);
+
+opacityRange?.addEventListener("input", (event) => {
+  if (opacityPointerId !== null) return;
+  lastOpacitySliderValue = Number(event.target.value) || 0;
+  applyOpacity(event.target.value);
+});
+opacityRange?.addEventListener("change", (event) => {
+  if (opacityPointerId !== null) return;
   lastOpacitySliderValue = Number(event.target.value) || 0;
   applyOpacity(event.target.value);
 });
