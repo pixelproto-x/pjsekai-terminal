@@ -20,6 +20,22 @@
 .song-difficulties{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0}
 .song-difficulty{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;background:#f0f3f8;color:#56647b;font-size:9px;font-weight:800}
 .song-difficulty strong{font-size:12px;color:#1e2c45}
+
+/* Project SEKAI in-game difficulty palette */
+.song-difficulty{border:1px solid transparent}
+.song-difficulty.difficulty-easy{background:#e4f5e9;color:#247b49;border-color:#b9e4c8}
+.song-difficulty.difficulty-normal{background:#e2f3fc;color:#176c9a;border-color:#b7e0f3}
+.song-difficulty.difficulty-hard{background:#fff4cf;color:#8b6500;border-color:#f0dc91}
+.song-difficulty.difficulty-expert{background:#ffe5e5;color:#a92e3a;border-color:#f5bfc2}
+.song-difficulty.difficulty-master{background:#eee5fa;color:#6940a0;border-color:#d6c2f0}
+.song-difficulty.difficulty-append{background:linear-gradient(110deg,#fbe2f0,#e9e2fb);color:#793c83;border-color:#e3c5e9}
+.song-difficulty.difficulty-easy strong{color:#17683c}
+.song-difficulty.difficulty-normal strong{color:#125e89}
+.song-difficulty.difficulty-hard strong{color:#795600}
+.song-difficulty.difficulty-expert strong{color:#982635}
+.song-difficulty.difficulty-master strong{color:#5e3595}
+.song-difficulty.difficulty-append strong{color:#6e337a}
+
 .song-record{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-top:1px solid rgba(85,112,155,.12);padding-top:11px}
 .song-record label{font-size:10px;color:var(--muted)}
 .song-record select{padding:7px 9px;font-size:10px}
@@ -202,6 +218,7 @@
   .page[data-page="songs"] .song-record select::picker(select){
     appearance:base-select;
     position-area:block-end span-inline;
+     position-try-fallbacks:none;
     justify-self:start;
     margin-block-start:7px;
     min-width:anchor-size(width);
