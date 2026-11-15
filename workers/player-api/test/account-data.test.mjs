@@ -41,12 +41,14 @@ function makeEnv(database) {
   };
 }
 
+let requestSequence = 0;
+
 function request(method = "GET", body) {
   return new Request("https://worker.example/api/account/data", {
     method,
     headers: {
       Origin: ALLOWED_ORIGIN,
-      Authorization: "Bearer test-id-token",
+      Authorization: "Bearer test-access-token-" + String(++requestSequence),
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -81,10 +83,31 @@ test("rejects account data requests without a Google OAuth access token", async 
   assert.deepEqual(await response.json(), { error: "UNAUTHORIZED" });
 });
 
-test("rejects Google tokens issued for a different client", async () => {
-  const restore = mockGoogleTokenInfo({ aud: "another-client.apps.googleusercontent.com" });
+test("rejects Google tokens requested by a different OAuth client", async () => {
+  const restore = mockGoogleTokenInfo({ azp: "another-client.apps.googleusercontent.com" });
   try {
     const response = await worker.fetch(request(), makeEnv(makeDatabase()));
+    assert.equal(response.status, 401);
+  } finally {
+    restore();
+  }
+});
+
+
+test("accepts a Google access token when aud differs but azp is this site's OAuth client", async () => {
+  const restore = mockGoogleTokenInfo({ aud: "another-client-in-same-project.apps.googleusercontent.com" });
+  try {
+    const response = await worker.fetch(request("GET"), makeEnv(makeDatabase()));
+    assert.equal(response.status, 200);
+  } finally {
+    restore();
+  }
+});
+
+test("rejects Google access tokens without the expected authorized party", async () => {
+  const restore = mockGoogleTokenInfo({ azp: undefined });
+  try {
+    const response = await worker.fetch(request("GET"), makeEnv(makeDatabase()));
     assert.equal(response.status, 401);
   } finally {
     restore();
