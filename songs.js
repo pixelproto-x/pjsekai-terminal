@@ -270,4 +270,11 @@ $("#songPlaylistList").addEventListener("click", (event) => {
     $("#songList").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
+window.PJSEKAI = { ...(window.PJSEKAI || {}), refreshCloudSongData: () => {
+  state.favorites = new Set(readStorage(STORAGE.favorites, []));
+  state.records = readStorage(STORAGE.records, {});
+  state.playlists = readStorage(STORAGE.playlists, []);
+  renderSongs();
+} };
+
 loadSongs();
