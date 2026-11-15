@@ -39,7 +39,9 @@ const routes = [...html.matchAll(/<section class="page[^"]*" data-page="([^"]+)"
 assert.deepEqual(routes.sort(), ["home", "profile", "settings", "songs"], "four intended page sections remain");
 assert.doesNotMatch(html, /dojo-controls\.js|event-calc\.js|chart-analyzer\.js|my-sekai\.js|system-settings\.js|home-hub\.js/, "legacy feature scripts are not loaded");
 assert.match(lookup, /createCloudflarePlayerProvider/, "five-region public UID provider is connected");
-assert.match(lookup, /const region = "auto"/, "player UID lookup automatically checks the supported regions");
+assert.match(lookup, /requestedRegion = "auto"/, "player UID lookup defaults to automatic server detection");
+assert.match(lookup, /provider\.getProfileAuto\(uid\)/, "automatic lookup still checks the five supported regions");
+assert.match(lookup, /provider\.getProfile\(uid, region\)/, "manual server selection resolves that server directly");
 assert.match(lookup, /function sourceUrlFor\(result\)/, "player result resolves the exact upstream data source URL");
 for (const source of ["hisekai", "haruki public", "haruki", "exmeaning"]) {
   assert.ok(lookup.toLowerCase().includes('case "' + source + '"'), source + " source link is supported");
