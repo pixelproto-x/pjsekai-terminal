@@ -118,12 +118,6 @@
 .song-card h3{color:var(--ink)}
 .song-difficulty{background:rgba(145,121,245,.10);color:#696184;border:1px solid rgba(145,121,245,.10)}
 .song-difficulty strong{color:var(--ink)}
-.song-difficulty:nth-child(1){background:rgba(82,207,232,.13)}
-.song-difficulty:nth-child(2){background:rgba(97,199,149,.13)}
-.song-difficulty:nth-child(3){background:rgba(255,211,79,.17)}
-.song-difficulty:nth-child(4){background:rgba(255,148,80,.14)}
-.song-difficulty:nth-child(5){background:rgba(255,91,157,.13)}
-.song-difficulty:nth-child(6){background:rgba(145,121,245,.14)}
 .song-favorite[aria-pressed="true"]{background:rgba(255,91,157,.12);border-color:rgba(255,91,157,.35);color:#c43f79}
 .song-record{border-top-color:var(--line)}
 .songs-section-heading h2{letter-spacing:-.045em}
