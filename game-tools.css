@@ -134,3 +134,14 @@ to{opacity:1;transform:translateY(0)}}
 #gameToolsRoot .gt-filter-field:has(#gtQuery){position:relative;z-index:1}
 @media(max-width:900px){#gameToolsRoot .gt-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding:13px}#gameToolsRoot .gt-art{height:132px;min-height:132px}}
 @media(max-width:620px){#gameToolsRoot .gt-cards{grid-template-columns:1fr;gap:12px;padding:10px;max-height:62vh}#gameToolsRoot .gt-card{min-height:0}#gameToolsRoot .gt-art{height:150px;min-height:150px}#gameToolsRoot .gt-card-body{padding:15px 16px 13px}#gameToolsRoot .gt-card h3{font-size:15px}#gameToolsRoot .gt-actions{padding:0 16px 15px}}
+
+
+/* Stable native selects: Safari/iOS owns the option picker; controls remain theme-styled. */
+#gameToolsRoot select{position:relative;z-index:1;display:block;width:100%;min-width:0;min-height:46px;padding:10px 38px 10px 13px;appearance:none;-webkit-appearance:none;border:1px solid color-mix(in srgb,var(--unit-line) 78%,var(--unit-accent) 22%);border-radius:13px;background-color:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;line-height:1.35;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a8494' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px;transition:border-color .18s,box-shadow .18s,background-color .18s}
+#gameToolsRoot select:hover{border-color:var(--unit-accent)}
+#gameToolsRoot select:focus-visible{outline:none;border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 18%,transparent)}
+#gameToolsRoot select option{background:#fff;color:#202638}
+#gameToolsRoot .gt-region-control select#gtRegion{flex:1;width:100%;min-height:48px;padding:8px 28px 8px 0;border:0;border-radius:0;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a8494' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:15px;color:var(--unit-ink);font-size:13px;box-shadow:none}
+#gameToolsRoot .gt-region-control select#gtRegion:focus-visible{outline:none;box-shadow:none}
+#gameToolsRoot input:not([type=checkbox]){-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation}
+@media(prefers-reduced-motion:reduce){#gameToolsRoot select{transition:none}}
