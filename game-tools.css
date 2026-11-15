@@ -70,3 +70,18 @@
 .gt-region-chevron{position:absolute;right:14px;top:50%;transform:translateY(-58%);color:var(--unit-muted);font-size:20px;pointer-events:none;transition:transform .18s ease}
 .gt-region-control:focus-within .gt-region-chevron{transform:translateY(-42%)}
 @media(max-width:560px){.gt-head .gt-region-label{width:100%}.gt-region-control{min-height:50px}}
+
+
+/* Consistent portal dropdowns for every game-tool filter and calculator select. */
+#gameToolsRoot .gt-select-dropdown{position:relative;width:100%;min-width:0}
+#gameToolsRoot select.gt-select-native{position:absolute!important;width:1px!important;height:1px!important;min-height:1px!important;padding:0!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
+#gameToolsRoot .gt-select-trigger{position:relative;display:flex;align-items:center;width:100%;min-width:0;min-height:42px;padding:9px 36px 9px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;font-weight:750;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gameToolsRoot .gt-select-trigger:after{content:"";position:absolute;right:13px;top:50%;width:8px;height:8px;border-right:2px solid var(--unit-muted);border-bottom:2px solid var(--unit-muted);transform:translateY(-70%) rotate(45deg);transition:transform .18s ease}
+#gameToolsRoot .gt-select-dropdown.is-open .gt-select-trigger{border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 17%,transparent)}
+#gameToolsRoot .gt-select-dropdown.is-open .gt-select-trigger:after{transform:translateY(-20%) rotate(225deg)}
+.gt-select-menu{box-sizing:border-box;display:grid;gap:4px;padding:7px;border:1px solid var(--unit-line);border-radius:14px;background:var(--unit-panel-strong);color:var(--unit-ink);box-shadow:0 16px 38px rgba(0,0,0,.22);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);overflow-y:auto;overscroll-behavior:contain}
+.gt-select-menu[hidden]{display:none}
+.gt-select-option{width:100%;min-height:36px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--unit-ink);font:inherit;font-size:12px;font-weight:650;text-align:left;cursor:pointer}
+.gt-select-option:hover,.gt-select-option:focus-visible{outline:none;background:color-mix(in srgb,var(--unit-accent) 14%,transparent)}
+.gt-select-option.is-selected{background:color-mix(in srgb,var(--unit-accent) 22%,transparent);color:var(--unit-accent);font-weight:850}
+.gt-select-option:disabled{opacity:.45;cursor:not-allowed}
