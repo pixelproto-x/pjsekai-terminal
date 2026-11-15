@@ -8,8 +8,7 @@ const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url)
 const workspaceCss = await readFile(new URL("../../player-workspace.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const workspace = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
-assert.match(workspace, /window\.enhanceStyledSelect\?\.\(select\)/, "player workspace filters use the shared interactive picker");
-assert.match(workspace, /window\.refreshStyledSelect\?\.\(select\)/, "player workspace refreshes option labels in the shared picker");
+assert.doesNotMatch(workspace, /enhanceStyledSelect|refreshStyledSelect/, "player workspace filters stay native like song filters");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
 
@@ -92,16 +91,13 @@ assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
 assert.match(html, /redesign-6th\.css\?v=20261115-shared-select-component-v1/, "shared dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-shared-select-component-v1/, "shared dropdown script cache is refreshed");
+assert.match(html, /language\.js\?v=20261115-native-select-scope-v1/, "settings-only dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
 assert.match(languageModule, /function enhanceStyledSelect\(/, "settings selectors use shared custom dropdown behavior");
-assert.match(languageModule, /window\.enhanceStyledSelect = enhanceStyledSelect/, "all pages can use the shared custom picker");
-assert.match(languageModule, /enhanceSelectTree\(document\)/, "existing page selects are enhanced on startup");
-assert.match(languageModule, /new MutationObserver\(/, "dynamically rendered game-tool selects are enhanced");
-assert.match(languageModule, /menu\.showPopover\(\)/, "shared dropdowns open in the browser top layer");
-assert.match(languageModule, /select\.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/, "choosing an option preserves existing change handlers");
+assert.doesNotMatch(languageModule, /enhanceSelectTree\(document\)|styledSelectObserver/, "custom settings popup is not applied globally to page selects");
+assert.match(languageModule, /menu\.showPopover\(\)/, "appearance settings popup uses the browser top layer");
 
 assert.match(languageModule, /enhanceStyledSelect\(document\.getElementById\("anniversaryCoverSelect"\)\)/, "anniversary selector uses the custom dropdown");
 assert.match(languageModule, /enhanceStyledSelect\(select\)/, "language selector uses the custom dropdown");
@@ -231,7 +227,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\.css\?v=20261115-all-selects-song-picker-v10/, "player workspace theme stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-native-song-picker-v1/, "player workspace native picker stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
@@ -241,7 +237,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
-assert.match(workspaceJs, /return select;/, "player filters use native selects like the game database");
+assert.doesNotMatch(workspaceJs, /enhanceStyledSelect|refreshStyledSelect/, "player filters remain native selects like the song area");
 assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
 assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");
 assert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
@@ -303,7 +299,7 @@ assert.match(gameToolsJs, /characterUnits\(c\.id,s\.gameCharacterUnits\)\.includ
 assert.match(gameToolsJs, /async function load\(\)\{const generation=\+\+loadGeneration;/, "new region loads supersede stale in-flight requests");
 assert.match(gameToolsJs, /const list=p\.querySelector\("\.gt-cards"\);if\(list\)list\.innerHTML=/, "card search replaces only the scrollable result list");
 assert.doesNotMatch(gameToolsCss, /gt-select-menu|gt-region-menu|background:transparent!important/, "obsolete transparent popup styling is removed");
-assert.match(gameToolsCss, /#gameToolsRoot select\{[\s\S]*?appearance:none/, "all native game-tool selectors receive a unified custom appearance");
+assert.match(gameToolsCss, /#gameToolsRoot select\{[\s\S]*?appearance:auto!important/, "all game-tool selectors use the same native picker as the song area");
 assert.match(gameToolsCss, /#gameToolsRoot select option\{background:#fff;color:#202638\}/, "native selector options retain an opaque readable surface");
 assert.match(gameToolsCss, /\.gt-region-control select#gtRegion\{[\s\S]*?background-color:transparent/, "server selector control remains integrated with its themed region shell");
 assert.match(gameToolsCss, /\.gt-region-control select#gtRegion:focus-visible/, "server selector has an explicit keyboard focus state");
@@ -312,4 +308,4 @@ assert.doesNotMatch(gameToolsJs, /pointerup|field\.focus\(\{preventScroll:true\}
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-cards\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "card grid uses larger two-column desktop layout");
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-art\{[\s\S]*?height:148px/, "card artwork is restored to a larger size");
 assert.match(html, /songs\.css\?v=20261115-native-select-repair-v3/, "native select repair stylesheet uses a fresh cache version");
-assert.match(html, /game-tools\.css\?v=20261115-all-selects-song-picker-v11/, "game-tool styles use a fresh cache version");
+assert.match(html, /game-tools\.css\?v=20261115-native-song-picker-v1/, "game-tool native picker styles use a fresh cache version");
