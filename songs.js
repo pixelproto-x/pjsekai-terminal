@@ -128,9 +128,13 @@ function visibleSongs() {
   }
   let list = state.songs.filter((song) => {
     const charts = getCharts(song.id);
+    const matchingCharts = charts.filter((chart) =>
+      (!difficulty || chart.musicDifficulty === difficulty) &&
+      (!levelRange || (Number(chart.playLevel) >= minLevel && Number(chart.playLevel) <= maxLevel))
+    );
     const matchesQuery = !query || [song.title, song.lyricist, song.composer, song.arranger].some((value) => String(value || "").toLocaleLowerCase().includes(query));
     const matchesDifficulty = !difficulty || charts.some((chart) => chart.musicDifficulty === difficulty);
-    const matchesLevel = charts.some((chart) => chart.playLevel >= minLevel && chart.playLevel <= maxLevel && (!difficulty || chart.musicDifficulty === difficulty));
+    const matchesLevel = matchingCharts.length > 0;
     const matchesFavorite = state.filter !== "favorites" || state.favorites.has(song.id);
     const matchesUnplayed = state.filter !== "unplayed" || !playedSongIds.has(Number(song.id));
     const matchesPlaylist = !state.playlistFilterIds || state.playlistFilterIds.has(song.id);
@@ -149,7 +153,13 @@ function renderSongs() {
   const songs = visibleSongs();
   const visibleBatch = songs.slice(0, renderedSongLimit);
   $("#songList").innerHTML = visibleBatch.map((song) => {
-    const charts = getCharts(song.id);
+    const allCharts = getCharts(song.id);
+    const levelRange = $("#songLevel").value;
+    const difficulty = $("#songDifficulty").value;
+    const [minLevel, maxLevel] = levelRange ? levelRange.split("-").map(Number) : [0, 99];
+    const charts = levelRange
+      ? allCharts.filter((chart) => Number(chart.playLevel) >= minLevel && Number(chart.playLevel) <= maxLevel && (!difficulty || chart.musicDifficulty === difficulty))
+      : allCharts;
     const chartMarkup = charts.map((chart) => {
       const key = recordKey(song.id, chart.musicDifficulty);
       const status = state.records[key]?.status || "";
