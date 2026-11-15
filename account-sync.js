@@ -1,6 +1,7 @@
 const GOOGLE_CLIENT_ID = "724422617291-j4req87o5hn7bckbpom1fnpflqumbl2q.apps.googleusercontent.com";
 const API_BASE = "https://pjsekai-player-api.a0983439343.workers.dev";
 const ACCOUNT_SCOPE_KEY = "pjskCloudAccountSub";
+const ACCESS_TOKEN_SESSION_KEY = "pjskGoogleAccessToken";
 const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover", "pjskUiStateV1",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists", "pjskSongRegion", "pjskSongViewV1",
@@ -75,6 +76,7 @@ function scheduleSync() {
 }
 function signOut() {
   idToken = "";
+  sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
   clearTimeout(syncTimer);
 
   if (signOutButton) signOutButton.hidden = true;
@@ -91,6 +93,7 @@ async function onGoogleCredential(response) {
     showStatus(response.error ? "Google 登入未完成：" + response.error : "Google 沒有回傳授權權杖");
     return;
   }
+  sessionStorage.setItem(ACCESS_TOKEN_SESSION_KEY, idToken);
   if (button) button.disabled = true;
   showStatus("正在載入雲端資料…");
   try {
@@ -120,6 +123,7 @@ async function onGoogleCredential(response) {
     window.PJSEKAI?.toast("Google 帳號已連結");
   } catch (error) {
     idToken = "";
+    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
     if (signOutButton) signOutButton.hidden = true;
     showStatus("登入成功，但資料同步失敗：" + error.message);
     if (button) button.disabled = false;
@@ -172,5 +176,37 @@ async function initializeGoogleSignIn() {
     showStatus("Google 登入元件載入失敗，請檢查網路後重新整理");
   }
 }
+async function restoreSession() {
+  const savedToken = sessionStorage.getItem(ACCESS_TOKEN_SESSION_KEY);
+  if (!savedToken) return;
+
+  idToken = savedToken;
+  if (button) button.disabled = true;
+  showStatus("正在確認 Google 登入狀態…");
+  try {
+    const cloud = await api("GET");
+    const subject = String(cloud.accountSub || "");
+    const savedSubject = localStorage.getItem(ACCOUNT_SCOPE_KEY);
+    if (!subject || (savedSubject && savedSubject !== subject)) {
+      throw new Error("GOOGLE_SESSION_CHANGED");
+    }
+    if (button) {
+      button.textContent = "已連結 Google 帳號";
+      button.disabled = false;
+    }
+    if (signOutButton) signOutButton.hidden = false;
+    showStatus("Google 帳號已連結，雲端同步已啟用");
+  } catch {
+    idToken = "";
+    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
+    if (button) {
+      button.textContent = "使用 Google 登入";
+      button.disabled = false;
+    }
+    if (signOutButton) signOutButton.hidden = true;
+    showStatus("Google 登入已逾期，請重新登入");
+  }
+}
+
 signOutButton?.addEventListener("click", signOut);
-initializeGoogleSignIn();
+initializeGoogleSignIn().then(() => restoreSession());
