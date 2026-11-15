@@ -213,12 +213,11 @@ async function lookup(rawUid, requestedRegion) {
     const result = await provider.getProfile(uid, region);
     const identity = extractPlayerIdentity(result.data, result.uid);
     let freshRanking = null;
-    if (identity.name && identity.name !== "未提供名稱") {
-      try {
-        freshRanking = normalizeEventRanking(await provider.getEventRanking(uid, region, { name: identity.name }));
-      } catch {
-        freshRanking = null;
-      }
+    try {
+      // Haneoka searches by the in-game numeric profile ID, not player name.
+      freshRanking = normalizeEventRanking(await provider.getEventRanking(uid, region));
+    } catch {
+      freshRanking = null;
     }
     const eventRanking = freshRanking && freshRanking.status !== "UNAVAILABLE" && !freshRanking.error
       ? freshRanking
