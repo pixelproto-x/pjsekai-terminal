@@ -1078,7 +1078,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   transition:opacity .22s ease,visibility .22s ease,transform .22s ease,background .2s ease,box-shadow .2s ease;
 }
 .scroll-top-fab.is-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
-.scroll-top-fab span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,var(--cyan,#52cfe8),var(--violet,#9b8af7));color:#fff;font-size:17px;line-height:1}
+.scroll-top-fab span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,var(--unit-accent,var(--cyan,#52cfe8)),var(--unit-accent-2,var(--violet,#9b8af7)));color:#fff;font-size:19px;font-weight:900;line-height:1}
 .scroll-top-fab:hover{transform:translateY(-3px);background:rgba(255,255,255,.96);box-shadow:0 13px 32px rgba(30,32,45,.2)}
 .scroll-top-fab:active{transform:scale(.96)}
 .scroll-top-fab:focus-visible{outline:3px solid var(--violet,#9b8af7);outline-offset:3px}
@@ -1146,7 +1146,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     </section>
     <section class="hub-lookup" aria-labelledby="hubLookupTitle">
       <div class="hub-lookup-copy">
-        <span class="hub-eyebrow"><i></i>五服玩家查詢</span>
+        <span class="hub-eyebrow"><i></i>玩家查詢</span>
         <h2 id="hubLookupTitle">從 UID 開始<br><em>探索玩家世界</em></h2>
         <p>輸入玩家 UID 即可自動偵測伺服器 不需要登入或提供遊戲密碼</p>
       </div>
@@ -1196,7 +1196,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   </section>
   <section class="page" data-page="profile">
     <div class="page-head">
-      <div><div class="sekai-chip">五服公開資料</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">輸入 UID 自動偵測伺服器並查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
+      <div><div class="sekai-chip">玩家查詢</div><h1 class="page-title">玩家資料</h1><p class="page-subtitle">輸入 UID 自動偵測伺服器並查詢公開玩家資料 不需要登入 顯示資料來源實際提供的欄位</p></div>
       <button class="back-btn" data-go="home" type="button">回到首頁</button>
     </div>
     <section class="player-panel">
@@ -1210,7 +1210,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   </section>
   <section class="page" data-page="settings">
     <div class="page-head">
-      <div><div class="sekai-chip">外觀設定</div><h1 class="page-title">介面設定</h1><p class="page-subtitle">調整介面透明度和六大團體主題</p></div>
+      <div><div class="sekai-chip">外觀設定</div><h1 class="page-title">介面設定</h1><p class="page-subtitle">調整介面透明度和選擇主題</p></div>
       <button class="back-btn" data-go="home" type="button">回到首頁</button>
     </div>
     <div class="settings-card anniversary-cover-settings">
@@ -1261,7 +1261,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
   <button class="tab" data-go="profile" type="button">玩家</button>
   <button class="tab" data-go="settings" type="button">設定</button>
 </nav>
-<button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">頂</span><span>回到頂端</span></button>
+<button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="app-shell.js?v=20261115-adaptive-performance-v2"></script>
 <script type="module" src="player-lookup.js?v=remove-player-workspace"></script>
