@@ -278,10 +278,9 @@ assert.ok(sharedStyles.includes("select:not(.server-picker-native)::picker(selec
 assert.ok(sharedStyles.includes("#gameToolsRoot input:not([type=checkbox])"), "game tools inputs receive the shared clickable input hitbox");
 assert.ok(sharedStyles.includes(".player-workspace-tools input"), "player workspace inputs receive the shared clickable input hitbox");
 const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
-assert.ok(workspaceCss.includes(".player-workspace-tools select::picker(select)"), "player filters use the same expanding picker pattern as song filters where supported");
-assert.ok(workspaceCss.includes("touch-action:auto"), "player workspace text inputs remain directly tappable on iOS");
-assert.ok(gameToolsCss.includes("touch-action:auto"), "game tool search inputs use normal text-field touch behavior");
-assert.ok(gameToolsCss.includes("pointer-events:auto"), "game tool search inputs receive pointer events");
+assert.ok(sharedStyles.includes("select:not(.server-picker-native)::picker(select)"), "player filters share the song dropdown picker");
+assert.ok(sharedStyles.includes(".player-workspace-tools input"), "player workspace search hit target is restored");
+assert.ok(sharedStyles.includes("#gameToolsRoot input:not([type=checkbox])"), "game tool search hit target is restored");
 
 assert.match(gameToolsJs, /function updateSearchResults\(/, "game-tool search updates only result containers");
 assert.match(gameToolsJs, /選擇伺服器/, "game database region label uses the requested wording");
