@@ -112,7 +112,7 @@ assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized
 assert.doesNotMatch(accountSync, /window\.location\.reload\(\)/, "cloud updates do not reload and jump the page");
 assert.match(app, /applyCloudSettings/, "cloud appearance settings apply without a page reload");
 assert.match(await readFile(new URL("../../songs.js", import.meta.url), "utf8"), /refreshCloudSongData/, "cloud song data refreshes in place");
-\nconsole.log("Minimal player hub UI smoke tests passed.");
+console.log("Minimal player hub UI smoke tests passed.");
 
 const visibleText = html
   .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
