@@ -120,6 +120,7 @@ to{opacity:1;transform:translateY(0)}}
   pointer-events:auto!important;touch-action:manipulation;cursor:pointer;
   transition:border-color .18s,box-shadow .18s;
 }
+#gameToolsRoot select option{background:#fff;color:#202638}
 #gameToolsRoot select:hover{border-color:var(--unit-accent)}
 #gameToolsRoot select:focus-visible{outline:none;border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 18%,transparent)}
 #gameToolsRoot .gt-region-control select#gtRegion{flex:1;width:100%;min-height:48px;padding:8px 10px;border:0;border-radius:0;background-color:transparent;background-image:none!important;color:var(--unit-ink);font-size:13px;box-shadow:none}
