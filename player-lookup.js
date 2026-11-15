@@ -69,7 +69,7 @@ function renderProfile(result, eventRanking = null) {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
-    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : "暫時無法取得")],
+    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到" : eventRanking?.status === "NOT_FOUND" ? "未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : "暫時無法取得")],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -163,7 +163,9 @@ function updateEventRankingValue(payload) {
       : payload?.status === "NO_ACTIVE_EVENT" ? "目前沒有活動"
         : payload?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜"
           : payload?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到"
-            : "暫時無法取得");
+            : payload?.status === "NOT_FOUND" ? "未找到此玩家排名"
+              : payload?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認"
+                : "暫時無法取得");
 }
 
 async function retryPendingEventRanking(uid, region, generation, payload, attempt = 0) {
@@ -203,15 +205,16 @@ async function lookup(rawUid, requestedRegion) {
     if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   }
   try {
-    const [profileResult, rankingResult] = await Promise.allSettled([
-      provider.getProfile(uid, region),
-      provider.getEventRanking(uid, region),
-    ]);
-    if (profileResult.status === "rejected") throw profileResult.reason;
-    const result = profileResult.value;
-    const freshRanking = rankingResult.status === "fulfilled"
-      ? normalizeEventRanking(rankingResult.value)
-      : null;
+    const result = await provider.getProfile(uid, region);
+    const identity = extractPlayerIdentity(result.data, result.uid);
+    let freshRanking = null;
+    if (identity.name && identity.name !== "未提供名稱") {
+      try {
+        freshRanking = normalizeEventRanking(await provider.getEventRanking(uid, region, { name: identity.name }));
+      } catch {
+        freshRanking = null;
+      }
+    }
     const eventRanking = freshRanking && freshRanking.status !== "UNAVAILABLE" && !freshRanking.error
       ? freshRanking
       : (saved?.eventRanking || freshRanking || { status: "UNAVAILABLE", row: null });
