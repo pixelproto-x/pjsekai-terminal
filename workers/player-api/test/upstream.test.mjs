@@ -37,3 +37,42 @@ test("maps upstream statuses to useful public errors", () => {
   assert.equal(upstreamError([502], "kr").status, 502);
 });
 
+
+
+test("auto-detects a unique region when every other region returns not found", async () => {
+  const workerFetch = async (url) => {
+    const parsed = new URL(url);
+    const region = parsed.pathname.match(/\\/public\\/(jp|tw|en|kr|cn)\\//)?.[1]
+      || (parsed.hostname === "api.hisekai.org" ? "tw" : null);
+    if (region === "jp") {
+      return Response.json({ userGamedata: { userName: "Test Player" } });
+    }
+    return new Response("not found", { status: 404 });
+  };
+  const response = await worker.fetch(new Request(
+    "https://worker.test/api/auto/user/123456/profile",
+    { headers: { Origin: "https://pixelproto-x.github.io" } },
+  ), { FETCH: workerFetch });
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.region, "jp");
+  assert.equal(payload.uid, "123456");
+});
+
+test("does not guess when the same UID exists in multiple regions", async () => {
+  const workerFetch = async (url) => {
+    const parsed = new URL(url);
+    const region = parsed.pathname.match(/\\/public\\/(jp|tw|en|kr|cn)\\//)?.[1]
+      || (parsed.hostname === "api.hisekai.org" ? "tw" : null);
+    if (region === "jp" || region === "tw") {
+      return Response.json({ userGamedata: { userName: "Test Player" } });
+    }
+    return new Response("not found", { status: 404 });
+  };
+  const response = await worker.fetch(new Request(
+    "https://worker.test/api/auto/user/123456/profile",
+    { headers: { Origin: "https://pixelproto-x.github.io" } },
+  ), { FETCH: workerFetch });
+  assert.equal(response.status, 409);
+  assert.deepEqual((await response.json()).regions, ["jp", "tw"]);
+});
