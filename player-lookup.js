@@ -132,13 +132,16 @@ function saveLookupCache(uid, region, profile, eventRanking) {
 
 function normalizeEventRanking(payload) {
   if (!payload || typeof payload !== "object") return { status: "UNAVAILABLE", row: null };
-  const row = payload.row ?? payload.ranking?.row ?? payload.ranking?.result?.row
-    ?? (payload.ranking?.rank != null ? payload.ranking : null);
-  if (row) return { ...payload, row };
-  if (payload.status === "OK" && payload.ranking?.searchedTo >= 2000) {
-    return { ...payload, status: "NOT_FOUND_TOP_2000", row: null };
+  const source = payload.data && typeof payload.data === "object" ? payload.data
+    : payload.result && typeof payload.result === "object" ? payload.result : payload;
+  const ranking = source.ranking && typeof source.ranking === "object" ? source.ranking : source;
+  const row = source.row ?? ranking.row ?? ranking.result?.row ?? ranking.data?.row
+    ?? (ranking.rank != null ? ranking : null);
+  const status = source.status || (row ? "OK" : source.error ? "UPSTREAM_ERROR" : "UNAVAILABLE");
+  if (status === "OK" && !row && Number(ranking.searchedTo ?? source.searchedTo) >= 2000) {
+    return { ...source, status: "NOT_FOUND_TOP_2000", row: null };
   }
-  return payload;
+  return { ...source, status, row: row ?? null };
 }
 function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
@@ -167,7 +170,7 @@ function updateEventRankingValue(payload) {
               : payload?.status === "PENDING_TIMEOUT" ? "排名來源仍未完成 請稍後重查"
                 : payload?.status === "RETRY_FAILED" ? "排名來源連線失敗 請稍後重查"
                   : payload?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (payload.upstreamStatus ? " " + payload.upstreamStatus : "")
-                    : "暫時無法取得");
+                    : payload?.status === "UNAVAILABLE" ? "排名來源未回傳有效資料" : "暫時無法取得");
 }
 
 async function retryPendingEventRanking(uid, region, generation, payload, attempt = 0) {
@@ -226,7 +229,9 @@ async function lookup(rawUid, requestedRegion) {
     let freshRanking = null;
     try {
       // Haneoka searches by the in-game numeric profile ID, not player name.
-      freshRanking = normalizeEventRanking(await provider.getEventRanking(uid, region));
+      // Prefer the canonical in-game player ID returned by the profile source.
+      const profileId = identity.uid || result.uid || uid;
+      freshRanking = normalizeEventRanking(await provider.getEventRanking(profileId, region));
     } catch (error) {
       freshRanking = {
         status: "UPSTREAM_ERROR",
@@ -239,7 +244,7 @@ async function lookup(rawUid, requestedRegion) {
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
-      retryPendingEventRanking(uid, region, generation, eventRanking);
+      retryPendingEventRanking(identity.uid || result.uid || uid, region, generation, eventRanking);
     }
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
