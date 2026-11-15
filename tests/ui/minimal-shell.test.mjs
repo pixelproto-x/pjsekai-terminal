@@ -154,6 +154,9 @@ assert.match(songsModule, /readSongCache\(region\)/, "refresh reuses locally cac
 assert.match(songsModule, /visibleBatch = songs\.slice\(0, renderedSongLimit\)/, "only the current song batch is inserted into the DOM");
 assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are indexed once instead of repeatedly scanning the full chart list");
 assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
+assert.match(html, /dataset\.initialPage = page \|\| "home"/, "remembered page is selected in the document head before first paint");
+assert.match(html, /html\[data-initial-page="songs"\] \.page\[data-page="songs"\]\{display:block\}/, "saved page is visible before app-shell navigation initializes");
+assert.match(html, /app-shell\.js\?v=20261115-restore-page-before-paint/, "app shell cache is refreshed for early page restoration");
 assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
 console.log("Minimal player hub UI smoke tests passed.");
 
