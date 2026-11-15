@@ -119,6 +119,60 @@ function openPlayer(player) {
   window.PJSEKAI?.go("profile");
   window.PJSEKAI_LOOKUP?.(player.uid, player.region);
 }
+function enhanceFilterSelect(select) {
+  if (!select || select.dataset.customized === "true") return;
+  select.dataset.customized = "true";
+  const wrapper = document.createElement("div");
+  wrapper.className = "player-filter-dropdown";
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "player-filter-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  const menu = document.createElement("div");
+  menu.className = "player-filter-menu";
+  menu.setAttribute("role", "listbox");
+  menu.hidden = true;
+  select.parentNode.insertBefore(wrapper, select);
+  wrapper.append(select, trigger, menu);
+  select.classList.add("player-filter-native");
+  const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); wrapper.classList.remove("is-open"); };
+  const refresh = () => {
+    trigger.textContent = select.selectedOptions[0]?.textContent || "請選擇";
+    menu.replaceChildren();
+    [...select.options].forEach((option) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "player-filter-option" + (option.value === select.value ? " is-selected" : "");
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", option.value === select.value ? "true" : "false");
+      item.textContent = option.textContent;
+      item.addEventListener("click", () => {
+        select.value = option.value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        refresh();
+        close();
+        trigger.focus();
+      });
+      menu.append(item);
+    });
+  };
+  trigger.addEventListener("click", () => {
+    const opening = menu.hidden;
+    document.querySelectorAll(".player-filter-dropdown.is-open").forEach((other) => {
+      other.classList.remove("is-open");
+      other.querySelector(".player-filter-menu").hidden = true;
+      other.querySelector(".player-filter-trigger").setAttribute("aria-expanded", "false");
+    });
+    menu.hidden = !opening;
+    trigger.setAttribute("aria-expanded", String(opening));
+    wrapper.classList.toggle("is-open", opening);
+  });
+  document.addEventListener("click", (event) => { if (!wrapper.contains(event.target)) close(); });
+  select.addEventListener("change", refresh);
+  refresh();
+  select._refreshCustomFilter = refresh;
+}
 function renderSaved() {
   if (!list) return;
   const players = read(SAVED_KEY);
@@ -139,6 +193,8 @@ function renderSaved() {
     tagSelect.options[0].value = "";
     tags.forEach((value) => { const option = node("option", "", value); option.value = value; tagSelect.append(option); });
     tagSelect.value = tags.includes(selected) ? selected : "";
+    enhanceFilterSelect(tagSelect);
+    tagSelect._refreshCustomFilter?.();
   }
   list.replaceChildren();
   if (!filtered.length) {
@@ -290,6 +346,7 @@ historyList?.addEventListener("click", (event) => {
 $("#clearPlayerHistory")?.addEventListener("click", () => {
   write(HISTORY_KEY, []); renderHistory();
 });
+enhanceFilterSelect($("#playerWorkspaceFavorite"));
 renderSaved();
 renderHistory();
 
