@@ -6,7 +6,8 @@ const units={light_sound:"Leo/need",idol:"MORE MORE JUMP!",street:"Vivid BAD SQU
 const attrs={cool:"Cool",cute:"Cute",pure:"Pure",happy:"Happy",mysterious:"Mysterious"};
 const rarities={rarity_1:"★1",rarity_2:"★2",rarity_3:"★3",rarity_4:"★4",rarity_birthday:"生日限定"};
 const KEY="pjskGameToolsV1";
-let loadGeneration=0;\nconst s={region:"tw",tab:"cards",q:"",character:"",unit:"",attr:"",rarity:"",cards:[],characters:[],profiles:[],skills:[],honors:[],events:[],eventCards:[],favorites:new Set(),slots:Array(5).fill(""),compareSlots:Array(5).fill(""),savedTeams:[],event:"",songs:[],difficulties:[],songId:"",difficulty:"expert",talentInput:250000,loading:false};
+let loadGeneration=0;
+const s={region:"tw",tab:"cards",q:"",character:"",unit:"",attr:"",rarity:"",cards:[],characters:[],profiles:[],skills:[],honors:[],events:[],eventCards:[],favorites:new Set(),slots:Array(5).fill(""),compareSlots:Array(5).fill(""),savedTeams:[],event:"",songs:[],difficulties:[],songId:"",difficulty:"expert",talentInput:250000,loading:false};
 try{const x=JSON.parse(localStorage.getItem(KEY)||"{}");if(x.region in REGION_REPOSITORIES)s.region=x.region;s.favorites=new Set(Array.isArray(x.favorites)?x.favorites:[]);if(Array.isArray(x.slots)&&x.slots.length===5)s.slots=x.slots;if(Array.isArray(x.compareSlots)&&x.compareSlots.length===5)s.compareSlots=x.compareSlots;if(Array.isArray(x.savedTeams))s.savedTeams=x.savedTeams.slice(0,30);}catch{}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({region:s.region,favorites:[...s.favorites],slots:s.slots,compareSlots:s.compareSlots,savedTeams:s.savedTeams}))}catch{}};
 const cname=c=>[c?.firstName,c?.givenName].filter(Boolean).join("")||c?.name||"角色 #"+(c?.id??"—");
