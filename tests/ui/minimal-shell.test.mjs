@@ -8,8 +8,8 @@ const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url)
 const workspaceCss = await readFile(new URL("../../player-workspace.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const workspace = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
-assert.match(workspace, /return select;/, "player workspace filters use the same native select controls as other database sections");
-assert.doesNotMatch(workspace, /document\.body\.append\(menu\)/, "player workspace does not create detached custom filter popups");
+assert.match(workspace, /window\.enhanceStyledSelect\?\.\(select\)/, "player workspace filters use the shared interactive picker");
+assert.match(workspace, /window\.refreshStyledSelect\?\.\(select\)/, "player workspace refreshes option labels in the shared picker");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
 
@@ -91,12 +91,18 @@ assert.match(songsCss, /server-picker-close/, "song server dropdown has a closin
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
-assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-toplayer-repair-v6/, "settings dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-dropdown-toplayer-repair-v6/, "language dropdown script cache is refreshed");
+assert.match(html, /redesign-6th\.css\?v=20261115-shared-select-component-v1/, "shared dropdown stylesheet cache is refreshed");
+assert.match(html, /language\.js\?v=20261115-shared-select-component-v1/, "shared dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
 assert.match(languageModule, /function enhanceStyledSelect\(/, "settings selectors use shared custom dropdown behavior");
+assert.match(languageModule, /window\.enhanceStyledSelect = enhanceStyledSelect/, "all pages can use the shared custom picker");
+assert.match(languageModule, /enhanceSelectTree\(document\)/, "existing page selects are enhanced on startup");
+assert.match(languageModule, /new MutationObserver\(/, "dynamically rendered game-tool selects are enhanced");
+assert.match(languageModule, /menu\.showPopover\(\)/, "shared dropdowns open in the browser top layer");
+assert.match(languageModule, /select\.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/, "choosing an option preserves existing change handlers");
+
 assert.match(languageModule, /enhanceStyledSelect\(document\.getElementById\("anniversaryCoverSelect"\)\)/, "anniversary selector uses the custom dropdown");
 assert.match(languageModule, /enhanceStyledSelect\(select\)/, "language selector uses the custom dropdown");
 assert.match(languageModule, /menu\.showPopover\(\)/, "settings dropdown popup uses the browser top layer");
