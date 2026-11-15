@@ -172,15 +172,16 @@ assert.match(html, /卡片更有層次/, "opacity scale includes the soft visual
 assert.match(html, /介面更實更易讀/, "opacity scale includes the clear visual effect");
 assert.match(app, /opacityLevels = \[/, "opacity readout maps percentages to visual levels");
 assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
-assert.match(app, /\[12, 22, 35, 48\]\.find\(/, "opacity slider pauses at all four preset points");
-assert.match(app, /setTimeout\(\(\) => \{[\s\S]*?\}, 140\)/, "opacity slider pause is brief before continuing");
+assert.match(app, /const OPACITY_DETENTS = \[12, 22, 35\]/, "the first three opacity presets use detents while the final preset remains the natural end");
+assert.match(app, /const OPACITY_DETENT_HOLD_PX = 7/, "detents hold the thumb for a short physical pointer distance");
 assert.match(html, /data-opacity-marker="12"[\s\S]*data-opacity-marker="22"[\s\S]*data-opacity-marker="35"[\s\S]*data-opacity-marker="48"/, "all four opacity preset positions have visible marker dots");
-assert.match(app, /lastOpacitySliderValue < point && amount >= point/, "dragging right detects crossing a preset instead of requiring an exact input value");
-assert.match(app, /lastOpacitySliderValue > point && amount <= point/, "dragging left also detects crossing a preset");
-assert.match(app, /pointerdown/, "opacity slider uses pointer dragging so it can pause the thumb itself");
+assert.match(app, /previous < point && amount >= point/, "dragging right detects crossing a detent instead of requiring an exact input value");
+assert.match(app, /previous > point && amount <= point/, "dragging left also detects crossing a detent");
+assert.match(app, /opacityDragState\.detent/, "opacity thumb is held at a detent while the pointer passes through its resistance zone");
+assert.match(app, /opacityPointerFromValue\(range, crossed\)/, "detent alignment uses the actual track geometry");
+assert.match(app, /pointerdown/, "opacity slider uses pointer dragging to provide detent resistance");
 assert.match(app, /setPointerCapture/, "opacity slider keeps tracking the pointer while dragging");
-assert.match(app, /opacityPauseUntil = performance\.now\(\) \+ 140/, "crossing a preset holds the slider position briefly");
-assert.match(app, /if \(performance\.now\(\) < opacityPauseUntil\) return/, "pointer movement is ignored during the brief preset pause");
 assert.match(app, /pointerup/, "opacity slider saves the final value when dragging ends");
+assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity detents do not use a fake time-based pause");
 
 
