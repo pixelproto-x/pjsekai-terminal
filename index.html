@@ -848,6 +848,15 @@ html.low-performance .page.active { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+.language-settings-card .language-select{width:100%;max-width:420px;min-height:46px;margin-top:8px;padding:11px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,var(--sub-glass-opacity));color:var(--ink);font-size:13px;font-weight:750;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.language-settings-card .cover-select-label{display:block;margin-top:14px}
+.language-settings-card .data-status{margin-top:10px}
+.google-translate-engine{position:fixed!important;left:-10000px!important;top:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
+body>.skiptranslate,iframe.goog-te-banner-frame{display:none!important}
+body{top:0!important}
+.goog-te-gadget{font-size:0!important}
+.goog-logo-link,.goog-te-gadget span{display:none!important}
 </style>
 <style>
 .dojo-practice-loop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.dojo-practice-point{border:1px solid var(--line);border-radius:14px;padding:11px;background:rgba(255,255,255,var(--sub-glass-opacity));backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px)}.dojo-practice-point-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;color:var(--muted)}.dojo-practice-point-head output{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:900}.dojo-practice-point input{width:100%;margin-top:7px;accent-color:var(--cyan)}.dojo-practice-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:9px}.dojo-speed-chip.active{box-shadow:0 0 0 2px var(--cyan) inset}.dojo-practice-runtime-status{font-size:8px;color:var(--muted);margin-left:auto}.dojo-practice-runtime-status.ready{color:var(--green)}@media(max-width:700px){.dojo-practice-loop-grid{grid-template-columns:1fr}.dojo-practice-runtime-status{width:100%;margin-left:0}}
@@ -1277,6 +1286,15 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
       </select>
       <div class="data-status" id="anniversaryCoverStatus">目前封面 六週年</div>
     </div>
+    <div class="settings-card language-settings-card">
+      <div class="settings-row-head"><div><strong>介面語言</strong><span>首次使用會依照瀏覽器偏好自動選擇，也可以隨時手動切換</span></div></div>
+      <label class="cover-select-label" for="interfaceLanguageSelect">選擇語言</label>
+      <select id="interfaceLanguageSelect" class="language-select" aria-label="選擇介面語言">
+        <option value="auto">跟隨瀏覽器語言</option>
+      </select>
+      <div class="data-status" id="interfaceLanguageStatus" aria-live="polite">首次載入時會自動偵測瀏覽器語言</div>
+      <div id="google_translate_element" class="google-translate-engine" aria-hidden="true"></div>
+    </div>
     <div class="settings-card">
       <div class="settings-row-head"><div><strong>介面透明度</strong><span>調整背景和卡片的透明程度</span></div><strong id="opacityValue">22</strong></div>
       <div class="opacity-slider-wrap"><div class="opacity-marker-rail" aria-label="四個透明度定位點"><span class="opacity-marker" data-opacity-marker="12" style="--marker-position:21.8182%"></span><span class="opacity-marker" data-opacity-marker="22" style="--marker-position:40%"></span><span class="opacity-marker" data-opacity-marker="35" style="--marker-position:63.6364%"></span><span class="opacity-marker" data-opacity-marker="48" style="--marker-position:87.2727%"></span></div><input id="opacityRange" class="opacity-range" aria-label="介面透明度" type="range" min="0" max="55" step="0.1" value="22"></div>
@@ -1314,6 +1332,7 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
 </nav>
 <button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="language.js?v=20261115-language-settings-v1"></script>
 <script type="module" src="app-shell.js?v=20261115-instant-scroll-restore"></script>
 <script type="module" src="player-lookup.js?v=20261115-player-workspace-v1"></script>
 <script type="module" src="player-workspace.js?v=20261115-player-workspace-v1"></script>
