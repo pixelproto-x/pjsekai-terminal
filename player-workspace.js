@@ -135,8 +135,12 @@ function enhanceFilterSelect(select) {
   menu.setAttribute("popover", "manual");
   menu.hidden = true;
   select.parentNode.insertBefore(wrapper, select);
-  wrapper.append(select, trigger, menu);
+  wrapper.append(select, trigger);
+  // Keep the popup outside every panel/grid/scroll container so it cannot be
+  // clipped or covered by the player workspace stacking context.
+  document.body.append(menu);
   select.classList.add("player-filter-native");
+
   const placeMenu = () => {
     const rect = trigger.getBoundingClientRect();
     const gap = 8;
@@ -187,17 +191,22 @@ function enhanceFilterSelect(select) {
     document.querySelectorAll(".player-filter-dropdown.is-open").forEach((other) => {
       other._closePlayerFilter?.();
     });
-    if (opening) {
-      menu.hidden = false;
-      menu.showPopover();
-      trigger.setAttribute("aria-expanded", "true");
-      wrapper.classList.add("is-open");
-      placeMenu();
-    } else {
+    if (!opening) { close(); return; }
+    menu.hidden = false;
+    if (typeof menu.showPopover === "function") menu.showPopover();
+    trigger.setAttribute("aria-expanded", "true");
+    wrapper.classList.add("is-open");
+    placeMenu();
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!wrapper.contains(event.target) && !menu.contains(event.target)) close();
+  }, true);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !menu.hidden) {
       close();
+      trigger.focus();
     }
   });
-  document.addEventListener("click", (event) => { if (!wrapper.contains(event.target)) close(); });
   window.addEventListener("resize", () => { if (!menu.hidden) placeMenu(); });
   window.addEventListener("scroll", () => { if (!menu.hidden) placeMenu(); }, true);
   select.addEventListener("change", refresh);
