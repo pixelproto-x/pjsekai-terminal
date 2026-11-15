@@ -34,12 +34,12 @@ The active website includes:
 - Card catalogue with search and character, unit, attribute, and rarity filters.
 - Character catalogue with upstream profile information.
 - Honor-group catalogue and event catalogue.
-- Five-slot team editor with device-local persistence.\n- Team score baseline estimator using the selected song chart level and user-entered total talent; estimates PERFECT base score without skill, combo, FEVER, or event modifiers.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.
+- Five-slot team editor with device-local persistence and up to 30 named saved team presets.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.\n- Team score baseline estimator using the selected song chart level and user-entered total talent; estimates PERFECT base score without skill, combo, FEVER, or event modifiers.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.
 - Ability-value aggregation only from numeric fields actually present in upstream card data; missing values are not fabricated.
 - Event bonus calculator using upstream event-card bonusRate values. The displayed total is a raw sum and excludes leader bonus, event caps, and other in-game modifiers.
 - Team comparison view for team size and readable ability values.
 - Local card favorites.
-- IndexedDB cache with a six-hour freshness window, in-flight request deduplication, and stale-cache fallback.
+- IndexedDB cache with a six-hour freshness window, in-flight request deduplication, stale-cache fallback, and lazy loading so game data is fetched only when the game-tools page is opened.\n- Searchable team pickers use a filtered suggestion list instead of rendering every card repeatedly.
 - Source links for all five regional repositories; screens follow the active SEKAI theme and responsive layout.
 
 ### Batch 3 verification boundaries
