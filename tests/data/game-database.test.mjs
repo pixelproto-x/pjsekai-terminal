@@ -29,7 +29,7 @@ test("bundle loads only the datasets required for that tool", async () => {
   const result = await client.loadBundle("tw", "characters");
   assert.deepEqual(Object.keys(result.datasets).sort(), ["characterProfiles", "gameCharacters"]);
   assert.equal(requested.length, 2);
-  assert.ok(requested.every((url) => url.includes("sekai-master-db-tc-diff")));
+  assert.ok(requested.every((url) => url.startsWith("https://raw.githubusercontent.com/Sekai-World/")));\n  assert.ok(requested.every((url) => url.includes("sekai-master-db-tc-diff/main/")));
   assert.deepEqual(result.warnings, []);
 });
 
