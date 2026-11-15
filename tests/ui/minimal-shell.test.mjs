@@ -287,3 +287,8 @@ assert.match(gameToolsJs, /select\.id==="gtRegion"\?" gt-region-menu"/, "only th
 assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*background:transparent!important/s, "server-region popup bubble is transparent");
 assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*backdrop-filter:none!important/s, "server-region popup bubble does not inherit theme glass effects");
 assert.doesNotMatch(gameToolsCss, /\.gt-select-menu\{[^}]*background:transparent!important/s, "other game-tool dropdowns keep their themed background");
+
+assert.match(gameToolsJs, /document\.addEventListener\("pointerdown",event=>\{if\(!activeGameToolDropdown\)/, "game-tool popup closes immediately when clicking outside");
+assert.match(gameToolsJs, /window\.addEventListener\("scroll",\(\)=>\{if\(activeGameToolDropdown\)closeGameToolSelect/, "game-tool popup closes on page scroll instead of becoming detached and blocking the screen");
+assert.match(gameToolsJs, /if\(document\.activeElement!==input\)\{input\.focus\(\{preventScroll:true\}\)/, "game-tool search retains focus and caret while updating results");
+assert.match(gameToolsJs, /if\(activeGameToolDropdown&&!activeGameToolDropdown\.isConnected\)closeGameToolSelect/, "orphaned dropdowns are cleaned up after panel rerenders");
