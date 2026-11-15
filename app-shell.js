@@ -58,13 +58,6 @@ function restoreUiState(state = savedUiState) {
   }
 }
 restoreUiState();
-let restoreScrollY = Number(savedUiState.scrollY) || 0;
-let restoreScrollPending = true;
-function restoreSavedScroll() {
-  if (!restoreScrollPending) return;
-  restoreScrollPending = false;
-  if (restoreScrollY > 0) window.scrollTo({ top: restoreScrollY, behavior: "instant" });
-}
 function scheduleUiStateSave() {
   clearTimeout(uiStateSaveTimer);
   uiStateSaveTimer = setTimeout(saveUiState, 180);
@@ -160,14 +153,15 @@ const themeNames = {
 };
 let toastTimer;
 
-export function go(route, updateHash = true) {
+export function go(route, updateHash = true, options = {}) {
   const next = validRoutes.has(route) ? route : "home";
   pages.forEach((page) => page.classList.toggle("active", page.dataset.page === next));
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.go === next));
   syncTabIndicator();
   if (updateHash && location.hash !== "#" + next) history.replaceState({}, "", "#" + next);
-  restoreScrollPending = false;
-  window.scrollTo({ top: 0, behavior: document.documentElement.classList.contains("low-performance") ? "auto" : "smooth" });
+  if (!options.preserveScroll) {
+    window.scrollTo({ top: 0, behavior: document.documentElement.classList.contains("low-performance") ? "auto" : "smooth" });
+  }
   window.dispatchEvent(new CustomEvent("pjsekai:pagechange", { detail: { page: next } }));
   saveUiState();
 }
@@ -417,9 +411,11 @@ try {
   applyOpacity(22);
   applyAnniversaryCover("6");
 }
-go(savedUiState.activePage || location.hash.slice(1) || "home", false);
-restoreScrollPending = true;
-if (savedUiState.scrollY > 0) requestAnimationFrame(() => requestAnimationFrame(restoreSavedScroll));
+go(savedUiState.activePage || location.hash.slice(1) || "home", false, { preserveScroll: true });
+if (Number(savedUiState.scrollY) > 0) {
+  window.scrollTo({ top: Number(savedUiState.scrollY), behavior: "instant" });
+}
+document.documentElement.removeAttribute("data-restore-scroll");
 
 
 const SERVER_FLAGS = {
