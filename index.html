@@ -1058,6 +1058,23 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 }
 @media(prefers-reduced-motion:reduce){.scroll-top-fab{transition:none}}
 </style>
+
+<style id="player-result-layout-fix">
+/* Three profile metrics remain after removing the event-ranking field. */
+.player-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.player-result-head{flex-wrap:wrap;align-items:center}
+.player-result-head>div{min-width:0;flex:1}
+.player-source-pill{max-width:100%;white-space:normal;text-align:center;overflow-wrap:anywhere}
+/* Keep the success toast readable in every unit theme. */
+#toast.toast{background:#182235!important;background-color:#182235!important;color:#fff!important;border:1px solid rgba(255,255,255,.18);box-shadow:0 12px 32px rgba(12,20,38,.28)}
+#toast.toast.show{opacity:1}
+@media(max-width:640px){
+  .player-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .player-result-head{align-items:flex-start}
+  .player-source-pill{font-size:8px}
+}
+</style>
+
 </head>
 
 <body>
