@@ -38,3 +38,121 @@
 .player-result-actions{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .player-form select{min-height:44px}
 @media(max-width:680px){.player-workspace-panel{padding:17px}.player-workspace-tools{grid-template-columns:1fr 1fr}.player-workspace-search{grid-column:1/-1}.player-workspace-tools>button{grid-column:1/-1}.saved-player-list{grid-template-columns:1fr}.saved-player-edit{grid-template-columns:1fr}.player-history-row{align-items:flex-start}.player-history-row button{white-space:nowrap}}
+
+/* Player Workspace — inherit the active SEKAI palette instead of using white-only surfaces. */
+body[data-sekai-theme] .player-workspace-panel{
+  color:var(--unit-ink);
+  background:var(--unit-panel);
+  border-color:var(--unit-line);
+  border-radius:var(--unit-radius);
+  box-shadow:var(--unit-shadow);
+  backdrop-filter:blur(16px) saturate(135%);
+  -webkit-backdrop-filter:blur(16px) saturate(135%);
+}
+body[data-sekai-theme] .player-workspace-heading h2,
+body[data-sekai-theme] .player-history-heading h3,
+body[data-sekai-theme] .player-compare-result h3,
+body[data-sekai-theme] .saved-player-title strong,
+body[data-sekai-theme] .player-history-row strong{
+  color:var(--unit-ink);
+}
+body[data-sekai-theme] .player-workspace-heading p,
+body[data-sekai-theme] .saved-player-title small,
+body[data-sekai-theme] .player-history-row small,
+body[data-sekai-theme] .player-compare-pick,
+body[data-sekai-theme] .player-workspace-tools label{
+  color:var(--unit-muted);
+}
+body[data-sekai-theme] .player-workspace-count{
+  color:var(--unit-accent-text,var(--unit-ink));
+  background:color-mix(in srgb,var(--unit-accent) 16%,var(--unit-panel-strong));
+  border:1px solid var(--unit-line);
+}
+body[data-sekai-theme] .player-workspace-tools input,
+body[data-sekai-theme] .player-workspace-tools select,
+body[data-sekai-theme] .saved-player-edit input,
+body[data-sekai-theme] .player-form select{
+  color:var(--unit-ink);
+  background:var(--unit-panel-strong);
+  border-color:var(--unit-line);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--unit-ink) 5%,transparent);
+}
+body[data-sekai-theme] .player-workspace-tools input::placeholder,
+body[data-sekai-theme] .saved-player-edit input::placeholder{
+  color:var(--unit-muted);
+  opacity:.85;
+}
+body[data-sekai-theme] .player-workspace-tools button,
+body[data-sekai-theme] .player-action-button,
+body[data-sekai-theme] .player-history-heading button{
+  color:var(--unit-ink);
+  background:var(--unit-panel-strong);
+  border:1px solid var(--unit-line);
+}
+body[data-sekai-theme] .player-workspace-tools button:not(:disabled):hover,
+body[data-sekai-theme] .player-action-button:hover{
+  border-color:var(--unit-accent);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--unit-accent) 18%,transparent);
+}
+body[data-sekai-theme] .player-workspace-tools button:disabled{
+  color:var(--unit-muted);
+  background:var(--unit-panel);
+  opacity:.48;
+}
+body[data-sekai-theme] .player-action-button.primary,
+body[data-sekai-theme] .player-result-actions .primary{
+  color:#fff;
+  background:linear-gradient(125deg,var(--unit-accent),var(--unit-accent-2));
+  border-color:transparent;
+}
+body[data-sekai-theme] .player-action-button.is-favorite{
+  color:var(--unit-accent-text,var(--unit-ink));
+  background:color-mix(in srgb,#ffca55 20%,var(--unit-panel-strong));
+  border-color:color-mix(in srgb,#e7b94c 65%,var(--unit-line));
+}
+body[data-sekai-theme] .saved-player-card,
+body[data-sekai-theme] .player-history-row{
+  color:var(--unit-ink);
+  background:var(--unit-panel-strong);
+  border-color:var(--unit-line);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--unit-ink) 4%,transparent);
+}
+body[data-sekai-theme] .player-workspace-empty{
+  color:var(--unit-muted);
+  background:color-mix(in srgb,var(--unit-panel-strong) 78%,transparent);
+  border-color:var(--unit-line);
+}
+body[data-sekai-theme] .player-history-block,
+body[data-sekai-theme] .player-result-actions{
+  border-color:var(--unit-line);
+}
+body[data-sekai-theme] .player-compare-table{
+  color:var(--unit-ink);
+}
+body[data-sekai-theme] .player-compare-table th,
+body[data-sekai-theme] .player-compare-table td{
+  color:var(--unit-ink);
+  border-color:var(--unit-line);
+}
+body[data-sekai-theme] .player-compare-table th{
+  background:color-mix(in srgb,var(--unit-accent) 13%,var(--unit-panel-strong));
+}
+body[data-sekai-theme] .player-compare-table td{
+  background:var(--unit-panel);
+}
+body[data-sekai-theme] .player-compare-pick input{
+  accent-color:var(--unit-accent);
+}
+
+/* Each SEKAI keeps its own panel silhouette and accent treatment. */
+body[data-sekai-theme="virtual-singer"] .player-workspace-panel{border-top:3px solid var(--unit-accent)}
+body[data-sekai-theme="leo-need"] .player-workspace-panel{border-left:4px solid var(--unit-accent);border-radius:14px}
+body[data-sekai-theme="more-more-jump"] .player-workspace-panel,
+body[data-sekai-theme="more-more-jump"] .saved-player-card{border-radius:26px}
+body[data-sekai-theme="vivid-bad-squad"] .player-workspace-panel{border-left:3px solid var(--unit-accent);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--unit-accent) 24%,transparent),var(--unit-shadow)}
+body[data-sekai-theme="vivid-bad-squad"] .saved-player-card,
+body[data-sekai-theme="vivid-bad-squad"] .player-history-row{background:linear-gradient(115deg,#202536,#191e2c 72%,#202a32)}
+body[data-sekai-theme="wonderlands-showtime"] .player-workspace-panel{border:2px solid color-mix(in srgb,var(--unit-accent) 30%,var(--unit-line));border-radius:24px 8px 24px 8px}
+body[data-sekai-theme="nightcord"] .saved-player-card,
+body[data-sekai-theme="nightcord"] .player-history-row{background:linear-gradient(145deg,rgba(35,36,57,.98),rgba(25,27,44,.98))}
+
