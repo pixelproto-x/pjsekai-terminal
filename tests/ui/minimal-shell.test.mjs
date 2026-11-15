@@ -28,7 +28,7 @@ assert.match(shell, /lowResourceSignals/, "low-resource devices are detected for
 assert.match(shell, /pjsekai:pagechange/, "page navigation notifies lazy-loaded features");
 assert.match(html, /html\.low-performance[\s\S]*?backdrop-filter:\s*none !important/, "low-resource mode disables expensive glass blur effects");
 assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
-assert.match(html, /pointer-events:auto;touch-action:none;cursor:grab/, "selection bubble accepts pointer and touch dragging");
+assert.match(html, /pointer-events:none;touch-action:pan-y;cursor:default/, "transparent selection bubble never blocks navigation labels or vertical scrolling");
 assert.match(shell, /bottomBar\.addEventListener\("pointerdown"/, "navigation container receives pointer down over the selection bubble");
 assert.match(shell, /bottomBar\.setPointerCapture\(event\.pointerId\)/, "drag keeps receiving pointer movement outside the bubble");
 assert.match(shell, /bottomBar\.addEventListener\("pointermove"/, "selection bubble follows captured pointer movement");
