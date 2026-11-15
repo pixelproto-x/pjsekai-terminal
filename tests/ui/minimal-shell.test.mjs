@@ -87,8 +87,8 @@ assert.match(songsCss, /server-picker-close/, "song server dropdown has a closin
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
-assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-open-width-fix-v1/, "settings dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-dropdown-open-width-fix-v1/, "language dropdown script cache is refreshed");
+assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-top-layer-v2/, "settings dropdown stylesheet cache is refreshed");
+assert.match(html, /language\.js\?v=20261115-dropdown-top-layer-v2/, "language dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
@@ -172,7 +172,7 @@ assert.match(html, /initialPageStyle\.id = "initial-page-bootstrap-style"/, "fir
 assert.match(shell, /getElementById\("initial-page-bootstrap-style"\)\?\.remove\(\)/, "first-paint page visibility rule is removed after route initialization");
 assert.match(shell, /removeAttribute\("data-initial-page"\)/, "first-paint route selector is cleared before later navigation");
 assert.match(html, /html\[data-restore-scroll="pending"\] body\{visibility:hidden\}/, "page stays hidden until saved scroll position is restored");
-assert.match(html, /app-shell\.js\?v=20261115-instant-scroll-restore/, "app shell cache is refreshed for instant scroll restoration");
+assert.match(html, /app-shell\.js\?v=20261115-dropdown-open-width-fix-v1/, "app shell cache is refreshed for instant scroll restoration");
 assert.match(app, /go\(savedUiState\.activePage[^\n]+\{ preserveScroll: true \}\)/, "initial route restoration does not scroll to the top");
 assert.match(app, /window\.scrollTo\(\{ top: Number\(savedUiState\.scrollY\), behavior: "instant" \}\)/, "saved scroll position is restored instantly before showing the page");
 assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
@@ -257,7 +257,7 @@ assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span
 assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(html, /app-shell\.js\?v=20261115-instant-scroll-restore/, "app shell script cache is refreshed");
+assert.match(html, /app-shell\.js\?v=20261115-dropdown-open-width-fix-v1/, "app shell script cache is refreshed");
 assert.match(app, /opacityRange\?\.addEventListener\("pointerdown"/, "opacity slider uses pointer tracking for localized detent resistance");
 assert.match(app, /OPACITY_DETENTS = \[12, 22, 35, 48\]/, "opacity resistance is limited to the four marked values");
 assert.match(app, /OPACITY_DETENT_WIDTH = 2\.6/, "opacity resistance is confined to a narrow zone around each marker");
