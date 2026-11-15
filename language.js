@@ -83,8 +83,8 @@
     if (status) {
       const name = activeLanguage === SOURCE_LANGUAGE ? "繁體中文" : supported.get(activeLanguage);
       status.textContent = preference === "auto"
-        ? "已依瀏覽器語言設定：" + name + "。翻譯由 Google 翻譯提供。"
-        : "目前使用：" + name + "。翻譯由 Google 翻譯提供。";
+        ? "已依瀏覽器語言設定 " + name + " 翻譯由 Google 翻譯提供"
+        : "目前使用 " + name + " 翻譯由 Google 翻譯提供";
     }
     select.addEventListener("change", () => {
       const next = select.value === "auto" || supported.has(select.value) ? select.value : "auto";
@@ -111,7 +111,7 @@
   script.async = true;
   script.onerror = () => {
     const status = document.getElementById("interfaceLanguageStatus");
-    if (status) status.textContent = "翻譯服務暫時無法載入，請稍後再試；繁體中文仍可正常使用。";
+    if (status) status.textContent = "翻譯服務暫時無法載入 請稍後再試 繁體中文仍可正常使用";
   };
   document.head.append(script);
 })();
