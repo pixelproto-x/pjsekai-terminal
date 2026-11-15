@@ -272,6 +272,11 @@ assert.match(themes, /--unit-muted:#c9c4d9/, "Nightcord secondary text uses a re
 assert.match(themes, /body\[data-sekai-theme\].*:where\([\s\S]*\.brand-text span/, "theme legibility rules cover shared secondary text");
 
 const gameToolsJs = await readFile(new URL("../../game-tools.js", import.meta.url), "utf8");
+
+const sharedStyles = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
+assert.ok(sharedStyles.includes("select:not(.server-picker-native)::picker(select)"), "all visible select controls share the song database expanding picker");
+assert.ok(sharedStyles.includes("#gameToolsRoot input:not([type=checkbox])"), "game tools inputs receive the shared clickable input hitbox");
+assert.ok(sharedStyles.includes(".player-workspace-tools input"), "player workspace inputs receive the shared clickable input hitbox");
 const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
 assert.ok(workspaceCss.includes(".player-workspace-tools select::picker(select)"), "player filters use the same expanding picker pattern as song filters where supported");
 assert.ok(workspaceCss.includes("touch-action:auto"), "player workspace text inputs remain directly tappable on iOS");
