@@ -130,3 +130,114 @@ test("preserves event point-board upstream failures as a visible ranking status"
   assert.equal(body.upstreamStatus, 502);
   assert.equal(body.event.id, 321);
 });
+
+
+test("finds a player beyond rank 2000 by scanning Haneoka 100-rank windows", async () => {
+  const pageStarts = [];
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/987654/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 654 } }), { status: 200 });
+        }
+        if (value.includes("/points/search?")) {
+          return new Response(JSON.stringify({ row: null, searchedTo: 2000 }), { status: 200 });
+        }
+        const start = Number(new URL(value).searchParams.get("start"));
+        pageStarts.push(start);
+        const rows = start === 2101
+          ? [{ rank: 2147, profileId: "987654", point: 123456 }]
+          : [{ rank: start, profileId: "other-" + start, point: 1000 }];
+        return new Response(JSON.stringify({ rows, maxRank: null }), { status: 200 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "OK");
+  assert.equal(body.row.rank, 2147);
+  assert.equal(body.row.profileId, "987654");
+  assert.ok(pageStarts.includes(2001));
+  assert.ok(pageStarts.includes(2101));
+});
+
+test("returns scan progress when a player is not in the first scanned windows", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/987654/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 654 } }), { status: 200 });
+        }
+        if (value.includes("/points/search?")) {
+          return new Response(JSON.stringify({ row: null, searchedTo: 2000 }), { status: 200 });
+        }
+        const start = Number(new URL(value).searchParams.get("start"));
+        return new Response(JSON.stringify({
+          rows: [{ rank: start, profileId: "someone-else", point: 1000 }],
+          maxRank: null,
+        }), { status: 200 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(body.status, "SCAN_PROGRESS");
+  assert.equal(body.nextStart, 3201);
+  assert.equal(body.scannedTo, 3101);
+});
+
+test("resumes full ranking scans from the requested rank window", async () => {
+  const requested = [];
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/987654/event-ranking?start=5001&pages=2&eventId=654", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 654 } }), { status: 200 });
+        }
+        requested.push(new URL(value).searchParams.get("start"));
+        return new Response(JSON.stringify({
+          rows: [{ rank: Number(new URL(value).searchParams.get("start")), profileId: "other", point: 1 }],
+          maxRank: 5050,
+        }), { status: 200 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(body.status, "NOT_FOUND");
+  assert.equal(body.maxRank, 5050);
+  assert.deepEqual(requested.sort(), ["5001", "5101"]);
+});
+
+test("keeps pending full-ranking windows retryable without advancing the scan", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/987654/event-ranking?start=2001&pages=3&eventId=654", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({ event: { id: 654 } }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: { kind: "pending", retryAfter: 19 } }), { status: 503 });
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 202);
+  assert.equal(body.status, "DATA_PENDING");
+  assert.equal(body.scanStart, 2001);
+  assert.equal(body.scanPages, 3);
+  assert.equal(body.retryAfter, 19);
+});
