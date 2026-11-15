@@ -170,6 +170,7 @@
 .player-form label>.server-picker{display:block;width:100%;margin-top:7px}
 .player-form label>.server-picker .server-picker-trigger{height:48px}
 .songs-region-row>.server-picker{min-width:125px}
+.songs-region-row>.server-picker .server-picker-menu{min-width:150px;width:max-content;max-width:min(190px,calc(100vw - 28px))}
 .songs-region-row>.server-picker .server-picker-trigger{height:36px;min-height:36px;border-radius:11px;font-size:11px}
 @media(max-width:640px){
   .hub-lookup-control>.server-picker{flex-basis:86px;width:86px;min-width:86px}
