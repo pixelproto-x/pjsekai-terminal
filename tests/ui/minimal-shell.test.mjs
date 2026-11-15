@@ -13,6 +13,7 @@ assert.match(html, /class="anniversary-hero"/, "sixth anniversary hero remains")
 assert.match(html, /id="homePlayerLookup"/, "homepage UID lookup remains");
 assert.match(html, /id="playerLookupForm"/, "dedicated player lookup page remains");
 assert.match(html, /data-page="settings"/, "appearance settings remain");
+assert.match(html, /<div class="player-results" id="playerLookupResults"[\\s\\S]*?<\\/section>\\s*<\\/section>\\s*<section class="page" data-page="settings">/, "appearance settings are a top-level page, not nested inside player lookup");
 for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
   assert.match(html, new RegExp('data-theme="' + theme + '"'), theme + " theme control remains");
   assert.match(themes, new RegExp('data-sekai-theme="' + theme + '"'), theme + " has its own visual system");
