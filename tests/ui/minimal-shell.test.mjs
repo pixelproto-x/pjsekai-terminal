@@ -52,8 +52,9 @@ for (const region of ["jp", "en", "tw", "kr", "cn"]) {
 }
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /chevron\.textContent = "⌃"/, "song server picker points upward while closed");
-assert.match(shell, /menu\.classList\.add\("is-closing"\)/, "song server picker supports an animated close state");
-assert.match(shell, /menu\.addEventListener\("animationend"/, "song server picker waits for its close animation before hiding");
+assert.match(shell, /menu\.showPopover\(\)/, "song server picker uses the browser top layer when opened");
+assert.match(shell, /menu\.hidePopover\(\)/, "song server picker leaves the browser top layer when closed");
+assert.match(shell, /positionServerPickerMenu\(wrapper\)/, "song server picker is positioned against its trigger");
 const songsCss = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
 assert.match(songsCss, /songs-toolbar select::picker\(select\)/, "song difficulty, level, and sort dropdowns have styled popups");
 assert.match(songsCss, /song-record select::picker\(select\)/, "song record dropdowns have styled popups");
@@ -102,7 +103,16 @@ assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
 assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 
 assert.equal(routes.length, 4, "home, player lookup, song management, and appearance settings remain");
-console.log("Minimal player hub UI smoke tests passed.");
+
+const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
+assert.doesNotMatch(accountSync, /pjskUiStateV1|pjskSongViewV1/, "scroll position and transient song filters stay on each device");
+assert.match(accountSync, /Storage\.prototype\.setItem/, "cloud sync observes actual persistent storage changes");
+assert.doesNotMatch(accountSync, /document\.addEventListener\("click", scheduleSync\)/, "ordinary clicks do not trigger cloud writes");
+assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized to prevent stale requests overwriting newer data");
+assert.doesNotMatch(accountSync, /window\.location\.reload\(\)/, "cloud updates do not reload and jump the page");
+assert.match(app, /applyCloudSettings/, "cloud appearance settings apply without a page reload");
+assert.match(await readFile(new URL("../../songs.js", import.meta.url), "utf8"), /refreshCloudSongData/, "cloud song data refreshes in place");
+\nconsole.log("Minimal player hub UI smoke tests passed.");
 
 const visibleText = html
   .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
@@ -142,12 +152,6 @@ assert.match(lookup, /saveLookupCache\(uid, region, result\)/, "successful playe
 
 assert.match(html, /id="anniversaryCoverHeadline">心意交會的故事<\/span>/, "homepage HTML fallback uses the shortened sixth-anniversary title");
 assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniversary headline line stays hidden initially");
-assert.match(html, /id="savePlayerForm"/, "player workspace can save multiple player UIDs");
-assert.match(html, /id="savedPlayerList"/, "saved player list is rendered");
-assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is rendered");
-assert.match(lookup, /pjskSavedPlayersV1/, "saved players persist in browser storage");
-assert.match(lookup, /pjskPlayerHistoryV1/, "recent player history persists in browser storage");
-assert.match(lookup, /MAX_SAVED_PLAYERS = 50/, "saved player collection has a clear capacity limit");
-assert.match(lookup, /favorite-current/, "current player can be favorited");
-assert.match(lookup, /rememberPlayer\(result\)/, "successful lookups are added to recent history");
-assert.match(css, /Batch 2: saved player workspace/, "saved player workspace has dedicated responsive styling");
+assert.doesNotMatch(html, /savePlayerForm|savedPlayerList|playerLookupHistory/, "unrelated saved-player workspace is removed");
+assert.doesNotMatch(lookup, /pjskSavedPlayersV1|pjskPlayerHistoryV1|MAX_SAVED_PLAYERS|favorite-current|rememberPlayer/, "player lookup no longer manages saved-player collections");
+assert.doesNotMatch(css, /Batch 2: saved player workspace/, "removed player workspace has no leftover styling");
