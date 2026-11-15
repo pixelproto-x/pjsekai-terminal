@@ -156,3 +156,45 @@ body[data-sekai-theme="wonderlands-showtime"] .player-workspace-panel{border:2px
 body[data-sekai-theme="nightcord"] .saved-player-card,
 body[data-sekai-theme="nightcord"] .player-history-row{background:linear-gradient(145deg,rgba(35,36,57,.98),rgba(25,27,44,.98))}
 
+
+
+/* Player Database dropdowns: style both the closed control and its expanded option list. */
+body[data-sekai-theme] .player-workspace-tools select{
+  appearance:none;
+  -webkit-appearance:none;
+  min-height:42px;
+  padding:10px 38px 10px 13px;
+  border:1px solid var(--unit-line);
+  border-radius:13px;
+  color:var(--unit-ink);
+  background-color:var(--unit-panel-strong);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b83a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 13px center;
+  background-size:15px;
+  font:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+body[data-sekai-theme] .player-workspace-tools select:hover{
+  border-color:color-mix(in srgb,var(--unit-accent) 62%,var(--unit-line));
+}
+body[data-sekai-theme] .player-workspace-tools select:focus-visible{
+  outline:none;
+  border-color:var(--unit-accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 22%,transparent);
+}
+body[data-sekai-theme] .player-workspace-tools select option{
+  color:var(--unit-ink);
+  background:var(--unit-panel-strong);
+  font-weight:600;
+}
+body[data-sekai-theme] .player-workspace-tools select option:checked{
+  color:var(--unit-accent-text,var(--unit-ink));
+  background:var(--unit-accent);
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-sekai-theme] .player-workspace-tools select{transition:none}
+}
