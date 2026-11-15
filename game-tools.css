@@ -131,3 +131,19 @@ to{opacity:1;transform:translateY(0)}}
 #gameToolsRoot .gt-rank-label select{min-height:38px;font-size:11px}
 
 
+
+
+/* Match the working song controls: keep every game-tool filter as a native select. */
+#gameToolsRoot select{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  pointer-events:auto!important;
+  touch-action:manipulation;
+  background-image:none!important;
+}
+#gameToolsRoot .gt-region-control select#gtRegion{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  background-image:none!important;
+  padding-right:10px!important;
+}
