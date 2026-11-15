@@ -42,3 +42,12 @@ export function calculateCardEventBonus(card, eventId, eventDeckBonuses = [], ga
     ? Math.max(...matching.map((row) => Number(row.bonusRate) || 0))
     : 0;
 }
+
+export function calculateCardRarityBonus(card, masterRank = 0, eventRarityBonusRates = []) {
+  if (!card) return null;
+  const rank = Math.max(0, Math.min(5, Number(masterRank) || 0));
+  const row = eventRarityBonusRates.find((item) =>
+    item.cardRarityType === card.cardRarityType && Number(item.masterRank) === rank
+  );
+  return row ? Number(row.bonusRate) || 0 : null;
+}
