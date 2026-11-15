@@ -11,7 +11,12 @@
 .gt-status{padding:10px 13px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel);font-size:11px;color:var(--unit-muted)}
 .gt-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;padding:13px;margin:12px 0;border:1px solid var(--unit-line);border-radius:17px;background:var(--unit-panel)}
 .gt-count{margin:12px 2px;font-size:12px;font-weight:900;color:var(--unit-ink)}
-.gt-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.gt-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;max-height:min(68vh,680px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;align-content:start;padding:10px;border:1px solid var(--unit-line);border-radius:18px;background:var(--unit-panel);scrollbar-width:thin;scrollbar-color:var(--unit-accent) transparent}
+.gt-cards::-webkit-scrollbar{width:9px}
+.gt-cards::-webkit-scrollbar-track{background:transparent;border-radius:999px}
+.gt-cards::-webkit-scrollbar-thumb{background:var(--unit-accent);border:2px solid transparent;background-clip:padding-box;border-radius:999px}
+.gt-cards .gt-card{min-width:0}
+
 .gt-card,.gt-characters article,.gt-list article,.gt-team label,.gt-compare section{min-width:0;border:1px solid var(--unit-line);border-radius:16px;background:var(--unit-panel);color:var(--unit-ink);box-shadow:var(--unit-shadow);backdrop-filter:blur(12px)}
 .gt-card{overflow:hidden;display:flex;flex-direction:column}
 .gt-art{height:75px;display:flex;justify-content:space-between;padding:10px;background:linear-gradient(130deg,color-mix(in srgb,var(--unit-accent) 35%,transparent),color-mix(in srgb,var(--unit-accent-2) 25%,transparent))}
@@ -29,7 +34,8 @@
 .gt-empty{padding:28px;text-align:center;border:1px dashed var(--unit-line);border-radius:15px;color:var(--unit-muted);font-size:12px}
 .gt-note,.gt-source{font-size:10px;line-height:1.8;color:var(--unit-muted);margin:12px 2px}.gt-source{border-top:1px solid var(--unit-line);padding-top:14px;margin-top:24px}.gt-source a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:900px){.gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.gt-cards,.gt-characters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-team{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.gt-head{align-items:stretch;flex-direction:column}.gt-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-cards,.gt-characters,.gt-compare{grid-template-columns:1fr}.gt-team{grid-template-columns:1fr}.gt-metrics{grid-template-columns:1fr 1fr}.gt-tabs button{padding:8px 10px}}
+.gt-cards{scroll-padding-block:10px}
+@media(max-width:560px){.gt-head{align-items:stretch;flex-direction:column}.gt-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-cards,.gt-characters,.gt-compare{grid-template-columns:1fr}.gt-cards{max-height:58vh;padding:8px}.gt-team{grid-template-columns:1fr}.gt-metrics{grid-template-columns:1fr 1fr}.gt-tabs button{padding:8px 10px}}
 
 
 .gt-score-form{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin:14px 0}
