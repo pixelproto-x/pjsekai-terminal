@@ -77,3 +77,18 @@ to{opacity:1;transform:translateY(0)}}
 #gameToolsRoot .gt-filter-field>label{display:block;cursor:pointer;font-size:11px;font-weight:850;color:var(--unit-ink)}
 #gameToolsRoot .gt-filter-field>input,#gameToolsRoot .gt-filter-field>select{width:100%;min-width:0}
 #gameToolsRoot .gt-search-only{grid-template-columns:minmax(0,1fr)}
+
+/* Stable, tap-to-open game-tool selectors in the browser top layer. */
+#gameToolsRoot .gt-dropdown{position:relative;display:block;min-width:0;width:100%;flex:1}
+#gameToolsRoot .gt-native-select{position:absolute!important;width:1px!important;height:1px!important;min-height:1px!important;padding:0!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
+#gameToolsRoot .gt-dropdown-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:10px 36px 10px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;text-align:left;cursor:pointer;position:relative;touch-action:manipulation}
+#gameToolsRoot .gt-dropdown-trigger:after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:2px solid var(--unit-muted);border-bottom:2px solid var(--unit-muted);transform:translateY(-70%) rotate(45deg);transition:transform .18s}
+#gameToolsRoot .gt-dropdown.is-open .gt-dropdown-trigger:after{transform:translateY(-20%) rotate(225deg)}
+#gameToolsRoot .gt-dropdown-menu{position:fixed;inset:auto;padding:7px;border:1px solid var(--unit-line);border-radius:13px;background:var(--unit-panel-strong);color:var(--unit-ink);box-shadow:0 16px 38px rgba(0,0,0,.22);overflow-y:auto;overscroll-behavior:contain}
+#gameToolsRoot .gt-dropdown-menu:not(:popover-open){display:none}
+#gameToolsRoot .gt-dropdown-option{display:block;width:100%;min-height:38px;padding:9px 11px;border:0;border-radius:8px;background:transparent;color:var(--unit-ink);font:inherit;font-size:12px;text-align:left;cursor:pointer;touch-action:manipulation}
+#gameToolsRoot .gt-dropdown-option:hover,#gameToolsRoot .gt-dropdown-option:focus-visible,#gameToolsRoot .gt-dropdown-option.is-selected{outline:none;background:color-mix(in srgb,var(--unit-accent) 18%,transparent)}
+#gameToolsRoot input:not([type=checkbox]){touch-action:manipulation;-webkit-user-select:text!important;user-select:text!important}
+.gt-region-control .gt-dropdown{min-width:0;flex:1}
+.gt-region-control .gt-dropdown-trigger{min-height:48px;padding:8px 28px 8px 0;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:13px}
+.gt-region-control .gt-dropdown-trigger:after{display:none}
