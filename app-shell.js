@@ -183,6 +183,56 @@ document.addEventListener("click", (event) => {
   if (preset) applyOpacity(preset.dataset.opacity);
 });
 const opacityRange = $("#opacityRange");
+const OPACITY_DETENTS = [12, 22, 35, 48];
+const OPACITY_DETENT_WIDTH = 3.2;
+const OPACITY_DETENT_STRENGTH = 1.1;
+let opacityDragPointerId = null;
+
+function mapOpacityDetentResistance(rawValue) {
+  let value = Math.max(0, Math.min(55, rawValue));
+  for (const detent of OPACITY_DETENTS) {
+    const left = detent - OPACITY_DETENT_WIDTH / 2;
+    const t = (value - left) / OPACITY_DETENT_WIDTH;
+    if (t <= 0 || t >= 1) continue;
+    const correction = OPACITY_DETENT_STRENGTH * OPACITY_DETENT_WIDTH
+      * (Math.sin(2 * Math.PI * t) / (8 * Math.PI)
+        - Math.sin(4 * Math.PI * t) / (16 * Math.PI));
+    value += correction;
+  }
+  return Math.max(0, Math.min(55, value));
+}
+
+function updateOpacityFromPointer(clientX) {
+  if (!opacityRange) return;
+  const rect = opacityRange.getBoundingClientRect();
+  const thumbRadius = 8;
+  const travel = Math.max(1, rect.width - thumbRadius * 2);
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbRadius) / travel));
+  const rawValue = ratio * 55;
+  opacityRange.value = String(Math.round(mapOpacityDetentResistance(rawValue)));
+  opacityRange.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function finishOpacityPointer(event) {
+  if (opacityDragPointerId === null || (event && event.pointerId !== opacityDragPointerId)) return;
+  opacityDragPointerId = null;
+  opacityRange?.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+opacityRange?.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  event.preventDefault();
+  opacityDragPointerId = event.pointerId;
+  opacityRange.setPointerCapture?.(event.pointerId);
+  updateOpacityFromPointer(event.clientX);
+});
+opacityRange?.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== opacityDragPointerId) return;
+  updateOpacityFromPointer(event.clientX);
+});
+opacityRange?.addEventListener("pointerup", finishOpacityPointer);
+opacityRange?.addEventListener("pointercancel", finishOpacityPointer);
+opacityRange?.addEventListener("lostpointercapture", finishOpacityPointer);
 opacityRange?.addEventListener("input", (event) => {
   applyOpacity(event.currentTarget.value, { persist: false });
 });
