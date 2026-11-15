@@ -71,7 +71,7 @@ function mockGoogleTokenInfo(overrides = {}) {
   return () => { globalThis.fetch = originalFetch; };
 }
 
-test("rejects account data requests without a Google ID token", async () => {
+test("rejects account data requests without a Google OAuth access token", async () => {
   const db = makeDatabase();
   const req = new Request("https://worker.example/api/account/data", {
     headers: { Origin: ALLOWED_ORIGIN },
