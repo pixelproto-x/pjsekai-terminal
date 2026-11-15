@@ -299,4 +299,4 @@ assert.match(gameToolsCss, /background-image:url/, "game-tool search field has a
 assert.doesNotMatch(gameToolsJs, /pointerup|field\.focus\(\{preventScroll:true\}\)/, "search is not forcibly refocused after touch");
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-cards\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "card grid uses larger two-column desktop layout");
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-art\{[\s\S]*?height:148px/, "card artwork is restored to a larger size");
-assert.match(html, /game-tools\.css\?v=20261115-game-tools-stable-controls-v9/, "game-tool styles use a fresh cache version");
+assert.match(html, /game-tools\.css\?v=20261115-game-tools-complete-v10/, "game-tool styles use a fresh cache version");
