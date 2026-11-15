@@ -306,6 +306,12 @@ function applyOpacity(value) {
   document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
   try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
 }
+window.PJSEKAI.applyCloudSettings = () => {
+  applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
+  applyOpacity(localStorage.getItem("sekaiGlassOpacity") ?? 22);
+  applyAnniversaryCover(localStorage.getItem("pjskAnniversaryCover") || "6");
+};
+
 try {
   applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
   applyOpacity(localStorage.getItem("sekaiGlassOpacity") ?? 22);
