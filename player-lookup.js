@@ -41,7 +41,7 @@ function createNode(tag, className, text) {
   if (text !== undefined) node.textContent = String(text);
   return node;
 }
-function renderProfile(result, eventRanking = null) {
+function renderProfile(result) {
   const objects = allObjects(result.data);
   const identity = extractPlayerIdentity(result.data, result.uid);
   const root = result.data && typeof result.data === "object" ? result.data : {};
@@ -69,7 +69,6 @@ function renderProfile(result, eventRanking = null) {
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
     ["玩家等級", level == null ? "未提供" : level],
-    ["本期活動排名", eventRanking?.row?.rank ?? (eventRanking?.status === "NO_ACTIVE_EVENT" ? "活動來源目前未回報進行中的活動" : eventRanking?.status === "UNSUPPORTED_REGION" ? "此區暫不支援" : eventRanking?.status === "POINT_BOARD_UNAVAILABLE" ? "本期活動沒有可用的排名看板" : eventRanking?.status === "RANKING_INACTIVE" ? "排名來源目前未啟用" : eventRanking?.status === "NOT_FOUND_TOP_100" ? "此服目前只取得前 100 名資料" : eventRanking?.status === "NOT_FOUND_TOP_2000" ? "正在擴大搜尋範圍" : eventRanking?.status === "SCAN_PROGRESS" ? "正在搜尋第 " + (eventRanking.nextStart || 2001).toLocaleString() + " 名之後" : eventRanking?.status === "NOT_FOUND" ? "已查完整份榜單 未找到此玩家排名" : eventRanking?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認" : eventRanking?.status === "DATA_PENDING" || eventRanking?.error === "EVENT_DATA_PENDING" ? "資料收集中" : eventRanking?.status === "RETRY_FAILED" ? "排名來源連線失敗" : eventRanking?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (eventRanking.upstreamStatus ? " " + eventRanking.upstreamStatus : "") : "暫時無法取得")],
     ["綜合力", power == null ? "未提供" : Number(power).toLocaleString()],
     ["公開角色資料", characters.length ? characters.length + " 筆" : "未提供"],
   ]) {
@@ -108,11 +107,10 @@ function readLookupCache(uid, region) {
     if (!saved?.profile?.data || typeof saved.profile.data !== "object") return null;
     return {
       profile: { ...saved.profile, cached: true },
-      eventRanking: saved.eventRanking || { status: "UNAVAILABLE", row: null },
     };
   } catch { return null; }
 }
-function saveLookupCache(uid, region, profile, eventRanking) {
+function saveLookupCache(uid, region, profile) {
   try {
     localStorage.setItem(lookupCacheKey(uid, region), JSON.stringify({
       profile: {
@@ -122,7 +120,6 @@ function saveLookupCache(uid, region, profile, eventRanking) {
         source: profile.source,
         fetchedAt: profile.fetchedAt,
       },
-      eventRanking,
       savedAt: Date.now(),
     }));
   } catch {
@@ -130,19 +127,6 @@ function saveLookupCache(uid, region, profile, eventRanking) {
   }
 }
 
-function normalizeEventRanking(payload) {
-  if (!payload || typeof payload !== "object") return { status: "UNAVAILABLE", row: null };
-  const source = payload.data && typeof payload.data === "object" ? payload.data
-    : payload.result && typeof payload.result === "object" ? payload.result : payload;
-  const ranking = source.ranking && typeof source.ranking === "object" ? source.ranking : source;
-  const row = source.row ?? ranking.row ?? ranking.result?.row ?? ranking.data?.row
-    ?? (ranking.rank != null ? ranking : null);
-  const status = source.status || (row ? "OK" : source.error ? "UPSTREAM_ERROR" : "UNAVAILABLE");
-  if (status === "OK" && !row && Number(ranking.searchedTo ?? source.searchedTo) >= 2000) {
-    return { ...source, status: "NOT_FOUND_TOP_2000", row: null };
-  }
-  return { ...source, status, row: row ?? null };
-}
 function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
@@ -156,88 +140,6 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-function updateEventRankingValue(payload) {
-  const stat = [...(results?.querySelectorAll(".player-stat") || [])]
-    .find((item) => item.querySelector("small")?.textContent === "本期活動排名");
-  const value = stat?.querySelector("strong");
-  if (!value) return;
-  value.textContent = payload?.row?.rank
-    ?? (payload?.status === "DATA_PENDING" ? "資料收集中 正在等待榜單"
-      : payload?.status === "SCAN_PROGRESS" ? "正在搜尋第 " + Number(payload.nextStart || 2001).toLocaleString() + " 名之後 已查至 " + Number(payload.scannedTo || 0).toLocaleString()
-        : payload?.status === "NO_ACTIVE_EVENT" ? "活動來源目前未回報進行中的活動"
-          : payload?.status === "POINT_BOARD_UNAVAILABLE" ? "本期活動沒有可用的排名看板"
-            : payload?.status === "RANKING_INACTIVE" ? "排名來源目前未啟用 請稍後再手動重試"
-            : payload?.status === "NOT_FOUND_TOP_100" ? "此服目前只取得前 100 名資料" : payload?.status === "NOT_FOUND_TOP_2000" ? "正在擴大搜尋範圍"
-              : payload?.status === "NOT_FOUND" ? "已查完整份榜單 未找到此玩家排名"
-                : payload?.status === "EVENT_CHANGED" ? "活動已更新 正在重新查詢"
-                  : payload?.status === "PENDING_TIMEOUT" ? "榜單仍在收集 請稍後重新查詢"
-                    : payload?.status === "RETRY_FAILED" || payload?.status === "SCAN_FAILED" ? "排名搜尋中斷 已查至 " + Number(payload.scannedTo || 0).toLocaleString() + " 名"
-                      : payload?.status === "UPSTREAM_ERROR" ? "排名來源異常" + (payload.upstreamStatus ? " " + payload.upstreamStatus : "")
-                        : payload?.status === "UNSUPPORTED_REGION" ? "此伺服器目前沒有完整排名來源"
-                          : payload?.status === "UNAVAILABLE" ? "排名來源未回傳有效資料" : "暫時無法取得");
-}
-
-async function continueEventRankingSearch(uid, region, generation, initialPayload) {
-  let current = initialPayload;
-  let lastRequestedStart = null;
-  while (generation === lookupGeneration) {
-    updateEventRankingValue(current);
-    const cached = readLookupCache(uid, region);
-    if (cached) saveLookupCache(uid, region, cached.profile, current);
-
-    if (current.status === "OK" || current.status === "NOT_FOUND"
-      || current.status === "NO_ACTIVE_EVENT" || current.status === "POINT_BOARD_UNAVAILABLE"
-      || current.status === "RANKING_INACTIVE" || current.status === "UNSUPPORTED_REGION"
-      || current.status === "UPSTREAM_ERROR" || current.status === "UNAVAILABLE") return;
-
-    let options = {};
-    if (current.status === "DATA_PENDING") {
-      const seconds = Math.max(5, Math.min(90, Number(current.retryAfter) || 30));
-      await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-      if (generation !== lookupGeneration) return;
-      if (Number.isInteger(Number(current.scanStart)) && Number(current.scanStart) >= 101) {
-        options = {
-          start: Number(current.scanStart),
-          pages: Number(current.scanPages) || 12,
-          eventId: current.event?.id,
-        };
-      }
-    } else if (current.status === "SCAN_PROGRESS") {
-      const nextStart = Number(current.nextStart);
-      if (!Number.isInteger(nextStart) || nextStart < 101 || nextStart === lastRequestedStart) {
-        current = { ...current, status: "SCAN_FAILED" };
-        continue;
-      }
-      lastRequestedStart = nextStart;
-      options = { start: nextStart, pages: 12, eventId: current.event?.id };
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      if (generation !== lookupGeneration) return;
-    } else if (current.status === "EVENT_CHANGED") {
-      options = {};
-    } else {
-      return;
-    }
-
-    try {
-      current = normalizeEventRanking(await provider.getEventRanking(uid, region, options));
-      if (generation !== lookupGeneration) return;
-    } catch (error) {
-      if (generation !== lookupGeneration) return;
-      current = {
-        status: "SCAN_FAILED",
-        row: null,
-        scannedTo: current?.scannedTo ?? 0,
-        upstreamStatus: error?.details?.status ?? null,
-        event: current?.event ?? null,
-      };
-      updateEventRankingValue(current);
-      const latest = readLookupCache(uid, region);
-      if (latest) saveLookupCache(uid, region, latest.profile, current);
-      return;
-    }
-  }
-}
-
 async function lookup(rawUid, requestedRegion) {
   const generation = ++lookupGeneration;
   const uid = String(rawUid ?? "").trim();
@@ -249,7 +151,7 @@ async function lookup(rawUid, requestedRegion) {
   if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
   const saved = readLookupCache(uid, region);
   if (saved) {
-    renderProfile(saved.profile, saved.eventRanking);
+    renderProfile(saved.profile);
     if (status) status.textContent = "已還原上次查詢資料 正在背景更新";
   } else {
     results?.replaceChildren();
@@ -257,41 +159,9 @@ async function lookup(rawUid, requestedRegion) {
   }
   try {
     const result = await provider.getProfile(uid, region);
-    const identity = extractPlayerIdentity(result.data, result.uid);
-    let freshRanking = null;
-    try {
-      // The UID entered by the player is the in-game profileId used by Haneoka.
-      // Do not replace it with userId/playerId from another provider: those ID
-      // fields can belong to a different identifier namespace.
-      const profileId = uid;
-      const previousRanking = saved?.eventRanking;
-      const resumeOptions = previousRanking?.status === "SCAN_PROGRESS"
-        ? { start: previousRanking.nextStart, pages: 12, eventId: previousRanking.event?.id }
-        : previousRanking?.status === "DATA_PENDING" && previousRanking.scanStart
-          ? { start: previousRanking.scanStart, pages: previousRanking.scanPages || 12, eventId: previousRanking.event?.id }
-          : {};
-      freshRanking = normalizeEventRanking(await provider.getEventRanking(profileId, region, resumeOptions));
-    } catch (error) {
-      freshRanking = {
-        status: "UPSTREAM_ERROR",
-        row: null,
-        upstreamStatus: error?.details?.status ?? null,
-      };
-    }
-    // A failed fresh request must never resurrect an old "資料收集中" cache entry.
-    const eventRanking = freshRanking || saved?.eventRanking || { status: "UNAVAILABLE", row: null };
-    renderProfile(result, eventRanking);
-    saveLookupCache(uid, region, result, eventRanking);
-    if (eventRanking.status === "DATA_PENDING" || eventRanking.status === "SCAN_PROGRESS" || eventRanking.status === "EVENT_CHANGED") {
-      void continueEventRankingSearch(uid, region, generation, eventRanking);
-    }
-    if (status) status.textContent = eventRanking.status === "SCAN_PROGRESS" || eventRanking.status === "DATA_PENDING"
-      ? "玩家資料已載入 正在搜尋完整活動排名"
-      : eventRanking.status === "RANKING_INACTIVE"
-        ? "玩家資料已載入 但排名來源目前未啟用 請稍後手動重試"
-        : eventRanking.status === "POINT_BOARD_UNAVAILABLE"
-          ? "玩家資料已載入 但本期點數榜未開放"
-          : "查詢完成 以下為資料來源提供的公開內容";
+    renderProfile(result);
+    saveLookupCache(uid, region, result);
+    if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
     if (saved) {
