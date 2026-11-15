@@ -5,14 +5,15 @@ import worker, { candidates, upstreamError } from "../src/index.js";
 test("uses the public Haruki endpoint for all five regions", () => {
   for (const region of ["jp", "tw", "en", "kr", "cn"]) {
     const list = candidates(region, "123456", {});
-    assert.equal(list[0].name, "Haruki Public");
-    assert.match(list[0].url, new RegExp(`/public/${region}/suite/123456\\?`));
+    const haruki = list.find((item) => item.name === "Haruki Public");
+    assert.ok(haruki);
+    assert.match(haruki.url, new RegExp(`/public/${region}/suite/123456\\?`));
   }
 });
 
 test("adds HiSekai only as a Taiwan fallback", () => {
   assert.deepEqual(candidates("tw", "123", {}).map((item) => item.name), [
-    "Haruki Public", "HiSekai",
+    "HiSekai", "Haruki Public",
   ]);
   assert.deepEqual(candidates("jp", "123", {}).map((item) => item.name), [
     "Haruki Public",
