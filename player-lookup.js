@@ -7,6 +7,12 @@ const $ = (selector) => document.querySelector(selector);
 const status = $("#playerLookupStatus");
 const results = $("#playerLookupResults");
 const button = $("#playerLookupButton");
+const savePlayerButton = $("#savePlayerButton");
+const SAVED_PLAYERS_KEY = "pjskSavedPlayersV1";
+const PLAYER_HISTORY_KEY = "pjskPlayerHistoryV1";
+const MAX_SAVED_PLAYERS = 50;
+const MAX_PLAYER_HISTORY = 10;
+let currentProfile = null;
 let lookupGeneration = 0;
 
 function allObjects(root) {
@@ -42,6 +48,8 @@ function createNode(tag, className, text) {
   return node;
 }
 function renderProfile(result) {
+  currentProfile = result;
+  if (savePlayerButton) savePlayerButton.disabled = false;
   const objects = allObjects(result.data);
   const identity = extractPlayerIdentity(result.data, result.uid);
   const root = result.data && typeof result.data === "object" ? result.data : {};
@@ -65,6 +73,12 @@ function renderProfile(result) {
   heading.append(createNode("p", "", "UID " + uid));
   header.append(heading, createNode("span", "player-source-pill", "資料來源 " + result.source + " " + result.region.toUpperCase()));
   card.append(header);
+  const savedRecord = getSavedPlayers().find((item) => item.uid === uid && item.region === result.region);
+  const favoriteButton = createNode("button", "player-favorite-current", savedRecord?.favorite ? "★ 已收藏" : "☆ 加入收藏");
+  favoriteButton.type = "button";
+  favoriteButton.dataset.playerAction = "favorite-current";
+  favoriteButton.setAttribute("aria-pressed", String(Boolean(savedRecord?.favorite)));
+  card.append(favoriteButton);
 
   const stats = createNode("div", "player-stat-grid");
   for (const [label, value] of [
@@ -127,6 +141,172 @@ function saveLookupCache(uid, region, profile) {
   }
 }
 
+
+function readLocalList(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
+function writeLocalList(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch { window.PJSEKAI?.toast("瀏覽器儲存空間不足 無法保存資料"); return false; }
+}
+function getSavedPlayers() {
+  return readLocalList(SAVED_PLAYERS_KEY)
+    .filter((item) => item && /^[0-9]{1,20}$/.test(String(item.uid || "")) && typeof item.region === "string");
+}
+function renderSavedPlayers() {
+  const list = $("#savedPlayerList");
+  const count = $("#savedPlayerCount");
+  if (!list) return;
+  const players = getSavedPlayers().sort((a, b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+  if (count) count.textContent = players.length + " / " + MAX_SAVED_PLAYERS;
+  list.replaceChildren();
+  if (!players.length) {
+    list.append(createNode("p", "player-workspace-empty", "查詢玩家後即可加入收藏"));
+    return;
+  }
+  players.forEach((player) => {
+    const item = createNode("article", "saved-player-item");
+    const open = createNode("button", "saved-player-open");
+    open.type = "button";
+    open.dataset.playerUid = player.uid;
+    open.append(createNode("strong", "", player.alias || player.name || "未命名玩家"));
+    open.append(createNode("span", "", "UID " + player.uid + " · " + (REGION_LABELS[player.region] || player.region)));
+    if (player.tags?.length) open.append(createNode("small", "saved-player-tags", player.tags.join("　·　")));
+    const actions = createNode("div", "saved-player-actions");
+    const favorite = createNode("button", "player-mini-button", player.favorite ? "★" : "☆");
+    favorite.type = "button";
+    favorite.dataset.savedAction = "favorite";
+    favorite.dataset.savedKey = player.uid + ":" + player.region;
+    favorite.setAttribute("aria-label", player.favorite ? "取消收藏" : "加入收藏");
+    const remove = createNode("button", "player-mini-button", "移除");
+    remove.type = "button";
+    remove.dataset.savedAction = "remove";
+    remove.dataset.savedKey = player.uid + ":" + player.region;
+    actions.append(favorite, remove);
+    item.append(open, actions);
+    list.append(item);
+  });
+}
+function renderPlayerHistory() {
+  const list = $("#playerLookupHistory");
+  if (!list) return;
+  const history = readLocalList(PLAYER_HISTORY_KEY);
+  list.replaceChildren();
+  if (!history.length) {
+    list.append(createNode("p", "player-workspace-empty", "尚無查詢紀錄"));
+    return;
+  }
+  history.forEach((entry) => {
+    const item = createNode("button", "player-history-item");
+    item.type = "button";
+    item.dataset.playerUid = entry.uid;
+    item.append(createNode("strong", "", entry.name || "未命名玩家"));
+    item.append(createNode("span", "", "UID " + entry.uid + " · " + (REGION_LABELS[entry.region] || entry.region)));
+    list.append(item);
+  });
+}
+function rememberPlayer(result) {
+  const identity = extractPlayerIdentity(result.data, result.uid);
+  const history = readLocalList(PLAYER_HISTORY_KEY).filter((item) => item.uid !== result.uid || item.region !== result.region);
+  history.unshift({ uid: result.uid, region: result.region, name: identity.name, lookedAt: Date.now() });
+  writeLocalList(PLAYER_HISTORY_KEY, history.slice(0, MAX_PLAYER_HISTORY));
+  renderPlayerHistory();
+}
+function saveCurrentPlayer() {
+  if (!currentProfile) return;
+  const identity = extractPlayerIdentity(currentProfile.data, currentProfile.uid);
+  const uid = String(currentProfile.uid);
+  const region = currentProfile.region;
+  const players = getSavedPlayers();
+  const existing = players.find((item) => item.uid === uid && item.region === region);
+  if (!existing && players.length >= MAX_SAVED_PLAYERS) {
+    window.PJSEKAI?.toast("最多只能收藏 50 位玩家");
+    return;
+  }
+  const tags = String($("#playerTags")?.value || "").split(/[,，]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 8);
+  const alias = String($("#playerAlias")?.value || "").trim();
+  const record = {
+    uid, region, name: identity.name, alias,
+    tags: tags.length ? tags : (existing?.tags || []),
+    favorite: Boolean(existing?.favorite),
+    updatedAt: Date.now(),
+  };
+  const next = [record, ...players.filter((item) => item.uid !== uid || item.region !== region)];
+  if (writeLocalList(SAVED_PLAYERS_KEY, next)) {
+    renderSavedPlayers();
+    window.PJSEKAI?.toast(existing ? "玩家資料已更新" : "已加入我的玩家");
+  }
+}
+function toggleCurrentFavorite() {
+  if (!currentProfile) return;
+  const uid = String(currentProfile.uid), region = currentProfile.region;
+  const players = getSavedPlayers();
+  const existing = players.find((item) => item.uid === uid && item.region === region);
+  if (!existing) {
+    const identity = extractPlayerIdentity(currentProfile.data, uid);
+    if (players.length >= MAX_SAVED_PLAYERS) {
+      window.PJSEKAI?.toast("最多只能收藏 50 位玩家");
+      return;
+    }
+    players.unshift({ uid, region, name: identity.name, alias: "", tags: [], favorite: true, updatedAt: Date.now() });
+  } else {
+    existing.favorite = !existing.favorite;
+    existing.updatedAt = Date.now();
+  }
+  if (writeLocalList(SAVED_PLAYERS_KEY, players)) {
+    renderSavedPlayers();
+    renderProfile(currentProfile);
+  }
+}
+$("#savePlayerForm")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveCurrentPlayer();
+});
+results?.addEventListener("click", (event) => {
+  if (event.target.closest('[data-player-action="favorite-current"]')) toggleCurrentFavorite();
+});
+$("#savedPlayerList")?.addEventListener("click", (event) => {
+  const open = event.target.closest("[data-player-uid]");
+  const action = event.target.closest("[data-saved-action]");
+  if (action) {
+    const [uid, region] = String(action.dataset.savedKey || "").split(":");
+    const players = getSavedPlayers();
+    const player = players.find((item) => item.uid === uid && item.region === region);
+    if (!player) return;
+    if (action.dataset.savedAction === "remove") {
+      writeLocalList(SAVED_PLAYERS_KEY, players.filter((item) => item !== player));
+      renderSavedPlayers();
+      return;
+    }
+    player.favorite = !player.favorite;
+    player.updatedAt = Date.now();
+    writeLocalList(SAVED_PLAYERS_KEY, players);
+    renderSavedPlayers();
+    return;
+  }
+  if (open) {
+    const uid = open.dataset.playerUid;
+    if ($("#playerUid")) $("#playerUid").value = uid;
+    lookup(uid);
+  }
+});
+$("#playerLookupHistory")?.addEventListener("click", (event) => {
+  const item = event.target.closest("[data-player-uid]");
+  if (!item) return;
+  const uid = item.dataset.playerUid;
+  if ($("#playerUid")) $("#playerUid").value = uid;
+  lookup(uid);
+});
+$("#clearPlayerHistory")?.addEventListener("click", () => {
+  writeLocalList(PLAYER_HISTORY_KEY, []);
+  renderPlayerHistory();
+});
+renderSavedPlayers();
+renderPlayerHistory();
+
 function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
@@ -163,6 +343,7 @@ async function lookup(rawUid) {
     const result = await provider.getProfileAuto(uid);
     renderProfile(result);
     saveLookupCache(uid, region, result);
+    rememberPlayer(result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
   } catch (error) {
