@@ -127,7 +127,8 @@ linear-gradient(180deg,rgba(242,243,247,.025) 0%,rgba(242,243,247,.035) 38%,rgba
 html[data-restore-scroll="pending"] body{visibility:hidden}
 html[data-initial-page="profile"] .page[data-page="home"],
 html[data-initial-page="settings"] .page[data-page="home"],
-html[data-initial-page="songs"] .page[data-page="home"]{display:none}
+html[data-initial-page="songs"] .page[data-page="home"],
+html[data-initial-page="game-tools"] .page[data-page="home"]{display:none}
 html[data-initial-page="profile"] .page[data-page="profile"],
 html[data-initial-page="settings"] .page[data-page="settings"],
 html[data-initial-page="songs"] .page[data-page="songs"],
@@ -1240,6 +1241,15 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
       <div class="songs-section-heading"><div><span class="kicker">MY PLAYLISTS</span><h2>我的歌單</h2></div></div>
       <form id="songPlaylistForm" class="song-playlist-form"><input id="songPlaylistName" maxlength="32" placeholder="輸入歌單名稱" required><button type="submit">建立歌單</button></form>
       <div id="songPlaylistList" class="song-playlist-list"></div>
+    </section>
+  </section>
+  <section class="page" data-page="game-tools">
+    <div class="page-head">
+      <div><div class="sekai-chip">遊戲工具</div><h1 class="page-title">遊戲資料庫</h1><p class="page-subtitle">查詢各伺服器卡片、角色、稱號與活動，編輯隊伍並使用遊戲資料工具</p></div>
+      <button class="back-btn" data-go="home" type="button">回到首頁</button>
+    </div>
+    <section class="game-tools-section" aria-label="遊戲資料庫與隊伍工具">
+      <div id="gameToolsRoot"></div>
     </section>
   </section>
   <section class="page" data-page="profile">
