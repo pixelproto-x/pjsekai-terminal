@@ -233,7 +233,10 @@ try {
     $("#playerUid").value = uid;
     $("#homePlayerUid").value = uid;
     const savedRegion = ["auto", "jp", "tw", "en", "kr", "cn"].includes(savedLookup.region) ? savedLookup.region : "auto";
-    if ($("#playerRegion")) {\n      $("#playerRegion").value = savedRegion;\n      $("#playerRegion").dispatchEvent(new Event("change", { bubbles: true }));\n    }
+    if ($("#playerRegion")) {
+      $("#playerRegion").value = savedRegion;
+      $("#playerRegion").dispatchEvent(new Event("change", { bubbles: true }));
+    }
     const cached = readLookupCache(uid, savedRegion);
     if (cached) {
       renderProfile(cached.profile);
