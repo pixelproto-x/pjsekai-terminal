@@ -259,9 +259,10 @@ async function lookup(rawUid, requestedRegion) {
     const identity = extractPlayerIdentity(result.data, result.uid);
     let freshRanking = null;
     try {
-      // Haneoka searches by the in-game numeric profile ID, not player name.
-      // Prefer the canonical in-game player ID returned by the profile source.
-      const profileId = identity.uid || result.uid || uid;
+      // The UID entered by the player is the in-game profileId used by Haneoka.
+      // Do not replace it with userId/playerId from another provider: those ID
+      // fields can belong to a different identifier namespace.
+      const profileId = uid;
       const previousRanking = saved?.eventRanking;
       const resumeOptions = previousRanking?.status === "SCAN_PROGRESS"
         ? { start: previousRanking.nextStart, pages: 12, eventId: previousRanking.event?.id }
@@ -281,7 +282,7 @@ async function lookup(rawUid, requestedRegion) {
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING" || eventRanking.status === "SCAN_PROGRESS" || eventRanking.status === "EVENT_CHANGED") {
-      void continueEventRankingSearch(identity.uid || result.uid || uid, region, generation, eventRanking);
+      void continueEventRankingSearch(uid, region, generation, eventRanking);
     }
     if (status) status.textContent = eventRanking.status === "SCAN_PROGRESS" || eventRanking.status === "DATA_PENDING"
       ? "玩家資料已載入 正在搜尋完整活動排名"
