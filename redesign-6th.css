@@ -397,3 +397,7 @@ body{color:var(--hub-ink)}
   .styled-select-trigger,.styled-select-option{transition:none}
   .styled-select-menu{animation:none}
 }
+
+
+/* Dropdown menus are portaled to body and positioned in the viewport top layer. */
+.styled-select-menu[style*="position: fixed"]{z-index:2147483647!important;overflow-y:auto;overscroll-behavior:contain}
