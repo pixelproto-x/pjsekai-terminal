@@ -317,7 +317,7 @@ function applyOpacity(value) {
   const closestLevel = opacityLevels.reduce((closest, level) =>
     Math.abs(level.value - amount) < Math.abs(closest.value - amount) ? level : closest
   );
-  if ($("#opacityValue")) $("#opacityValue").textContent = `${closestLevel.label} · ${amount}%`;
+  if ($("#opacityValue")) $("#opacityValue").textContent = `${closestLevel.label} ${amount}`;
   if ($("#opacityRange")) $("#opacityRange").setAttribute("aria-valuetext", `${closestLevel.label}，介面透明度 ${amount}%`);
   document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
   try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
