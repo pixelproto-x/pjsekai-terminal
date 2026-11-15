@@ -86,3 +86,19 @@ test("does not mistake character or card power for combined power", () => {
     userCards: [{ power: 888888 }],
   }), null);
 });
+
+
+test("reads a provider-published team talent value from nested deck data", () => {
+  assert.equal(extractPlayerPower({
+    userGamedata: { rank: 245 },
+    userDecks: [{ deckId: 1, deck: { talent: 276543 } }],
+    userCards: [{ power: 999999 }],
+  }), 276543);
+});
+
+test("does not treat an individual member or card value as team power", () => {
+  assert.equal(extractPlayerPower({
+    userGamedata: { rank: 245 },
+    userDecks: [{ deckId: 1, members: [{ talent: 999999 }], cards: [{ power: 888888 }] }],
+  }), null);
+});
