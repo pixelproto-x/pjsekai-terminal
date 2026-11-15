@@ -352,3 +352,75 @@ test("does not treat inactive ranking pages as pending scans", async () => {
   assert.equal(response.status, 200);
   assert.equal(body.status, "RANKING_INACTIVE");
 });
+
+
+test("uses the Haneoka total board when point ranking is disabled", async () => {
+  const calls = [];
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/7649981479996463925/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        calls.push(value);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({
+            event: {
+              id: 5,
+              pointRankingEnabled: false,
+              totalRankingEnabled: true,
+            },
+          }), { status: 200 });
+        }
+        if (value.endsWith("/tw/events/5/total/latest")) {
+          return new Response(JSON.stringify({
+            rows: [
+              { rank: 1, profileId: "1111111111111111111", scoreExact: "999999" },
+              { rank: 87, profileId: "7649981479996463925", scoreExact: "123456" },
+            ],
+            observedAtMs: 1794700000000,
+            stale: false,
+          }), { status: 200 });
+        }
+        throw new Error("Unexpected upstream URL: " + value);
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "OK");
+  assert.equal(body.row.rank, 87);
+  assert.equal(body.row.scoreExact, "123456");
+  assert.equal(body.source, "Haneoka Total");
+  assert.equal(calls.length, 2);
+});
+
+test("reports the documented top-100 limit for Haneoka total rankings", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/tw/user/7649981479996463925/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async (url) => {
+        const value = String(url);
+        if (value.endsWith("/tw/events/current")) {
+          return new Response(JSON.stringify({
+            event: { id: 5, pointRankingEnabled: false, totalRankingEnabled: true },
+          }), { status: 200 });
+        }
+        if (value.endsWith("/tw/events/5/total/latest")) {
+          return new Response(JSON.stringify({
+            rows: [{ rank: 1, profileId: "1111111111111111111", scoreExact: "999999" }],
+            stale: false,
+          }), { status: 200 });
+        }
+        throw new Error("Unexpected upstream URL: " + value);
+      },
+    },
+  );
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "NOT_FOUND_TOP_100");
+  assert.equal(body.scannedTo, 1);
+});
