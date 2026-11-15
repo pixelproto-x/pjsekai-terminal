@@ -73,3 +73,18 @@ test("Cloudflare provider rejects unsupported regions", async () => {
 
   await assert.rejects(provider.getProfile("123", "xx"), { code: "REGION_UNSUPPORTED" });
 });
+
+
+test("event ranking always uses the documented in-game profile ID search", async () => {
+  let requested = "";
+  const provider = createCloudflarePlayerProvider({
+    fetchImpl: async (url) => {
+      requested = String(url);
+      return jsonResponse({ status: "OK", row: { rank: 12 } });
+    },
+    cache: createCache({ storage: null }),
+  });
+  const result = await provider.getEventRanking("123456789", "tw", { name: "不應送出的名稱" });
+  assert.equal(requested, CLOUDFLARE_PLAYER_API + "/api/tw/user/123456789/event-ranking");
+  assert.equal(result.row.rank, 12);
+});
