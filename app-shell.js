@@ -343,6 +343,24 @@ function serverIcon(region) {
   return svg;
 }
 
+function positionServerPickerMenu(wrapper) {
+  const trigger = wrapper?.querySelector(".server-picker-trigger");
+  const menu = wrapper?.querySelector(".server-picker-menu");
+  if (!trigger || !menu || !menu.matches(":popover-open")) return;
+
+  const triggerRect = trigger.getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  const margin = 12;
+  const left = Math.max(margin, Math.min(triggerRect.left, window.innerWidth - menuRect.width - margin));
+  const below = triggerRect.bottom + 8;
+  const top = below + menuRect.height <= window.innerHeight - margin
+    ? below
+    : Math.max(margin, triggerRect.top - menuRect.height - 8);
+
+  menu.style.left = left + "px";
+  menu.style.top = top + "px";
+}
+
 function initServerSelect(select) {
   if (select.dataset.serverPickerReady) return;
   select.dataset.serverPickerReady = "true";
@@ -363,8 +381,8 @@ function initServerSelect(select) {
   trigger.append(current, chevron);
   const menu = document.createElement("div");
   menu.className = "server-picker-menu";
+  menu.setAttribute("popover", "manual");
   menu.setAttribute("role", "listbox");
-  menu.hidden = true;
   [...select.options].forEach((option) => {
     const item = document.createElement("button");
     item.type = "button";
@@ -387,12 +405,13 @@ function initServerSelect(select) {
   select.insertAdjacentElement("afterend", wrapper);
   wrapper.append(trigger, menu);
   trigger.addEventListener("click", () => {
-    const open = !menu.hidden;
-    document.querySelectorAll(".server-picker-menu:not([hidden])").forEach((node) => closeServerPicker(node.parentElement));
+    const open = menu.matches(":popover-open");
+    document.querySelectorAll(".server-picker-menu:popover-open").forEach((node) => closeServerPicker(node.closest(".server-picker")));
     if (!open) {
-      menu.hidden = false;
+      menu.showPopover();
       trigger.setAttribute("aria-expanded", "true");
       wrapper.classList.add("is-open");
+      positionServerPickerMenu(wrapper);
     }
   });
   select.addEventListener("change", () => syncServerSelect(select));
@@ -405,12 +424,10 @@ function closeServerPicker(wrapper) {
   const trigger = wrapper.querySelector(".server-picker-trigger");
   if (trigger) trigger.setAttribute("aria-expanded", "false");
   wrapper.classList.remove("is-open");
-  if (!menu || menu.hidden || menu.classList.contains("is-closing")) return;
-  menu.classList.add("is-closing");
-  menu.addEventListener("animationend", () => {
-    menu.hidden = true;
-    menu.classList.remove("is-closing");
-  }, { once: true });
+  if (!menu || !menu.matches(":popover-open")) return;
+  menu.hidePopover();
+  menu.style.removeProperty("left");
+  menu.style.removeProperty("top");
 }
 
 function syncServerSelect(select) {
@@ -433,3 +450,10 @@ document.addEventListener("click", (event) => {
   }
 });
 window.PJSEKAI = { ...(window.PJSEKAI || {}), syncServerSelect };
+
+window.addEventListener("scroll", () => {
+  document.querySelectorAll(".server-picker.is-open").forEach(positionServerPickerMenu);
+}, true);
+window.addEventListener("resize", () => {
+  document.querySelectorAll(".server-picker.is-open").forEach(positionServerPickerMenu);
+}, { passive: true });
