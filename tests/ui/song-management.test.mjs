@@ -62,6 +62,8 @@ console.log("Song management UI smoke tests passed.");
 
 
 assert.match(js, /difficulty-' \+ chart\.musicDifficulty/, "difficulty badge class is derived from each chart's own difficulty");
+assert.match(js, /const matchingCharts = charts\\.filter/, "level filter checks charts against the selected range");
+assert.match(js, /const allCharts = getCharts/, "filtered cards use a separate chart list");
 for (const difficulty of ["easy","normal","hard","expert","master","append"]) {
   assert.match(css, new RegExp("\\.song-difficulty\\.difficulty-" + difficulty), difficulty + " badge uses its Project SEKAI palette");
 }
