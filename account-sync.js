@@ -52,6 +52,7 @@ function applySnapshot(data) {
   window.PJSEKAI?.applyCloudSettings?.();
   window.PJSEKAI?.applyCloudUiState?.();
   window.PJSEKAI?.refreshCloudSongData?.();
+  window.dispatchEvent(new Event("pjsk:cloud-data-applied"));
 }
 
 async function api(method, body) {
