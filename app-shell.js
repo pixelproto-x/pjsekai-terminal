@@ -337,6 +337,7 @@ function applyAnniversaryCover(value) {
   }
   const select = $("#anniversaryCoverSelect");
   if (select) select.value = year;
+  window.refreshStyledSelect?.(select);
   const eyebrow = $("#anniversaryCoverEyebrow");
   if (eyebrow) eyebrow.textContent = "世界計畫" + option.label;
   const headline = $("#anniversaryCoverHeadline");
