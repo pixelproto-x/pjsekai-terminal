@@ -56,6 +56,7 @@ assert.doesNotMatch(html, /六大團體主題/, "old theme section wording is re
 assert.ok(html.includes('<span aria-hidden="true">↑</span>'), "back-to-top circle uses an upward arrow");
 assert.doesNotMatch(html, /id="homePlayerRegion"|id="playerRegion"/, "player lookup does not require manual region selection");
 assert.match(html, /id="songRegion"/, "song manager keeps its independent server selector");
+assert.match(html, /<label for="songRegion">選擇伺服器<\/label>/, "song manager selector label is concise");
 assert.match(html, /@supports \(appearance:base-select\)/, "song server selector enables the customizable CSS picker where supported");
 assert.match(html, /::picker\(select\)/, "song server dropdown popup has its own CSS styling");
 assert.match(html, /option:checked/, "selected song server has a custom highlighted state");
@@ -78,6 +79,7 @@ assert.match(songsCss, /songs-toolbar select::picker\(select\)/, "song difficult
 assert.match(songsCss, /song-record select::picker\(select\)/, "song record dropdowns have styled popups");
 assert.match(songsCss, /:open::picker-icon/, "song dropdown arrows animate when opened");
 assert.match(songsCss, /server-picker-open/, "song server dropdown has an opening animation");
+assert.match(songsCss, /\.songs-region-row>\.server-picker \.server-picker-menu\{min-width:150px;width:max-content;max-width:min\(190px,calc\(100vw - 28px\)\)\}/, "song server popup stays compact instead of expanding to the full viewport");
 assert.match(songsCss, /server-picker-close/, "song server dropdown has a closing animation");
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
