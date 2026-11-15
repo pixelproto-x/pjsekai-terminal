@@ -55,33 +55,45 @@ export function extractPlayerRanking(data) {
 
 
 const PLAYER_POWER_KEYS = Object.freeze([
-  "totalPower", "total_power", "teamPower", "team_power",
-  "totalTalent", "total_talent", "talent", "power", "powerValue", "power_value",
+  "totalPower", "total_power", "totalPowerValue", "total_power_value",
+  "teamPower", "team_power", "teamTalent", "team_talent",
+  "totalTalent", "total_talent", "talentPower", "talent_power",
+  "deckPower", "deck_power", "powerValue", "power_value", "power", "talent",
 ]);
 const DECK_CONTAINER_KEYS = Object.freeze([
   "userDecks", "user_decks", "decks", "team", "teams",
-  "mainTeam", "main_team", "userTeam", "user_team", "deck", "userDeck", "user_deck",
+  "mainTeam", "main_team", "userTeam", "user_team",
+  "deck", "userDeck", "user_deck", "deckInfo", "teamInfo",
+  "data", "result", "profile", "userProfile", "user_profile",
+  "userGamedata", "user_gamedata", "player", "user",
 ]);
 const NON_DECK_KEYS = /card|character|member|support|leader/i;
 
-function publishedDeckPower(value, depth = 0) {
-  if (depth > 4 || value == null) return null;
+function publishedDeckPower(value, depth = 0, seen = new WeakSet()) {
+  if (depth > 6 || value == null) return null;
   if (Array.isArray(value)) {
     for (const item of value) {
-      const found = publishedDeckPower(item, depth + 1);
+      const found = publishedDeckPower(item, depth + 1, seen);
       if (found != null) return found;
     }
     return null;
   }
   const object = asObject(value);
-  if (!object) return null;
+  if (!object || seen.has(object)) return null;
+  seen.add(object);
   const direct = firstValue([object], PLAYER_POWER_KEYS);
   if (direct != null && Number.isFinite(Number(direct)) && Number(direct) > 0) return direct;
   for (const key of DECK_CONTAINER_KEYS) {
     if (NON_DECK_KEYS.test(key)) continue;
     const child = object[key];
     if (child && typeof child === "object") {
-      const found = publishedDeckPower(child, depth + 1);
+      const found = publishedDeckPower(child, depth + 1, seen);
+      if (found != null) return found;
+    }
+  }
+  for (const [key, child] of Object.entries(object)) {
+    if (/^\\d+$/.test(key) && child && typeof child === "object") {
+      const found = publishedDeckPower(child, depth + 1, seen);
       if (found != null) return found;
     }
   }
@@ -90,21 +102,24 @@ function publishedDeckPower(value, depth = 0) {
 
 export function extractPlayerPower(data) {
   const root = asObject(data) || {};
-  const gameData = asObject(root.userGamedata)
-    || asObject(root.user_gamedata)
-    || asObject(root.user)
-    || root;
-  const profile = asObject(root.userProfile)
-    || asObject(root.user_profile)
-    || asObject(root.profile)
-    || {};
-  // Prefer an explicitly published account total. Otherwise accept a total
-  // published on a deck/team object, including providers that call it talent.
-  // Never sum card values or read power from individual card/character records.
-  const accountPower = firstValue([gameData, profile, root], PLAYER_POWER_KEYS);
+  const roots = [root];
+  for (const key of ["data", "result", "profile", "userProfile", "user_profile", "player", "user"]) {
+    const child = asObject(root[key]);
+    if (child) roots.push(child);
+  }
+  const gameData = roots.map((item) => asObject(item.userGamedata)
+    || asObject(item.user_gamedata)).filter(Boolean);
+  const profile = roots.map((item) => asObject(item.userProfile)
+    || asObject(item.user_profile)).filter(Boolean);
+  const accountObjects = [...gameData, ...profile, ...roots];
+  const accountPower = firstValue(accountObjects, PLAYER_POWER_KEYS);
   if (accountPower != null && Number.isFinite(Number(accountPower)) && Number(accountPower) > 0) {
     return accountPower;
   }
-  return publishedDeckPower(root.userDecks ?? root.user_decks ?? root.decks
-    ?? root.team ?? root.teams ?? root.mainTeam ?? root.main_team);
+  for (const item of roots) {
+    const found = publishedDeckPower(item.userDecks ?? item.user_decks ?? item.decks
+      ?? item.team ?? item.teams ?? item.mainTeam ?? item.main_team);
+    if (found != null) return found;
+  }
+  return null;
 }
