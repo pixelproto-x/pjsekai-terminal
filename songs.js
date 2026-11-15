@@ -14,7 +14,10 @@ const STORAGE = {
   playlists: "pjskSongPlaylists",
 };
 const difficultyNames = { easy: "EASY", normal: "NORMAL", hard: "HARD", expert: "EXPERT", master: "MASTER", append: "APPEND" };
-const state = { songs: [], difficulties: [], chartsBySong: new Map(), favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
+const state = { songs: [], difficulties: [], chartsBySong: new Map(), maxLevelBySong: new Map(), favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
+const songTitleCollator = new Intl.Collator("ja");
+let songsLoaded = false;
+let searchTimer = 0;
 const SONGS_PER_RENDER = 60;
 let renderedSongLimit = SONGS_PER_RENDER;
 let loadMoreButton = null;
@@ -57,11 +60,12 @@ function indexCharts(charts) {
     grouped.get(key).push(chart);
   }
   const order = ["easy", "normal", "hard", "expert", "master", "append"];
-  for (const entries of grouped.values()) entries.sort((a, b) => order.indexOf(a.musicDifficulty) - order.indexOf(b.musicDifficulty));
+  state.maxLevelBySong = new Map();
+  for (const [songId, entries] of grouped) {
+    entries.sort((a, b) => order.indexOf(a.musicDifficulty) - order.indexOf(b.musicDifficulty));
+    state.maxLevelBySong.set(songId, entries.reduce((max, chart) => Math.max(max, Number(chart.playLevel) || 0), 0));
+  }
   state.chartsBySong = grouped;
-}
-function getRecordCount(songId) {
-  return Object.keys(state.records).filter((key) => key.startsWith(songId + ":") && state.records[key]?.status).length;
 }
 function updateOverview() {
   $("#songTotal").textContent = state.songs.length.toLocaleString("zh-TW");
@@ -74,13 +78,17 @@ function visibleSongs() {
   const difficulty = $("#songDifficulty").value;
   const levelRange = $("#songLevel").value;
   const [minLevel, maxLevel] = levelRange ? levelRange.split("-").map(Number) : [0, 99];
+  const playedSongIds = new Set();
+  for (const [key, record] of Object.entries(state.records)) {
+    if (record?.status) playedSongIds.add(Number(key.slice(0, key.indexOf(":"))));
+  }
   let list = state.songs.filter((song) => {
     const charts = getCharts(song.id);
     const matchesQuery = !query || [song.title, song.lyricist, song.composer, song.arranger].some((value) => String(value || "").toLocaleLowerCase().includes(query));
     const matchesDifficulty = !difficulty || charts.some((chart) => chart.musicDifficulty === difficulty);
     const matchesLevel = charts.some((chart) => chart.playLevel >= minLevel && chart.playLevel <= maxLevel && (!difficulty || chart.musicDifficulty === difficulty));
     const matchesFavorite = state.filter !== "favorites" || state.favorites.has(song.id);
-    const matchesUnplayed = state.filter !== "unplayed" || getRecordCount(song.id) === 0;
+    const matchesUnplayed = state.filter !== "unplayed" || !playedSongIds.has(Number(song.id));
     const matchesPlaylist = !state.playlistFilterIds || state.playlistFilterIds.has(song.id);
     return matchesQuery && matchesDifficulty && matchesLevel && matchesFavorite && matchesUnplayed && matchesPlaylist;
   });
@@ -88,8 +96,8 @@ function visibleSongs() {
   if (sort === "newest") list.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0));
   else if (sort === "level-desc" || sort === "level-asc") {
     const direction = sort === "level-desc" ? -1 : 1;
-    list.sort((a, b) => direction * (Math.max(0, ...getCharts(a.id).map((c) => c.playLevel)) - Math.max(0, ...getCharts(b.id).map((c) => c.playLevel))));
-  } else list.sort((a, b) => a.title.localeCompare(b.title, "ja"));
+    list.sort((a, b) => direction * ((state.maxLevelBySong.get(Number(a.id)) || 0) - (state.maxLevelBySong.get(Number(b.id)) || 0)));
+  } else list.sort((a, b) => songTitleCollator.compare(a.title, b.title));
   if (state.randomId !== null) list = list.filter((song) => song.id === state.randomId);
   return list;
 }
@@ -156,8 +164,8 @@ async function loadSongs(region = $("#songRegion").value) {
   status.textContent = "正在載入" + REGION_NAMES[region] + "歌曲資料";
   try {
     const [songsResponse, chartsResponse] = await Promise.all([
-      fetch(dataRoot + "/musics.json", { cache: "no-cache" }),
-      fetch(dataRoot + "/musicDifficulties.json", { cache: "no-cache" }),
+      fetch(dataRoot + "/musics.json"),
+      fetch(dataRoot + "/musicDifficulties.json"),
     ]);
     if (!songsResponse.ok || !chartsResponse.ok) throw new Error("歌曲資料來源暫時無法連線");
     const [songs, charts] = await Promise.all([songsResponse.json(), chartsResponse.json()]);
@@ -183,12 +191,14 @@ async function loadSongs(region = $("#songRegion").value) {
       chart.musicDifficulty
     );
     indexCharts(state.difficulties);
+    songsLoaded = true;
     renderedSongLimit = SONGS_PER_RENDER;
 
     renderSongs();
     status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
   } catch (error) {
     if (version !== loadVersion) return;
+    songsLoaded = false;
     status.textContent = REGION_NAMES[region] + " " + error.message + " 請稍後重新整理";
     $("#songTotal").textContent = "載入失敗";
   }
@@ -206,12 +216,21 @@ window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
 $("#songRegion").addEventListener("change", () => {
   writeStorage("pjskSongRegion", $("#songRegion").value);
   state.randomId = null;
+  songsLoaded = false;
   loadSongs($("#songRegion").value);
 });
 state.favorites = new Set(readStorage(STORAGE.favorites, []));
 state.records = readStorage(STORAGE.records, {});
 state.playlists = readStorage(STORAGE.playlists, []);
-$("#songSearch").addEventListener("input", () => { renderedSongLimit = SONGS_PER_RENDER; state.randomId = null; saveSongView(); renderSongs(); });
+$("#songSearch").addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    renderedSongLimit = SONGS_PER_RENDER;
+    state.randomId = null;
+    saveSongView();
+    renderSongs();
+  }, 100);
+});
 ["songDifficulty", "songLevel", "songSort"].forEach((id) => $("#" + id).addEventListener("change", () => { renderedSongLimit = SONGS_PER_RENDER; state.randomId = null; saveSongView(); renderSongs(); }));
 $("#songShowAll").addEventListener("click", () => setFilter("all"));
 $("#songShowFavorites").addEventListener("click", () => setFilter("favorites"));
@@ -306,10 +325,18 @@ window.PJSEKAI = { ...(window.PJSEKAI || {}), refreshCloudSongData: () => {
   if (cloudRegion !== $("#songRegion").value) {
     $("#songRegion").value = cloudRegion;
     window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
-    loadSongs(cloudRegion);
-  } else {
-    renderSongs();
+    songsLoaded = false;
+  }
+  if (document.querySelector('.page.active[data-page="songs"]')) {
+    if (!songsLoaded) loadSongs(cloudRegion);
+    else renderSongs();
   }
 } };
 
-loadSongs();
+function ensureSongsLoaded() {
+  if (!songsLoaded) loadSongs($("#songRegion").value);
+}
+window.addEventListener("pjsekai:pagechange", (event) => {
+  if (event.detail?.page === "songs") ensureSongsLoaded();
+});
+if (document.querySelector('.page.active[data-page="songs"]')) ensureSongsLoaded();
