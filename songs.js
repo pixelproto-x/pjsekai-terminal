@@ -14,7 +14,10 @@ const STORAGE = {
   playlists: "pjskSongPlaylists",
 };
 const difficultyNames = { easy: "EASY", normal: "NORMAL", hard: "HARD", expert: "EXPERT", master: "MASTER", append: "APPEND" };
-const state = { songs: [], difficulties: [], favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
+const state = { songs: [], difficulties: [], chartsBySong: new Map(), favorites: new Set(), records: {}, playlists: [], filter: "all", randomId: null, playlistFilterIds: null };
+const SONGS_PER_RENDER = 60;
+let renderedSongLimit = SONGS_PER_RENDER;
+let loadMoreButton = null;
 const SONG_VIEW_KEY = "pjskSongViewV1";
 const savedSongView = readStorage(SONG_VIEW_KEY, {});
 function saveSongView() {
@@ -44,10 +47,18 @@ function escapeHTML(value) {
 }
 function recordKey(songId, difficulty) { return songId + ":" + difficulty; }
 function getCharts(songId) {
-  return state.difficulties.filter((chart) => chart.musicId === songId).sort((a, b) => {
-    const order = ["easy", "normal", "hard", "expert", "master", "append"];
-    return order.indexOf(a.musicDifficulty) - order.indexOf(b.musicDifficulty);
-  });
+  return state.chartsBySong.get(Number(songId)) || [];
+}
+function indexCharts(charts) {
+  const grouped = new Map();
+  for (const chart of charts) {
+    const key = Number(chart.musicId);
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(chart);
+  }
+  const order = ["easy", "normal", "hard", "expert", "master", "append"];
+  for (const entries of grouped.values()) entries.sort((a, b) => order.indexOf(a.musicDifficulty) - order.indexOf(b.musicDifficulty));
+  state.chartsBySong = grouped;
 }
 function getRecordCount(songId) {
   return Object.keys(state.records).filter((key) => key.startsWith(songId + ":") && state.records[key]?.status).length;
@@ -84,7 +95,8 @@ function visibleSongs() {
 }
 function renderSongs() {
   const songs = visibleSongs();
-  $("#songList").innerHTML = songs.map((song) => {
+  const visibleBatch = songs.slice(0, renderedSongLimit);
+  $("#songList").innerHTML = visibleBatch.map((song) => {
     const charts = getCharts(song.id);
     const chartMarkup = charts.map((chart) => {
       const key = recordKey(song.id, chart.musicDifficulty);
@@ -105,7 +117,20 @@ function renderSongs() {
       '<button class="song-playlist-add" type="button" data-action="playlist-add">加入歌單</button></div></article>';
   }).join("");
   $("#songEmpty").hidden = songs.length > 0;
-  $("#songDataStatus").textContent = "顯示 " + songs.length.toLocaleString("zh-TW") + " 首歌曲 伺服器 " + REGION_NAMES[$("#songRegion").value];
+  if (!loadMoreButton) {
+    loadMoreButton = document.createElement("button");
+    loadMoreButton.type = "button";
+    loadMoreButton.className = "song-load-more";
+    loadMoreButton.addEventListener("click", () => {
+      renderedSongLimit += SONGS_PER_RENDER;
+      renderSongs();
+    });
+    $("#songList").insertAdjacentElement("afterend", loadMoreButton);
+  }
+  const remaining = Math.max(0, songs.length - visibleBatch.length);
+  loadMoreButton.hidden = remaining === 0;
+  loadMoreButton.textContent = remaining ? "載入更多歌曲（還有 " + remaining.toLocaleString("zh-TW") + " 首）" : "";
+  $("#songDataStatus").textContent = "顯示 " + visibleBatch.length.toLocaleString("zh-TW") + " / " + songs.length.toLocaleString("zh-TW") + " 首歌曲 伺服器 " + REGION_NAMES[$("#songRegion").value];
   updateOverview();
   renderPlaylists();
 }
@@ -115,6 +140,7 @@ function renderPlaylists() {
   ).join("") || '<div class="songs-empty">尚未建立歌單</div>';
 }
 function setFilter(filter) {
+  renderedSongLimit = SONGS_PER_RENDER;
   state.filter = filter;
   state.randomId = null;
   state.playlistFilterIds = null;
@@ -156,6 +182,8 @@ async function loadSongs(region = $("#songRegion").value) {
       availableSongIds.has(Number(chart.musicId)) &&
       chart.musicDifficulty
     );
+    indexCharts(state.difficulties);
+    renderedSongLimit = SONGS_PER_RENDER;
 
     renderSongs();
     status.textContent = REGION_NAMES[region] + "歌曲資料已更新 共 " + state.songs.length.toLocaleString("zh-TW") + " 首";
@@ -183,8 +211,8 @@ $("#songRegion").addEventListener("change", () => {
 state.favorites = new Set(readStorage(STORAGE.favorites, []));
 state.records = readStorage(STORAGE.records, {});
 state.playlists = readStorage(STORAGE.playlists, []);
-$("#songSearch").addEventListener("input", () => { state.randomId = null; saveSongView(); renderSongs(); });
-["songDifficulty", "songLevel", "songSort"].forEach((id) => $("#" + id).addEventListener("change", () => { state.randomId = null; saveSongView(); renderSongs(); }));
+$("#songSearch").addEventListener("input", () => { renderedSongLimit = SONGS_PER_RENDER; state.randomId = null; saveSongView(); renderSongs(); });
+["songDifficulty", "songLevel", "songSort"].forEach((id) => $("#" + id).addEventListener("change", () => { renderedSongLimit = SONGS_PER_RENDER; state.randomId = null; saveSongView(); renderSongs(); }));
 $("#songShowAll").addEventListener("click", () => setFilter("all"));
 $("#songShowFavorites").addEventListener("click", () => setFilter("favorites"));
 $("#songShowUnplayed").addEventListener("click", () => setFilter("unplayed"));
