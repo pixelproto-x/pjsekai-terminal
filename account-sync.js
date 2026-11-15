@@ -16,14 +16,6 @@ const signOutButton = document.getElementById("googleAccountSignOut");
 function showStatus(message) {
   if (status) status.textContent = message;
 }
-function googleSubject(token) {
-  try {
-    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(payload)).sub || "";
-  } catch {
-    return "";
-  }
-}
 function snapshot() {
   const data = {};
   for (const key of SYNC_KEYS) {
@@ -84,7 +76,7 @@ function scheduleSync() {
 function signOut() {
   idToken = "";
   clearTimeout(syncTimer);
-  window.google?.accounts?.id?.disableAutoSelect?.();
+
   if (signOutButton) signOutButton.hidden = true;
   if (button) {
     button.textContent = "使用 Google 登入";
@@ -98,14 +90,14 @@ async function onGoogleCredential(response) {
   if (button) button.disabled = true;
   showStatus("正在載入雲端資料…");
   try {
-    const subject = googleSubject(idToken);
+    const cloud = await api("GET");
+    const subject = String(cloud.accountSub || "");
     if (!subject) throw new Error("GOOGLE_IDENTITY_INVALID");
     const previousSubject = localStorage.getItem(ACCOUNT_SCOPE_KEY);
     if (previousSubject && previousSubject !== subject) {
       for (const key of SYNC_KEYS) localStorage.removeItem(key);
       showStatus("正在切換 Google 帳號並隔離本機資料…");
     }
-    const cloud = await api("GET");
     const cloudData = cloud.data || {};
     const hasCloudData = Object.keys(cloudData).length > 0;
     const localData = snapshot();
@@ -147,7 +139,7 @@ async function initializeGoogleSignIn() {
   if (!button) return;
   try {
     await new Promise((resolve, reject) => {
-      if (window.google?.accounts?.id) return resolve();
+      if (window.google?.accounts?.oauth2) return resolve();
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
@@ -155,18 +147,23 @@ async function initializeGoogleSignIn() {
       script.onerror = reject;
       document.head.append(script);
     });
-    window.google.accounts.id.initialize({
+    const tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
+      scope: "openid email profile",
       callback: onGoogleCredential,
-      auto_select: true,
-      cancel_on_tap_outside: false
+      error_callback: (error) => {
+        if (error.type === "popup_closed") showStatus("已取消 Google 登入");
+        else showStatus("Google 登入視窗無法開啟，請允許彈出式視窗後重試");
+        if (button) button.disabled = false;
+      }
     });
-    window.google.accounts.id.renderButton(button, {
-      type: "standard", theme: "outline", size: "large",
-      text: "signin_with", shape: "pill", width: 210
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      showStatus("正在開啟 Google 帳號授權視窗…");
+      tokenClient.requestAccessToken({ prompt: "select_account" });
     });
-    window.google.accounts.id.prompt();
-    showStatus("可使用 Google 帳號登入並同步資料");
+    showStatus("按下按鈕即可使用 Google 帳號登入並同步資料");
   } catch {
     showStatus("Google 登入元件載入失敗，請檢查網路後重新整理");
   }
