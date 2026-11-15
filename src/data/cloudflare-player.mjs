@@ -38,6 +38,33 @@ export function createCloudflarePlayerProvider({
       const query = params.toString();
       return fetchJson(query ? url + "?" + query : url, { fetchImpl, signal: options.signal, timeoutMs });
     },
+    async getProfileAuto(input, options = {}) {
+      const uid = normalizePlayerUid(input);
+      const cacheKey = "auto:profile:" + uid;
+      const cached = cache.get(cacheKey);
+      if (cached) return { ...cached, cached: true };
+
+      const url = CLOUDFLARE_PLAYER_API + "/api/auto/user/" + encodeURIComponent(uid) + "/profile";
+      const payload = await fetchJson(url, { fetchImpl, signal: options.signal, timeoutMs });
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)
+        || !payload.data || typeof payload.data !== "object" || Array.isArray(payload.data)
+        || !REGIONS.includes(payload.region)) {
+        const error = new TypeError("Cloudflare player API returned an unexpected auto-detected profile payload.");
+        error.code = "UPSTREAM_INVALID_PAYLOAD";
+        throw error;
+      }
+
+      const result = {
+        data: payload.data,
+        uid: String(payload.uid ?? uid),
+        region: payload.region,
+        source: payload.source ?? "Cloudflare Player API",
+        fetchedAt: payload.fetchedAt ?? new Date(now()).toISOString(),
+        cached: false,
+      };
+      cache.set(cacheKey, result, CACHE_TTL_MS);
+      return result;
+    },
     async getProfile(input, region = "tw", options = {}) {
       const uid = normalizePlayerUid(input);
       if (!REGIONS.includes(region)) {
