@@ -38,3 +38,11 @@ assert.match(js, /All Perfect/, "AP record option exists");
 assert.match(css, /\.song-card/, "song cards have dedicated styling");
 assert.match(css, /@media\(max-width:640px\)/, "song manager has mobile styling");
 console.log("Song management UI smoke tests passed.");
+
+
+for (const difficulty of ["easy","normal","hard","expert","master","append"]) {
+  assert.match(js, new RegExp("difficulty-" + difficulty), difficulty + " badge uses its own game difficulty class");
+  assert.match(css, new RegExp("\\.song-difficulty\\.difficulty-" + difficulty), difficulty + " badge uses its Project SEKAI palette");
+}
+assert.match(css, /position-area:block-end span-inline/, "native song selectors open below their controls");
+assert.match(css, /position-try-fallbacks:none/, "native song selectors do not flip upward");
