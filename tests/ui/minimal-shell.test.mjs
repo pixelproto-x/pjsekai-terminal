@@ -8,11 +8,9 @@ const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url)
 const workspaceCss = await readFile(new URL("../../player-workspace.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const workspace = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
+assert.match(workspace, /return select;/, "player workspace filters use the same native select controls as other database sections");
+assert.doesNotMatch(workspace, /document\.body\.append\(menu\)/, "player workspace does not create detached custom filter popups");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
-assert.match(workspace, /document\.body\.append\(menu\)/, "player workspace filter menus are portaled outside clipping containers");
-assert.match(workspace, /menu\.contains\(event\.target\)/, "clicking a player filter option does not trigger outside dismissal");
-assert.match(workspace, /typeof menu\.showPopover === "function"/, "player filter dropdown has a fallback when Popover API is unavailable");
-assert.match(workspace, /event\.key === "Escape"/, "player filter dropdown can be dismissed with Escape");
 
 
 assert.match(html, /redesign-6th\.css/, "sixth anniversary UI stylesheet remains linked");
