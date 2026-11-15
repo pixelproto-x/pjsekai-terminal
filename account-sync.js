@@ -268,5 +268,9 @@ async function restoreSession() {
   }
 }
 
-signOutButton?.addEventListener("click", signOut);
+signOutButton?.addEventListener("click", () => {
+  if (!accessToken) return;
+  if (!window.confirm("確定要登出 Google 帳號嗎？登出後將停止雲端同步。")) return;
+  signOut();
+});
 initializeGoogleSignIn().then(() => restoreSession());
