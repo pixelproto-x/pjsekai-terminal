@@ -102,7 +102,7 @@ window.addEventListener("storage", (event) => {
   if (SYNC_KEYS.includes(event.key)) scheduleSync();
 });
 document.addEventListener("input", scheduleSync);
-document.addEventListener("change", scheduleSync);
+document.addEventListener("change", scheduleSync);\ndocument.addEventListener("click", scheduleSync);
 window.addEventListener("pagehide", () => {
   if (idToken) {
     const payload = JSON.stringify({ data: snapshot() });
@@ -113,13 +113,6 @@ window.addEventListener("pagehide", () => {
 
 async function initializeGoogleSignIn() {
   if (!button) return;
-  button.addEventListener("click", () => {
-    if (!window.google?.accounts?.id) {
-      showStatus("Google 登入元件尚未載入，請稍後再試");
-      return;
-    }
-    window.google.accounts.id.prompt();
-  });
   try {
     await new Promise((resolve, reject) => {
       if (window.google?.accounts?.id) return resolve();
