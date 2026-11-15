@@ -24,19 +24,26 @@ function snapshot() {
   return data;
 }
 function applySnapshot(data) {
+  let changed = false;
   applyingCloud = true;
   try {
     for (const key of SYNC_KEYS) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        localStorage.setItem(key, String(data[key]));
-      } else {
-        localStorage.removeItem(key);
-      }
+      const hasValue = Object.prototype.hasOwnProperty.call(data, key);
+      const nextValue = hasValue ? String(data[key]) : null;
+      const currentValue = localStorage.getItem(key);
+      if (currentValue !== nextValue) changed = true;
+      if (hasValue) localStorage.setItem(key, nextValue);
+      else localStorage.removeItem(key);
     }
   } finally {
     applyingCloud = false;
   }
-  showStatus("雲端資料已載入，重新整理頁面即可套用所有設定");
+  if (changed) {
+    showStatus("雲端資料已載入，正在套用設定…");
+    window.location.reload();
+    return;
+  }
+  showStatus("雲端資料已同步");
 }
 async function api(method, body) {
   const response = await fetch(API_BASE + "/api/account/data", {
