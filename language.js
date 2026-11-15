@@ -82,6 +82,7 @@
     const menu = document.createElement("div");
     menu.className = "styled-select-menu";
     menu.setAttribute("role", "listbox");
+    menu.setAttribute("popover", "manual");
     menu.hidden = true;
     select.parentNode.insertBefore(wrapper, select);
     wrapper.append(select, trigger, menu);
@@ -102,9 +103,11 @@
         : Math.max(8, rect.top - maxHeight - gap) + "px";
     };
     const close = () => {
+      if (menu.matches(":popover-open")) menu.hidePopover();
       menu.hidden = true;
       trigger.setAttribute("aria-expanded", "false");
       wrapper.classList.remove("is-open");
+      ["position","z-index","left","top","width","max-height"].forEach((property) => menu.style.removeProperty(property));
     };
     const refresh = () => {
       const selected = select.selectedOptions[0];
@@ -132,16 +135,18 @@
       document.querySelectorAll(".styled-select.is-open").forEach((other) => {
         other._closeStyledSelect?.();
       });
-      menu.hidden = !opening;
-      trigger.setAttribute("aria-expanded", String(opening));
-      wrapper.classList.toggle("is-open", opening);
       if (opening) {
-        document.body.append(menu);
+        menu.hidden = false;
+        menu.showPopover();
+        trigger.setAttribute("aria-expanded", "true");
+        wrapper.classList.add("is-open");
         placeMenu();
+      } else {
+        close();
       }
     });
     document.addEventListener("click", (event) => {
-      if (!wrapper.contains(event.target) && !menu.contains(event.target)) close();
+      if (!wrapper.contains(event.target)) close();
     });
     window.addEventListener("resize", () => { if (!menu.hidden) placeMenu(); });
     window.addEventListener("scroll", () => { if (!menu.hidden) placeMenu(); }, true);
