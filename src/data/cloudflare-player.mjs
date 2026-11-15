@@ -25,7 +25,18 @@ export function createCloudflarePlayerProvider({
       }
       if (region === "cn") return { status: "UNSUPPORTED_REGION", row: null, event: null };
       const url = CLOUDFLARE_PLAYER_API + "/api/" + region + "/user/" + encodeURIComponent(uid) + "/event-ranking";
-      return fetchJson(url, { fetchImpl, signal: options.signal, timeoutMs });
+      const params = new URLSearchParams();
+      if (Number.isInteger(Number(options.start)) && Number(options.start) >= 101) {
+        params.set("start", String(Number(options.start)));
+      }
+      if (Number.isInteger(Number(options.pages)) && Number(options.pages) > 0) {
+        params.set("pages", String(Math.min(20, Number(options.pages))));
+      }
+      if (options.eventId != null && String(options.eventId).trim()) {
+        params.set("eventId", String(options.eventId));
+      }
+      const query = params.toString();
+      return fetchJson(query ? url + "?" + query : url, { fetchImpl, signal: options.signal, timeoutMs });
     },
     async getProfile(input, region = "tw", options = {}) {
       const uid = normalizePlayerUid(input);
