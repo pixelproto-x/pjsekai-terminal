@@ -50,6 +50,15 @@ for (const region of ["jp", "en", "tw", "kr", "cn"]) {
   assert.match(html, new RegExp(`id="songRegion"[\\s\\S]*?<option value="${region}"`), region + " song database can be selected");
 }
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
+assert.match(shell, /chevron\.textContent = "⌃"/, "song server picker points upward while closed");
+assert.match(shell, /server-picker-menu\.is-closing/, "song server picker supports an animated close state");
+assert.match(shell, /menu\.addEventListener\("animationend"/, "song server picker waits for its close animation before hiding");
+const songsCss = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
+assert.match(songsCss, /songs-toolbar select::picker\(select\)/, "song difficulty, level, and sort dropdowns have styled popups");
+assert.match(songsCss, /song-record select::picker\(select\)/, "song record dropdowns have styled popups");
+assert.match(songsCss, /:open::picker-icon/, "song dropdown arrows animate when opened");
+assert.match(songsCss, /server-picker-open/, "song server dropdown has an opening animation");
+assert.match(songsCss, /server-picker-close/, "song server dropdown has a closing animation");
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual remains");
