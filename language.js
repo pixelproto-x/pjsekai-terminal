@@ -209,6 +209,33 @@
   window.enhanceStyledSelect = enhanceStyledSelect;
   window.refreshStyledSelect = refreshStyledSelect;
 
+  function initializeSelector() {
+    const select = document.getElementById("interfaceLanguageSelect");
+    const status = document.getElementById("interfaceLanguageStatus");
+    if (!select) return;
+    for (const [code, name] of languages) {
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = name;
+      select.append(option);
+    }
+    select.value = preference;
+    enhanceStyledSelect(select);
+    enhanceStyledSelect(document.getElementById("anniversaryCoverSelect"));
+    if (status) {
+      const name = activeLanguage === SOURCE_LANGUAGE ? "繁體中文" : supported.get(activeLanguage);
+      status.textContent = preference === "auto"
+        ? "已依瀏覽器語言設定 " + name + " 翻譯由 Google 翻譯提供"
+        : "目前使用 " + name + " 翻譯由 Google 翻譯提供";
+    }
+    select.addEventListener("change", () => {
+      const next = select.value === "auto" || supported.has(select.value) ? select.value : "auto";
+      try { localStorage.setItem(STORAGE_KEY, next); } catch {}
+      writeTranslateCookie(effectiveLanguage(next));
+      location.reload();
+    });
+  }
+
   window.googleTranslateElementInit = function googleTranslateElementInit() {
     if (!window.google?.translate?.TranslateElement) return;
     new window.google.translate.TranslateElement({
