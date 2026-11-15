@@ -55,6 +55,7 @@ function restoreUiState(state = savedUiState) {
     } else if (typeof saved === "string" || typeof saved === "number") {
       element.value = String(saved);
     }
+    window.refreshStyledSelect?.(element);
   }
 }
 restoreUiState();
