@@ -407,8 +407,19 @@ body{
   -webkit-touch-callout:none;
   user-select:none;
 }
-input,textarea{
-  user-select:text;
+input,textarea,select,[contenteditable="true"]{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  pointer-events:auto;
+}
+/* The page disables text selection globally for app-like card interactions.
+   Explicitly restore editing and caret selection on all form controls. */
+#homePlayerUid,#playerUid,.player-form input,.hub-lookup-control input{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  -webkit-touch-callout:default;
+  pointer-events:auto;
+  cursor:text;
 }
 button{
   -webkit-tap-highlight-color:transparent;
