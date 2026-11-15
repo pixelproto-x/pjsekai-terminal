@@ -160,3 +160,46 @@ body[data-sekai-theme="nightcord"] .preview-glass{color:#eeeaf7}
 /* Let the headline accent follow the selected unit theme without losing contrast */
 body[data-sekai-theme] .anniversary-hero h1 span{background-image:linear-gradient(105deg,#fff 8%,color-mix(in srgb,var(--unit-accent-2) 34%,white) 58%,color-mix(in srgb,var(--unit-accent-2) 68%,white) 100%)}
 body[data-sekai-theme] .anniversary-hero h1 em{color:color-mix(in srgb,var(--unit-accent-2) 62%,white);text-shadow:0 2px 16px rgba(0,0,0,.42)}
+
+/* Global legibility pass: keep secondary and accent text readable in every unit theme. */
+body[data-sekai-theme]{
+ --muted:var(--unit-muted);
+ --hub-muted:var(--unit-muted);
+ --ink:var(--unit-ink);
+ --text:var(--unit-ink);
+}
+body[data-sekai-theme="virtual-singer"]{--unit-muted:#435c70;--unit-accent-text:#08758a}
+body[data-sekai-theme="leo-need"]{--unit-muted:#4d6078;--unit-accent-text:#315d91}
+body[data-sekai-theme="more-more-jump"]{--unit-muted:#486657;--unit-accent-text:#286d50}
+body[data-sekai-theme="vivid-bad-squad"]{--unit-muted:#c8cedb;--unit-accent-text:#ff9aaa}
+body[data-sekai-theme="wonderlands-showtime"]{--unit-muted:#5d4d78;--unit-accent-text:#6545a0}
+body[data-sekai-theme="nightcord"]{--unit-muted:#c9c4d9;--unit-accent-text:#d2c3ff}
+
+/* Common secondary copy, metadata, hints and navigation labels. */
+body[data-sekai-theme] :where(
+ .brand-text span,.hub-lookup p,.page-subtitle,.settings-row-head span,.data-status,
+ .theme-choice small,.footer,.tab,.player-empty-note,.player-stat small,
+ .player-result-head p,.player-team-row span:last-child,.player-status,
+ .section-link,.settings-scale,.settings-scale small,.cover-select-label,
+ .strategy-head p,.strategy-field label,.strategy-note,.strategy-status,
+ .dojo-head p,.dojo-control label,.dojo-help,.dojo-recommend,.dojo-runtime-status,
+ .song-result small,.dojo-metric small,.material-row small,.dojo-practice-point-head,
+ .dojo-practice-runtime-status
+){color:var(--unit-muted)!important;opacity:1!important}
+
+/* Accent-colored words use a darker/lighter accessible tone, not the decorative accent. */
+body[data-sekai-theme] :where(.hub-eyebrow,.kicker,.msk-card-kicker,.section-head .kicker,.tab.active){
+ color:var(--unit-accent-text)!important;opacity:1!important
+}
+body[data-sekai-theme] :where(a,button,input,select,textarea,[role="button"],[role="option"]):focus-visible{
+ outline:2px solid var(--unit-accent-text)!important;outline-offset:3px
+}
+body[data-sekai-theme] :where(input,select,textarea)::placeholder{color:var(--unit-muted)!important;opacity:1!important}
+body[data-sekai-theme] :where(.player-source-pill,.player-source-link){color:var(--unit-accent-text)!important}
+body[data-sekai-theme] :where(.hub-lookup-control button,.player-form button,.settings-presets button.active){
+ color:#172235!important;text-shadow:none!important
+}
+body[data-sekai-theme="vivid-bad-squad"] :where(.hub-lookup-control button,.player-form button,.settings-presets button.active),
+body[data-sekai-theme="nightcord"] :where(.hub-lookup-control button,.player-form button,.settings-presets button.active){
+ color:#171522!important
+}
