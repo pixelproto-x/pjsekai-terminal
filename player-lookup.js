@@ -123,6 +123,7 @@ function renderProfile(result) {
   }
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
+  window.dispatchEvent(new CustomEvent("pjsk:player-loaded", { detail: result }));
 }
 const PLAYER_LOOKUP_CACHE_PREFIX = "pjskPlayerLookupCacheV3:";
 
