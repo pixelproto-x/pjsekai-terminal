@@ -23,6 +23,9 @@ assert.doesNotMatch(themes, /colorfulstage\.com|pjsekai\.sega\.jp/, "unit themes
 assert.match(html, /class="bottom-bar"/, "bottom navigation remains");
 assert.match(html, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/, "bottom navigation has one grid column per visible tab");
 assert.match(shell, /function syncTabIndicator\(\)/, "bottom selection bubble is positioned from the active tab");
+assert.match(shell, /lowResourceSignals/, "low-resource devices are detected for adaptive rendering");
+assert.match(shell, /pjsekai:pagechange/, "page navigation notifies lazy-loaded features");
+assert.match(html, /html\.low-performance[\s\S]*?backdrop-filter:none !important/, "low-resource mode disables expensive glass blur effects");
 assert.match(shell, /tabIndicator\.style\.setProperty\("--tab-left"/, "bottom selection bubble receives its horizontal position");
 assert.match(html, /pointer-events:auto;touch-action:none;cursor:grab/, "selection bubble accepts pointer and touch dragging");
 assert.match(shell, /bottomBar\.addEventListener\("pointerdown"/, "navigation container receives pointer down over the selection bubble");
