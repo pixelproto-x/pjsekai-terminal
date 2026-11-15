@@ -27,7 +27,11 @@ export function extractPlayerIdentity(data, fallbackUid = "") {
   const records = [gameData, profile, root];
   return {
     name: firstValue(records, ["name", "nickname", "userName", "playerName", "displayName"]) || "未提供名稱",
-    uid: String(firstValue([gameData, profile, root], ["userId", "user_id", "playerId", "player_id"]) ?? fallbackUid),
+    // The API's top-level UID is an exact string. Prefer it over nested 64-bit
+    // JSON numbers, which may already have lost precision in JavaScript.
+    uid: String(fallbackUid !== undefined && fallbackUid !== null && String(fallbackUid) !== ""
+      ? fallbackUid
+      : firstValue([gameData, profile, root], ["userId", "user_id", "playerId", "player_id"]) ?? ""),
     // Project SEKAI stores the player's account level in userGamedata.rank.
     // Do not search nested cards/characters: their level/rank fields are unrelated.
     level: firstValue([gameData], ["rank", "level", "userLevel", "user_level"]),
