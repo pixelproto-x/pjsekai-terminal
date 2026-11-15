@@ -395,11 +395,8 @@ window.PJSEKAI.applyCloudSettings = () => {
   applyAnniversaryCover(localStorage.getItem("pjskAnniversaryCover") || "6");
 };
 window.PJSEKAI.applyCloudUiState = () => {
-  const cloudState = readUiState();
-  restoreUiState(cloudState);
-  const route = validRoutes.has(cloudState.activePage) ? cloudState.activePage : "home";
-  const activeRoute = document.querySelector(".page.active")?.dataset.page;
-  if (activeRoute !== route) go(route, false);
+  // Cloud sync may update shared controls, but navigation is always device-local.
+  restoreUiState(readUiState());
 };
 
 try {
