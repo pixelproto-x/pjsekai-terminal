@@ -21,8 +21,8 @@
 .gt-status{display:flex;align-items:center;gap:9px;margin:0 0 15px;padding:11px 14px;border:1px solid var(--unit-line);border-radius:13px;background:var(--unit-panel);font-size:11px;color:var(--unit-muted)}
 .gt-status:before{content:"";width:7px;height:7px;flex:none;border-radius:50%;background:var(--unit-accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--unit-accent) 13%,transparent)}
 .gt-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;padding:15px;margin:12px 0;border:1px solid var(--unit-line);border-radius:18px;background:var(--unit-panel);box-shadow:var(--unit-shadow)}
-#gameToolsRoot input:not([type=checkbox]),#gameToolsRoot select{width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;outline:none;transition:border-color .18s,box-shadow .18s}
-#gameToolsRoot input:focus-visible,#gameToolsRoot select:focus-visible{border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 15%,transparent)}
+#gameToolsRoot input:not([type=checkbox]){width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;outline:none;transition:border-color .18s,box-shadow .18s}
+#gameToolsRoot input:focus-visible{border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 15%,transparent)}
 #gameToolsRoot input::placeholder{color:var(--unit-muted);opacity:.8}
 .gt-count{margin:13px 3px;font-size:12px;font-weight:900;color:var(--unit-ink)}
 .gt-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-height:min(68vh,700px);overflow:auto;overscroll-behavior:contain;align-content:start;padding:11px;border:1px solid var(--unit-line);border-radius:19px;background:var(--unit-panel);scrollbar-width:thin;scrollbar-color:var(--unit-accent) transparent}
@@ -94,9 +94,6 @@ to{opacity:1;transform:translateY(0)}}
 #gameToolsRoot .gt-actions button[data-fav]{color:var(--unit-accent)}
 #gameToolsRoot input:not([type=checkbox]){touch-action:manipulation;-webkit-user-select:text!important;user-select:text!important}
 @media(max-width:900px){#gameToolsRoot .gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}#gameToolsRoot .gt-filter-field:first-child{grid-column:span 3}}
-@media(max-width:620px){#gameToolsRoot .gt-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px;gap:11px}#gameToolsRoot .gt-filter-field:first-child{grid-column:1/-1}#gameToolsRoot .gt-dropdown-menu{border-radius:14px}}
-@media(prefers-reduced-motion:reduce){#gameToolsRoot .gt-dropdown-trigger,#gameToolsRoot .gt-dropdown-option{transition:none}#gameToolsRoot .gt-dropdown-menu:popover-open{animation:none}}
-
 
 /* Final card layout: larger artwork, readable metadata, balanced desktop grid. */
 #gameToolsRoot .gt-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px;max-height:min(70vh,760px)}
@@ -117,33 +114,39 @@ to{opacity:1;transform:translateY(0)}}
 @media(max-width:620px){#gameToolsRoot .gt-cards{grid-template-columns:1fr;gap:12px;padding:10px;max-height:62vh}#gameToolsRoot .gt-card{min-height:0}#gameToolsRoot .gt-art{height:150px;min-height:150px}#gameToolsRoot .gt-card-body{padding:15px 16px 13px}#gameToolsRoot .gt-card h3{font-size:15px}#gameToolsRoot .gt-actions{padding:0 16px 15px}}
 
 
-/* Stable native selects: Safari/iOS owns the option picker; controls remain theme-styled. */
-#gameToolsRoot select{position:relative;z-index:1;display:block;width:100%;min-width:0;min-height:46px;padding:10px 38px 10px 13px;appearance:none;-webkit-appearance:none;border:1px solid color-mix(in srgb,var(--unit-line) 78%,var(--unit-accent) 22%);border-radius:13px;background-color:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;line-height:1.35;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a8494' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px;transition:border-color .18s,box-shadow .18s,background-color .18s}
-#gameToolsRoot select:hover{border-color:var(--unit-accent)}
-#gameToolsRoot select:focus-visible{outline:none;border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 18%,transparent)}
-#gameToolsRoot select option{background:#fff;color:#202638}
-#gameToolsRoot .gt-region-control select#gtRegion{flex:1;width:100%;min-height:48px;padding:8px 28px 8px 0;border:0;border-radius:0;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a8494' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:15px;color:var(--unit-ink);font-size:13px;box-shadow:none}
-#gameToolsRoot .gt-region-control select#gtRegion:focus-visible{outline:none;box-shadow:none}
-#gameToolsRoot input:not([type=checkbox]){-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation}
-@media(prefers-reduced-motion:reduce){#gameToolsRoot select{transition:none}}
-
 #gameToolsRoot .gt-rank-label{display:grid;gap:7px;margin-top:3px;font-size:10px;font-weight:800;color:var(--unit-muted)}
 #gameToolsRoot .gt-rank-label select{min-height:38px;font-size:11px}
 
 
 
 
-/* Match the working song controls: keep every game-tool filter as a native select. */
+
+/* Native dropdowns: one real select per field, matching the song filters. */
 #gameToolsRoot select{
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:10px 12px;
   appearance:auto!important;
   -webkit-appearance:auto!important;
+  background-image:none!important;
+  border:1px solid var(--unit-line);
+  border-radius:12px;
+  background-color:var(--unit-panel-strong);
+  color:var(--unit-ink);
+  font:inherit;
+  font-size:12px;
+  line-height:1.35;
   pointer-events:auto!important;
   touch-action:manipulation;
-  background-image:none!important;
+  cursor:pointer;
+  transition:border-color .18s,box-shadow .18s;
 }
-#gameToolsRoot .gt-region-control select#gtRegion{
-  appearance:auto!important;
-  -webkit-appearance:auto!important;
-  background-image:none!important;
-  padding-right:10px!important;
-}
+#gameToolsRoot select:hover{border-color:var(--unit-accent)}
+#gameToolsRoot select:focus-visible{outline:none;border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 18%,transparent)}
+#gameToolsRoot .gt-region-control select#gtRegion{flex:1;width:100%;min-height:48px;padding:8px 10px;border:0;border-radius:0;background-color:transparent;background-image:none!important;color:var(--unit-ink);font-size:13px;box-shadow:none}
+#gameToolsRoot .gt-region-control select#gtRegion:focus-visible{outline:none;box-shadow:none}
+#gameToolsRoot .gt-rank-label{display:grid;gap:7px;margin-top:3px;font-size:10px;font-weight:800;color:var(--unit-muted)}
+#gameToolsRoot .gt-rank-label select{min-height:38px;font-size:11px}
+@media(prefers-reduced-motion:reduce){#gameToolsRoot select{transition:none}}
