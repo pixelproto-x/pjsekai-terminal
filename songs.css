@@ -179,3 +179,121 @@
 
 /* Override legacy per-ID native-select layout rules after adding the visual picker */
 #homePlayerRegion.server-picker-native,#playerRegion.server-picker-native{display:none!important}
+
+
+/* Song controls: themed customizable dropdowns with a short open/close motion */
+.page[data-page="songs"] .songs-toolbar select,
+.page[data-page="songs"] .song-record select{
+  cursor:pointer;
+}
+@supports (appearance:base-select){
+  .page[data-page="songs"] .songs-toolbar select,
+  .page[data-page="songs"] .song-record select{
+    appearance:base-select;
+    -webkit-appearance:base-select;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-inline:12px 10px;
+  }
+  .page[data-page="songs"] .songs-toolbar select::picker(select),
+  .page[data-page="songs"] .song-record select::picker(select){
+    appearance:base-select;
+    position-area:block-end span-inline;
+    justify-self:start;
+    margin-block-start:7px;
+    min-width:anchor-size(width);
+    max-width:calc(100vw - 28px);
+    box-sizing:border-box;
+    padding:7px;
+    border:1px solid var(--unit-line,var(--line));
+    border-radius:15px;
+    background:var(--unit-panel-strong,rgba(250,251,255,.97));
+    color:var(--unit-ink,var(--ink));
+    box-shadow:0 16px 40px rgba(18,28,48,.2),inset 0 1px 0 rgba(255,255,255,.55);
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+    opacity:0;
+    transform:translateY(-7px) scale(.985);
+    transform-origin:top center;
+    transition:opacity .18s ease,transform .18s ease,display .18s allow-discrete,overlay .18s allow-discrete;
+  }
+  .page[data-page="songs"] .songs-toolbar select:open::picker(select),
+  .page[data-page="songs"] .song-record select:open::picker(select){
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+  @starting-style{
+    .page[data-page="songs"] .songs-toolbar select:open::picker(select),
+    .page[data-page="songs"] .song-record select:open::picker(select){
+      opacity:0;
+      transform:translateY(-7px) scale(.985);
+    }
+  }
+  .page[data-page="songs"] .songs-toolbar select::picker-icon,
+  .page[data-page="songs"] .song-record select::picker-icon{
+    content:"⌃";
+    color:var(--unit-accent,#8272cf);
+    font-size:15px;
+    line-height:1;
+    transition:transform .2s ease,color .2s ease;
+  }
+  .page[data-page="songs"] .songs-toolbar select:open::picker-icon,
+  .page[data-page="songs"] .song-record select:open::picker-icon{
+    transform:rotate(180deg);
+  }
+  .page[data-page="songs"] .songs-toolbar select option,
+  .page[data-page="songs"] .song-record select option{
+    min-height:37px;
+    padding:9px 11px;
+    border-radius:9px;
+    background:transparent;
+    color:var(--unit-ink,var(--ink));
+    font:700 11px/1.4 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+    transition:background .15s ease,color .15s ease;
+  }
+  .page[data-page="songs"] .songs-toolbar select option:checked,
+  .page[data-page="songs"] .song-record select option:checked{
+    background:color-mix(in srgb,var(--unit-accent,#8272cf) 17%,transparent);
+    color:var(--unit-ink,var(--ink));
+  }
+  .page[data-page="songs"] .songs-toolbar select option:hover,
+  .page[data-page="songs"] .song-record select option:hover{
+    background:color-mix(in srgb,var(--unit-accent,#8272cf) 12%,transparent);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .page[data-page="songs"] .songs-toolbar select::picker(select),
+  .page[data-page="songs"] .song-record select::picker(select),
+  .page[data-page="songs"] .songs-toolbar select::picker-icon,
+  .page[data-page="songs"] .song-record select::picker-icon{
+    transition:none;
+  }
+}
+
+/* The song server's custom picker uses the same direction and motion */
+.server-picker-chevron{transform:rotate(0deg)}
+.server-picker-menu{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  transform-origin:top center;
+  animation:server-picker-open .19s cubic-bezier(.2,.75,.25,1) both;
+}
+.server-picker-menu.is-closing{
+  pointer-events:none;
+  animation:server-picker-close .15s ease both;
+}
+@keyframes server-picker-open{
+  from{opacity:0;transform:translateY(-7px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes server-picker-close{
+  from{opacity:1;transform:translateY(0) scale(1)}
+  to{opacity:0;transform:translateY(-5px) scale(.985)}
+}
+.server-picker.is-open .server-picker-chevron{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){
+  .server-picker-menu,.server-picker-menu.is-closing{animation:none}
+  .server-picker-chevron{transition:none}
+}
