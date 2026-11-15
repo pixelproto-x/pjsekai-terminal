@@ -104,6 +104,74 @@ function upstreamError(statuses, region) {
   };
 }
 
+
+const MAX_ACCOUNT_DATA_BYTES = 128 * 1024;
+const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
+
+async function verifyGoogleIdentity(request, env) {
+  const authorization = request.headers.get("Authorization") || "";
+  const match = authorization.match(/^Bearer ([A-Za-z0-9._~-]+)$/);
+  if (!match || !env.GOOGLE_CLIENT_ID) return null;
+  try {
+    const response = await fetch(GOOGLE_TOKENINFO_URL + "?id_token=" + encodeURIComponent(match[1]), {
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const token = await response.json();
+    if (token.aud !== env.GOOGLE_CLIENT_ID ||
+        !["accounts.google.com", "https://accounts.google.com"].includes(token.iss) ||
+        !token.sub || !Number.isFinite(Number(token.exp)) ||
+        Number(token.exp) * 1000 <= Date.now() || token.email_verified !== "true") return null;
+    return { sub: String(token.sub), email: String(token.email || "") };
+  } catch {
+    return null;
+  }
+}
+
+async function handleAccountData(request, env, origin) {
+  if (!env.USER_DATA_DB) return json({ error: "USER_DATA_DB_NOT_CONFIGURED" }, 503, origin);
+  const identity = await verifyGoogleIdentity(request, env);
+  if (!identity) return json({ error: "UNAUTHORIZED" }, 401, origin);
+
+  if (request.method === "GET") {
+    const row = await env.USER_DATA_DB.prepare(
+      "SELECT data, updated_at FROM user_data WHERE google_sub = ?"
+    ).bind(identity.sub).first();
+    if (!row) return json({ data: {}, updatedAt: null }, 200, origin);
+    try {
+      return json({ data: JSON.parse(row.data), updatedAt: row.updated_at }, 200, origin);
+    } catch {
+      return json({ error: "STORED_DATA_INVALID" }, 500, origin);
+    }
+  }
+
+  if (request.method === "PUT") {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > MAX_ACCOUNT_DATA_BYTES) {
+      return json({ error: "DATA_TOO_LARGE", maxBytes: MAX_ACCOUNT_DATA_BYTES }, 413, origin);
+    }
+    let payload;
+    try { payload = JSON.parse(raw); } catch {
+      return json({ error: "INVALID_JSON" }, 400, origin);
+    }
+    if (!payload || typeof payload !== "object" || Array.isArray(payload) ||
+        !payload.data || typeof payload.data !== "object" || Array.isArray(payload.data)) {
+      return json({ error: "INVALID_DATA" }, 400, origin);
+    }
+    const serialized = JSON.stringify(payload.data);
+    if (new TextEncoder().encode(serialized).byteLength > MAX_ACCOUNT_DATA_BYTES) {
+      return json({ error: "DATA_TOO_LARGE", maxBytes: MAX_ACCOUNT_DATA_BYTES }, 413, origin);
+    }
+    const updatedAt = new Date().toISOString();
+    await env.USER_DATA_DB.prepare(
+      "INSERT INTO user_data (google_sub, email, data, updated_at) VALUES (?, ?, ?, ?) " +
+      "ON CONFLICT(google_sub) DO UPDATE SET email = excluded.email, data = excluded.data, updated_at = excluded.updated_at"
+    ).bind(identity.sub, identity.email, serialized, updatedAt).run();
+    return json({ saved: true, updatedAt }, 200, origin);
+  }
+  return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
+}
+
 function originFor(request) {
   return request.headers.get("Origin") === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "";
 }
@@ -120,18 +188,28 @@ export default {
         status: 204,
         headers: {
           "access-control-allow-origin": origin,
-          "access-control-allow-methods": "GET, OPTIONS",
-          "access-control-allow-headers": "Content-Type",
+          "access-control-allow-methods": "GET, PUT, OPTIONS",
+          "access-control-allow-headers": "Content-Type, Authorization",
           "access-control-max-age": "86400",
           "vary": "Origin",
         },
       });
     }
+    const url = new URL(request.url);
+    if (url.pathname === "/api/account/data") {
+      if (!["GET", "PUT"].includes(request.method)) {
+        return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
+      }
+      try {
+        return await handleAccountData(request, env, origin);
+      } catch {
+        return json({ error: "ACCOUNT_DATA_OPERATION_FAILED" }, 500, origin);
+      }
+    }
     if (request.method !== "GET") {
       return json({ error: "METHOD_NOT_ALLOWED" }, 405, origin);
     }
 
-    const url = new URL(request.url);
     if (url.pathname === "/health") {
       return json({
         status: "ok",
