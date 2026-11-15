@@ -227,7 +227,7 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
 .player-workspace-tools .player-filter-dropdown.is-open .player-filter-trigger:after{
   transform:translateY(-20%) rotate(225deg);
 }
-.player-workspace-tools .player-filter-menu{
+.player-filter-menu{
   position:absolute;z-index:300;top:calc(100% + 8px);left:0;right:0;
   display:grid;gap:4px;max-height:min(260px,45vh);overflow-y:auto;
   padding:7px;border:1px solid var(--unit-line,var(--line));border-radius:15px;
@@ -236,18 +236,18 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
   transform-origin:top center;animation:player-filter-pop .18s cubic-bezier(.2,.8,.2,1);
   backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);
 }
-.player-workspace-tools .player-filter-menu[hidden]{display:none}
-.player-workspace-tools .player-filter-option{
+.player-filter-menu[hidden]{display:none}
+.player-filter-option{
   width:100%;min-height:36px;padding:8px 10px;border:0;border-radius:9px;
   text-align:left;color:var(--unit-ink,var(--ink));background:transparent;
   font:inherit;font-size:12px;font-weight:600;cursor:pointer;
   transition:background .15s ease,color .15s ease,transform .15s ease;
 }
-.player-workspace-tools .player-filter-option:hover,
-.player-workspace-tools .player-filter-option:focus-visible{
+.player-filter-option:hover,
+.player-filter-option:focus-visible{
   outline:none;background:color-mix(in srgb,var(--unit-accent,var(--violet)) 14%,transparent);
 }
-.player-workspace-tools .player-filter-option.is-selected{
+.player-filter-option.is-selected{
   color:var(--unit-accent-text,var(--unit-ink,var(--ink)));
   background:color-mix(in srgb,var(--unit-accent,var(--violet)) 22%,transparent);
   font-weight:800;
@@ -257,10 +257,10 @@ body[data-sekai-theme] .player-workspace-tools select option:checked{
   to{opacity:1;transform:translateY(0) scale(1)}
 }
 @media(prefers-reduced-motion:reduce){
-  .player-workspace-tools .player-filter-trigger,.player-workspace-tools .player-filter-option{transition:none}
-  .player-workspace-tools .player-filter-menu{animation:none}
+  .player-workspace-tools .player-filter-trigger,.player-filter-option{transition:none}
+  .player-filter-menu{animation:none}
 }
 
 
 /* Filter menus are portaled to body to escape parent stacking and overflow contexts. */
-.player-workspace-tools .player-filter-menu[style*="position: fixed"]{z-index:2147483647!important;overflow-y:auto;overscroll-behavior:contain}
+.player-filter-menu[style*="position: fixed"]{z-index:2147483647!important;overflow-y:auto;overscroll-behavior:contain}
