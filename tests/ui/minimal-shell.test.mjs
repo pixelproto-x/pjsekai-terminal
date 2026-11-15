@@ -210,4 +210,10 @@ assert.match(app, /Math\.sin\(2 \* Math\.PI \* t\)/, "opacity resistance uses a 
 assert.doesNotMatch(app.slice(app.indexOf("const opacityRange"), app.indexOf('$("#homeBrand")')), /Math\.round\(.*detent|return detent/, "opacity slider does not snap or magnetically pull to markers");
 assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity slider has no artificial time-based pause");
 
-
+assert.match(themes, /--unit-muted:#435c70/, "Virtual Singer secondary text uses a readable contrast color");
+assert.match(themes, /--unit-muted:#4d6078/, "Leo/need secondary text uses a readable contrast color");
+assert.match(themes, /--unit-muted:#486657/, "MORE MORE JUMP secondary text uses a readable contrast color");
+assert.match(themes, /--unit-muted:#c8cedb/, "Vivid BAD SQUAD secondary text uses a readable contrast color");
+assert.match(themes, /--unit-muted:#5d4d78/, "Wonderlands Showtime secondary text uses a readable contrast color");
+assert.match(themes, /--unit-muted:#c9c4d9/, "Nightcord secondary text uses a readable contrast color");
+assert.match(themes, /body\[data-sekai-theme\].*:where\([\s\S]*\.brand-text span/, "theme legibility rules cover shared secondary text");
