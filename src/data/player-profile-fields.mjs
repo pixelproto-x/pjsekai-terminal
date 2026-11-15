@@ -63,7 +63,7 @@ const PLAYER_POWER_KEYS = Object.freeze([
 const DECK_CONTAINER_KEYS = Object.freeze([
   "userDecks", "user_decks", "decks", "team", "teams",
   "mainTeam", "main_team", "userTeam", "user_team",
-  "deck", "userDeck", "user_deck", "deckInfo", "teamInfo",
+  "deck", "userDeck", "user_deck", "deckInfo", "teamInfo", "totalPower",
   "data", "result", "profile", "userProfile", "user_profile",
   "userGamedata", "user_gamedata", "player", "user",
 ]);
@@ -117,7 +117,7 @@ export function extractPlayerPower(data) {
     return accountPower;
   }
   for (const item of roots) {
-    const found = publishedDeckPower(item.userDecks ?? item.user_decks ?? item.decks
+    const found = publishedDeckPower(item.totalPower ?? item.userDecks ?? item.user_decks ?? item.decks
       ?? item.team ?? item.teams ?? item.mainTeam ?? item.main_team);
     if (found != null) return found;
   }
