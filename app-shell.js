@@ -184,8 +184,11 @@ function syncScrollTopButton() {
   if (!scrollTopButton) return;
   const visible = window.scrollY > 180;
   scrollTopButton.classList.toggle("is-visible", visible);
-  scrollTopButton.setAttribute("aria-hidden", String(!visible));
+  // Remove focus before hiding the control from the accessibility tree.
+  // Clicking the button scrolls to the top while it still owns focus.
+  if (!visible && document.activeElement === scrollTopButton) scrollTopButton.blur();
   scrollTopButton.tabIndex = visible ? 0 : -1;
+  scrollTopButton.setAttribute("aria-hidden", String(!visible));
 }
 window.addEventListener("scroll", syncScrollTopButton, { passive: true });
 syncScrollTopButton();
