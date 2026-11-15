@@ -54,7 +54,7 @@ assert.doesNotMatch(html, /五服玩家查詢|五服公開資料/, "old five-reg
 assert.match(html, /<strong>選擇主題<\/strong>/, "theme section heading uses the concise selection label");
 assert.doesNotMatch(html, /六大團體主題/, "old theme section wording is removed");
 assert.ok(html.includes('<span aria-hidden="true">↑</span>'), "back-to-top circle uses an upward arrow");
-assert.doesNotMatch(html, /id="homePlayerRegion"|id="playerRegion"/, "player lookup does not require manual region selection");
+assert.match(html, /id="playerRegion"/, "player lookup supports explicit cross-server account selection");
 assert.match(html, /id="songRegion"/, "song manager keeps its independent server selector");
 assert.match(html, /<label for="songRegion">選擇伺服器<\/label>/, "song manager selector label is concise");
 assert.match(html, /@supports \(appearance:base-select\)/, "song server selector enables the customizable CSS picker where supported");
@@ -125,6 +125,8 @@ assert.match(css, /prefers-reduced-motion/, "reduced motion is respected");
 assert.equal(routes.length, 4, "home, player lookup, song management, and appearance settings remain");
 
 const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
+assert.match(accountSync, /pjskSavedPlayersV2/, "saved players sync across signed-in devices");
+assert.match(accountSync, /pjskPlayerHistoryV1/, "lookup history syncs across signed-in devices");
 assert.match(accountSync, /pjskUiStateV1|pjskSongViewV1/, "saved interface and song filter state sync across devices");
 assert.match(accountSync, /ACCOUNT_BACKUP_PREFIX/, "each Google account keeps a separate local settings backup");
 assert.match(accountSync, /localStorage\.setItem\(ACCOUNT_BACKUP_PREFIX \+ previousSubject/, "switching accounts preserves the previous account's local settings before changing scope");
@@ -185,14 +187,19 @@ assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，
 assert.match(themes, /\.bottom-bar \.tab-indicator\{z-index:0\}/, "selection bubble stays behind navigation labels");
 assert.match(themes, /\.bottom-bar \.tab\{position:relative;z-index:1\}/, "navigation labels render above the selection bubble");
 
-assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached across refreshes");\nassert.match(html, /player-workspace.js/, "player workspace module is loaded");\nassert.match(syncR.result.content, /pjskSavedPlayersV2/, "saved players sync across signed-in devices");
+assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached across refreshes");
+assert.match(html, /player-workspace.js/, "player workspace module is loaded");
 assert.match(lookup, /已還原上次查詢資料/, "cached player results render before background refresh");
 assert.match(lookup, /saveLookupCache\(uid, region, result\)/, "successful player profile results are persisted");
 
 assert.match(html, /id="anniversaryCoverHeadline">心意交會的故事<\/span>/, "homepage HTML fallback uses the shortened sixth-anniversary title");
 assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniversary headline line stays hidden initially");
-assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");\nassert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");\nassert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");\nassert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
-assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");\nassert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
+assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
+assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
+assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
+assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
+assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");
+assert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
 assert.doesNotMatch(css, /Batch 2: saved player workspace/, "removed player workspace has no leftover styling");
 
 assert.match(html, /透明與清楚平衡/, "opacity scale explains the standard visual effect");
