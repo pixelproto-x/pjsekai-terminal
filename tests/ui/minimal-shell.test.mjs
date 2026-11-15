@@ -177,4 +177,10 @@ assert.match(app, /setTimeout\(\(\) => \{[\s\S]*?\}, 140\)/, "opacity slider pau
 assert.doesNotMatch(app, /\[12, 22, 35, 48\]/, "the clear preset at the right endpoint does not add an artificial pause");
 assert.match(app, /lastOpacitySliderValue < point && amount >= point/, "dragging right detects crossing a preset instead of requiring an exact input value");
 assert.match(app, /lastOpacitySliderValue > point && amount <= point/, "dragging left also detects crossing a preset");
+assert.match(app, /pointerdown/, "opacity slider uses pointer dragging so it can pause the thumb itself");
+assert.match(app, /setPointerCapture/, "opacity slider keeps tracking the pointer while dragging");
+assert.match(app, /opacityPauseUntil = performance\.now\(\) \+ 140/, "crossing a preset holds the slider position briefly");
+assert.match(app, /if \(performance\.now\(\) < opacityPauseUntil\) return/, "pointer movement is ignored during the brief preset pause");
+assert.match(app, /pointerup/, "opacity slider saves the final value when dragging ends");
+
 
