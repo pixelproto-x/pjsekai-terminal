@@ -42,7 +42,7 @@ test("maps upstream statuses to useful public errors", () => {
 test("auto-detects a unique region when every other region returns not found", async () => {
   const workerFetch = async (url) => {
     const parsed = new URL(url);
-    const region = parsed.pathname.match(/\\/public\\/(jp|tw|en|kr|cn)\\//)?.[1]
+    const region = parsed.pathname.match(/\/public\/(jp|tw|en|kr|cn)\//)?.[1]
       || (parsed.hostname === "api.hisekai.org" ? "tw" : null);
     if (region === "jp") {
       return Response.json({ userGamedata: { userName: "Test Player" } });
@@ -62,7 +62,7 @@ test("auto-detects a unique region when every other region returns not found", a
 test("does not guess when the same UID exists in multiple regions", async () => {
   const workerFetch = async (url) => {
     const parsed = new URL(url);
-    const region = parsed.pathname.match(/\\/public\\/(jp|tw|en|kr|cn)\\//)?.[1]
+    const region = parsed.pathname.match(/\/public\/(jp|tw|en|kr|cn)\//)?.[1]
       || (parsed.hostname === "api.hisekai.org" ? "tw" : null);
     if (region === "jp" || region === "tw") {
       return Response.json({ userGamedata: { userName: "Test Player" } });
