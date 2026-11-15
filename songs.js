@@ -109,7 +109,7 @@ function renderSongs() {
     const chartMarkup = charts.map((chart) => {
       const key = recordKey(song.id, chart.musicDifficulty);
       const status = state.records[key]?.status || "";
-      return '<span class="song-difficulty">' + difficultyNames[chart.musicDifficulty] + ' <strong>' + chart.playLevel + '</strong></span>';
+      return '<span class="song-difficulty difficulty-' + chart.musicDifficulty + '">' + difficultyNames[chart.musicDifficulty] + ' <strong>' + chart.playLevel + '</strong></span>';
     }).join("");
     const firstChart = charts[0]?.musicDifficulty || "expert";
     const currentStatus = state.records[recordKey(song.id, firstChart)]?.status || "";
