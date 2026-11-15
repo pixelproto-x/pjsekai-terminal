@@ -21,7 +21,7 @@ function setStatus(t){const n=$("#gtStatus");if(n)n.textContent=t}
 function tabs(){return [["cards","卡片資料庫"],["characters","角色資料庫"],["honors","稱號查詢"],["events","活動資料庫"],["team","隊伍編輯器"],["calculator","活動加成"],["score","分數估算"],["compare","隊伍比較"],["favorites","我的收藏"]]}
 
 function enhanceGameToolSelects(root=document){
- root.querySelectorAll('#gameToolsRoot select').forEach(select=>{
+ root.querySelectorAll('select').forEach(select=>{
   if(select.dataset.gtDropdown==='true')return;
   select.dataset.gtDropdown='true';
   const wrapper=document.createElement('div');wrapper.className='gt-dropdown';
