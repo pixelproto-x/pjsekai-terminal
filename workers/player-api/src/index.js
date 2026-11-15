@@ -73,6 +73,45 @@ function rankingRowMatches(row, uid) {
   return profileId != null && String(profileId) === String(uid);
 }
 
+async function fetchMoesekaiTop100(fetchImpl, region, uid, signal) {
+  const host = region === "cn" || region === "kr"
+    ? "https://rks-n-cn.exmeaning.com"
+    : "https://rks-n.exmeaning.com";
+  try {
+    const response = await fetchImpl(host + "/api/public/v2/" + region + "/latest", {
+      headers: { accept: "application/json" },
+      signal,
+    });
+    if (!response.ok) return { ok: false, status: response.status };
+    const snapshot = await response.json();
+    if (!Array.isArray(snapshot?.rankings) || !snapshot?.event_id) {
+      return { ok: false, status: 502 };
+    }
+    const entry = snapshot.rankings.find((item) => String(item?.userId) === String(uid));
+    const row = entry ? {
+      rank: Number(entry.rank),
+      profileId: String(entry.userId),
+      point: Number(entry.score),
+      name: entry.name ?? "",
+      source: "Moesekai",
+    } : null;
+    return {
+      ok: true,
+      event: {
+        id: snapshot.event_id,
+        startAt: snapshot.start_at,
+        endAt: snapshot.end_at,
+        updatedAt: snapshot.updated_at,
+      },
+      row,
+      scannedTo: 100,
+      source: "Moesekai",
+    };
+  } catch {
+    return { ok: false, status: signal.aborted ? 504 : 502 };
+  }
+}
+
 async function scanEventRankingPages(fetchImpl, region, event, uid, start, pages, signal) {
   const starts = Array.from({ length: pages }, (_, index) => start + index * EVENT_SCAN_PAGE_SIZE);
   const results = await Promise.all(starts.map(async (pageStart) => {
@@ -269,7 +308,39 @@ export default {
     const eventRanking = parseEventRankingPath(url.pathname);
     if (eventRanking) {
       if (!HANEOKA_REGIONS.has(eventRanking.region)) {
-        return json({ error: "EVENT_RANKING_UNSUPPORTED", region: eventRanking.region }, 501, origin);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), EVENT_UPSTREAM_TIMEOUT_MS);
+        try {
+          const snapshot = await fetchMoesekaiTop100(env.FETCH || fetch, eventRanking.region, eventRanking.uid, controller.signal);
+          if (!snapshot.ok) {
+            return json({
+              status: "UPSTREAM_ERROR",
+              error: "MOESEKAI_RANKING_UNAVAILABLE",
+              upstreamStatus: snapshot.status,
+              region: eventRanking.region,
+            }, 200, origin);
+          }
+          if (snapshot.row) {
+            return json({
+              status: "OK",
+              event: snapshot.event,
+              row: snapshot.row,
+              source: snapshot.source,
+              scannedTo: snapshot.scannedTo,
+            }, 200, origin, { cacheSeconds: 60 });
+          }
+          return json({
+            status: "NOT_FOUND_TOP_100",
+            row: null,
+            event: snapshot.event,
+            source: snapshot.source,
+            scannedTo: snapshot.scannedTo,
+            message: "Moesekai only publishes individual entries in its top-100 snapshot for this region.",
+          }, 200, origin, { cacheSeconds: 60 });
+        } finally {
+          controller.abort();
+          clearTimeout(timeout);
+        }
       }
       const eventCache = env.PROFILE_CACHE || globalThis.caches?.default;
       const eventCacheKey = new Request(url.toString(), { method: "GET" });
