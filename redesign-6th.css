@@ -401,3 +401,69 @@ body{color:var(--hub-ink)}
 
 /* Dropdown menus are portaled to body and positioned in the viewport top layer. */
 .styled-select-menu[style*="position: fixed"]{z-index:2147483647!important;overflow-y:auto;overscroll-behavior:contain}
+
+
+/* One shared interactive picker for every visible single-select control. */
+.styled-select{
+  position:relative;
+  display:block;
+  width:100%;
+  min-width:0;
+  z-index:1;
+}
+.styled-select.is-open{z-index:120}
+.styled-select-trigger{
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  justify-content:space-between;
+  gap:12px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.styled-select-trigger:disabled{opacity:.5;cursor:not-allowed}
+.styled-select-menu[style*="position: fixed"]{
+  position:fixed!important;
+  z-index:2147483647!important;
+  box-sizing:border-box;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.styled-select-option:disabled{opacity:.38;cursor:not-allowed}
+.gt-region-control>.styled-select{
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+}
+.gt-region-control>.styled-select .styled-select-trigger{
+  min-height:48px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  font-size:13px;
+}
+.gt-region-control>.styled-select .styled-select-trigger:after{right:4px}
+.songs-toolbar .styled-select-trigger,
+.song-record .styled-select-trigger{
+  min-height:42px;
+  padding:0 12px;
+  border-radius:12px;
+  font-size:12px;
+}
+.player-workspace-tools .styled-select-trigger,
+.player-form .styled-select-trigger{
+  min-height:42px;
+  font-size:12px;
+}
+#gameToolsRoot .styled-select-trigger{
+  min-height:46px;
+  font-size:12px;
+}
+#gameToolsRoot .gt-region-control .styled-select-trigger{min-height:48px}
+@media(prefers-reduced-motion:reduce){
+  .styled-select-trigger,.styled-select-option,.styled-select-menu{transition:none;animation:none}
+}
