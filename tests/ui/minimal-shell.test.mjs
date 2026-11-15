@@ -68,6 +68,17 @@ for (const year of ["1","2","3","4","5","6"]) {
 }
 assert.match(app, /pjskAnniversaryCover/, "selected anniversary cover is persisted");
 assert.match(app, /applyAnniversaryCover/, "selected anniversary cover updates the home hero");
+const anniversaryCoverUrls = [
+  "https://pjsekai.sega.jp/assets/images/1st/ogp.png",
+  "https://pjsekai.sega.jp/2nd/assets/img/ogp.jpg",
+  "https://pjsekai.sega.jp/3rd/assets/images/common/0927_ogp.png",
+  "https://pjsekai.sega.jp/4th/assets/images/common/ogp.png",
+  "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png",
+  "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp"
+];
+for (const url of anniversaryCoverUrls) {
+  assert.ok(app.includes(url), "anniversary cover points to its official hosted artwork: " + url);
+}
 assert.match(css, /--anniversary-cover-image/, "home hero uses the selected anniversary image");
 assert.match(css, /img_kv_miku_pc\.webp/, "official sixth anniversary key visual remains");
 assert.match(css, /@media\(max-width:640px\)/, "mobile layout remains");
