@@ -57,7 +57,6 @@
     const value = language === SOURCE_LANGUAGE ? "" : "/" + SOURCE_LANGUAGE + "/" + language;
     const expires = "; expires=" + (language === SOURCE_LANGUAGE ? "Thu, 01 Jan 1970 00:00:00 GMT" : "Fri, 31 Dec 9999 23:59:59 GMT");
     document.cookie = "googtrans=" + value + "; path=/" + expires + "; SameSite=Lax";
-    document.cookie = "googtrans=" + value + "; path=/; domain=" + location.hostname + expires + "; SameSite=Lax";
   }
 
   function effectiveLanguage(value) {
