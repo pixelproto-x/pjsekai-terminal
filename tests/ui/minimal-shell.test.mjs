@@ -87,8 +87,8 @@ assert.match(songsCss, /server-picker-close/, "song server dropdown has a closin
 assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
-assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-top-layer-v2/, "settings dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-dropdown-top-layer-v2/, "language dropdown script cache is refreshed");
+assert.match(html, /redesign-6th\.css\?v=20261115-dropdown-open-width-fix-v1/, "settings dropdown stylesheet cache is refreshed");
+assert.match(html, /language\.js\?v=20261115-dropdown-open-width-fix-v1/, "language dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
@@ -220,7 +220,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\.css\?v=20261115-dropdown-top-layer-v2/, "player workspace theme stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-dropdown-open-width-fix-v1/, "player workspace theme stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
@@ -229,7 +229,7 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
-assert.match(html, /20261115-dropdown-top-layer-v2/, "player workspace assets use the custom dropdown cache version");
+assert.match(html, /20261115-dropdown-open-width-fix-v1/, "player workspace assets use the custom dropdown cache version");
 assert.ok(workspaceCss.includes(".player-filter-menu") && workspaceCss.includes("animation:player-filter-pop"), "player database filter popup has a themed opening animation");
 assert.ok(workspaceCss.includes(".player-filter-option.is-selected"), "expanded filter popup highlights the selected option");
 const workspaceJs = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
