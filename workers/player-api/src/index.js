@@ -35,6 +35,28 @@ async function pendingRankingResponse(upstreamResponse, event, origin) {
   try {
     upstreamBody = await upstreamResponse.json();
   } catch {}
+  const kind = upstreamBody?.error?.kind ?? upstreamBody?.kind ?? null;
+
+  // Haneoka distinguishes a temporarily collecting board from an inactive
+  // board. Only the explicit "pending" kind is safe to poll again.
+  if (kind === "inactive") {
+    return json({
+      status: "RANKING_INACTIVE",
+      error: "EVENT_RANKING_INACTIVE",
+      upstreamKind: kind,
+      event,
+    }, 200, origin);
+  }
+  if (kind !== "pending") {
+    return json({
+      status: "UPSTREAM_ERROR",
+      error: "EVENT_RANKING_UPSTREAM_ERROR",
+      upstreamStatus: upstreamResponse.status,
+      upstreamKind: kind,
+      event,
+    }, 200, origin);
+  }
+
   const rawRetryAfter = upstreamBody?.error?.retryAfter
     ?? upstreamResponse.headers.get("Retry-After")
     ?? 30;
@@ -124,10 +146,15 @@ async function scanEventRankingPages(fetchImpl, region, event, uid, start, pages
       if (response.status === 503) {
         let body = {};
         try { body = await response.json(); } catch {}
-        return {
-          pending: true,
-          retryAfter: body?.error?.retryAfter ?? response.headers.get("Retry-After") ?? 30,
-        };
+        const kind = body?.error?.kind ?? body?.kind ?? null;
+        if (kind === "inactive") return { inactive: true, upstreamKind: kind };
+        if (kind === "pending") {
+          return {
+            pending: true,
+            retryAfter: body?.error?.retryAfter ?? response.headers.get("Retry-After") ?? 30,
+          };
+        }
+        return { error: 503, upstreamKind: kind };
       }
       if (!response.ok) return { error: response.status };
       return { pageStart, body: await response.json() };
@@ -135,6 +162,17 @@ async function scanEventRankingPages(fetchImpl, region, event, uid, start, pages
       return { error: signal.aborted ? 504 : 502 };
     }
   }));
+
+  const inactive = results.find((item) => item.inactive);
+  if (inactive) {
+    return {
+      status: "RANKING_INACTIVE",
+      error: "EVENT_RANKING_INACTIVE",
+      upstreamKind: inactive.upstreamKind,
+      event,
+      scannedTo: start - 1,
+    };
+  }
 
   const pending = results.find((item) => item.pending);
   if (pending) {
@@ -366,6 +404,17 @@ export default {
         const current = await currentResponse.json();
         const event = current?.event ?? null;
         if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
+        if (event.pointRankingEnabled === false) {
+          return json({
+            event,
+            row: null,
+            status: "POINT_BOARD_UNAVAILABLE",
+            availableRankingType: event.totalRankingEnabled === true ? "total" : null,
+            message: event.totalRankingEnabled === true
+              ? "The point ranking board is disabled; a total-ranking source is not configured."
+              : "The point ranking board is disabled for this event.",
+          }, 200, origin, { cacheSeconds: 60 });
+        }
         const requestedEventId = url.searchParams.get("eventId");
         if (requestedEventId && requestedEventId !== String(event.id)) {
           return json({ event, row: null, status: "EVENT_CHANGED" }, 200, origin);
