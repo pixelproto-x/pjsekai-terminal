@@ -171,7 +171,7 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-async function lookup(rawUid) {
+async function lookup(rawUid, requestedRegion = "auto") {
   const generation = ++lookupGeneration;
   const uid = String(rawUid ?? "").trim();
   const region = "auto";
@@ -189,7 +189,7 @@ async function lookup(rawUid) {
     if (status) status.textContent = "正在自動檢查五個伺服器的公開資料";
   }
   try {
-    const result = await provider.getProfileAuto(uid);
+    const result = region === "auto" ? await provider.getProfileAuto(uid) : await provider.getProfile(uid, region);
     renderProfile(result);
     saveLookupCache(uid, region, result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
@@ -207,7 +207,7 @@ async function lookup(rawUid) {
 }
 $("#playerLookupForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  lookup($("#playerUid")?.value);
+  lookup($("#playerUid")?.value, $("#playerRegion")?.value || "auto");
 });
 $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -227,7 +227,7 @@ try {
     const uid = String(savedLookup.uid);
     $("#playerUid").value = uid;
     $("#homePlayerUid").value = uid;
-    const cached = readLookupCache(uid, "auto");
+    const savedRegion = ["auto", "jp", "tw", "en", "kr", "cn"].includes(savedLookup.region) ? savedLookup.region : "auto";\n    if ($("#playerRegion")) $("#playerRegion").value = savedRegion;\n    const cached = readLookupCache(uid, savedRegion);
     if (cached) {
       renderProfile(cached.profile);
       if (status) status.textContent = "已還原上次查詢的玩家資料";
@@ -236,3 +236,4 @@ try {
     }
   }
 } catch {}
+\nwindow.PJSEKAI_LOOKUP = lookup;\n
