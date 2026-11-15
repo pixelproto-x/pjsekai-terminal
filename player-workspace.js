@@ -120,8 +120,9 @@ function openPlayer(player) {
   window.PJSEKAI_LOOKUP?.(player.uid, player.region);
 }
 function enhanceFilterSelect(select) {
-  // Match other database sections: keep the real native select visible.
-  // Safari/iOS owns its option picker, so it remains tappable and accessible.
+  if (!select) return select;
+  window.enhanceStyledSelect?.(select);
+  window.refreshStyledSelect?.(select);
   return select;
 }
 function renderSaved() {
