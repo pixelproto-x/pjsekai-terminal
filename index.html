@@ -256,7 +256,7 @@ html[dir="rtl"] .catalog-card .tiny-icon{margin-left:0;margin-right:12px}
 html[dir="rtl"] .search-panel{direction:rtl}
 html[dir="rtl"] .field-label,html[dir="rtl"] .field-help{text-align:right}
 #opacityValue{font-size:26px;letter-spacing:-.04em;white-space:nowrap}
-.opacity-range{position:relative;z-index:1;width:100%;margin:28px 0 10px;accent-color:var(--violet);height:5px}
+.opacity-slider-wrap{position:relative;z-index:1;width:100%;height:22px;margin:28px 0 10px}.opacity-range{position:relative;z-index:1;width:100%;margin:0;accent-color:var(--violet);height:22px}.opacity-marker{position:absolute;z-index:0;top:50%;left:calc(11px + (100% - 22px)*var(--marker-position));width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.96);border:1px solid rgba(93,83,151,.55);box-shadow:0 0 0 2px rgba(125,112,196,.16);transform:translate(-50%,-50%);pointer-events:none}
 .settings-scale{position:relative;z-index:1;display:flex;justify-content:space-between;color:var(--muted);font-size:9px}
 .preset-row{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:15px}
 .preset{border:1px solid var(--line);background:rgba(255,255,255,.26);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:16px;padding:12px 8px;font-size:13px;font-weight:850}
@@ -1200,7 +1200,7 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     </div>
     <div class="settings-card">
       <div class="settings-row-head"><div><strong>介面透明度</strong><span>調整背景和卡片的透明程度</span></div><strong id="opacityValue">22</strong></div>
-      <input id="opacityRange" class="opacity-range" aria-label="介面透明度" type="range" min="0" max="100" step="1" value="22">
+      <div class="opacity-slider-wrap" aria-label="四個透明度定位點"><span class="opacity-marker" data-opacity-marker="12" style="--marker-position:12%"></span><span class="opacity-marker" data-opacity-marker="22" style="--marker-position:22%"></span><span class="opacity-marker" data-opacity-marker="35" style="--marker-position:35%"></span><span class="opacity-marker" data-opacity-marker="48" style="--marker-position:48%"></span><input id="opacityRange" class="opacity-range" aria-label="介面透明度" type="range" min="0" max="100" step="1" value="22"></div>
       <div class="settings-scale" aria-label="透明度效果級別"><span><strong>透亮</strong><small>背景更明顯</small></span><span><strong>標準</strong><small>透明與清楚平衡</small></span><span><strong>柔和</strong><small>卡片更有層次</small></span><span><strong>清晰</strong><small>介面更實更易讀</small></span></div>
       <div class="settings-presets">
         <button type="button" data-opacity="12">透亮</button><button type="button" data-opacity="22">標準</button><button type="button" data-opacity="35">柔和</button><button type="button" data-opacity="48">清晰</button>
