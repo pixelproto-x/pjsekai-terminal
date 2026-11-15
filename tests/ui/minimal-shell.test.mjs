@@ -51,7 +51,7 @@ for (const region of ["jp", "en", "tw", "kr", "cn"]) {
 }
 assert.match(lookup, /REQUEST_TIMEOUT/, "lookup timeout is handled");
 assert.match(shell, /chevron\.textContent = "⌃"/, "song server picker points upward while closed");
-assert.match(shell, /server-picker-menu\.is-closing/, "song server picker supports an animated close state");
+assert.match(shell, /menu\.classList\.add\("is-closing"\)/, "song server picker supports an animated close state");
 assert.match(shell, /menu\.addEventListener\("animationend"/, "song server picker waits for its close animation before hiding");
 const songsCss = await readFile(new URL("../../songs.css", import.meta.url), "utf8");
 assert.match(songsCss, /songs-toolbar select::picker\(select\)/, "song difficulty, level, and sort dropdowns have styled popups");
