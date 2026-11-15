@@ -275,20 +275,14 @@ assert.match(themes, /body\[data-sekai-theme\].*:where\([\s\S]*\.brand-text span
 
 const gameToolsJs = await readFile(new URL("../../game-tools.js", import.meta.url), "utf8");
 const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
-assert.match(gameToolsJs, /function updateSearchResults\(/, "game-tool search updates results without replacing the focused input");
+
+assert.match(gameToolsJs, /function updateSearchResults\(/, "game-tool search updates only result containers");
 assert.match(gameToolsJs, /選擇伺服器/, "game database region label uses the requested wording");
-assert.match(gameToolsJs, /querySelectorAll\("#gameToolsRoot select"\)/, "all game-tool selectors including server selection use the custom popup");
-assert.match(gameToolsJs, /event.key==="Escape"/, "game-tool dropdowns can be dismissed with Escape");
-assert.match(gameToolsCss, /\.gt-select-menu\[hidden\]\{display:none\}/, "game-tool dropdowns have an explicit closed state");
-assert.match(gameToolsCss, /gt-menu-in/, "game-tool dropdowns use the redesigned opening animation");
-assert.match(gameToolsCss, /\.gt-region-control \.gt-select-trigger/, "server selector uses the same fully styled dropdown");
-
-assert.match(gameToolsJs, /select\.id==="gtRegion"\?" gt-region-menu"/, "only the server-region popup receives the transparent bubble style");
-assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*background:transparent!important/s, "server-region popup bubble is transparent");
-assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*backdrop-filter:none!important/s, "server-region popup bubble does not inherit theme glass effects");
-assert.doesNotMatch(gameToolsCss, /\.gt-select-menu\{[^}]*background:transparent!important/s, "other game-tool dropdowns keep their themed background");
-
-assert.match(gameToolsJs, /document\.addEventListener\("pointerdown",event=>\{if\(!activeGameToolDropdown\)/, "game-tool popup closes immediately when clicking outside");
-assert.match(gameToolsJs, /window\.addEventListener\("scroll",\(\)=>\{if\(activeGameToolDropdown\)closeGameToolSelect/, "game-tool popup closes on page scroll instead of becoming detached and blocking the screen");
-assert.match(gameToolsJs, /if\(document\.activeElement!==input\)\{input\.focus\(\{preventScroll:true\}\)/, "game-tool search retains focus and caret while updating results");
-assert.match(gameToolsJs, /if\(activeGameToolDropdown&&!activeGameToolDropdown\.isConnected\)closeGameToolSelect/, "orphaned dropdowns are cleaned up after panel rerenders");
+assert.doesNotMatch(gameToolsJs, /enhanceGameToolSelect|activeGameToolDropdown|gt-select-menu|MutationObserver/, "game-tool controls do not create detached custom dropdown layers");
+assert.match(gameToolsJs, /if\(e\.target\.id==="gtQuery"\)\{const input=e\.target;s\.q=input\.value;updateSearchResults\(\);\}/, "search input updates results without replacing or refocusing the input");
+assert.match(gameToolsJs, /const list=p\.querySelector\("\.gt-cards"\);if\(list\)list\.innerHTML=/, "card search replaces only the scrollable result list");
+assert.doesNotMatch(gameToolsCss, /gt-select-menu|gt-region-menu|background:transparent!important/, "obsolete transparent popup styling is removed");
+assert.match(gameToolsCss, /#gameToolsRoot select\{[\s\S]*?appearance:none/, "all native game-tool selectors receive a unified custom appearance");
+assert.match(gameToolsCss, /#gameToolsRoot select option\{background:#fff;color:#202638\}/, "native selector options retain an opaque readable surface");
+assert.match(gameToolsCss, /\.gt-region-control select#gtRegion\{[\s\S]*?background-color:transparent/, "server selector control remains integrated with its themed region shell");
+assert.match(gameToolsCss, /\.gt-region-control select#gtRegion:focus-visible/, "server selector has an explicit keyboard focus state");
