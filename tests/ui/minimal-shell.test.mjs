@@ -156,7 +156,10 @@ assert.match(songsModule, /function indexCharts\(charts\)/, "song charts are ind
 assert.match(songsModule, /載入更多歌曲/, "remaining songs can be loaded on demand");
 assert.match(html, /dataset\.initialPage = page \|\| "home"/, "remembered page is selected in the document head before first paint");
 assert.match(html, /html\[data-initial-page="songs"\] \.page\[data-page="songs"\]\{display:block\}/, "saved page is visible before app-shell navigation initializes");
-assert.match(html, /app-shell\.js\?v=20261115-restore-page-before-paint/, "app shell cache is refreshed for early page restoration");
+assert.match(html, /html\[data-restore-scroll="pending"\] body\{visibility:hidden\}/, "page stays hidden until saved scroll position is restored");
+assert.match(html, /app-shell\.js\?v=20261115-instant-scroll-restore/, "app shell cache is refreshed for instant scroll restoration");
+assert.match(app, /go\(savedUiState\.activePage[^\n]+\{ preserveScroll: true \}\)/, "initial route restoration does not scroll to the top");
+assert.match(app, /window\.scrollTo\(\{ top: Number\(savedUiState\.scrollY\), behavior: "instant" \}\)/, "saved scroll position is restored instantly before showing the page");
 assert.match(app, /setTimeout\(saveUiState, 180\)/, "UI state persistence is debounced so typing does not synchronously serialize the whole form on every keystroke");
 console.log("Minimal player hub UI smoke tests passed.");
 
@@ -222,7 +225,7 @@ assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span
 assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(html, /app-shell\.js\?v=20261115-restore-page-before-paint/, "app shell script cache is refreshed");
+assert.match(html, /app-shell\.js\?v=20261115-instant-scroll-restore/, "app shell script cache is refreshed");
 assert.match(app, /opacityRange\?\.addEventListener\("pointerdown"/, "opacity slider uses pointer tracking for localized detent resistance");
 assert.match(app, /OPACITY_DETENTS = \[12, 22, 35, 48\]/, "opacity resistance is limited to the four marked values");
 assert.match(app, /OPACITY_DETENT_WIDTH = 2\.6/, "opacity resistance is confined to a narrow zone around each marker");
