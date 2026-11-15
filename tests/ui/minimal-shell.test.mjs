@@ -72,11 +72,13 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
+assert.match(themes, /\.sekai-ambience\{z-index:0\}/, "unit-specific background is above the body canvas");
+assert.match(themes, /\.app-shell\{position:relative;z-index:1\}/, "application surfaces remain above the unit background");
 assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
 
 assert.match(themes, /\.bottom-bar \.tab-indicator\{z-index:0\}/, "selection bubble stays behind navigation labels");
 assert.match(themes, /\.bottom-bar \.tab\{position:relative;z-index:1\}/, "navigation labels render above the selection bubble");
 
-assert.match(lookup, /pjskPlayerLookupCacheV1/, "player profile and event ranking are cached across refreshes");
+assert.match(lookup, /pjskPlayerLookupCacheV2/, "player profile and event ranking are cached across refreshes");
 assert.match(lookup, /已還原上次查詢資料/, "cached player results render before background refresh");
 assert.match(lookup, /saveLookupCache\(uid, region, result, eventRanking\)/, "successful profile and ranking results are persisted");
