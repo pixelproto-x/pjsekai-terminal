@@ -3,7 +3,7 @@ const API_BASE = "https://pjsekai-player-api.a0983439343.workers.dev";
 const ACCOUNT_SCOPE_KEY = "pjskCloudAccountSub";
 const ACCESS_TOKEN_SESSION_KEY = "pjskGoogleAccessToken";
 const SYNC_KEYS = [
-  "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover", "pjskUiStateV1",
+  "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists", "pjskSongRegion", "pjskSongViewV1",
   "pjskSavedPlayersV1", "pjskPlayerHistoryV1", "pjskLastPlayerLookup"
 ];
