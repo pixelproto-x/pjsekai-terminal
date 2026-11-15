@@ -150,7 +150,7 @@ async function verifyGoogleIdentity(request, env) {
 
   try {
     const token = await response.json();
-    const scopes = String(token.scope || "").split(/\\s+/).filter(Boolean);
+    const scopes = String(token.scope || "").split(/\s+/).filter(Boolean);
     // Google documents that an access token's aud can differ from azp when
     // OAuth clients in one Cloud project request tokens for one another.
     // azp is the requesting client, so it is the claim bound to this site.
