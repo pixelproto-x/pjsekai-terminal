@@ -1102,9 +1102,9 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
 </header>
 <main>
   <section class="page active" data-page="home">
-    <section class="anniversary-hero" aria-label="六週年主視覺">
+    <section class="anniversary-hero" aria-label="六週年主視覺" data-anniversary-cover="6">
       <div class="anniversary-hero-content">
-        <div class="anniversary-eyebrow"><span></span>世界計畫六週年</div>
+        <div class="anniversary-eyebrow"><span></span><span id="anniversaryCoverEyebrow">世界計畫六週年</span></div>
         <h1>每個人的世界<br><em>都值得被看見</em></h1>
         <p>輸入玩家 UID 查看五個伺服器的公開玩家資料</p>
         <div class="anniversary-actions">
@@ -1112,8 +1112,8 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
           <button class="secondary-btn" data-go="settings" type="button">更換主題</button>
         </div>
       </div>
-      <div class="anniversary-mark" aria-hidden="true"><span>6</span></div>
-      <a class="anniversary-credit" href="https://pjsekai.sega.jp/6th/index.html" target="_blank" rel="noopener noreferrer">六週年官方網站</a>
+      <div class="anniversary-mark" aria-hidden="true"><span id="anniversaryCoverNumber">6</span><small>ANNIVERSARY</small></div>
+      <a class="anniversary-credit" id="anniversaryCoverCredit" href="https://pjsekai.sega.jp/6th/index.html" target="_blank" rel="noopener noreferrer">六週年官方網站</a>
     </section>
     <section class="hub-lookup" aria-labelledby="hubLookupTitle">
       <div class="hub-lookup-copy">
@@ -1202,6 +1202,19 @@ main{height:auto;min-height:0;max-height:none;overflow-y:visible;overflow-x:visi
     <div class="page-head">
       <div><div class="sekai-chip">外觀設定</div><h1 class="page-title">介面設定</h1><p class="page-subtitle">調整介面透明度和六大團體主題</p></div>
       <button class="back-btn" data-go="home" type="button">回到首頁</button>
+    </div>
+    <div class="settings-card anniversary-cover-settings">
+      <div class="settings-row-head"><div><strong>首頁週年封面</strong><span>切換一週年至六週年的封面圖片 會自動儲存</span></div></div>
+      <label class="cover-select-label" for="anniversaryCoverSelect">選擇週年</label>
+      <select id="anniversaryCoverSelect" class="language-select anniversary-cover-select" aria-label="選擇首頁週年封面">
+        <option value="1">一週年</option>
+        <option value="2">二週年</option>
+        <option value="3">三週年</option>
+        <option value="4">四週年</option>
+        <option value="5">五週年</option>
+        <option value="6" selected>六週年</option>
+      </select>
+      <div class="data-status" id="anniversaryCoverStatus">目前封面 六週年</div>
     </div>
     <div class="settings-card">
       <div class="settings-row-head"><div><strong>介面透明度</strong><span>調整背景和卡片的透明程度</span></div><strong id="opacityValue">22</strong></div>
