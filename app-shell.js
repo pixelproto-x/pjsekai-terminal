@@ -190,7 +190,7 @@ let opacityPauseTimer = 0;
 
 function opacityValueFromPointer(range, clientX) {
   const rect = range.getBoundingClientRect();
-  const thumbInset = 8;
+  const thumbInset = 11;
   const usableWidth = Math.max(1, rect.width - thumbInset * 2);
   const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbInset) / usableWidth));
   const min = Number(range.min) || 0;
@@ -204,7 +204,7 @@ function updateOpacityFromPointer(range, clientX) {
   if (performance.now() < opacityPauseUntil) return;
 
   const direction = amount - lastOpacitySliderValue;
-  const snapPoint = [12, 22, 35].find((point) =>
+  const snapPoint = [12, 22, 35, 48].find((point) =>
     direction > 0
       ? lastOpacitySliderValue < point && amount >= point
       : direction < 0
