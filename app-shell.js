@@ -182,8 +182,60 @@ document.addEventListener("click", (event) => {
   const preset = event.target.closest("[data-opacity]");
   if (preset) applyOpacity(preset.dataset.opacity);
 });
-$("#opacityRange")?.addEventListener("input", (event) => applyOpacity(event.target.value, { persist: false, syncPresets: false }));
-$("#opacityRange")?.addEventListener("change", (event) => applyOpacity(event.target.value));
+let lastOpacitySliderValue = Number($("#opacityRange")?.value) || 22;
+let opacitySnapTimer = 0;
+let opacitySnapPending = null;
+let opacitySnapLocked = false;
+
+$("#opacityRange")?.addEventListener("input", (event) => {
+  const range = event.currentTarget;
+  const amount = Math.max(0, Math.min(100, Number(event.target.value) || 0));
+
+  if (opacitySnapLocked) {
+    opacitySnapPending = amount;
+    range.value = String(lastOpacitySliderValue);
+    return;
+  }
+
+  const direction = amount - lastOpacitySliderValue;
+  const snapPoint = [12, 22, 35].find((point) =>
+    direction > 0
+      ? lastOpacitySliderValue < point && amount >= point
+      : direction < 0
+        ? lastOpacitySliderValue > point && amount <= point
+        : false
+  );
+
+  if (snapPoint !== undefined) {
+    lastOpacitySliderValue = snapPoint;
+    opacitySnapPending = amount;
+    opacitySnapLocked = true;
+    range.value = String(snapPoint);
+    applyOpacity(snapPoint, { persist: false, syncPresets: false });
+    clearTimeout(opacitySnapTimer);
+    opacitySnapTimer = setTimeout(() => {
+      opacitySnapLocked = false;
+      const pending = opacitySnapPending;
+      opacitySnapPending = null;
+      if (pending !== null && pending !== snapPoint) {
+        range.value = String(pending);
+        lastOpacitySliderValue = pending;
+        applyOpacity(pending, { persist: false, syncPresets: false });
+      }
+    }, 140);
+    return;
+  }
+
+  lastOpacitySliderValue = amount;
+  applyOpacity(amount, { persist: false, syncPresets: false });
+});
+$("#opacityRange")?.addEventListener("change", (event) => {
+  clearTimeout(opacitySnapTimer);
+  opacitySnapLocked = false;
+  opacitySnapPending = null;
+  lastOpacitySliderValue = Number(event.target.value) || 0;
+  applyOpacity(event.target.value);
+});
 $("#homeBrand")?.addEventListener("click", () => go("home"));
 $("#scrollTopBtn")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 const scrollTopButton = $("#scrollTopBtn");
