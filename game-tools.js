@@ -21,23 +21,35 @@ function setStatus(t){const n=$("#gtStatus");if(n)n.textContent=t}
 function tabs(){return [["cards","卡片資料庫"],["characters","角色資料庫"],["honors","稱號查詢"],["events","活動資料庫"],["team","隊伍編輯器"],["calculator","活動加成"],["score","分數估算"],["compare","隊伍比較"],["favorites","我的收藏"]]}
 
 function enhanceGameToolSelects(root=document){
- root.querySelectorAll('select').forEach(select=>{
-  if(select.dataset.gtDropdown==='true')return;
-  select.dataset.gtDropdown='true';
-  const wrapper=document.createElement('div');wrapper.className='gt-dropdown';
-  const trigger=document.createElement('button');trigger.type='button';trigger.className='gt-dropdown-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
-  const menu=document.createElement('div');menu.className='gt-dropdown-menu';menu.setAttribute('popover','manual');menu.setAttribute('role','listbox');menu.hidden=true;
-  const place=()=>{const r=trigger.getBoundingClientRect(),m=8,g=7,below=innerHeight-r.bottom-g,above=r.top-g,h=Math.max(120,Math.min(300,Math.max(below,above)-m)),w=Math.min(r.width,innerWidth-m*2);menu.style.position='fixed';menu.style.zIndex='2147483647';menu.style.left=Math.max(m,Math.min(r.left,innerWidth-w-m))+'px';menu.style.width=w+'px';menu.style.maxHeight=h+'px';menu.style.top=below>=Math.min(180,h)||below>=above?Math.min(innerHeight-h-m,r.bottom+g)+'px':Math.max(m,r.top-h-g)+'px'};
-  const close=()=>{if(menu.matches(':popover-open'))menu.hidePopover();menu.hidden=true;trigger.setAttribute('aria-expanded','false');wrapper.classList.remove('is-open')};
-  const refresh=()=>{trigger.textContent=select.selectedOptions[0]?.textContent||'請選擇';menu.replaceChildren();Array.from(select.options).forEach(option=>{const item=document.createElement('button');item.type='button';item.className='gt-dropdown-option'+(option.value===select.value?' is-selected':'');item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===select.value));item.textContent=option.textContent;item.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));close();trigger.focus()});menu.append(item)})};
-  trigger.addEventListener('click',()=>{if(menu.matches(':popover-open')){close();return}document.querySelectorAll('#gameToolsRoot .gt-dropdown.is-open').forEach(node=>node._closeGtDropdown?.());menu.hidden=false;menu.showPopover();trigger.setAttribute('aria-expanded','true');wrapper.classList.add('is-open');place()});
-  document.addEventListener('click',event=>{if(!wrapper.contains(event.target))close()});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&menu.matches(':popover-open')){close();trigger.focus()}});
-  window.addEventListener('resize',()=>{if(menu.matches(':popover-open'))place()},{passive:true});
-  window.addEventListener('scroll',()=>{if(menu.matches(':popover-open'))place()},true);
-  select.addEventListener('change',refresh);
-  select.parentNode.insertBefore(wrapper,select);wrapper.append(select,trigger,menu);select.classList.add('gt-native-select');wrapper._closeGtDropdown=close;refresh();
+ root.querySelectorAll("select").forEach(select=>{
+  if(select.dataset.gtDropdown==="true")return;
+  select.dataset.gtDropdown="true";
+  const wrapper=document.createElement("div");wrapper.className="gt-dropdown";
+  const trigger=document.createElement("button");trigger.type="button";trigger.className="gt-dropdown-trigger";trigger.setAttribute("aria-haspopup","listbox");trigger.setAttribute("aria-expanded","false");
+  const menu=document.createElement("div");menu.className="gt-dropdown-menu";menu.setAttribute("popover","manual");menu.setAttribute("role","listbox");
+  const refresh=()=>{
+   trigger.textContent=select.selectedOptions[0]?.textContent||"請選擇";menu.replaceChildren();
+   Array.from(select.options).forEach(option=>{const item=document.createElement("button");item.type="button";item.className="gt-dropdown-option"+(option.value===select.value?" is-selected":"");item.dataset.value=option.value;item.setAttribute("role","option");item.setAttribute("aria-selected",String(option.value===select.value));item.textContent=option.textContent;menu.append(item)});
+  };
+  const close=()=>{
+   if(menu.matches(":popover-open"))menu.hidePopover();
+   trigger.setAttribute("aria-expanded","false");wrapper.classList.remove("is-open");
+   ["position","left","top","width","min-width","max-width","max-height"].forEach(property=>menu.style.removeProperty(property));
+  };
+  wrapper._closeGtDropdown=close;wrapper._refreshGtDropdown=refresh;select.addEventListener("change",refresh);
+  select.parentNode.insertBefore(wrapper,select);wrapper.append(select,trigger,menu);select.classList.add("gt-native-select");refresh();
  });
+}
+function closeGameToolDropdowns(except=null){
+ document.querySelectorAll("#gameToolsRoot .gt-dropdown.is-open").forEach(wrapper=>{if(wrapper!==except)wrapper._closeGtDropdown?.()});
+}
+function openGameToolDropdown(wrapper){
+ const trigger=wrapper.querySelector(".gt-dropdown-trigger"),menu=wrapper.querySelector(".gt-dropdown-menu");if(!trigger||!menu)return;
+ closeGameToolDropdowns(wrapper);
+ const rect=trigger.getBoundingClientRect(),margin=12,gap=8,width=Math.min(Math.max(160,rect.width),window.innerWidth-margin*2);
+ const left=Math.max(margin,Math.min(rect.left,window.innerWidth-width-margin)),top=rect.bottom+gap,maxHeight=Math.max(120,window.innerHeight-top-margin);
+ menu.style.position="fixed";menu.style.left=left+"px";menu.style.top=top+"px";menu.style.width=width+"px";menu.style.minWidth=width+"px";menu.style.maxWidth=width+"px";menu.style.maxHeight=Math.min(320,maxHeight)+"px";
+ menu.showPopover();trigger.setAttribute("aria-expanded","true");wrapper.classList.add("is-open");
 }
 function render(){
  const root=$("#gameToolsRoot");if(!root)return;
@@ -45,6 +57,8 @@ function render(){
  $("#gtRegion").addEventListener("change",async e=>{s.region=e.target.value;s.tab="cards";save();render();await load()});
  if(!root.dataset.bound){root.addEventListener("click",click);root.addEventListener("change",change);root.addEventListener("input",input);root.dataset.bound="1";}
  panel();
+ enhanceGameToolSelects(root);
+ if(!root.dataset.dropdownOutsideBound){document.addEventListener("click",event=>{if(!event.target.closest("#gameToolsRoot .gt-dropdown"))closeGameToolDropdowns()});root.dataset.dropdownOutsideBound="1";}
 }
 function filters(){return `<div class="gt-filters"><div class="gt-filter-field"><label for="gtQuery">搜尋</label><input id="gtQuery" type="search" value="${esc(s.q)}" placeholder="卡片或角色名稱"></div><div class="gt-filter-field"><label for="gtCharacter">角色</label><select id="gtCharacter"><option value="">全部角色</option>${s.characters.map(c=>`<option value="${c.id}" ${String(s.character)===String(c.id)?"selected":""}>${esc(cname(c))}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtUnit">團體</label><select id="gtUnit"><option value="">全部團體</option>${Object.entries(units).map(([k,v])=>`<option value="${k}" ${s.unit===k?"selected":""}>${v}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtAttr">屬性</label><select id="gtAttr"><option value="">全部屬性</option>${Object.entries(attrs).map(([k,v])=>`<option value="${k}" ${s.attr===k?"selected":""}>${v}</option>`).join("")}</select></div><div class="gt-filter-field"><label for="gtRarity">稀有度</label><select id="gtRarity"><option value="">全部</option>${Object.entries(rarities).map(([k,v])=>`<option value="${k}" ${s.rarity===k?"selected":""}>${v}</option>`).join("")}</select></div></div>`}
 function updateSearchResults(){
@@ -69,8 +83,13 @@ function panel(){
  if(s.tab==="favorites"){const rows=s.cards.filter(c=>s.favorites.has(String(c.id)));p.innerHTML=`<div class="gt-count">收藏 ${rows.length} 張</div><div class="gt-cards">${rows.map(c=>cardHtml(c,true)).join("")||'<div class="gt-empty">尚未收藏卡片</div>'}</div>`;return}
 }
 const renderPanel=panel;
-panel=function(){renderPanel();enhanceGameToolSelects($('#gtPanel')||document)};
-function click(e){const t=e.target.closest("[data-tab]");if(t){s.tab=t.dataset.tab;s.q="";panel();return}const f=e.target.closest("[data-fav]");if(f){const id=f.dataset.fav;s.favorites.has(id)?s.favorites.delete(id):s.favorites.add(id);save();panel();return}const a=e.target.closest("[data-add]");if(a){const i=s.slots.findIndex(x=>!x);if(i<0){window.PJSEKAI?.toast("隊伍已滿");return}s.slots[i]=a.dataset.add;save();panel();return}if(e.target.closest("[data-clear]")){s.slots=Array(5).fill("");save();panel();return}if(e.target.closest("[data-save-team]")){const name=$("#gtTeamName")?.value.trim();if(!name){window.PJSEKAI?.toast("請先輸入隊伍名稱");return}if(!team().length){window.PJSEKAI?.toast("請先選擇隊伍卡片");return}s.savedTeams.unshift({name,slots:[...s.slots],savedAt:Date.now()});s.savedTeams=s.savedTeams.slice(0,30);save();panel();return}const load=e.target.closest("[data-load-team]");if(load){s.slots=[...(s.savedTeams[Number(load.dataset.loadTeam)]?.slots||Array(5).fill(""))];save();panel();return}const del=e.target.closest("[data-delete-team]");if(del){s.savedTeams.splice(Number(del.dataset.deleteTeam),1);save();panel();return}const ev=e.target.closest("[data-event]");if(ev){s.event=ev.dataset.event;s.tab="calculator";panel()}}
+panel=function(){renderPanel();enhanceGameToolSelects($("#gtPanel")||document)};
+function click(e){
+ const option=e.target.closest(".gt-dropdown-option");
+ if(option){const wrapper=option.closest(".gt-dropdown"),select=wrapper?.querySelector("select");if(!wrapper||!select)return;select.value=option.dataset.value;wrapper._closeGtDropdown?.();select.dispatchEvent(new Event("change",{bubbles:true}));return}
+ const trigger=e.target.closest(".gt-dropdown-trigger");
+ if(trigger){const wrapper=trigger.closest(".gt-dropdown"),menu=wrapper?.querySelector(".gt-dropdown-menu");if(!wrapper||!menu)return;if(menu.matches(":popover-open"))wrapper._closeGtDropdown?.();else openGameToolDropdown(wrapper);return}
+ const t=e.target.closest("[data-tab]");if(t){s.tab=t.dataset.tab;s.q="";panel();return}const f=e.target.closest("[data-fav]");if(f){const id=f.dataset.fav;s.favorites.has(id)?s.favorites.delete(id):s.favorites.add(id);save();panel();return}const a=e.target.closest("[data-add]");if(a){const i=s.slots.findIndex(x=>!x);if(i<0){window.PJSEKAI?.toast("隊伍已滿");return}s.slots[i]=a.dataset.add;save();panel();return}if(e.target.closest("[data-clear]")){s.slots=Array(5).fill("");save();panel();return}if(e.target.closest("[data-save-team]")){const name=$("#gtTeamName")?.value.trim();if(!name){window.PJSEKAI?.toast("請先輸入隊伍名稱");return}if(!team().length){window.PJSEKAI?.toast("請先選擇隊伍卡片");return}s.savedTeams.unshift({name,slots:[...s.slots],savedAt:Date.now()});s.savedTeams=s.savedTeams.slice(0,30);save();panel();return}const load=e.target.closest("[data-load-team]");if(load){s.slots=[...(s.savedTeams[Number(load.dataset.loadTeam)]?.slots||Array(5).fill(""))];save();panel();return}const del=e.target.closest("[data-delete-team]");if(del){s.savedTeams.splice(Number(del.dataset.deleteTeam),1);save();panel();return}const ev=e.target.closest("[data-event]");if(ev){s.event=ev.dataset.event;s.tab="calculator";panel()}}
 function change(e){if(e.target.id==="gtRegion")return;const slot=e.target.closest("[data-slot-input]");if(slot){const match=s.cards.find(c=>cardLabel(c)===slot.value);s.slots[Number(slot.dataset.slotInput)]=match?String(match.id):"";save();panel();return}const compare=e.target.closest("[data-compare-input]");if(compare){const match=s.cards.find(c=>cardLabel(c)===compare.value);s.compareSlots[Number(compare.dataset.compareInput)]=match?String(match.id):"";save();panel();return}if(e.target.id==="gtCalcEvent"){s.event=e.target.value;panel();return}if(e.target.id==="gtScoreSong"){s.songId=e.target.value;const first=s.difficulties.find(x=>Number(x.musicId)===Number(s.songId));s.difficulty=first?.musicDifficulty||"expert";panel();return}if(e.target.id==="gtScoreDifficulty"){s.difficulty=e.target.value;panel();return}const map={gtCharacter:"character",gtUnit:"unit",gtAttr:"attr",gtRarity:"rarity"};if(map[e.target.id]){s[map[e.target.id]]=e.target.value;panel()}}
 function input(e){const picker=e.target.closest("[data-slot-input],[data-compare-input]");if(picker){const q=picker.value.trim().toLowerCase();const list=$("#gtCardOptions");if(list){list.innerHTML=s.cards.filter(c=>!q||cardLabel(c).toLowerCase().includes(q)||String(c.id).includes(q)).slice(0,80).map(c=>`<option value="${esc(cardLabel(c))}"></option>`).join("")}return}if(e.target.id==="gtQuery"){const input=e.target;s.q=input.value;updateSearchResults();}if(e.target.id==="gtTalentInput"){s.talentInput=e.target.value;const out=$("#gtScoreValue");if(out)out.textContent=Math.round(Number(s.talentInput||0)*(3.9+(Number($("#gtScoreDifficulty")?.selectedOptions[0]?.dataset.level)||0)/50)).toLocaleString()}}
 async function load(){if(s.loading)return;const generation=++loadGeneration;s.loading=true;setStatus("正在載入 "+regions[s.region]+" 資料…");panel();try{const [a,b,c,d,e]=await Promise.all(["cards","characters","honors","events","score"].map(k=>gameDatabaseClient.loadBundle(s.region,k)));if(generation!==loadGeneration)return;s.cards=a.datasets.cards||[];s.characters=b.datasets.gameCharacters||[];s.profiles=b.datasets.characterProfiles||[];s.skills=a.datasets.skills||[];s.honors=c.datasets.honorGroups||[];s.events=d.datasets.events||[];s.eventCards=d.datasets.eventCards||[];s.songs=e.datasets.musics||[];s.difficulties=e.datasets.musicDifficulties||[];s.loading=false;setStatus(regions[s.region]+"載入完成 · "+s.cards.length.toLocaleString()+" 張卡片 · "+s.characters.length+" 位角色 · "+s.events.length+" 個活動 · "+s.songs.length+" 首歌曲");panel()}catch(err){if(generation!==loadGeneration)return;s.loading=false;setStatus("資料載入失敗："+(err?.message||"未知錯誤"));const p=$("#gtPanel");if(p)p.innerHTML='<div class="gt-empty">無法取得上游資料；若沒有可用快取，請檢查網路後重試。</div>'}}
