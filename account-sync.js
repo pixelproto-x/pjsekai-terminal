@@ -106,10 +106,16 @@ async function onGoogleCredential(response) {
       showStatus("正在切換 Google 帳號並隔離本機資料…");
     }
     const cloudData = cloud.data || {};
-    const hasCloudData = Object.keys(cloudData).length > 0;
     const localData = snapshot();
+    const mergedData = { ...localData, ...cloudData };
+    const hasCloudData = Object.keys(cloudData).length > 0;
     if (hasCloudData) {
-      applySnapshot(cloudData);
+      // Cloud values win when present, but preserve local keys that were not
+      // part of an older cloud snapshot (for example newly added settings).
+      applySnapshot(mergedData);
+      if (Object.keys(mergedData).some((key) => !Object.prototype.hasOwnProperty.call(cloudData, key))) {
+        await api("PUT", { data: mergedData });
+      }
     } else {
       await api("PUT", { data: localData });
       showStatus("已將這台裝置的資料首次備份至雲端");
@@ -190,12 +196,28 @@ async function restoreSession() {
     if (!subject || (savedSubject && savedSubject !== subject)) {
       throw new Error("GOOGLE_SESSION_CHANGED");
     }
+    localStorage.setItem(ACCOUNT_SCOPE_KEY, subject);
+
+    // Restoring a still-valid session must also restore cloud data. Previously
+    // this path only checked the token, leaving this device on stale settings.
+    const cloudData = cloud.data || {};
+    const localData = snapshot();
+    if (Object.keys(cloudData).length) {
+      const mergedData = { ...localData, ...cloudData };
+      applySnapshot(mergedData);
+      if (Object.keys(mergedData).some((key) => !Object.prototype.hasOwnProperty.call(cloudData, key))) {
+        await api("PUT", { data: mergedData });
+      }
+    } else {
+      await api("PUT", { data: localData });
+    }
+
     if (button) {
       button.textContent = "已連結 Google 帳號";
       button.disabled = false;
     }
     if (signOutButton) signOutButton.hidden = false;
-    showStatus("Google 帳號已連結，雲端同步已啟用");
+    showStatus("Google 帳號已連結，雲端設定與資料已同步");
   } catch {
     idToken = "";
     sessionStorage.removeItem(ACCESS_TOKEN_SESSION_KEY);
