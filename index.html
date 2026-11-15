@@ -24,6 +24,7 @@
   // Apply the saved route before the browser paints the page. The markup's
   // default active page is home, so hide it until the saved page is selected.
   const initialPageStyle = document.createElement("style");
+  initialPageStyle.id = "initial-page-bootstrap-style";
   initialPageStyle.textContent =
     '.page{display:none!important}.page[data-page="' + initialPage + '"]{display:block!important}';
   document.head.append(initialPageStyle);
