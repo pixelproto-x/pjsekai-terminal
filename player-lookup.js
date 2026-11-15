@@ -227,7 +227,9 @@ try {
     const uid = String(savedLookup.uid);
     $("#playerUid").value = uid;
     $("#homePlayerUid").value = uid;
-    const savedRegion = ["auto", "jp", "tw", "en", "kr", "cn"].includes(savedLookup.region) ? savedLookup.region : "auto";\n    if ($("#playerRegion")) $("#playerRegion").value = savedRegion;\n    const cached = readLookupCache(uid, savedRegion);
+    const savedRegion = ["auto", "jp", "tw", "en", "kr", "cn"].includes(savedLookup.region) ? savedLookup.region : "auto";
+    if ($("#playerRegion")) $("#playerRegion").value = savedRegion;
+    const cached = readLookupCache(uid, savedRegion);
     if (cached) {
       renderProfile(cached.profile);
       if (status) status.textContent = "已還原上次查詢的玩家資料";
@@ -236,4 +238,5 @@ try {
     }
   }
 } catch {}
-\nwindow.PJSEKAI_LOOKUP = lookup;\n
+
+window.PJSEKAI_LOOKUP = lookup;
