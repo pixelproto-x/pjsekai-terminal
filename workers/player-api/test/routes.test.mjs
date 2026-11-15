@@ -24,6 +24,9 @@ test("rejects malformed UIDs, unknown regions, and arbitrary paths", () => {
   assert.equal(parseProfilePath("/api/xx/user/123456/profile"), null);
   assert.equal(parseProfilePath("/internal/accounts"), null);
   assert.equal(parseProfilePath("/api/tw/123456/profile"), null);
-  assert.equal(parseProfilePath("/api/tw/user/123456/event-ranking"), null);
 });
 
+
+test("does not expose the removed event-ranking route", () => {
+  assert.equal(parseProfilePath("/api/tw/user/123456/event-ranking"), null);
+});
