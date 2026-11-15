@@ -365,3 +365,9 @@ body[data-sekai-theme] .player-workspace-heading h2,body[data-sekai-theme] .play
 .anniversary-hero[data-anniversary-cover="4"]{background-position:center 48%}
 .anniversary-hero[data-anniversary-cover="5"]{background-position:center 35%}
 .anniversary-hero[data-anniversary-cover="6"]{background-position:center 35%}
+
+
+/* Anniversary headline: soft, high-contrast pearl-to-aqua typography */
+.anniversary-hero h1{color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.34),0 1px 2px rgba(0,0,0,.45)}
+.anniversary-hero h1 span{display:inline;background:linear-gradient(105deg,#fff 8%,#dff8ff 58%,#a9e5f2 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.anniversary-hero h1 em{color:#b9e9f3;text-shadow:0 2px 16px rgba(0,0,0,.38)}
