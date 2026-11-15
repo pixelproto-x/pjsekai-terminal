@@ -208,10 +208,10 @@ function applyTheme(value) {
   try { localStorage.setItem("sekaiTheme", theme); } catch {}
 }
 const anniversaryCoverOptions = {
-  "1": { label: "一週年", image: "https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/virtualsinger_iphone_1.png", officialUrl: "https://pjsekai.sega.jp/1st/index.html" },
-  "2": { label: "二週年", image: "https://pjsekai.sega.jp/assets/img/special/dl/wallpaper/unite01_iphone_1.png", officialUrl: "https://pjsekai.sega.jp/2nd/index.html" },
-  "3": { label: "三週年", image: "https://pjsekai.sega.jp/3rd/assets/images/common/production/bg_kv-virtual-prd.png", officialUrl: "https://pjsekai.sega.jp/3rd/index.html" },
-  "4": { label: "四週年", image: "https://pjsekai.sega.jp/4th/assets/images/sp/mock/img_sky.png", officialUrl: "https://pjsekai.sega.jp/4th/index.html" },
+  "1": { label: "一週年", image: "https://pjsekai.sega.jp/assets/images/1st/ogp.png", officialUrl: "https://pjsekai.sega.jp/1st/index.html" },
+  "2": { label: "二週年", image: "https://pjsekai.sega.jp/2nd/assets/img/ogp.jpg", officialUrl: "https://pjsekai.sega.jp/2nd/index.html" },
+  "3": { label: "三週年", image: "https://pjsekai.sega.jp/3rd/assets/images/common/0927_ogp.png", officialUrl: "https://pjsekai.sega.jp/3rd/index.html" },
+  "4": { label: "四週年", image: "https://pjsekai.sega.jp/4th/assets/images/common/ogp.png", officialUrl: "https://pjsekai.sega.jp/4th/index.html" },
   "5": { label: "五週年", image: "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png", officialUrl: "https://pjsekai.sega.jp/5th/index.html" },
   "6": { label: "六週年", image: "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp", officialUrl: "https://pjsekai.sega.jp/6th/index.html" }
 };
