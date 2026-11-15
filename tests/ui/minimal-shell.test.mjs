@@ -68,6 +68,20 @@ for (const year of ["1","2","3","4","5","6"]) {
 }
 assert.match(app, /pjskAnniversaryCover/, "selected anniversary cover is persisted");
 assert.match(app, /applyAnniversaryCover/, "selected anniversary cover updates the home hero");
+assert.match(app, /anniversaryCoverHeadline/, "selected anniversary cover updates its official headline");
+assert.match(app, /anniversaryCoverEmphasis/, "selected anniversary cover updates its official supporting line");
+const officialAnniversaryCopy = [
+  ["群青讚歌", "一週年紀念歌曲"],
+  ["Journey", "二週年紀念歌曲"],
+  ["少年少女打開的門扉之後", "還有無人知曉的故事等待著"],
+  ["你的心意所創造的", "嶄新的世界"],
+  ["聲音的軌跡", "將連繫至未來"],
+  ["少年少女向前邁進、選擇、決定", "親手寫下心意交會的故事結局"]
+];
+for (const [headline, emphasis] of officialAnniversaryCopy) {
+  assert.ok(app.includes(headline), "anniversary selector contains the official anniversary copy: " + headline);
+  assert.ok(app.includes(emphasis), "anniversary selector contains the corresponding copy: " + emphasis);
+}
 const anniversaryCoverUrls = [
   "https://pjsekai.sega.jp/assets/images/1st/ogp.png",
   "https://pjsekai.sega.jp/2nd/assets/img/ogp.jpg",
