@@ -182,7 +182,11 @@ assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
 assert.match(html, /app-shell\.js\?v=20261115-native-opacity/, "opacity slider script cache is refreshed");
-assert.doesNotMatch(app, /setPointerCapture/, "opacity slider does not intercept native pointer movement");
+assert.match(app, /opacityRange\?\.addEventListener\("pointerdown"/, "opacity slider uses pointer tracking for localized detent resistance");
+assert.match(app, /OPACITY_DETENTS = \[12, 22, 35, 48\]/, "opacity resistance is limited to the four marked values");
+assert.match(app, /OPACITY_DETENT_WIDTH = 3\.2/, "opacity resistance is confined to a narrow zone around each marker");
+assert.match(app, /Math\.sin\(2 \* Math\.PI \* t\)/, "opacity resistance uses a continuous non-snapping movement curve");
+assert.doesNotMatch(app.slice(app.indexOf("const opacityRange"), app.indexOf('$("#homeBrand")')), /Math\.round\(.*detent|return detent/, "opacity slider does not snap or magnetically pull to markers");
 assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity slider has no artificial time-based pause");
 
 
