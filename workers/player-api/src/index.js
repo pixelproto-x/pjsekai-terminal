@@ -1,6 +1,7 @@
 import { ALLOWED_ORIGIN, REGIONS, parseProfilePath, parseEventRankingPath } from "./routes.mjs";
 
 const UPSTREAM_TIMEOUT_MS = 8000;
+const EVENT_UPSTREAM_TIMEOUT_MS = 12000;
 const CACHE_TTL_SECONDS = 300;
 const HANEOKA_BASE = "https://haneoka.org/api/v1/game/records";
 const HANEOKA_REGIONS = new Set(["jp", "tw", "en", "kr"]);
@@ -177,14 +178,18 @@ export default {
         } catch {}
       }
       const eventController = new AbortController();
-      const eventTimeout = setTimeout(() => eventController.abort(), UPSTREAM_TIMEOUT_MS);
+      const eventTimeout = setTimeout(() => eventController.abort(), EVENT_UPSTREAM_TIMEOUT_MS);
       try {
         const fetchImpl = env.FETCH || fetch;
         const currentResponse = await fetchImpl(HANEOKA_BASE + "/" + eventRanking.region + "/events/current", {
           headers: { accept: "application/json" }, signal: eventController.signal,
         });
         if (currentResponse.status === 503) return await pendingRankingResponse(currentResponse, null, origin);
-        if (!currentResponse.ok) return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
+        if (!currentResponse.ok) return json({
+          status: "UPSTREAM_ERROR",
+          error: "EVENT_SOURCE_UNAVAILABLE",
+          upstreamStatus: currentResponse.status,
+        }, 200, origin);
         const current = await currentResponse.json();
         const event = current?.event ?? null;
         if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
@@ -197,11 +202,18 @@ export default {
         });
         if (rankingResponse.status === 503) return await pendingRankingResponse(rankingResponse, event, origin);
         if (rankingResponse.status === 404) return json({ event, row: null, status: "POINT_BOARD_UNAVAILABLE" }, 200, origin, { cacheSeconds: 60 });
-        if (!rankingResponse.ok) return json({ error: "EVENT_RANKING_UNAVAILABLE", upstreamStatus: rankingResponse.status }, 502, origin);
+        if (!rankingResponse.ok) return json({
+          event,
+          row: null,
+          status: "UPSTREAM_ERROR",
+          error: "EVENT_RANKING_UNAVAILABLE",
+          upstreamStatus: rankingResponse.status,
+        }, 200, origin);
         const ranking = await rankingResponse.json();
-        const row = ranking?.row ?? null;
+        const row = ranking?.row ?? ranking?.result?.row ?? ranking?.data?.row ?? null;
+        const searchedTo = ranking?.searchedTo ?? ranking?.result?.searchedTo ?? ranking?.data?.searchedTo;
         const status = row ? "OK"
-          : ranking?.searchedTo >= 2000 ? "NOT_FOUND_TOP_2000" : "NOT_FOUND";
+          : searchedTo >= 2000 ? "NOT_FOUND_TOP_2000" : "NOT_FOUND";
         const payload = { event, ranking, row, status, cached: false };
         const response = json(payload, 200, origin, { cacheSeconds: 60 });
         if (eventCache) {
@@ -210,7 +222,11 @@ export default {
         }
         return response;
       } catch {
-        return json({ error: "EVENT_SOURCE_UNAVAILABLE" }, 502, origin);
+        return json({
+          status: "UPSTREAM_ERROR",
+          error: eventController.signal.aborted ? "EVENT_SOURCE_TIMEOUT" : "EVENT_SOURCE_UNAVAILABLE",
+          upstreamStatus: eventController.signal.aborted ? 504 : 502,
+        }, 200, origin);
       } finally {
         eventController.abort();
         clearTimeout(eventTimeout);
