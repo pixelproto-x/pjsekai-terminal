@@ -45,8 +45,8 @@ function saveUiState() {
     }));
   } catch {}
 }
-function restoreUiState() {
-  for (const [id, saved] of Object.entries(savedUiState.controls || {})) {
+function restoreUiState(state = savedUiState) {
+  for (const [id, saved] of Object.entries(state.controls || {})) {
     const element = document.getElementById(id);
     if (!element) continue;
     if (saved && typeof saved === "object" && "checked" in saved) {
@@ -399,6 +399,12 @@ window.PJSEKAI.applyCloudSettings = () => {
   applyTheme(localStorage.getItem("sekaiTheme") || "virtual-singer");
   applyOpacity(localStorage.getItem("sekaiGlassOpacity") ?? 22);
   applyAnniversaryCover(localStorage.getItem("pjskAnniversaryCover") || "6");
+};
+window.PJSEKAI.applyCloudUiState = () => {
+  const cloudState = readUiState();
+  restoreUiState(cloudState);
+  const route = validRoutes.has(cloudState.activePage) ? cloudState.activePage : "home";
+  go(route, false);
 };
 
 try {
