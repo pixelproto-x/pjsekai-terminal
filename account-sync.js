@@ -127,19 +127,41 @@ function signOut() {
   showStatus("尚未登入");
 }
 
+const ACCOUNT_BACKUP_PREFIX = "pjskCloudBackup:";
+
+function readAccountBackup(subject) {
+  try {
+    const saved = localStorage.getItem(ACCOUNT_BACKUP_PREFIX + subject);
+    const data = saved ? JSON.parse(saved) : {};
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
 async function finishAccountConnection(cloud) {
   const subject = String(cloud.accountSub || "");
   if (!subject) throw new Error("GOOGLE_IDENTITY_INVALID");
 
   const previousSubject = localStorage.getItem(ACCOUNT_SCOPE_KEY);
+  const localData = snapshot();
+  let accountLocalData = localData;
+
   if (previousSubject && previousSubject !== subject) {
-    for (const key of SYNC_KEYS) localStorage.removeItem(key);
-    showStatus("正在切換 Google 帳號並隔離本機資料…");
+    // Preserve the previous account's local copy before changing account scope.
+    // Never merge one Google account's settings into another account.
+    try {
+      localStorage.setItem(ACCOUNT_BACKUP_PREFIX + previousSubject, JSON.stringify(localData));
+    } catch {}
+    accountLocalData = readAccountBackup(subject);
+    showStatus("正在切換 Google 帳號並載入該帳號的資料…");
   }
 
   const cloudData = cloud.data || {};
-  const localData = snapshot();
-  const mergedData = { ...localData, ...cloudData };
+  // Cloud values win, while account-scoped local backups fill keys not yet in
+  // the cloud. This also prevents a newly selected account from inheriting
+  // the previous account's local settings.
+  const mergedData = { ...accountLocalData, ...cloudData };
   const missingCloudKeys = Object.keys(mergedData).some(
     (key) => !Object.prototype.hasOwnProperty.call(cloudData, key)
   );
@@ -148,7 +170,8 @@ async function finishAccountConnection(cloud) {
     if (missingCloudKeys) await api("PUT", { data: mergedData });
     applySnapshot(mergedData);
   } else {
-    await api("PUT", { data: localData });
+    await api("PUT", { data: mergedData });
+    applySnapshot(mergedData);
     showStatus("已將這台裝置的資料首次備份至雲端");
   }
 
