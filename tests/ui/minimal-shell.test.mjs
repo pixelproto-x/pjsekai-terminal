@@ -114,6 +114,8 @@ assert.doesNotMatch(accountSync, /for \(const key of SYNC_KEYS\) localStorage\.r
 assert.match(accountSync, /Storage\.prototype\.setItem/, "cloud sync observes actual persistent storage changes");
 assert.doesNotMatch(accountSync, /document\.addEventListener\("click", scheduleSync\)/, "ordinary clicks do not trigger cloud writes");
 assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized to prevent stale requests overwriting newer data");
+assert.match(accountSync, /window\.confirm\("確定要登出 Google 帳號嗎？登出後將停止雲端同步。"\)/, "Google sign-out requires explicit confirmation");
+assert.match(accountSync, /if \(!accessToken\) return;[\s\S]*?window\.confirm\([\s\S]*?\)[\s\S]*?signOut\(\);/, "canceling the sign-out confirmation keeps the Google session connected");
 assert.doesNotMatch(accountSync, /window\.location\.reload\(\)/, "cloud updates do not reload and jump the page");
 assert.match(app, /applyCloudSettings/, "cloud appearance settings apply without a page reload");
 assert.match(await readFile(new URL("../../songs.js", import.meta.url), "utf8"), /refreshCloudSongData/, "cloud song data refreshes in place");
