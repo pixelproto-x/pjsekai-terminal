@@ -1,6 +1,6 @@
 import { REGION_LABELS } from "./src/data/regions.mjs";
 import { createCloudflarePlayerProvider } from "./src/data/cloudflare-player.mjs";
-import { extractPlayerIdentity, extractPlayerPower } from "./src/data/player-profile-fields.mjs?v=20261115-power-v3";
+import { extractPlayerIdentity, extractPlayerPower } from "./src/data/player-profile-fields.mjs?v=20261115-power-v4";
 
 const provider = createCloudflarePlayerProvider();
 const $ = (selector) => document.querySelector(selector);
