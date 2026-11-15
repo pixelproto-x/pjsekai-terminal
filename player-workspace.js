@@ -175,9 +175,7 @@ function enhanceFilterSelect(select) {
   trigger.addEventListener("click", () => {
     const opening = menu.hidden;
     document.querySelectorAll(".player-filter-dropdown.is-open").forEach((other) => {
-      other.classList.remove("is-open");
-      other.querySelector(".player-filter-menu").hidden = true;
-      other.querySelector(".player-filter-trigger").setAttribute("aria-expanded", "false");
+      other._closePlayerFilter?.();
     });
     menu.hidden = !opening;
     trigger.setAttribute("aria-expanded", String(opening));
@@ -192,6 +190,7 @@ function enhanceFilterSelect(select) {
   window.addEventListener("scroll", () => { if (!menu.hidden) placeMenu(); }, true);
   select.addEventListener("change", refresh);
   refresh();
+  wrapper._closePlayerFilter = close;
   select._refreshCustomFilter = refresh;
 }
 function renderSaved() {
