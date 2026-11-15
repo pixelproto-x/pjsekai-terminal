@@ -7,16 +7,13 @@
 .gt-head .kicker{display:inline-flex;padding:5px 9px;border:1px solid var(--unit-line);border-radius:99px;color:var(--unit-accent);font-size:9px;font-weight:900;letter-spacing:.16em}
 .gt-head h2{margin:10px 0 5px;font-size:clamp(29px,4vw,43px);line-height:1.12;letter-spacing:-.035em;color:var(--unit-ink,var(--ink))}
 .gt-head p{margin:0;color:var(--unit-muted,var(--muted));font-size:12px;line-height:1.7}
-.gt-head label,.gt-filters label,.gt-event-select,.gt-score-form label{display:flex;flex-direction:column;gap:8px;font-size:11px;font-weight:850;color:var(--unit-ink,var(--ink))}
+.gt-head label,.gt-event-select,.gt-score-form label{display:flex;flex-direction:column;gap:8px;font-size:11px;font-weight:850;color:var(--unit-ink,var(--ink))}.gt-filter-field{display:flex;min-width:0;flex-direction:column;gap:8px}.gt-filter-field>label{display:block;font-size:11px;font-weight:850;color:var(--unit-ink,var(--ink));cursor:pointer}.gt-search-only{grid-template-columns:minmax(0,1fr)}
 .gt-head .gt-region-label{width:min(260px,100%);flex:none}
 .gt-region-control{position:relative;display:flex;align-items:center;gap:10px;min-height:54px;padding:0 12px;border:1px solid var(--unit-line);border-radius:16px;background:var(--unit-panel-strong);box-shadow:var(--unit-shadow);transition:border-color .18s,box-shadow .18s}
 .gt-region-control:focus-within{border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 17%,transparent)}
 .gt-region-flag{width:38px;height:29px;flex:none;display:grid;place-items:center;overflow:hidden;border:1px solid var(--unit-line);border-radius:8px;background:var(--unit-panel)}
 .gt-region-flag img{display:block;width:32px;height:22px;object-fit:cover;border-radius:3px}
 .gt-region-world{font-size:21px;line-height:1}
-.gt-region-control .gt-select-dropdown{flex:1;width:auto}
-.gt-region-control select.gt-select-native{position:absolute!important}
-.gt-region-control .gt-select-trigger{min-height:48px;border:0;background:transparent;padding-left:0;font-size:13px}
 .gt-tabs{display:flex;gap:8px;overflow-x:auto;padding:17px 0 13px;scrollbar-width:thin;scrollbar-color:var(--unit-accent) transparent}
 .gt-tabs button{flex:none;white-space:nowrap;min-height:39px;padding:9px 15px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel);color:var(--unit-muted);font-size:11px;font-weight:850;transition:background .18s,border-color .18s,color .18s,transform .18s}
 .gt-tabs button:hover{transform:translateY(-1px);border-color:var(--unit-accent);color:var(--unit-ink)}
@@ -59,13 +56,6 @@
 .gt-saved-teams{margin-top:15px;padding:14px;border:1px solid var(--unit-line);border-radius:16px;background:var(--unit-panel)}
 .gt-saved-teams h4{margin:0 0 11px;font-size:12px}.gt-saved-teams article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--unit-line);font-size:11px}
 .gt-saved-teams article span{color:var(--unit-muted)}.gt-saved-teams article div{display:flex;gap:7px}.gt-saved-teams>p{font-size:10px;color:var(--unit-muted)}
-#gameToolsRoot .gt-select-dropdown{position:relative;width:100%;min-width:0}
-#gameToolsRoot select.gt-select-native{position:absolute!important;width:1px!important;height:1px!important;min-width:1px!important;min-height:1px!important;padding:0!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
-#gameToolsRoot .gt-select-trigger{position:relative;display:flex;align-items:center;width:100%;min-width:0;min-height:44px;padding:10px 37px 10px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink);font:inherit;font-size:12px;font-weight:750;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#gameToolsRoot .gt-select-trigger:after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:2px solid var(--unit-muted);border-bottom:2px solid var(--unit-muted);transform:translateY(-70%) rotate(45deg);transition:transform .18s}
-#gameToolsRoot .gt-select-trigger:focus-visible{outline:2px solid var(--unit-accent);outline-offset:2px}
-#gameToolsRoot .gt-select-dropdown.is-open .gt-select-trigger{border-color:var(--unit-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--unit-accent) 16%,transparent)}
-#gameToolsRoot .gt-select-dropdown.is-open .gt-select-trigger:after{transform:translateY(-20%) rotate(225deg)}
 to{opacity:1;transform:translateY(0)}}
 @media(max-width:900px){.gt-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.gt-cards,.gt-characters{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-team{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.gt-head{align-items:stretch;flex-direction:column}.gt-head .gt-region-label{width:100%}.gt-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.gt-cards,.gt-characters,.gt-compare{grid-template-columns:1fr}.gt-cards{max-height:58vh;padding:8px}.gt-team{grid-template-columns:1fr}.gt-metrics{grid-template-columns:1fr 1fr}.gt-score-form{grid-template-columns:1fr}.gt-preset-save{flex-direction:column}.gt-saved-teams article{align-items:flex-start;flex-wrap:wrap}.gt-tabs button{padding:9px 12px}}
@@ -81,3 +71,9 @@ to{opacity:1;transform:translateY(0)}}
 .gt-region-control select#gtRegion:focus-visible{outline:none;box-shadow:none}
 .gt-region-control .gt-region-chevron{pointer-events:none}
 @media(prefers-reduced-motion:reduce){#gameToolsRoot select{transition:none}}
+
+/* Filter fields use independent labels and controls; no click-through label activation. */
+#gameToolsRoot .gt-filter-field{min-width:0;display:flex;flex-direction:column;gap:8px}
+#gameToolsRoot .gt-filter-field>label{display:block;cursor:pointer;font-size:11px;font-weight:850;color:var(--unit-ink)}
+#gameToolsRoot .gt-filter-field>input,#gameToolsRoot .gt-filter-field>select{width:100%;min-width:0}
+#gameToolsRoot .gt-search-only{grid-template-columns:minmax(0,1fr)}
