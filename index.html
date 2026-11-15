@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#f3f4f8">
 <meta name="color-scheme" content="light">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="songs.css?v=20261115-song-card-spacing">
+<link rel="stylesheet" href="songs.css?v=20261115-song-card-spacing">\n<link rel="stylesheet" href="player-workspace.css?v=20261115-player-workspace-v1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Telugu:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1205,10 +1205,23 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
     <section class="player-panel">
       <div class="msk-card-kicker">公開玩家資料</div>
       <form class="player-form" id="playerLookupForm">
-        <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" required></label><button id="playerLookupButton" type="submit">查詢公開資料</button>
+        <label for="playerUid">玩家 UID<input id="playerUid" name="uid" inputmode="numeric" autocomplete="off" maxlength="20" pattern="[0-9]{1,20}" placeholder="輸入玩家 UID" required></label>
+        <label for="playerRegion">伺服器<select id="playerRegion" name="region"><option value="auto">自動偵測</option><option value="jp">日服</option><option value="tw">台服</option><option value="en">國際服</option><option value="kr">韓服</option><option value="cn">簡中服</option></select></label>
+        <button id="playerLookupButton" type="submit">查詢公開資料</button>
       </form>
       <p class="player-status" id="playerLookupStatus" role="status" aria-live="polite">輸入 UID 開始查詢</p>
       <div class="player-results" id="playerLookupResults" aria-live="polite"></div>
+    </section>
+    <section class="player-workspace-panel" aria-labelledby="playerWorkspaceTitle">
+      <div class="player-workspace-heading"><div><span class="kicker">PLAYER WORKSPACE</span><h2 id="playerWorkspaceTitle">玩家工作台</h2><p>管理不同伺服器的 UID 收藏玩家 整理標籤和查看查詢紀錄</p></div><span class="player-workspace-count" id="playerSavedCount">0 / 50</span></div>
+      <div class="player-workspace-tools">
+        <label class="player-workspace-search">搜尋玩家<input id="playerWorkspaceSearch" type="search" placeholder="搜尋 UID 名稱或標籤"></label>
+        <label>標籤篩選<select id="playerWorkspaceTag"><option value="">所有標籤</option></select></label>
+        <button id="playerCompareButton" type="button" disabled>比較已選玩家</button>
+      </div>
+      <div id="playerCompareResult" class="player-compare-result" aria-live="polite"></div>
+      <div id="savedPlayerList" class="saved-player-list" aria-live="polite"></div>
+      <div class="player-history-block"><div class="player-history-heading"><h3>最近查詢</h3><button id="clearPlayerHistory" type="button">清除紀錄</button></div><div id="playerLookupHistory" class="player-history-list"></div></div>
     </section>
   </section>
   <section class="page" data-page="settings">
@@ -1267,7 +1280,7 @@ body[data-sekai-theme="vivid-bad-squad"] .player-source-link,body[data-sekai-the
 <button class="scroll-top-fab" id="scrollTopBtn" type="button" aria-label="回到頂端"><span aria-hidden="true">↑</span><span>回到頂端</span></button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="app-shell.js?v=20261115-refresh-sync-fix"></script>
-<script type="module" src="player-lookup.js?v=20261115-refresh-sync-fix"></script>
+<script type="module" src="player-lookup.js?v=20261115-player-workspace-v1"></script>\n<script type="module" src="player-workspace.js?v=20261115-player-workspace-v1"></script>
 <script type="module" src="songs.js?v=20261115-level-filter-exact"></script>
 <script type="module" src="songs-mobile.js?v=20261115-song-list-only-scroll"></script>
 <script type="module" src="account-sync.js?v=20261115-account-scope-fix-98b3e7f"></script>
