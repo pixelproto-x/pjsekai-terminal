@@ -274,7 +274,14 @@ window.PJSEKAI = { ...(window.PJSEKAI || {}), refreshCloudSongData: () => {
   state.favorites = new Set(readStorage(STORAGE.favorites, []));
   state.records = readStorage(STORAGE.records, {});
   state.playlists = readStorage(STORAGE.playlists, []);
-  renderSongs();
+  const cloudRegion = readStorage("pjskSongRegion", "tw");
+  if (cloudRegion !== $("#songRegion").value) {
+    $("#songRegion").value = cloudRegion;
+    window.PJSEKAI?.syncServerSelect?.($("#songRegion"));
+    loadSongs(cloudRegion);
+  } else {
+    renderSongs();
+  }
 } };
 
 loadSongs();
