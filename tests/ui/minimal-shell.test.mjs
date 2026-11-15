@@ -185,14 +185,14 @@ assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，
 assert.match(themes, /\.bottom-bar \.tab-indicator\{z-index:0\}/, "selection bubble stays behind navigation labels");
 assert.match(themes, /\.bottom-bar \.tab\{position:relative;z-index:1\}/, "navigation labels render above the selection bubble");
 
-assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached across refreshes");
+assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached across refreshes");\nassert.match(html, /player-workspace.js/, "player workspace module is loaded");\nassert.match(syncR.result.content, /pjskSavedPlayersV2/, "saved players sync across signed-in devices");
 assert.match(lookup, /已還原上次查詢資料/, "cached player results render before background refresh");
 assert.match(lookup, /saveLookupCache\(uid, region, result\)/, "successful player profile results are persisted");
 
 assert.match(html, /id="anniversaryCoverHeadline">心意交會的故事<\/span>/, "homepage HTML fallback uses the shortened sixth-anniversary title");
 assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniversary headline line stays hidden initially");
-assert.doesNotMatch(html, /savePlayerForm|savedPlayerList|playerLookupHistory/, "unrelated saved-player workspace is removed");
-assert.doesNotMatch(lookup, /pjskSavedPlayersV1|pjskPlayerHistoryV1|MAX_SAVED_PLAYERS|favorite-current|rememberPlayer/, "player lookup no longer manages saved-player collections");
+assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");\nassert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");\nassert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");\nassert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
+assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");\nassert.match(lookup, /getProfile\(uid, region\)/, "player lookup supports an explicitly selected server");
 assert.doesNotMatch(css, /Batch 2: saved player workspace/, "removed player workspace has no leftover styling");
 
 assert.match(html, /透明與清楚平衡/, "opacity scale explains the standard visual effect");
