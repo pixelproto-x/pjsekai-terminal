@@ -45,14 +45,10 @@ async function pendingRankingResponse(upstreamResponse, event, origin) {
 
 function candidates(region, uid, env) {
   const encodedUid = encodeURIComponent(uid);
-  const list = [{
-    name: "Haruki Public",
-    url: `https://suite-api.haruki.seiunx.com/public/${region}/suite/${encodedUid}?key=${PUBLIC_PROFILE_KEYS}`,
-    headers: {},
-  }];
+  const list = [];
 
-  // Taiwan-only public fallback. HiSekai's own documentation currently lists
-  // only the TW profile route as supported.
+  // HiSekai documents team and power fields for its Taiwan profile response.
+  // Prefer it there; Haruki remains the multi-region fallback.
   if (region === "tw") {
     list.push({
       name: "HiSekai",
@@ -60,6 +56,11 @@ function candidates(region, uid, env) {
       headers: {},
     });
   }
+  list.push({
+    name: "Haruki Public",
+    url: `https://suite-api.haruki.seiunx.com/public/${region}/suite/${encodedUid}?key=${PUBLIC_PROFILE_KEYS}`,
+    headers: {},
+  });
 
   // Optional legacy provider credentials remain server-side if already set.
   if (env.HARUKI_TOKEN) {
@@ -263,16 +264,21 @@ export default {
     const fetchImpl = env.FETCH || fetch;
 
     try {
-      const attempts = sources.map(async (source) => {
+      let success = null;
+      // Try the Taiwan profile source first because it publishes team power.
+      // If it is unavailable, fall back to the multi-region Haruki source.
+      for (const source of sources) {
         const result = await fetchSource(source, controller.signal, fetchImpl);
-        if (!result.ok) {
-          statuses.push(result.status);
-          throw new Error("Upstream request failed");
+        if (result.ok) {
+          success = { source: source.name, result };
+          break;
         }
-        return { source: source.name, result };
-      });
-
-      const success = await Promise.any(attempts);
+        statuses.push(result.status);
+      }
+      if (!success) {
+        const failure = upstreamError(statuses, profile.region);
+        return json(failure.body, failure.status, origin);
+      }
       controller.abort();
       const payload = {
         data: success.result.data,
