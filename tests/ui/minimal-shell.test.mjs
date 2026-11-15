@@ -209,7 +209,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\.css\?v=20261115-player-workspace-theme-v2/, "player workspace theme stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-custom-filter-dropdown-v1/, "player workspace theme stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
