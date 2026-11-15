@@ -1,5 +1,6 @@
 const GOOGLE_CLIENT_ID = "724422617291-j4req87o5hn7bckbpom1fnpflqumbl2q.apps.googleusercontent.com";
 const API_BASE = "https://pjsekai-player-api.a0983439343.workers.dev";
+const ACCOUNT_SCOPE_KEY = "pjskCloudAccountSub";
 const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover", "pjskUiStateV1",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists", "pjskSongRegion", "pjskSongViewV1",
@@ -14,6 +15,14 @@ const status = document.getElementById("googleAccountStatus");
 const signOutButton = document.getElementById("googleAccountSignOut");
 function showStatus(message) {
   if (status) status.textContent = message;
+}
+function googleSubject(token) {
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(payload)).sub || "";
+  } catch {
+    return "";
+  }
 }
 function snapshot() {
   const data = {};
@@ -89,6 +98,13 @@ async function onGoogleCredential(response) {
   if (button) button.disabled = true;
   showStatus("正在載入雲端資料…");
   try {
+    const subject = googleSubject(idToken);
+    if (!subject) throw new Error("GOOGLE_IDENTITY_INVALID");
+    const previousSubject = localStorage.getItem(ACCOUNT_SCOPE_KEY);
+    if (previousSubject && previousSubject !== subject) {
+      for (const key of SYNC_KEYS) localStorage.removeItem(key);
+      showStatus("正在切換 Google 帳號並隔離本機資料…");
+    }
     const cloud = await api("GET");
     const cloudData = cloud.data || {};
     const hasCloudData = Object.keys(cloudData).length > 0;
@@ -99,6 +115,7 @@ async function onGoogleCredential(response) {
       await api("PUT", { data: localData });
       showStatus("已將這台裝置的資料首次備份至雲端");
     }
+    localStorage.setItem(ACCOUNT_SCOPE_KEY, subject);
     if (button) {
       button.textContent = "已連結 Google 帳號";
       button.disabled = false;
