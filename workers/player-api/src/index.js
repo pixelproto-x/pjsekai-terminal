@@ -204,6 +204,14 @@ export default {
         let row = ranking?.row ?? null;
         let status = "OK";
         if (requestedName) {
+          // A partial index may not have found every duplicate name yet.
+          // Wait for a complete search before choosing any exact-name match.
+          if (ranking?.complete === false) {
+            const retryAfter = Math.max(5, Math.min(300, Number(ranking?.retryAfter) || 30));
+            return json({ event, row: null, status: "DATA_PENDING", retryAfter }, 202, origin, {
+              extraHeaders: { "retry-after": String(retryAfter) },
+            });
+          }
           const normalizedName = requestedName.normalize("NFKC").toLocaleLowerCase();
           const exactMatches = (Array.isArray(ranking?.matches) ? ranking.matches : [])
             .filter((match) => String(match?.name ?? "").normalize("NFKC").toLocaleLowerCase() === normalizedName);
@@ -212,11 +220,6 @@ export default {
             row = { rank: match.rank, name: match.name, point: match.point, profileId: match.profileId ?? null };
           } else if (exactMatches.length > 1) {
             status = "AMBIGUOUS_NAME";
-          } else if (ranking?.complete === false) {
-            const retryAfter = Math.max(5, Math.min(300, Number(ranking?.retryAfter) || 30));
-            return json({ event, row: null, status: "DATA_PENDING", retryAfter }, 202, origin, {
-              extraHeaders: { "retry-after": String(retryAfter) },
-            });
           } else {
             status = "NOT_FOUND";
           }
