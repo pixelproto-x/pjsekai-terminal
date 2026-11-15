@@ -231,6 +231,8 @@ assert.match(html, /player-workspace\.css\?v=20261115-rebuilt-native-dropdowns-v
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
+assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools select\{[\s\S]*?appearance:auto!important/, "player workspace filters use native selects");
+assert.doesNotMatch(workspaceCss, /server-picker-menu|server-picker-trigger|appearance:none/, "player workspace no longer carries the legacy custom dropdown");
 for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
   assert.match(workspaceCss, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated player workspace treatment");
 }
@@ -298,7 +300,7 @@ assert.match(gameToolsJs, /data-master-rank/, "team editor exposes mastery rank 
 assert.match(gameToolsJs, /characterUnits\(c\.id,s\.gameCharacterUnits\)\.includes\(s\.unit\)/, "character search supports group filtering");
 assert.match(gameToolsJs, /async function load\(\)\{const generation=\+\+loadGeneration;/, "new region loads supersede stale in-flight requests");
 assert.match(gameToolsJs, /const list=p\.querySelector\("\.gt-cards"\);if\(list\)list\.innerHTML=/, "card search replaces only the scrollable result list");
-assert.doesNotMatch(gameToolsCss, /gt-select-menu|gt-region-menu|background:transparent!important/, "obsolete transparent popup styling is removed");
+assert.doesNotMatch(gameToolsCss, /gt-select-menu|gt-region-menu|gt-dropdown|popover|appearance:none/, "obsolete custom dropdown styling is removed");
 assert.match(gameToolsCss, /#gameToolsRoot select\{[\s\S]*?appearance:auto!important/, "all game-tool selectors use the same native picker as the song area");
 assert.match(gameToolsCss, /#gameToolsRoot select option\{background:#fff;color:#202638\}/, "native selector options retain an opaque readable surface");
 assert.match(gameToolsCss, /\.gt-region-control select#gtRegion\{[\s\S]*?background-color:transparent/, "server selector control remains integrated with its themed region shell");
