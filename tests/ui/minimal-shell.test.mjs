@@ -61,7 +61,7 @@ assert.match(html, /@supports \(appearance:base-select\)/, "song server selector
 assert.match(html, /::picker\(select\)/, "song server dropdown popup has its own CSS styling");
 assert.match(html, /option:checked/, "selected song server has a custom highlighted state");
 assert.match(html, /position-area:block-end;/, "song server dropdown opens directly below its selector without spanning the full row");
-assert.match(html, /width:max-content;[\\s\\S]*?max-width:min\\(220px,calc\\(100vw - 32px\\)\\)/, "song server dropdown stays compact and adapts to narrow screens");
+assert.match(html, /width:max-content;[\s\S]*?max-width:min\(220px,calc\(100vw - 32px\)\)/, "song server dropdown stays compact and adapts to narrow screens");
 assert.match(html, /min-width:160px/, "song server dropdown remains wide enough for full server labels");
 for (const [region, label] of [["jp","日服"],["tw","台服"],["en","國際服"],["kr","韓服"],["cn","簡中服"]]) {
   assert.match(html, new RegExp(`<option value="${region}"[^>]*>[^<]*${label}</option>`), `${label} song data is selectable`);
