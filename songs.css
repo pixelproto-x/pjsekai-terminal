@@ -390,3 +390,92 @@
   .page[data-page="songs"] .song-difficulties{gap:8px;margin:14px 0}
   .page[data-page="songs"] .song-difficulty{min-height:33px;padding:7px 10px}
 }
+
+
+/* Shared dropdown system: every visible select uses the same expanding picker as the song database. */
+select:not(.server-picker-native){cursor:pointer}
+@supports (appearance:base-select){
+  select:not(.server-picker-native){
+    appearance:base-select;
+    -webkit-appearance:base-select;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-inline:12px 10px;
+  }
+  select:not(.server-picker-native)::picker(select){
+    appearance:base-select;
+    position-area:block-end span-inline;
+    position-try-fallbacks:none;
+    justify-self:start;
+    margin-block-start:7px;
+    min-width:anchor-size(width);
+    max-width:calc(100vw - 28px);
+    box-sizing:border-box;
+    padding:7px;
+    border:1px solid var(--unit-line,var(--line,rgba(85,112,155,.18)));
+    border-radius:15px;
+    background:var(--unit-panel-strong,var(--panel-solid,rgba(250,251,255,.97)));
+    color:var(--unit-ink,var(--ink,#202638));
+    box-shadow:0 16px 40px rgba(18,28,48,.2),inset 0 1px 0 rgba(255,255,255,.55);
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+    opacity:0;
+    transform:translateY(-7px) scale(.985);
+    transform-origin:top center;
+    transition:opacity .18s ease,transform .18s ease,display .18s allow-discrete,overlay .18s allow-discrete;
+  }
+  select:not(.server-picker-native):open::picker(select){opacity:1;transform:translateY(0) scale(1)}
+  @starting-style{
+    select:not(.server-picker-native):open::picker(select){opacity:0;transform:translateY(-7px) scale(.985)}
+  }
+  select:not(.server-picker-native)::picker-icon{
+    content:"⌃";
+    color:var(--unit-accent,#8272cf);
+    font-size:15px;
+    line-height:1;
+    transition:transform .2s ease,color .2s ease;
+  }
+  select:not(.server-picker-native):open::picker-icon{transform:rotate(180deg)}
+  select:not(.server-picker-native) option{
+    min-height:37px;
+    padding:9px 11px;
+    border-radius:9px;
+    background:transparent;
+    color:var(--unit-ink,var(--ink,#202638));
+    font:700 11px/1.4 -apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+    transition:background .15s ease,color .15s ease;
+  }
+  select:not(.server-picker-native) option:checked{
+    background:color-mix(in srgb,var(--unit-accent,#8272cf) 17%,transparent);
+    color:var(--unit-ink,var(--ink,#202638));
+  }
+  select:not(.server-picker-native) option:hover{
+    background:color-mix(in srgb,var(--unit-accent,#8272cf) 12%,transparent);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  select:not(.server-picker-native)::picker(select),
+  select:not(.server-picker-native)::picker-icon{transition:none}
+}
+
+/* Search and text-entry fields must sit above decorative layers and receive taps. */
+#playerUid,#homePlayerUid,.player-form input,.hub-lookup-control input,
+.player-workspace-tools input,.saved-player-edit input,
+#gameToolsRoot input:not([type=checkbox]){
+  position:relative!important;
+  z-index:40!important;
+  pointer-events:auto!important;
+  touch-action:auto!important;
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  -webkit-appearance:none;
+  appearance:none;
+  cursor:text;
+}
+.player-form,.player-workspace-tools,.player-workspace-search,
+#gameToolsRoot .gt-filter-field:has(input){
+  position:relative;
+  z-index:30;
+}
