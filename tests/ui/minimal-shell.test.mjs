@@ -137,6 +137,8 @@ assert.match(lookup, /pjskPlayerLookupCacheV3/, "player profile data is cached a
 assert.match(lookup, /已還原上次查詢資料/, "cached player results render before background refresh");
 assert.match(lookup, /saveLookupCache\(uid, region, result\)/, "successful player profile results are persisted");
 
+assert.match(html, /id="anniversaryCoverHeadline">心意交會的故事<\\/span>/, "homepage HTML fallback uses the shortened sixth-anniversary title");
+assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniversary headline line stays hidden initially");
 assert.match(html, /id="savePlayerForm"/, "player workspace can save multiple player UIDs");
 assert.match(html, /id="savedPlayerList"/, "saved player list is rendered");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is rendered");
