@@ -85,8 +85,12 @@ function signOut() {
   showStatus("尚未登入");
 }
 async function onGoogleCredential(response) {
-  idToken = response.credential || "";
-  if (!idToken) return showStatus("Google 登入沒有回傳身分憑證");
+  idToken = response.access_token || "";
+  if (!idToken) {
+    if (button) button.disabled = false;
+    showStatus(response.error ? "Google 登入未完成：" + response.error : "Google 沒有回傳授權權杖");
+    return;
+  }
   if (button) button.disabled = true;
   showStatus("正在載入雲端資料…");
   try {
