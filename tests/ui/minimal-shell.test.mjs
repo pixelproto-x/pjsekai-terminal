@@ -279,8 +279,8 @@ const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.
 assert.match(gameToolsJs, /function updateSearchResults\(/, "game-tool search updates only result containers");
 assert.match(gameToolsJs, /選擇伺服器/, "game database region label uses the requested wording");
 assert.doesNotMatch(gameToolsJs, /<label>(?:搜尋|搜尋角色|搜尋稱號|搜尋活動|角色|團體|屬性|稀有度)<(?:input|select)/, "filter labels are not wrapping interactive controls");
-assert.match(gameToolsJs, /<label for="gtCharacter">角色<\\/label><select id="gtCharacter">/, "filter labels explicitly target their controls");
-assert.match(gameToolsJs, /<label for="gtQuery">搜尋<\\/label><input id="gtQuery"/, "search label is separated from the search input");
+assert.ok(gameToolsJs.includes('<label for="gtCharacter">角色</label><select id="gtCharacter">'), "filter labels explicitly target their controls");
+assert.ok(gameToolsJs.includes('<label for="gtQuery">搜尋</label><input id="gtQuery"'), "search label is separated from the search input");
 assert.doesNotMatch(gameToolsJs, /enhanceGameToolSelect|activeGameToolDropdown|gt-select-menu|MutationObserver/, "game-tool controls do not create detached custom dropdown layers");
 assert.match(gameToolsJs, /if\(e\.target\.id==="gtQuery"\)\{const input=e\.target;s\.q=input\.value;updateSearchResults\(\);\}/, "search input updates results without replacing or refocusing the input");
 assert.match(gameToolsJs, /const list=p\.querySelector\("\.gt-cards"\);if\(list\)list\.innerHTML=/, "card search replaces only the scrollable result list");
