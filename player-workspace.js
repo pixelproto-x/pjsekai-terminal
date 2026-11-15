@@ -136,6 +136,21 @@ function enhanceFilterSelect(select) {
   select.parentNode.insertBefore(wrapper, select);
   wrapper.append(select, trigger, menu);
   select.classList.add("player-filter-native");
+  const placeMenu = () => {
+    const rect = trigger.getBoundingClientRect();
+    const gap = 8;
+    const below = window.innerHeight - rect.bottom - gap;
+    const above = rect.top - gap;
+    const maxHeight = Math.max(120, Math.min(260, Math.max(below, above) - 8));
+    menu.style.position = "fixed";
+    menu.style.zIndex = "2147483647";
+    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)) + "px";
+    menu.style.width = rect.width + "px";
+    menu.style.maxHeight = maxHeight + "px";
+    menu.style.top = below >= Math.min(180, maxHeight) || below >= above
+      ? Math.min(window.innerHeight - maxHeight - 8, rect.bottom + gap) + "px"
+      : Math.max(8, rect.top - maxHeight - gap) + "px";
+  };
   const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); wrapper.classList.remove("is-open"); };
   const refresh = () => {
     trigger.textContent = select.selectedOptions[0]?.textContent || "請選擇";
@@ -167,8 +182,14 @@ function enhanceFilterSelect(select) {
     menu.hidden = !opening;
     trigger.setAttribute("aria-expanded", String(opening));
     wrapper.classList.toggle("is-open", opening);
+    if (opening) {
+      document.body.append(menu);
+      placeMenu();
+    }
   });
-  document.addEventListener("click", (event) => { if (!wrapper.contains(event.target)) close(); });
+  document.addEventListener("click", (event) => { if (!wrapper.contains(event.target) && !menu.contains(event.target)) close(); });
+  window.addEventListener("resize", () => { if (!menu.hidden) placeMenu(); });
+  window.addEventListener("scroll", () => { if (!menu.hidden) placeMenu(); }, true);
   select.addEventListener("change", refresh);
   refresh();
   select._refreshCustomFilter = refresh;
