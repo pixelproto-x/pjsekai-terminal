@@ -7,6 +7,10 @@
  --unit-pattern:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0 1px,transparent 1px 54px),repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 1px,transparent 1px 54px);
 }
 body[data-sekai-theme]{color:var(--unit-ink);background:#e8edf5}
+/* Keep the unit-specific base scene above the body canvas and below all app surfaces. */
+.sekai-ambience{z-index:0}
+.app-shell{position:relative;z-index:1}
+.footer{position:relative;z-index:1}
 body[data-sekai-theme] .sekai-ambience{background:var(--unit-scene)}
 body[data-sekai-theme] .sekai-ambience:before{content:"";position:absolute;inset:0;background:var(--unit-pattern);opacity:.85;filter:none;transform:none}
 body[data-sekai-theme] .sekai-ambience:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0,rgba(255,255,255,.38),transparent 56%);opacity:.8}
