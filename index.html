@@ -46,6 +46,11 @@ button{cursor:pointer}
 a{text-decoration:none;color:inherit}
 button,input,select{outline:none}
 ::selection{background:#181a22;color:#fff}
+input::selection,textarea::selection,select::selection,[contenteditable="true"]::selection,
+#homePlayerUid::selection,#playerUid::selection,.player-form input::selection,.hub-lookup-control input::selection{
+  background:#6657e8!important;
+  color:#fff!important;
+}
 
 .top-accent{position:fixed;z-index:100;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--violet),var(--orange),var(--green))}
 .sekai-ambience{position:fixed;inset:0;z-index:-3;pointer-events:none;overflow:hidden;background:#171927}
