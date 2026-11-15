@@ -113,15 +113,21 @@ async function verifyGoogleIdentity(request, env) {
   const match = authorization.match(/^Bearer ([A-Za-z0-9._~-]+)$/);
   if (!match || !env.GOOGLE_CLIENT_ID) return null;
   try {
-    const response = await fetch(GOOGLE_TOKENINFO_URL + "?id_token=" + encodeURIComponent(match[1]), {
+    // Validate the OAuth access token server-side. This is the popup OAuth
+    // flow, not the FedCM-based Sign in with Google credential flow.
+    const response = await fetch(GOOGLE_TOKENINFO_URL + "?access_token=" + encodeURIComponent(match[1]), {
       headers: { accept: "application/json" },
     });
     if (!response.ok) return null;
     const token = await response.json();
+    const scopes = String(token.scope || "").split(/\\s+/);
     if (token.aud !== env.GOOGLE_CLIENT_ID ||
-        !["accounts.google.com", "https://accounts.google.com"].includes(token.iss) ||
+        (token.azp && token.azp !== env.GOOGLE_CLIENT_ID) ||
         !token.sub || !Number.isFinite(Number(token.exp)) ||
-        Number(token.exp) * 1000 <= Date.now() || token.email_verified !== "true") return null;
+        Number(token.exp) * 1000 <= Date.now() ||
+        !["true", true].includes(token.email_verified) ||
+        !scopes.includes("openid") ||
+        !scopes.some((scope) => scope.endsWith("/auth/userinfo.email"))) return null;
     return { sub: String(token.sub), email: String(token.email || "") };
   } catch {
     return null;
@@ -137,9 +143,9 @@ async function handleAccountData(request, env, origin) {
     const row = await env.USER_DATA_DB.prepare(
       "SELECT data, updated_at FROM user_data WHERE google_sub = ?"
     ).bind(identity.sub).first();
-    if (!row) return json({ data: {}, updatedAt: null }, 200, origin);
+    if (!row) return json({ data: {}, updatedAt: null, accountSub: identity.sub }, 200, origin);
     try {
-      return json({ data: JSON.parse(row.data), updatedAt: row.updated_at }, 200, origin);
+      return json({ data: JSON.parse(row.data), updatedAt: row.updated_at, accountSub: identity.sub }, 200, origin);
     } catch {
       return json({ error: "STORED_DATA_INVALID" }, 500, origin);
     }
