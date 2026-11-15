@@ -39,3 +39,15 @@
 .gt-score-result small,.gt-score-result span{font-size:10px;color:var(--unit-muted)}
 .gt-score-result strong{font-size:clamp(28px,5vw,44px);color:var(--unit-accent)}
 @media(max-width:620px){.gt-score-form{grid-template-columns:1fr}}
+
+
+.gt-preset-save{display:flex;gap:8px;margin-top:14px}
+.gt-preset-save input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--unit-line);border-radius:12px;background:var(--unit-panel-strong);color:var(--unit-ink)}
+.gt-saved-teams{margin-top:14px;padding:13px;border:1px solid var(--unit-line);border-radius:15px;background:var(--unit-panel)}
+.gt-saved-teams h4{margin:0 0 10px;font-size:12px}
+.gt-saved-teams article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--unit-line);font-size:11px}
+.gt-saved-teams article span{color:var(--unit-muted)}
+.gt-saved-teams article div{display:flex;gap:6px}
+.gt-saved-teams article button{padding:6px 9px!important}
+.gt-saved-teams>p{font-size:10px;color:var(--unit-muted)}
+@media(max-width:560px){.gt-preset-save{flex-direction:column}.gt-saved-teams article{align-items:flex-start;flex-wrap:wrap}}
