@@ -283,5 +283,7 @@ assert.match(gameToolsCss, /\.gt-select-menu\[hidden\]\{display:none\}/, "game-t
 assert.match(gameToolsCss, /gt-menu-in/, "game-tool dropdowns use the redesigned opening animation");
 assert.match(gameToolsCss, /\.gt-region-control \.gt-select-trigger/, "server selector uses the same fully styled dropdown");
 
-assert.match(gameToolsCss, /\.gt-select-menu\{[^}]*background:transparent!important/s, "dropdown popup bubbles use a fully transparent background");
-assert.match(gameToolsCss, /\.gt-select-menu\{[^}]*backdrop-filter:none!important/s, "dropdown popup bubbles do not inherit theme glass effects");
+assert.match(gameToolsJs, /select\.id==="gtRegion"\?" gt-region-menu"/, "only the server-region popup receives the transparent bubble style");
+assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*background:transparent!important/s, "server-region popup bubble is transparent");
+assert.match(gameToolsCss, /\.gt-select-menu\.gt-region-menu\{[^}]*backdrop-filter:none!important/s, "server-region popup bubble does not inherit theme glass effects");
+assert.doesNotMatch(gameToolsCss, /\.gt-select-menu\{[^}]*background:transparent!important/s, "other game-tool dropdowns keep their themed background");
