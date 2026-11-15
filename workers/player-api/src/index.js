@@ -404,20 +404,73 @@ export default {
         const current = await currentResponse.json();
         const event = current?.event ?? null;
         if (!event?.id) return json({ event: null, row: null, status: "NO_ACTIVE_EVENT" }, 200, origin, { cacheSeconds: 60 });
-        if (event.pointRankingEnabled === false) {
-          return json({
-            event,
-            row: null,
-            status: "POINT_BOARD_UNAVAILABLE",
-            availableRankingType: event.totalRankingEnabled === true ? "total" : null,
-            message: event.totalRankingEnabled === true
-              ? "The point ranking board is disabled; a total-ranking source is not configured."
-              : "The point ranking board is disabled for this event.",
-          }, 200, origin, { cacheSeconds: 60 });
-        }
         const requestedEventId = url.searchParams.get("eventId");
         if (requestedEventId && requestedEventId !== String(event.id)) {
           return json({ event, row: null, status: "EVENT_CHANGED" }, 200, origin);
+        }
+        if (event.pointRankingEnabled === false) {
+          if (event.totalRankingEnabled !== true) {
+            return json({
+              event,
+              row: null,
+              status: "POINT_BOARD_UNAVAILABLE",
+              availableRankingType: null,
+              message: "Neither the point board nor the total board is enabled for this event.",
+            }, 200, origin, { cacheSeconds: 60 });
+          }
+
+          // Haneoka exposes a separate total board for events where point ranking
+          // is disabled. Its documented snapshot contains the top 100 rows.
+          const totalUrl = HANEOKA_BASE + "/" + eventRanking.region + "/events/"
+            + encodeURIComponent(String(event.id)) + "/total/latest";
+          const totalResponse = await fetchImpl(totalUrl, {
+            headers: { accept: "application/json" }, signal: eventController.signal,
+          });
+          if (totalResponse.status === 503) {
+            return await pendingRankingResponse(totalResponse, event, origin);
+          }
+          if (!totalResponse.ok) {
+            return json({
+              event,
+              row: null,
+              status: "UPSTREAM_ERROR",
+              error: "TOTAL_RANKING_UNAVAILABLE",
+              upstreamStatus: totalResponse.status,
+              source: "Haneoka Total",
+            }, 200, origin);
+          }
+
+          const totalPayload = await totalResponse.json();
+          const rows = rankingRows(totalPayload);
+          const row = rows.find((item) => rankingRowMatches(item, eventRanking.uid)) ?? null;
+          const totalRoot = unwrapRankingPayload(totalPayload);
+          if (row) {
+            const response = json({
+              status: "OK",
+              event,
+              row,
+              source: "Haneoka Total",
+              scannedTo: rows.length,
+              observedAtMs: totalRoot?.observedAtMs ?? null,
+              stale: totalRoot?.stale === true,
+              cached: false,
+            }, 200, origin, { cacheSeconds: 30 });
+            if (eventCache) {
+              const store = eventCache.put(eventCacheKey, response.clone());
+              if (ctx.waitUntil) ctx.waitUntil(store.catch(() => {}));
+            }
+            return response;
+          }
+          return json({
+            status: "NOT_FOUND_TOP_100",
+            event,
+            row: null,
+            source: "Haneoka Total",
+            scannedTo: rows.length || 100,
+            observedAtMs: totalRoot?.observedAtMs ?? null,
+            stale: totalRoot?.stale === true,
+            message: "The total-ranking source currently publishes only its top 100 rows.",
+          }, 200, origin, { cacheSeconds: 30 });
         }
 
         const requestedStart = Number(url.searchParams.get("start"));
