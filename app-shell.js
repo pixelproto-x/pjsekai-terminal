@@ -183,68 +183,96 @@ document.addEventListener("click", (event) => {
   if (preset) applyOpacity(preset.dataset.opacity);
 });
 const opacityRange = $("#opacityRange");
-// Magnetic attraction adapted from loucadufault/MagneticSlider (MIT):
-// https://github.com/loucadufault/MagneticSlider
-// Keep the native range control; only its value is magnetically attracted to marks.
-const OPACITY_MAGNETIC_MARKS = [
-  { value: 12, magneticScale: 1 },
-  { value: 22, magneticScale: 1 },
-  { value: 35, magneticScale: 1 },
-  { value: 48, magneticScale: 1 },
-];
-const OPACITY_MAGNETIC_RADIUS = 3.5;
-const OPACITY_MAGNETIC_BOUNDARY_DEADZONE = 0.6;
+// Variable movement resistance, based on the VMR slider interaction technique:
+// https://www.mmi.ifi.lmu.de/pubdb/publications/pub/lischke2017usingvariable/lischke2017usingvariable.pdf
+// Unlike magnetic snapping, the value is never forced to a preset.
+const OPACITY_RESISTANCE_MARKS = [12, 22, 35, 48];
+const OPACITY_RESISTANCE_RADIUS = 3.2;
+const OPACITY_RESISTANCE_MIN_FACTOR = 0.16;
+let opacityPointerId = null;
+let opacityDragState = null;
 
-function computeOpacityMagneticTarget(value, lowMark, highMark) {
-  if (lowMark === undefined && highMark === undefined) return null;
-  if (lowMark === undefined) {
-    return Math.abs(highMark.value - value) < OPACITY_MAGNETIC_RADIUS * highMark.magneticScale
-      ? highMark.value : null;
-  }
-  if (highMark === undefined) {
-    return Math.abs(value - lowMark.value) < OPACITY_MAGNETIC_RADIUS * lowMark.magneticScale
-      ? lowMark.value : null;
-  }
-
-  const lowDistance = Math.abs(value - lowMark.value);
-  const highDistance = Math.abs(highMark.value - value);
-  const midpoint = (lowMark.value + highMark.value) / 2;
-  if (value > midpoint - OPACITY_MAGNETIC_BOUNDARY_DEADZONE &&
-      value < midpoint + OPACITY_MAGNETIC_BOUNDARY_DEADZONE) return null;
-
-  if (lowDistance < highDistance) {
-    return lowDistance < OPACITY_MAGNETIC_RADIUS * lowMark.magneticScale ? lowMark.value : null;
-  }
-  return highDistance < OPACITY_MAGNETIC_RADIUS * highMark.magneticScale ? highMark.value : null;
+function opacityResistanceFactor(value) {
+  const distance = Math.min(...OPACITY_RESISTANCE_MARKS.map((mark) => Math.abs(value - mark)));
+  if (distance >= OPACITY_RESISTANCE_RADIUS) return 1;
+  const progress = distance / OPACITY_RESISTANCE_RADIUS;
+  const eased = progress * progress * (3 - 2 * progress);
+  return OPACITY_RESISTANCE_MIN_FACTOR + (1 - OPACITY_RESISTANCE_MIN_FACTOR) * eased;
 }
 
-function getOpacityMagneticTarget(value) {
-  let lesserMarkIndex = -1;
-  for (let index = 0; index < OPACITY_MAGNETIC_MARKS.length; index += 1) {
-    if (OPACITY_MAGNETIC_MARKS[index].value <= value) lesserMarkIndex = index;
-    else break;
-  }
-  if (lesserMarkIndex === -1) {
-    return computeOpacityMagneticTarget(value, undefined, OPACITY_MAGNETIC_MARKS[0]);
-  }
-  if (lesserMarkIndex === OPACITY_MAGNETIC_MARKS.length - 1) {
-    return computeOpacityMagneticTarget(value, OPACITY_MAGNETIC_MARKS[lesserMarkIndex], undefined);
-  }
-  return computeOpacityMagneticTarget(
-    value,
-    OPACITY_MAGNETIC_MARKS[lesserMarkIndex],
-    OPACITY_MAGNETIC_MARKS[lesserMarkIndex + 1]
-  );
+function opacityTrackMetrics(range) {
+  const rect = range.getBoundingClientRect();
+  const inset = 11;
+  return {
+    left: rect.left + inset,
+    width: Math.max(1, rect.width - inset * 2),
+    min: Number(range.min) || 0,
+    max: Number(range.max) || 100,
+  };
 }
+
+function opacityValueAtPointer(range, clientX) {
+  const track = opacityTrackMetrics(range);
+  const ratio = Math.max(0, Math.min(1, (clientX - track.left) / track.width));
+  return track.min + ratio * (track.max - track.min);
+}
+
+function renderOpacityDragValue(range, value) {
+  const track = opacityTrackMetrics(range);
+  const next = Math.max(track.min, Math.min(track.max, value));
+  range.value = String(Math.round(next));
+  applyOpacity(range.value, { persist: false });
+}
+
+opacityRange?.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 && event.pointerType === "mouse") return;
+  const range = event.currentTarget;
+  const current = Number(range.value) || 0;
+  const track = opacityTrackMetrics(range);
+  const thumbX = track.left + ((current - track.min) / (track.max - track.min)) * track.width;
+  const clickedThumb = Math.abs(event.clientX - thumbX) <= 18;
+  const startValue = clickedThumb ? current : opacityValueAtPointer(range, event.clientX);
+
+  event.preventDefault();
+  opacityPointerId = event.pointerId;
+  opacityDragState = { lastX: event.clientX, value: startValue };
+  range.focus({ preventScroll: true });
+  range.setPointerCapture(event.pointerId);
+  renderOpacityDragValue(range, startValue);
+});
+
+opacityRange?.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== opacityPointerId || !opacityDragState) return;
+  const range = event.currentTarget;
+  const track = opacityTrackMetrics(range);
+  const deltaX = event.clientX - opacityDragState.lastX;
+  opacityDragState.lastX = event.clientX;
+
+  const valueDelta = (deltaX / track.width) * (track.max - track.min);
+  const resistance = opacityResistanceFactor(opacityDragState.value);
+  opacityDragState.value = Math.max(track.min, Math.min(track.max,
+    opacityDragState.value + valueDelta * resistance
+  ));
+  renderOpacityDragValue(range, opacityDragState.value);
+});
+
+function finishOpacityDrag(event) {
+  if (event.pointerId !== opacityPointerId) return;
+  const range = event.currentTarget;
+  opacityPointerId = null;
+  opacityDragState = null;
+  applyOpacity(range.value);
+}
+opacityRange?.addEventListener("pointerup", finishOpacityDrag);
+opacityRange?.addEventListener("pointercancel", finishOpacityDrag);
+opacityRange?.addEventListener("lostpointercapture", finishOpacityDrag);
 
 opacityRange?.addEventListener("input", (event) => {
-  const range = event.currentTarget;
-  const rawValue = Number(range.value);
-  const magneticTarget = getOpacityMagneticTarget(rawValue);
-  if (magneticTarget !== null) range.value = String(magneticTarget);
-  applyOpacity(range.value, { persist: false });
+  if (opacityPointerId !== null) return;
+  applyOpacity(event.currentTarget.value, { persist: false });
 });
 opacityRange?.addEventListener("change", (event) => {
+  if (opacityPointerId !== null) return;
   applyOpacity(event.currentTarget.value);
 });
 $("#homeBrand")?.addEventListener("click", () => go("home"));
