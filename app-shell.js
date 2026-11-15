@@ -5,7 +5,7 @@ const lowResourceSignals = [
   navigator.connection?.saveData === true,
   ["slow-2g", "2g"].includes(navigator.connection?.effectiveType)
 ].filter(Boolean).length;
-if (lowResourceSignals >= 2 || navigator.connection?.saveData === true ||
+if (lowResourceSignals >= 1 || navigator.connection?.saveData === true ||
     ["slow-2g", "2g"].includes(navigator.connection?.effectiveType)) {
   document.documentElement.classList.add("low-performance");
 }
