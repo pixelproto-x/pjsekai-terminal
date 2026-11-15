@@ -10,3 +10,6 @@ enabled = true
 binding = "USER_DATA_DB"
 database_name = "pjsekai-player-data"
 database_id = "0a801cea-1808-42d0-b32a-d2a4f9efc342"
+
+[vars]
+GOOGLE_CLIENT_ID = "724422617291-j4req87o5hn7bckbpom1fnpflqumbl2q.apps.googleusercontent.com"
