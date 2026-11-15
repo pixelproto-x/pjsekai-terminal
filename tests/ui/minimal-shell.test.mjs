@@ -72,6 +72,9 @@ for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squ
 }
 assert.match(themes, /--unit-scene/);
 assert.match(themes, /--unit-pattern/);
+assert.match(html, /#toast\\.toast[\\s\\S]*?var\\(--unit-accent/, "success toast follows the active unit accent");
+assert.match(html, /var\\(--unit-accent-2/, "success toast includes the active unit secondary accent");
+assert.match(html, /#fff!important/, "success toast keeps high-contrast text");
 assert.match(themes, /\.sekai-ambience\{z-index:0\}/, "unit-specific background is above the body canvas");
 assert.match(themes, /\.app-shell\{position:relative;z-index:1\}/, "application surfaces remain above the unit background");
 assert.doesNotMatch(lookup, /查詢成功。|查詢失敗：|UID 格式錯誤，/);
