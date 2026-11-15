@@ -29,5 +29,23 @@ The active website includes:
 - Public share links resolve current upstream public data; they do not expose private local data.
 - Preserve the anniversary UI and keep features as separately tested modules.
 
+## Batch 3 — Game tools (re-planned and active)
+- Regional game database backed by separate Sekai Master DB repositories for JP, TW, EN, KR, and CN.
+- Card catalogue with search and character, unit, attribute, and rarity filters.
+- Character catalogue with upstream profile information.
+- Honor-group catalogue and event catalogue.
+- Five-slot team editor with device-local persistence.
+- Ability-value aggregation only from numeric fields actually present in upstream card data; missing values are not fabricated.
+- Event bonus calculator using upstream event-card bonusRate values. The displayed total is a raw sum and excludes leader bonus, event caps, and other in-game modifiers.
+- Team comparison view for team size and readable ability values.
+- Local card favorites.
+- IndexedDB cache with a six-hour freshness window, in-flight request deduplication, and stale-cache fallback.
+- Source links for all five regional repositories; screens follow the active SEKAI theme and responsive layout.
+
+### Batch 3 verification boundaries
+- The public upstream database is the source of truth; availability and update cadence are controlled upstream.
+- Team ability totals are not exact live score predictions. Exact score simulation is not claimed without validated song-note, skill activation, leader, support, area-item, and event-rule inputs.
+- Card artwork is not yet rendered; the catalogue displays metadata rather than constructing unverified asset URLs.
+
 ## Removed from the active product
-Legacy song/Dojo, card and character catalogues, event calculators, chart analysis, old My SEKAI local editors, admin dashboard, Sonolus runtime, story/resource tools, and legacy data import/export/share flows remain out of scope unless explicitly re-planned.
+Legacy Dojo, chart analysis, old My SEKAI local editors, admin dashboard, Sonolus runtime, story/resource tools, and legacy data import/export/share flows remain out of scope unless explicitly re-planned.
