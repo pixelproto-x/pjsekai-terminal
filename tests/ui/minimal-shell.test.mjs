@@ -10,6 +10,12 @@ const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url)
 const workspace = await readFile(new URL("../../player-workspace.js", import.meta.url), "utf8");
 assert.match(workspace, /return select;/, "player workspace filters use the same native select controls as other database sections");
 assert.doesNotMatch(workspace, /document\.body\.append\(menu\)/, "player workspace does not create detached custom filter popups");
+assert.match(workspaceCss, /player-workspace-tools select::picker\\(select\\)/, "player filters use the same expanding picker pattern as song filters where supported");
+assert.match(workspaceCss, /player-workspace-tools input[\\s\\S]*?touch-action:auto/, "player workspace text inputs remain directly tappable on iOS");
+const gameToolsCss = await readFile(new URL("../../game-tools.css", import.meta.url), "utf8");
+assert.match(gameToolsCss, /#gameToolsRoot input:not\\(\\[type=checkbox\\]\\)[\\s\\S]*?touch-action:auto/, "game tool search inputs use normal text-field touch behavior");
+assert.match(gameToolsCss, /#gameToolsRoot input:not\\(\\[type=checkbox\\]\\)[\\s\\S]*?pointer-events:auto/, "game tool search inputs receive pointer events");
+
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
 
