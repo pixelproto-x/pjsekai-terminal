@@ -466,10 +466,11 @@ export default {
             }
           }
         }
+        const transientRankingStatus = ["DATA_PENDING", "RANKING_INACTIVE", "UPSTREAM_ERROR"].includes(payload.status);
         const response = json({ ...payload, cached: false }, payload.status === "DATA_PENDING" ? 202 : 200, origin, {
-          cacheSeconds: payload.status === "DATA_PENDING" ? 0 : 60,
+          cacheSeconds: transientRankingStatus ? 0 : 60,
         });
-        if (eventCache) {
+        if (eventCache && !transientRankingStatus) {
           const store = eventCache.put(eventCacheKey, response.clone());
           if (ctx.waitUntil) ctx.waitUntil(store.catch(() => {}));
         }
