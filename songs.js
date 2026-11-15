@@ -143,6 +143,8 @@ async function loadSongs(region = $("#songRegion").value) {
     const now = Date.now();
     state.songs = songs.filter((song) =>
       song.title &&
+      // Full-length/event-only records are not separate standard rhythm-game songs.
+      !song.isFullLength &&
       Number.isInteger(Number(song.id)) &&
       Number.isFinite(Number(song.publishedAt)) &&
       Number(song.publishedAt) <= now
