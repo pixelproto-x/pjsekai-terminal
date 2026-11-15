@@ -106,6 +106,10 @@ assert.equal(routes.length, 4, "home, player lookup, song management, and appear
 
 const accountSync = await readFile(new URL("../../account-sync.js", import.meta.url), "utf8");
 assert.doesNotMatch(accountSync, /pjskUiStateV1|pjskSongViewV1/, "scroll position and transient song filters stay on each device");
+assert.match(accountSync, /ACCOUNT_BACKUP_PREFIX/, "each Google account keeps a separate local settings backup");
+assert.match(accountSync, /localStorage\.setItem\(ACCOUNT_BACKUP_PREFIX \+ previousSubject/, "switching accounts preserves the previous account's local settings before changing scope");
+assert.match(accountSync, /accountLocalData = readAccountBackup\(subject\)/, "switching accounts restores only the selected account's local settings");
+assert.doesNotMatch(accountSync, /for \(const key of SYNC_KEYS\) localStorage\.removeItem\(key\)/, "account switching never deletes local settings before preserving them");
 assert.match(accountSync, /Storage\.prototype\.setItem/, "cloud sync observes actual persistent storage changes");
 assert.doesNotMatch(accountSync, /document\.addEventListener\("click", scheduleSync\)/, "ordinary clicks do not trigger cloud writes");
 assert.match(accountSync, /syncRunning|syncQueued/, "cloud writes are serialized to prevent stale requests overwriting newer data");
