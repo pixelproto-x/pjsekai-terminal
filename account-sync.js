@@ -5,7 +5,7 @@ const ACCESS_TOKEN_SESSION_KEY = "pjskGoogleAccessToken";
 const SYNC_KEYS = [
   "sekaiTheme", "sekaiGlassOpacity", "pjskAnniversaryCover",
   "pjskSongFavorites", "pjskSongRecords", "pjskSongPlaylists",
-  "pjskSongRegion", "pjskSongViewV1", "pjskLastPlayerLookup"
+  "pjskSongRegion"
 ];
 
 let accessToken = "";
