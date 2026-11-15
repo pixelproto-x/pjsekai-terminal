@@ -16,6 +16,19 @@
   `;
   overview.before(tabs);
 
+  const songList = page.querySelector('#songList');
+  const songEmpty = page.querySelector('#songEmpty');
+  const playlistList = page.querySelector('#songPlaylistList');
+  const songScroll = document.createElement('div');
+  songScroll.className = 'songs-inner-scroll songs-list-scroll';
+  songList.before(songScroll);
+  songScroll.append(songList);
+  if (songEmpty) songScroll.append(songEmpty);
+  const playlistScroll = document.createElement('div');
+  playlistScroll.className = 'songs-inner-scroll playlists-list-scroll';
+  playlistList.before(playlistScroll);
+  playlistScroll.append(playlistList);
+
   function setPanel(panel) {
     const showPlaylists = panel === 'playlists';
     overview.hidden = showPlaylists;
