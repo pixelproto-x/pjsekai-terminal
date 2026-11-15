@@ -308,7 +308,17 @@ function applyOpacity(value) {
   root.style.setProperty("--highlight-opacity", Math.min(.36, opacity + .08).toFixed(3));
   root.style.setProperty("--dark-glass-opacity", Math.min(.72, .30 + opacity * .72).toFixed(3));
   if ($("#opacityRange")) $("#opacityRange").value = String(amount);
-  if ($("#opacityValue")) $("#opacityValue").textContent = String(amount);
+  const opacityLevels = [
+    { value: 12, label: "透亮" },
+    { value: 22, label: "標準" },
+    { value: 35, label: "柔和" },
+    { value: 48, label: "清晰" }
+  ];
+  const closestLevel = opacityLevels.reduce((closest, level) =>
+    Math.abs(level.value - amount) < Math.abs(closest.value - amount) ? level : closest
+  );
+  if ($("#opacityValue")) $("#opacityValue").textContent = `${closestLevel.label} · ${amount}%`;
+  if ($("#opacityRange")) $("#opacityRange").setAttribute("aria-valuetext", `${closestLevel.label}，介面透明度 ${amount}%`);
   document.querySelectorAll("[data-opacity]").forEach((button) => button.classList.toggle("active", Number(button.dataset.opacity) === amount));
   try { localStorage.setItem("sekaiGlassOpacity", String(amount)); } catch {}
 }
