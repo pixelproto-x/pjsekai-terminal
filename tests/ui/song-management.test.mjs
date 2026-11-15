@@ -17,6 +17,8 @@ assert.match(html, /id="songPlaylistForm"/, "playlist creation exists");
 assert.match(html, /id="songList"/, "song results container exists");
 assert.match(html, /src="songs\.js(?:\?[^"]*)?"/, "song manager module is loaded");
 assert.match(js, /sekai-master-db-tc-diff/, "Traditional Chinese server data source is configured");
+assert.match(js, /SONG_CACHE_DB/, "song catalogue is cached in IndexedDB across page refreshes");
+assert.match(js, /if \(fresh\) return;/, "fresh local song data skips repeat network downloads");
 assert.match(js, /sekai-master-db-en-diff/, "English server data source is configured");
 assert.match(js, /sekai-master-db-kr-diff/, "Korean server data source is configured");
 assert.match(js, /sekai-master-db-cn-diff/, "Simplified Chinese server data source is configured");
