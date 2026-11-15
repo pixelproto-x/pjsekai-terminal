@@ -172,3 +172,9 @@ assert.match(html, /卡片更有層次/, "opacity scale includes the soft visual
 assert.match(html, /介面更實更易讀/, "opacity scale includes the clear visual effect");
 assert.match(app, /opacityLevels = \[/, "opacity readout maps percentages to visual levels");
 assert.match(app, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
+assert.match(app, /\[12, 22, 35\]\.find\(/, "opacity slider pauses only at the three interior preset points");
+assert.match(app, /setTimeout\(\(\) => \{[\s\S]*?\}, 140\)/, "opacity slider pause is brief before continuing");
+assert.doesNotMatch(app, /\[12, 22, 35, 48\]/, "the clear preset at the right endpoint does not add an artificial pause");
+assert.match(app, /lastOpacitySliderValue < point && amount >= point/, "dragging right detects crossing a preset instead of requiring an exact input value");
+assert.match(app, /lastOpacitySliderValue > point && amount <= point/, "dragging left also detects crossing a preset");
+
