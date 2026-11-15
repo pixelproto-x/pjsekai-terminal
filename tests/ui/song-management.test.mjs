@@ -23,6 +23,12 @@ assert.match(js, /sekai-master-db-cn-diff/, "Simplified Chinese server data sour
 assert.ok(js.includes('"/musics.json"'), "song list endpoint is configured");
 assert.match(js, /musicDifficulties\.json/, "chart difficulty data source is configured");
 assert.match(js, /localStorage/, "personal data persists locally");
+assert.match(js, /window\.addEventListener\("pjsekai:pagechange"/, "song data loads only when the song page is opened");
+assert.doesNotMatch(js, /\nloadSongs\(\);\s*$/, "song data is not fetched unconditionally during startup");
+assert.match(js, /fetch\(dataRoot \+ "\/musics\.json"\)/, "song catalogue uses normal browser HTTP caching");
+assert.doesNotMatch(js, /cache:\s*"no-cache"/, "song catalogue does not force network revalidation on every refresh");
+assert.match(js, /maxLevelBySong/, "chart maximum levels are indexed once instead of recalculated during sorting");
+assert.match(js, /playedSongIds/, "unplayed filter uses a precomputed set instead of scanning records for every song");
 assert.match(js, /pjskSongViewV1/, "song search and filter state persists locally");
 assert.match(js, /pjskSongFavorites/, "favorite list has a dedicated storage key");
 assert.match(js, /pjskSongRecords/, "play records have a dedicated storage key");
