@@ -183,7 +183,7 @@ assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
 assert.match(html, /app-shell\.js\?v=20261115-magnetic-opacity/, "opacity slider script cache is refreshed");
-assert.doesNotMatch(app, /opacityPointerId|setPointerCapture|OPACITY_DETENT_HOLD_PX/, "the failed custom pointer drag implementation is removed");
+assert.doesNotMatch(app, /opacityPointerId|opacityDragState|OPACITY_DETENT_HOLD_PX/, "the failed custom opacity pointer drag implementation is removed");
 assert.doesNotMatch(app, /opacityPauseUntil|opacityPauseTimer|140\)/, "opacity detents do not use a fake time-based pause");
 
 
