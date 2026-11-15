@@ -166,3 +166,9 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.doesNotMatch(html, /savePlayerForm|savedPlayerList|playerLookupHistory/, "unrelated saved-player workspace is removed");
 assert.doesNotMatch(lookup, /pjskSavedPlayersV1|pjskPlayerHistoryV1|MAX_SAVED_PLAYERS|favorite-current|rememberPlayer/, "player lookup no longer manages saved-player collections");
 assert.doesNotMatch(css, /Batch 2: saved player workspace/, "removed player workspace has no leftover styling");
+
+assert.match(html, /透明與清楚平衡/, "opacity scale explains the standard visual effect");
+assert.match(html, /卡片更有層次/, "opacity scale includes the soft visual effect");
+assert.match(html, /介面更實、更易讀/, "opacity scale includes the clear visual effect");
+assert.match(appShell, /opacityLevels = \[/, "opacity readout maps percentages to visual levels");
+assert.match(appShell, /closestLevel\.label/, "opacity readout shows the closest matching visual level");
