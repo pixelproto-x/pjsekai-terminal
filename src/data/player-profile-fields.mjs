@@ -56,8 +56,37 @@ export function extractPlayerRanking(data) {
 
 const PLAYER_POWER_KEYS = Object.freeze([
   "totalPower", "total_power", "teamPower", "team_power",
-  "power", "powerValue", "power_value",
+  "totalTalent", "total_talent", "talent", "power", "powerValue", "power_value",
 ]);
+const DECK_CONTAINER_KEYS = Object.freeze([
+  "userDecks", "user_decks", "decks", "team", "teams",
+  "mainTeam", "main_team", "userTeam", "user_team", "deck", "userDeck", "user_deck",
+]);
+const NON_DECK_KEYS = /card|character|member|support|leader/i;
+
+function publishedDeckPower(value, depth = 0) {
+  if (depth > 4 || value == null) return null;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = publishedDeckPower(item, depth + 1);
+      if (found != null) return found;
+    }
+    return null;
+  }
+  const object = asObject(value);
+  if (!object) return null;
+  const direct = firstValue([object], PLAYER_POWER_KEYS);
+  if (direct != null && Number.isFinite(Number(direct)) && Number(direct) > 0) return direct;
+  for (const key of DECK_CONTAINER_KEYS) {
+    if (NON_DECK_KEYS.test(key)) continue;
+    const child = object[key];
+    if (child && typeof child === "object") {
+      const found = publishedDeckPower(child, depth + 1);
+      if (found != null) return found;
+    }
+  }
+  return null;
+}
 
 export function extractPlayerPower(data) {
   const root = asObject(data) || {};
@@ -69,9 +98,13 @@ export function extractPlayerPower(data) {
     || asObject(root.user_profile)
     || asObject(root.profile)
     || {};
-  const decks = Array.isArray(root.userDecks) ? root.userDecks
-    : Array.isArray(root.user_decks) ? root.user_decks : [];
-  // Prefer account/profile-level totals; only use published deck totals as fallback.
-  // Never sum individual card power values or character stats.
-  return firstValue([gameData, profile, root, ...decks], PLAYER_POWER_KEYS);
+  // Prefer an explicitly published account total. Otherwise accept a total
+  // published on a deck/team object, including providers that call it talent.
+  // Never sum card values or read power from individual card/character records.
+  const accountPower = firstValue([gameData, profile, root], PLAYER_POWER_KEYS);
+  if (accountPower != null && Number.isFinite(Number(accountPower)) && Number(accountPower) > 0) {
+    return accountPower;
+  }
+  return publishedDeckPower(root.userDecks ?? root.user_decks ?? root.decks
+    ?? root.team ?? root.teams ?? root.mainTeam ?? root.main_team);
 }
