@@ -97,7 +97,7 @@ function renderProfile(result, eventRanking = null) {
   card.append(createNode("p", "player-status", "資料來源 " + result.source + " " + (REGION_LABELS[result.region] || result.region) + " " + new Date(result.fetchedAt).toLocaleString().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() + (result.cached ? " 快取資料" : " 最新查詢")));
   results.append(card);
 }
-const PLAYER_LOOKUP_CACHE_PREFIX = "pjskPlayerLookupCacheV1:";
+const PLAYER_LOOKUP_CACHE_PREFIX = "pjskPlayerLookupCacheV2:";
 
 function lookupCacheKey(uid, region) {
   return PLAYER_LOOKUP_CACHE_PREFIX + region + ":" + uid;
