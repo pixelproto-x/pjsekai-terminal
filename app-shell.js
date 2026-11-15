@@ -404,7 +404,8 @@ window.PJSEKAI.applyCloudUiState = () => {
   const cloudState = readUiState();
   restoreUiState(cloudState);
   const route = validRoutes.has(cloudState.activePage) ? cloudState.activePage : "home";
-  go(route, false);
+  const activeRoute = document.querySelector(".page.active")?.dataset.page;
+  if (activeRoute !== route) go(route, false);
 };
 
 try {
