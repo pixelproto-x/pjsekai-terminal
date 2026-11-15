@@ -228,32 +228,32 @@ const anniversaryCoverOptions = {
     label: "三週年",
     image: "https://pjsekai.sega.jp/3rd/assets/images/common/0927_ogp.png",
     officialUrl: "https://pjsekai.sega.jp/3rd/index.html",
-    headline: "少年少女打開的門扉之後",
-    emphasis: "還有無人知曉的故事等待著",
+    headline: "門扉的另一側",
+    emphasis: "嶄新的故事",
     copyType: "官方主視覺文案"
   },
   "4": {
     label: "四週年",
     image: "https://pjsekai.sega.jp/4th/assets/images/common/ogp.png",
     officialUrl: "https://pjsekai.sega.jp/4th/index.html",
-    headline: "你的心意所創造的",
-    emphasis: "嶄新的世界",
+    headline: "由心意創造的世界",
+    emphasis: "",
     copyType: "官方主視覺文案"
   },
   "5": {
     label: "五週年",
     image: "https://pjsekai.sega.jp/5th/assets/images/index/kv/img_kv_pc.png",
     officialUrl: "https://pjsekai.sega.jp/5th/index.html",
-    headline: "聲音的軌跡",
-    emphasis: "將連繫至未來",
+    headline: "聲音連繫著未來",
+    emphasis: "",
     copyType: "官方主視覺文案"
   },
   "6": {
     label: "六週年",
     image: "https://pjsekai.sega.jp/6th/assets/webp/index/fv/img_kv_miku_pc.webp",
     officialUrl: "https://pjsekai.sega.jp/6th/index.html",
-    headline: "少年少女向前邁進、選擇、決定",
-    emphasis: "親手寫下心意交會的故事結局",
+    headline: "心意交會的故事",
+    emphasis: "",
     copyType: "官方主視覺文案"
   }
 };
@@ -273,7 +273,10 @@ function applyAnniversaryCover(value) {
   const headline = $("#anniversaryCoverHeadline");
   if (headline) headline.textContent = option.headline;
   const emphasis = $("#anniversaryCoverEmphasis");
-  if (emphasis) emphasis.textContent = option.emphasis;
+  if (emphasis) {
+    emphasis.textContent = option.emphasis;
+    emphasis.hidden = !option.emphasis;
+  }
   if (hero) hero.dataset.anniversaryCopyType = option.copyType;
   const number = $("#anniversaryCoverNumber");
   if (number) number.textContent = year;
