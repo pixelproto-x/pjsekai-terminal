@@ -220,7 +220,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\.css\?v=20261115-game-tools-label-click-fix-v5/, "player workspace theme stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-dropdown-toplayer-repair-v6/, "player workspace theme stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
@@ -257,7 +257,7 @@ assert.match(html, /透亮<\/strong><small>背景更明顯<\/small><\/span><span
 assert.match(html, /清晰<\/strong><small>介面更實更易讀<\/small><\/span><\/div>/, "all four opacity labels remain present");
 assert.match(html, /\.opacity-range\{[^}]*touch-action:pan-y/, "opacity slider preserves vertical page scrolling");
 assert.match(html, /\.opacity-marker-rail\{position:absolute;z-index:2;/, "opacity marker dots render above the range input track");
-assert.match(html, /app-shell\.js\?v=20261115-game-tools-label-click-fix-v5/, "app shell script cache is refreshed");
+assert.match(html, /app-shell\.js\?v=20261115-dropdown-toplayer-repair-v6/, "app shell script cache is refreshed");
 assert.match(app, /opacityRange\?\.addEventListener\("pointerdown"/, "opacity slider uses pointer tracking for localized detent resistance");
 assert.match(app, /OPACITY_DETENTS = \[12, 22, 35, 48\]/, "opacity resistance is limited to the four marked values");
 assert.match(app, /OPACITY_DETENT_WIDTH = 2\.6/, "opacity resistance is confined to a narrow zone around each marker");
