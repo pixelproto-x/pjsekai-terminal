@@ -164,23 +164,28 @@ function updateEventRankingValue(payload) {
         : payload?.status === "POINT_BOARD_UNAVAILABLE" ? "此活動沒有點數榜"
           : payload?.status === "NOT_FOUND_TOP_2000" ? "前 2000 名未找到"
             : payload?.status === "NOT_FOUND" ? "未找到此玩家排名"
-              : payload?.status === "AMBIGUOUS_NAME" ? "同名玩家無法確認"
+              : payload?.status === "PENDING_TIMEOUT" ? "排名來源仍未完成 請稍後重查"
                 : "暫時無法取得");
 }
 
-async function retryPendingEventRanking(uid, region, generation, payload, playerName = "", attempt = 0) {
-  if (attempt >= 2) return;
-  const seconds = Math.max(5, Math.min(60, Number(payload?.retryAfter) || 30));
+async function retryPendingEventRanking(uid, region, generation, payload, attempt = 0) {
+  if (attempt >= 6) {
+    updateEventRankingValue({ status: "PENDING_TIMEOUT" });
+    const cached = readLookupCache(uid, region);
+    if (cached) saveLookupCache(uid, region, cached.profile, { status: "PENDING_TIMEOUT", row: null, event: payload?.event ?? null });
+    return;
+  }
+  const seconds = Math.max(5, Math.min(90, Number(payload?.retryAfter) || 30));
   await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   if (generation !== lookupGeneration) return;
   try {
-    const next = normalizeEventRanking(await provider.getEventRanking(uid, region, playerName ? { name: playerName } : {}));
+    const next = normalizeEventRanking(await provider.getEventRanking(uid, region));
     if (generation !== lookupGeneration) return;
     updateEventRankingValue(next);
     const cached = readLookupCache(uid, region);
     if (cached) saveLookupCache(uid, region, cached.profile, next);
     if (next.status === "DATA_PENDING") {
-      retryPendingEventRanking(uid, region, generation, next, playerName, attempt + 1);
+      retryPendingEventRanking(uid, region, generation, next, attempt + 1);
     }
   } catch {
     // Keep the explicit pending state; the user can retry the lookup manually.
@@ -221,7 +226,7 @@ async function lookup(rawUid, requestedRegion) {
     renderProfile(result, eventRanking);
     saveLookupCache(uid, region, result, eventRanking);
     if (eventRanking.status === "DATA_PENDING") {
-      retryPendingEventRanking(uid, region, generation, eventRanking, identity.name);
+      retryPendingEventRanking(uid, region, generation, eventRanking);
     }
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
     window.PJSEKAI?.toast(result.cached ? "已載入快取玩家資料" : "玩家資料已載入");
