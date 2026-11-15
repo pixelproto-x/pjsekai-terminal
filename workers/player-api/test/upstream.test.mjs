@@ -61,15 +61,49 @@ test("returns the current event ranking for a supported region", async () => {
   assert.ok(calls[1].includes("321/points/search?profileId=123456"));
 });
 
-test("does not pretend CN event rankings are supported by the provider", async () => {
+test("uses the Moesekai CN snapshot when the player is in its top 100", async () => {
+  let requested = "";
   const response = await worker.fetch(
     new Request("https://worker.example/api/cn/user/123456/event-ranking", {
       headers: { Origin: "https://pixelproto-x.github.io" },
     }),
-    { FETCH: async () => { throw new Error("must not call upstream"); } },
+    {
+      FETCH: async (url) => {
+        requested = String(url);
+        return new Response(JSON.stringify({
+          event_id: 321,
+          region: "cn",
+          rankings: [{ rank: 77, userId: "123456", name: "Test Player", score: 456789 }],
+        }), { status: 200 });
+      },
+    },
   );
-  assert.equal(response.status, 501);
-  assert.equal((await response.json()).error, "EVENT_RANKING_UNSUPPORTED");
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.match(requested, /rks-n-cn\.exmeaning\.com\/api\/public\/v2\/cn\/latest$/);
+  assert.equal(body.status, "OK");
+  assert.equal(body.row.rank, 77);
+  assert.equal(body.row.profileId, "123456");
+  assert.equal(body.source, "Moesekai");
+});
+
+test("does not claim a CN player is unranked when only the Moesekai top 100 was checked", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/cn/user/123456/event-ranking", {
+      headers: { Origin: "https://pixelproto-x.github.io" },
+    }),
+    {
+      FETCH: async () => new Response(JSON.stringify({
+        event_id: 321,
+        region: "cn",
+        rankings: [{ rank: 1, userId: "other", name: "Other", score: 999999 }],
+      }), { status: 200 }),
+    },
+  );
+  const body = await response.json();
+  assert.equal(body.status, "NOT_FOUND_TOP_100");
+  assert.equal(body.scannedTo, 100);
+  assert.equal(body.row, null);
 });
 
 
