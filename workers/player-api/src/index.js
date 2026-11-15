@@ -164,6 +164,59 @@ export default {
       }
     }
 
+    if (profile.region === "auto") {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+      const fetchImpl = env.FETCH || fetch;
+      try {
+        const checks = await Promise.all(REGIONS.map(async (region) => {
+          const statuses = [];
+          for (const source of candidates(region, profile.uid, env)) {
+            const result = await fetchSource(source, controller.signal, fetchImpl);
+            if (result.ok) return { region, source: source.name, data: result.data };
+            statuses.push(result.status);
+          }
+          return { region, statuses };
+        }));
+
+        const matches = checks.filter((item) => item.data);
+        const failures = checks.filter((item) => !item.data).flatMap((item) => item.statuses || []);
+        if (matches.length > 1) {
+          return json({ error: "AMBIGUOUS_REGION", regions: matches.map((item) => item.region) }, 409, origin);
+        }
+        if (matches.length === 1 && failures.length === 0) {
+          const match = matches[0];
+          const payload = {
+            data: match.data,
+            uid: profile.uid,
+            region: match.region,
+            source: match.source,
+            fetchedAt: new Date().toISOString(),
+            cached: false,
+          };
+          const response = json(payload, 200, origin, { cacheSeconds: CACHE_TTL_SECONDS });
+          if (cache) {
+            const store = cache.put(cacheKey, response.clone());
+            if (ctx.waitUntil) ctx.waitUntil(store.catch(() => {}));
+          }
+          return response;
+        }
+        if (matches.length === 1 || failures.some((status) => status !== 404)) {
+          const status = failures.includes(429) ? 429 : failures.includes(403) ? 403 : 503;
+          return json({
+            error: "REGION_DETECTION_INCOMPLETE",
+            message: "At least one region could not be checked",
+          }, status, origin);
+        }
+        return json({ error: "PLAYER_NOT_FOUND" }, 404, origin);
+      } catch {
+        controller.abort();
+        return json({ error: "REGION_DETECTION_UNAVAILABLE" }, 503, origin);
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
     const sources = candidates(profile.region, profile.uid, env);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
