@@ -5,6 +5,7 @@ const html = await readFile(new URL("../../index.html", import.meta.url), "utf8"
 const css = await readFile(new URL("../../redesign-6th.css", import.meta.url), "utf8");
 const app = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 const themes = await readFile(new URL("../../sekai-themes.css", import.meta.url), "utf8");
+const workspaceCss = await readFile(new URL("../../player-workspace.css", import.meta.url), "utf8");
 const lookup = await readFile(new URL("../../player-lookup.js", import.meta.url), "utf8");
 const shell = await readFile(new URL("../../app-shell.js", import.meta.url), "utf8");
 
@@ -205,6 +206,14 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
+assert.match(html, /player-workspace\.css\?v=20261115-player-workspace-theme-v2/, "player workspace theme stylesheet cache is refreshed");
+assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
+assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
+assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
+for (const theme of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
+  assert.match(workspaceCss, new RegExp('body\\[data-sekai-theme="' + theme + '"\\]'), theme + " has a dedicated player workspace treatment");
+}
+
 assert.match(html, /id="playerWorkspaceFavorite"/, "favorite-only filtering is available");
 assert.match(html, /id="playerRegion"/, "each player can be managed by a specific server");
 assert.match(lookup, /pjsk:player-loaded/, "successful and restored profiles notify the player workspace");
