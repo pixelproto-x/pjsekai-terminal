@@ -155,3 +155,8 @@ body[data-sekai-theme="nightcord"] .preview-glass{color:#eeeaf7}
 .bottom-bar .tab{position:relative;z-index:1}
 
 /* Optional personal display name field in both player lookup forms */
+
+
+/* Let the headline accent follow the selected unit theme without losing contrast */
+body[data-sekai-theme] .anniversary-hero h1 span{background-image:linear-gradient(105deg,#fff 8%,color-mix(in srgb,var(--unit-accent-2) 34%,white) 58%,color-mix(in srgb,var(--unit-accent-2) 68%,white) 100%)}
+body[data-sekai-theme] .anniversary-hero h1 em{color:color-mix(in srgb,var(--unit-accent-2) 62%,white);text-shadow:0 2px 16px rgba(0,0,0,.42)}
