@@ -227,7 +227,7 @@ assert.match(html, /id="anniversaryCoverEmphasis" hidden/, "empty second anniver
 assert.match(html, /id="savedPlayerList"/, "saved player workspace is present");
 assert.match(html, /id="playerLookupHistory"/, "recent player lookup history is present");
 assert.match(html, /id="playerCompareButton"/, "saved player comparison controls are present");
-assert.match(html, /player-workspace\\.css\\?v=20261115-rebuilt-native-dropdowns-v2/, "player workspace native picker stylesheet cache is refreshed");
+assert.match(html, /player-workspace\.css\?v=20261115-rebuilt-native-dropdowns-v2/, "player workspace native picker stylesheet cache is refreshed");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-panel\{[\s\S]*?background:var\(--unit-panel\)/, "player workspace panel uses the active SEKAI glass surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.saved-player-card,[\s\S]*?background:var\(--unit-panel-strong\)/, "saved player cards use the active SEKAI strong surface");
 assert.match(workspaceCss, /body\[data-sekai-theme\] \.player-workspace-tools input[\s\S]*?color:var\(--unit-ink\)[\s\S]*?background:var\(--unit-panel-strong\)/, "workspace controls keep readable theme-aware text and backgrounds");
@@ -308,4 +308,4 @@ assert.doesNotMatch(gameToolsJs, /pointerup|field\.focus\(\{preventScroll:true\}
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-cards\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "card grid uses larger two-column desktop layout");
 assert.match(gameToolsCss, /#gameToolsRoot \.gt-art\{[\s\S]*?height:148px/, "card artwork is restored to a larger size");
 assert.match(html, /songs\.css\?v=20261115-native-select-repair-v3/, "native select repair stylesheet uses a fresh cache version");
-assert.match(html, /game-tools\\.css\\?v=20261115-rebuilt-native-dropdowns-v2/, "game-tool native picker styles use a fresh cache version");
+assert.match(html, /game-tools\.css\?v=20261115-rebuilt-native-dropdowns-v2/, "game-tool native picker styles use a fresh cache version");
