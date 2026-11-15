@@ -114,6 +114,44 @@ test("rejects Google access tokens without the expected authorized party", async
   }
 });
 
+
+test("retries a temporary Google token verification failure", async () => {
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    if (calls === 1) return new Response("temporary failure", { status: 503 });
+    return new Response(JSON.stringify({
+      azp: GOOGLE_CLIENT_ID,
+      sub: "google-user-retry",
+      email: "retry@example.com",
+      email_verified: "true",
+      scope: "openid https://www.googleapis.com/auth/userinfo.email",
+      exp: String(Math.floor(Date.now() / 1000) + 3600),
+    }), { status: 200 });
+  };
+  try {
+    const response = await worker.fetch(request("GET"), makeEnv(makeDatabase()));
+    assert.equal(response.status, 200);
+    assert.equal(calls, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("does not sign users out when Google's verification service is unavailable", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response("temporarily unavailable", { status: 503 });
+  try {
+    const response = await worker.fetch(request("GET"), makeEnv(makeDatabase()));
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), { error: "GOOGLE_AUTH_PROVIDER_UNAVAILABLE" });
+    assert.equal(response.headers.get("retry-after"), "2");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("returns only the authenticated Google account's stored data", async () => {
   const db = makeDatabase({
     google_sub: "google-user-123",
