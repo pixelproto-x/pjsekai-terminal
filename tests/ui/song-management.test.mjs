@@ -41,6 +41,12 @@ assert.match(js, /pjskSongPlaylists/, "playlists have a dedicated storage key");
 assert.match(js, /Full Combo/, "FC record option exists");
 assert.match(js, /All Perfect/, "AP record option exists");
 assert.match(css, /\.song-card/, "song cards have dedicated styling");
+assert.match(css, /column-gap:18px/, "song cards have clear horizontal spacing");
+assert.match(css, /row-gap:18px/, "song cards have clear vertical spacing");
+assert.match(css, /min-height:34px/, "difficulty chips have enough height and breathing room");
+assert.match(css, /gap:9px 10px/, "difficulty chips have clear spacing and wrap instead of crowding");
+assert.match(css, /minmax\(min\(100%,380px\),1fr\)/, "song cards avoid becoming too narrow");
+
 assert.doesNotMatch(themeCss, /\.song-difficulty:nth-child\(/, "difficulty colors are not assigned by badge position");
 assert.match(themeCss, /\.page\[data-page="songs"\] \.song-card[\s\S]*?var\(--unit-panel-strong\)/, "song cards inherit the selected unit theme");
 for (const unit of ["virtual-singer","leo-need","more-more-jump","vivid-bad-squad","wonderlands-showtime","nightcord"]) {
