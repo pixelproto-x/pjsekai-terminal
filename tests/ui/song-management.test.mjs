@@ -19,6 +19,8 @@ assert.match(html, /src="songs\.js(?:\?[^"]*)?"/, "song manager module is loaded
 assert.match(js, /sekai-master-db-tc-diff/, "Traditional Chinese server data source is configured");
 assert.match(js, /SONG_CACHE_DB/, "song catalogue is cached in IndexedDB across page refreshes");
 assert.match(js, /if \(fresh\) return;/, "fresh local song data skips repeat network downloads");
+assert.match(js, /SONG_CACHE_DB/, "song catalogue is cached in IndexedDB across page refreshes");
+assert.match(js, /if \(fresh\) return;/, "fresh local song data skips repeat network downloads");
 assert.match(js, /sekai-master-db-en-diff/, "English server data source is configured");
 assert.match(js, /sekai-master-db-kr-diff/, "Korean server data source is configured");
 assert.match(js, /sekai-master-db-cn-diff/, "Simplified Chinese server data source is configured");
@@ -42,8 +44,8 @@ assert.match(css, /@media\(max-width:640px\)/, "song manager has mobile styling"
 console.log("Song management UI smoke tests passed.");
 
 
+assert.match(js, /difficulty-' \+ chart\.musicDifficulty/, "difficulty badge class is derived from each chart's own difficulty");
 for (const difficulty of ["easy","normal","hard","expert","master","append"]) {
-  assert.match(js, new RegExp("difficulty-" + difficulty), difficulty + " badge uses its own game difficulty class");
   assert.match(css, new RegExp("\\.song-difficulty\\.difficulty-" + difficulty), difficulty + " badge uses its Project SEKAI palette");
 }
 assert.match(css, /position-area:block-end span-inline/, "native song selectors open below their controls");
