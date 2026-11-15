@@ -131,18 +131,3 @@ to{opacity:1;transform:translateY(0)}}
 #gameToolsRoot .gt-rank-label select{min-height:38px;font-size:11px}
 
 
-/* Text fields must receive taps and the iOS keyboard; manipulation is for buttons, not inputs. */
-#gameToolsRoot .gt-filter-field:has(input){position:relative;z-index:3}
-#gameToolsRoot input:not([type=checkbox]){
-  position:relative;
-  z-index:2;
-  display:block;
-  pointer-events:auto;
-  touch-action:auto;
-  -webkit-user-select:text!important;
-  user-select:text!important;
-  -webkit-appearance:none;
-  appearance:none;
-  cursor:text;
-}
-#gameToolsRoot #gtQuery{touch-action:auto}
