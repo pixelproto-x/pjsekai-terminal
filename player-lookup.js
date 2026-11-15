@@ -130,6 +130,8 @@ function saveLookupCache(uid, region, profile) {
 function messageFor(error) {
   if (error?.code === "UID_INVALID") return "UID 格式錯誤 請只輸入數字";
   if (error?.code === "UPSTREAM_HTTP_ERROR") {
+    if (error.details?.status === 409) return "這個 UID 在多個伺服器找到資料 暫時無法自動判斷伺服器";
+    if (error.details?.status === 503) return "部分伺服器暫時無法查詢 請稍後再試";
     if (error.details?.status === 404) return "找不到這個玩家 請確認 UID";
     if (error.details?.status === 403) return "這個玩家沒有開放公開資料";
     if (error.details?.status === 429) return "查詢太頻繁 請稍後再試";
@@ -140,25 +142,25 @@ function messageFor(error) {
   if (error?.code === "UPSTREAM_INVALID_JSON") return "資料來源格式異常 暫時無法讀取";
   return "查詢失敗 " + (error?.message || "未知錯誤");
 }
-async function lookup(rawUid, requestedRegion) {
+async function lookup(rawUid) {
   const generation = ++lookupGeneration;
   const uid = String(rawUid ?? "").trim();
-  const region = requestedRegion || $("#playerRegion")?.value || $("#homePlayerRegion")?.value || "tw";
+  const region = "auto";
   try { localStorage.setItem("pjskLastPlayerLookup", JSON.stringify({ uid, region })); } catch {}
   const input = $("#playerUid");
   if (input) input.value = uid;
   if (button) { button.disabled = true; button.textContent = "查詢中"; }
-  if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
+  if (status) status.textContent = "正在自動檢查五個伺服器的公開資料";
   const saved = readLookupCache(uid, region);
   if (saved) {
     renderProfile(saved.profile);
     if (status) status.textContent = "已還原上次查詢資料 正在背景更新";
   } else {
     results?.replaceChildren();
-    if (status) status.textContent = "正在讀取" + (REGION_LABELS[region] || region) + "公開資料";
+    if (status) status.textContent = "正在自動檢查五個伺服器的公開資料";
   }
   try {
-    const result = await provider.getProfile(uid, region);
+    const result = await provider.getProfileAuto(uid);
     renderProfile(result);
     saveLookupCache(uid, region, result);
     if (status) status.textContent = "查詢完成 以下為資料來源提供的公開內容";
@@ -176,17 +178,14 @@ async function lookup(rawUid, requestedRegion) {
 }
 $("#playerLookupForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  lookup($("#playerUid")?.value, $("#playerRegion")?.value);
+  lookup($("#playerUid")?.value);
 });
 $("#homePlayerLookup")?.addEventListener("submit", (event) => {
   event.preventDefault();
   const uid = $("#homePlayerUid")?.value;
-  const region = $("#homePlayerRegion")?.value || "tw";
   $("#playerUid").value = uid;
-  $("#playerRegion").value = region;
-  window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
   window.PJSEKAI?.go("profile");
-  lookup(uid, region);
+  lookup(uid);
 });
 
 
@@ -194,14 +193,9 @@ $("#homePlayerLookup")?.addEventListener("submit", (event) => {
 // currently selected page.
 try {
   const savedLookup = JSON.parse(localStorage.getItem("pjskLastPlayerLookup") || "null");
-  if (savedLookup && /^[0-9]{1,20}$/.test(String(savedLookup.uid || "")) &&
-      ["jp", "tw", "en", "kr", "cn"].includes(savedLookup.region)) {
+  if (savedLookup && /^[0-9]{1,20}$/.test(String(savedLookup.uid || ""))) {
     $("#playerUid").value = String(savedLookup.uid);
     $("#homePlayerUid").value = String(savedLookup.uid);
-    $("#playerRegion").value = savedLookup.region;
-    $("#homePlayerRegion").value = savedLookup.region;
-    window.PJSEKAI?.syncServerSelect?.($("#playerRegion"));
-    window.PJSEKAI?.syncServerSelect?.($("#homePlayerRegion"));
-    lookup(savedLookup.uid, savedLookup.region);
+    lookup(savedLookup.uid);
   }
 } catch {}
