@@ -20,6 +20,8 @@ jobs:
           node --check language.js
           node --check player-lookup.js
           node --check player-workspace.js
+          node --check game-tools.js
+          node --check src/data/game-database.mjs
           node --test tests/core/*.test.mjs tests/data/*.test.mjs tests/ui/*.test.mjs
       - name: Check Haruki Worker syntax and startup script
         working-directory: workers/player-api
