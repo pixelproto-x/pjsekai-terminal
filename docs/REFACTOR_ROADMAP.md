@@ -1,51 +1,94 @@
-# Minimal Player Hub
+# pjsekai-terminal 重構路線圖
 
-## Current scope
-The active website includes:
-- The sixth-anniversary visual shell and responsive layout.
-- Home page with public player UID lookup entry.
-- Dedicated public player lookup backed by the Cloudflare Worker.
-- Automatic lookup across 日服、台服、國際服、韓服、簡中服, plus explicit server selection for accounts that share a UID.
-- Appearance settings: six SEKAI themes and glass opacity.
-- Complete Batch 2 player workspace.
+## 文件用途與狀態判定
 
-## Batch 2 — Player workspace
-### Implemented
-- Multiple UID management: save up to 50 UID/server pairs, edit aliases, reopen and remove entries.
-- Favorite players with independent favorite toggles and filtering.
-- Cross-server account management: store the same UID separately for each of the five servers and query a selected server directly.
-- Player comparison: select saved players and compare only fields exposed by the public profile source (name, level, power, region, character count, and team count); unavailable fields are shown as unavailable, not guessed.
-- Personal homepage: shareable public profile URL that opens the selected player's live public profile.
-- Lookup history: latest 10 successful lookups with direct reopen.
-- Player tags: editable user-defined tags, search, and tag filtering.
-- Player data sharing: share links contain only public UID/server and optional display alias; no Google tokens, private account data, or browser-local collections.
-- Browser-local persistence without login; saved player and history keys are also included in existing Google account cloud sync.
+本文件用來區分「目前正式保留範圍」與「未來規劃」。只有列在目前正式保留範圍的項目，才是現階段產品基準。
 
-### Product and data rules
-- Public lookup does not require login.
-- Never claim a field is available until the source returns it.
-- Show source, region, timestamp, loading, empty, and failure states.
-- Never collect game passwords or private account credentials.
-- Public share links resolve current upstream public data; they do not expose private local data.
-- Preserve the anniversary UI and keep features as separately tested modules.
+重要原則：
+- 不以檔案存在、舊版文件描述或過往開發紀錄，推定功能已完成或已通過驗證。
+- 未來批次均為規劃，不代表目前網站已提供該功能。
+- 舊模組可能仍存在於 GitHub 程式庫；在完成逐項盤點與決策前，不將它們視為正式功能，也不擅自刪除檔案。
+- 本次文件整理不代表已完成各項功能的重新測試。
 
-## Batch 3 — Game tools (re-planned and active)
-- Regional game database backed by separate Sekai Master DB repositories for JP, TW, EN, KR, and CN.
-- Card catalogue with search and character, unit, attribute, and rarity filters.
-- Character catalogue with upstream profile information.
-- Honor-group catalogue and event catalogue.
-- Five-slot team editor with device-local persistence and up to 30 named saved team presets.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.\n- Team score baseline estimator using the selected song chart level and user-entered total talent; estimates PERFECT base score without skill, combo, FEVER, or event modifiers.\n- Independent five-slot comparison lineup so two teams can be compared without overwriting each other.
-- Ability-value aggregation only from numeric fields actually present in upstream card data; missing values are not fabricated.
-- Event bonus calculator using upstream event-card bonusRate values. The displayed total is a raw sum and excludes leader bonus, event caps, and other in-game modifiers.
-- Team comparison view for team size and readable ability values.
-- Local card favorites.
-- IndexedDB cache with a six-hour freshness window, in-flight request deduplication, stale-cache fallback, and lazy loading so game data is fetched only when the game-tools page is opened.\n- Searchable team pickers use a filtered suggestion list instead of rendering every card repeatedly.
-- Source links for all five regional repositories; screens follow the active SEKAI theme and responsive layout.
+## 目前正式保留範圍
 
-### Batch 3 verification boundaries
-- The public upstream database is the source of truth; availability and update cadence are controlled upstream.
-- The score tool estimates only the AP base-score baseline using `total talent × (3.9 + chart level ÷ 50)`. It does not predict final live score because skill activation timing, note weights, combo, FEVER, support and event effects are not simulated.
-- Card artwork is not yet rendered; the catalogue displays metadata rather than constructing unverified asset URLs.
+現階段正式產品範圍僅包含以下四項：
 
-## Removed from the active product
-Legacy Dojo, chart analysis, old My SEKAI local editors, admin dashboard, Sonolus runtime, story/resource tools, and legacy data import/export/share flows remain out of scope unless explicitly re-planned.
+1. **六週年介面與響應式版面**
+2. **首頁玩家 UID 查詢**
+3. **Hi Sekai 玩家資料查詢**
+4. **六大主題與透明度設定**
+
+以上四項是目前產品範圍的唯一基準。除非後續明確重新規劃並驗證，不應將其他模組或舊功能加入目前正式範圍。
+
+## 未來開發批次
+
+以下內容均為待規劃／待實作項目，不代表已完成、已上線或已驗證。
+
+### 第二批 — 玩家工作台（未來規劃）
+
+- 多 UID 管理
+- 收藏玩家
+- 跨伺服器帳號管理
+- 玩家資料比較
+- 個人首頁
+- 查詢紀錄
+- 玩家標籤分類
+- 玩家資料分享
+
+### 第三批 — 遊戲工具（未來規劃）
+
+- 遊戲內資料庫
+- 卡片、角色、稱號查詢
+- 卡片與角色篩選
+- 隊伍編輯器
+- 隊伍分數預估
+- 活動加成計算
+- 隊伍比較
+- 收藏組合
+
+### 第四批 — 挑戰與紀錄（未來規劃）
+
+- 挑戰功能
+- 遊戲紀錄
+- 成就系統
+- 進度追蹤
+- 歷史紀錄
+- 統計資料
+
+### 第五批 — 社群分享（未來規劃）
+
+- 個人資料分享
+- 隊伍分享
+- 卡片組合分享
+- 玩家比較
+- 社群功能
+- 個人展示頁
+
+### 第六批 — 進階整合（未來規劃）
+
+- 跨功能整合
+- 跨伺服器整合
+- 個人化功能
+- 進階搜尋與篩選
+- 操作體驗與效能優化
+- 完整測試
+
+## 舊模組與既有程式碼的處理原則
+
+目前程式庫仍可見玩家工作台、遊戲工具及其他歷史模組相關檔案。**檔案存在不等於功能已完成、可正常使用，或應納入目前正式產品。**
+
+這些舊模組目前統一標記為：
+
+- 正式產品範圍：不包含
+- 功能驗證狀態：尚未依目前產品基準完成確認
+- 後續處置：待逐項盤點後，再決定保留、移除或重新整合
+
+在作出明確決策前：
+- 不因本文件更新而刪除任何功能檔案。
+- 不擅自修改相關模組或其 CSS。
+- 不將舊文件中的「已實作」、「進行中」等狀態沿用為目前事實。
+
+## 驗證與部署紀錄
+
+本文件不宣告網站功能測試或部署成功。每次程式修改後，應另行確認對應測試結果與 GitHub Actions 狀態；未取得實際結果前，狀態應標示為「待確認」，不可推定成功。
