@@ -100,7 +100,8 @@
       return null;
     }
     parent.insertBefore(wrapper, select);
-    wrapper.append(select, trigger, menu);
+    wrapper.append(select, trigger);
+    document.body.append(menu);
     select.classList.add("styled-select-native");
     select.tabIndex = -1;
     select.setAttribute("aria-hidden", "true");
