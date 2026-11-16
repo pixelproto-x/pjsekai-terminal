@@ -107,20 +107,27 @@
     select.setAttribute("aria-hidden", "true");
 
     const placeMenu = () => {
-      const rect = trigger.getBoundingClientRect();
+      // Anchor the popup to the complete visible select field, not the hidden
+      // native select or an assumed viewport position.
+      const rect = wrapper.getBoundingClientRect();
       const margin = 8;
       const gap = 7;
-      const below = window.innerHeight - rect.bottom - gap - margin;
-      const above = rect.top - gap - margin;
-      const maxHeight = Math.max(120, Math.min(310, Math.max(below, above)));
-      const openBelow = below >= Math.min(180, maxHeight) || below >= above;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const width = Math.min(rect.width, viewportWidth - margin * 2);
+      const left = Math.max(margin, Math.min(rect.left, viewportWidth - width - margin));
+      const below = Math.max(0, viewportHeight - rect.bottom - gap - margin);
+      const above = Math.max(0, rect.top - gap - margin);
+      const openBelow = below >= Math.min(180, above) || below >= above;
+      const available = openBelow ? below : above;
+      const maxHeight = Math.max(120, Math.min(310, available));
       menu.style.position = "fixed";
       menu.style.zIndex = "2147483647";
-      menu.style.left = Math.max(margin, Math.min(rect.left, window.innerWidth - rect.width - margin)) + "px";
-      menu.style.width = Math.min(rect.width, window.innerWidth - margin * 2) + "px";
+      menu.style.left = left + "px";
+      menu.style.width = width + "px";
       menu.style.maxHeight = maxHeight + "px";
       menu.style.top = openBelow
-        ? Math.min(window.innerHeight - maxHeight - margin, rect.bottom + gap) + "px"
+        ? rect.bottom + gap + "px"
         : Math.max(margin, rect.top - maxHeight - gap) + "px";
       menu.style.overflowY = "auto";
     };
