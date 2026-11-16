@@ -91,7 +91,7 @@ assert.match(shell, /applyTheme/, "theme switching is functional");
 assert.match(shell, /virtual-singer/, "Virtual Singer is the default theme");
 assert.match(html, /id="anniversaryCoverSelect"/, "six anniversary cover choices are available");
 assert.match(html, /redesign-6th\.css\?v=20261115-shared-select-component-v1/, "shared dropdown stylesheet cache is refreshed");
-assert.match(html, /language\.js\?v=20261115-native-select-scope-v1/, "settings-only dropdown script cache is refreshed");
+assert.match(html, /language\.js\?v=20261116-dropdown-anchor-align-v3/, "settings-only dropdown script cache is refreshed");
 assert.match(css, /\.styled-select-menu/, "anniversary and language dropdowns use custom popup styling");
 assert.match(css, /\.styled-select-option\.is-selected/, "settings dropdowns highlight the selected option");
 const languageModule = await readFile(new URL("../../language.js", import.meta.url), "utf8");
