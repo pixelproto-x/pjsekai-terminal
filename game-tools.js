@@ -80,6 +80,24 @@ function click(e){
 function change(e){if(e.target.id==="gtRegion")return;const slot=e.target.closest("[data-slot-input]");if(slot){const index=Number(slot.dataset.slotInput),value=slot.value.trim();const match=s.cards.find(c=>cardLabel(c)===value||String(c.id)===value);if(match&&s.slots.some((id,i)=>i!==index&&id===String(match.id))){window.PJSEKAI?.toast("同一張卡片不能重複加入隊伍");panel();return}s.slots[index]=match?String(match.id):"";save();panel();return}const compare=e.target.closest("[data-compare-input]");if(compare){const index=Number(compare.dataset.compareInput),value=compare.value.trim();const match=s.cards.find(c=>cardLabel(c)===value||String(c.id)===value);if(match&&s.compareSlots.some((id,i)=>i!==index&&id===String(match.id))){window.PJSEKAI?.toast("同一張卡片不能重複加入比較隊伍");panel();return}s.compareSlots[index]=match?String(match.id):"";save();panel();return}if(e.target.id==="gtCalcEvent"){s.event=e.target.value;panel();return}const rank=e.target.closest("[data-master-rank]");if(rank){const selected=s.slots[Number(rank.dataset.masterRank)];if(selected)s.masterRanks[selected]=Number(rank.value);save();panel();return}if(e.target.id==="gtScoreSong"){s.songId=e.target.value;const first=s.difficulties.find(x=>Number(x.musicId)===Number(s.songId));s.difficulty=first?.musicDifficulty||"expert";panel();return}if(e.target.id==="gtScoreDifficulty"){s.difficulty=e.target.value;panel();return}const map={gtCharacter:"character",gtUnit:"unit",gtAttr:"attr",gtRarity:"rarity"};if(map[e.target.id]){s[map[e.target.id]]=e.target.value;panel()}}
 function input(e){const picker=e.target.closest("[data-slot-input],[data-compare-input]");if(picker){const q=picker.value.trim().toLowerCase();const list=$("#gtCardOptions");if(list){list.innerHTML=s.cards.filter(c=>!q||cardLabel(c).toLowerCase().includes(q)||String(c.id).includes(q)).slice(0,80).map(c=>`<option value="${esc(cardLabel(c))}"></option>`).join("")}return}if(e.target.id==="gtQuery"){const input=e.target;s.q=input.value;updateSearchResults();}if(e.target.id==="gtTalentInput"){s.talentInput=e.target.value;const out=$("#gtScoreValue");if(out)out.textContent=Math.round(Number(s.talentInput||0)*(3.9+(Number($("#gtScoreDifficulty")?.selectedOptions[0]?.dataset.level)||0)/50)).toLocaleString()}}
 async function load(){const generation=++loadGeneration;s.loading=true;setStatus("正在載入 "+regions[s.region]+" 資料…");panel();try{const [a,b,c,d,e]=await Promise.all(["cards","characters","honors","events","score"].map(k=>gameDatabaseClient.loadBundle(s.region,k)));if(generation!==loadGeneration)return;s.cards=a.datasets.cards||[];s.characters=b.datasets.gameCharacters||[];s.profiles=b.datasets.characterProfiles||[];s.skills=a.datasets.skills||[];s.honors=c.datasets.honorGroups||[];s.events=d.datasets.events||[];s.eventCards=d.datasets.eventCards||[];s.eventDeckBonuses=d.datasets.eventDeckBonuses||[];s.eventRarityBonusRates=d.datasets.eventRarityBonusRates||[];s.gameCharacterUnits=d.datasets.gameCharacterUnits||[];s.songs=e.datasets.musics||[];s.difficulties=e.datasets.musicDifficulties||[];s.loading=false;setStatus(regions[s.region]+"載入完成 · "+s.cards.length.toLocaleString()+" 張卡片 · "+s.characters.length+" 位角色 · "+s.events.length+" 個活動 · "+s.songs.length+" 首歌曲");panel()}catch(err){if(generation!==loadGeneration)return;s.loading=false;setStatus("資料載入失敗："+(err?.message||"未知錯誤"));const p=$("#gtPanel");if(p)p.innerHTML='<div class="gt-empty">無法取得上游資料；若沒有可用快取，請檢查網路後重試。</div>'}}
-function init(){if(!$("#gameToolsRoot"))return;render();if(document.documentElement.dataset.initialPage==="game-tools"||document.querySelector(".page.active")?.dataset.page==="game-tools")load()}
+function stabilizeGameToolsTouch(){
+ const page=document.querySelector('.page[data-page="game-tools"]');
+ if(!page)return;
+ // Avoid a transformed entrance layer around native form controls on iOS Safari.
+ page.style.setProperty("animation","none","important");
+ page.style.setProperty("transform","none","important");
+ page.style.setProperty("will-change","auto","important");
+}
+function init(){
+ if(!$("#gameToolsRoot"))return;
+ stabilizeGameToolsTouch();
+ render();
+ if(document.documentElement.dataset.initialPage==="game-tools"||document.querySelector(".page.active")?.dataset.page==="game-tools")load()
+}
 document.addEventListener("DOMContentLoaded",init,{once:true});
-window.addEventListener("pjsekai:pagechange",e=>{if(e.detail?.page==="game-tools"&&!s.cards.length&&!s.loading)load()});
+window.addEventListener("pjsekai:pagechange",e=>{
+ if(e.detail?.page==="game-tools"){
+  stabilizeGameToolsTouch();
+  if(!s.cards.length&&!s.loading)load();
+ }
+});
